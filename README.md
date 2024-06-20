@@ -23,16 +23,16 @@ $ yarn prod
 Application listening on: http://localhost:3000
 ```
 
-### Start app in docker container (with Server Side Rendering)
+### Start app in docker container
 ```sh
 $ docker build -f Dockerfile -t lending_ssr:latest .
 $ [[ $(docker ps -f name=lending_ssr_container -q -a) != '' ]] && docker rm --force $(docker ps -f name=lending_ssr_container -q -a)
-$ docker run -u root -d --restart=always --network server-net -p 3000:4173 --name lending_ssr_container lending_ssr:latest
+$ docker run -u root -d --restart=always --network server-net -p 8080:4173 --name lending_ssr_container lending_ssr:latest
 $ docker image prune -a --force
 ```
 
 ```sh
-Application listening on: http://localhost:3000
+Application listening on: http://localhost:8080
 ```
 
 License
