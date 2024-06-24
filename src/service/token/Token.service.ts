@@ -1,6 +1,5 @@
-import { makeAutoObservable, reaction } from "mobx";
+import { makeAutoObservable } from "mobx";
 
-import { IApiService } from "../../api";
 import { ITokenService } from "./Token.types";
 
 @ITokenService({ inSingleton: true })
@@ -8,12 +7,10 @@ export class TokenService implements ITokenService {
   public token: string = "";
   public refreshToken: string = "";
 
-  constructor(@IApiService() private _apiService: IApiService) {
+  constructor() {
     this.restoreRefreshToken().then();
 
     makeAutoObservable(this, {}, { autoBind: true });
-
-    reaction(() => this.token, _apiService.setToken, { fireImmediately: true });
   }
 
   setTokens(accessToken: string, refreshToken: string) {
