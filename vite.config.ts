@@ -13,7 +13,11 @@ const base_url = process.env.VITE_BASE_URL;
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      babel: {
+        configFile: true,
+      },
+    }),
     cjsInterop({
       // List of CJS dependencies that require interop
       dependencies: [
