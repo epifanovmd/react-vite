@@ -21,7 +21,7 @@ export const App = observer(() => {
 
     restore().then(accessToken => {
       if (!accessToken) {
-        navigate(RoutePaths.AUTH);
+        navigate(RoutePaths.ABOUT);
       }
     });
 

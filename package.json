@@ -31,6 +31,7 @@
   "dependencies": {
     "@force-dev/react": "^1.1.2",
     "@force-dev/utils": "^1.1.62",
+    "@hookform/resolvers": "^3.9.0",
     "axios": "^1.7.2",
     "dayjs": "^1.11.11",
     "express": "^4.19.2",
@@ -42,11 +43,13 @@
     "query-string": "^9.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.1",
     "react-i18next": "^14.1.2",
     "react-router-dom": "^6.23.1",
     "reflect-metadata": "^0.2.2",
     "socket.io-client": "^4.7.5",
-    "styled-components": "^6.1.11"
+    "styled-components": "^6.1.11",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.18.6",
