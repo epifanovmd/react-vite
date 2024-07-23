@@ -4,12 +4,6 @@ import { InternalAxiosRequestConfig } from "axios";
 import { ApiRequestConfig, ApiResponse, IApiService } from "./Api.types";
 import { IAxiosInstance, IAxiosInstancePromise } from "./axios";
 
-export const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? undefined
-    : import.meta.env.VITE_BASE_URL;
-export const SOCKET_BASE_URL = import.meta.env.VITE_SOCKET_BASE_URL;
-
 @IApiService({ inSingleton: true })
 export class ApiService implements IApiService {
   constructor(

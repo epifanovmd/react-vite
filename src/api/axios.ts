@@ -5,7 +5,11 @@ import axios, { AxiosHeaders, AxiosRequestConfig, Canceler } from "axios";
 // не менять путь, иначе появистя циклическая зависимость
 import { ITokenService } from "../service/token";
 
-export const BASE_URL = undefined;
+export const BASE_URL =
+  import.meta.env.MODE === "development"
+    ? undefined
+    : import.meta.env.VITE_BASE_URL;
+export const SOCKET_BASE_URL = import.meta.env.VITE_SOCKET_BASE_URL;
 
 export const DEFAULT_AXIOS_HEADERS = new AxiosHeaders({
   Accept: "application/json",
