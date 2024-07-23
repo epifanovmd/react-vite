@@ -29,8 +29,8 @@
     "check-packages-updates": "yarn outdated"
   },
   "dependencies": {
-    "@force-dev/react": "^1.1.2",
-    "@force-dev/utils": "^1.1.62",
+    "@force-dev/react": "^1.1.17",
+    "@force-dev/utils": "^1.1.64",
     "@hookform/resolvers": "^3.9.0",
     "axios": "^1.7.2",
     "dayjs": "^1.11.11",

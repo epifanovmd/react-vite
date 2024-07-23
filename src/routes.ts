@@ -1,11 +1,11 @@
-import { AboutPage } from "./pages/about/AboutPage";
+import { FormPage } from "./pages/form/FormPage";
 import { Login } from "./pages/login/Login";
 import { Posts } from "./pages/posts/Posts";
 
 export enum RoutePaths {
   ROOT = "/",
   AUTH = "/auth",
-  ABOUT = "/about",
+  FORM = "/form",
 }
 
 export interface IRoute<
@@ -32,8 +32,8 @@ export const routes: IRoute[] = [
     component: Login,
   },
   {
-    path: RoutePaths.ABOUT,
-    pathName: "about",
-    component: AboutPage,
+    path: RoutePaths.FORM,
+    pathName: "form",
+    component: FormPage,
   },
 ];

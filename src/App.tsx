@@ -12,7 +12,7 @@ export const App = observer(() => {
   const { restore, initialize, isAuthorized, isReady } = useSessionDataStore();
   const navigate = useNavigate();
 
-  console.log("isAuthorized", isAuthorized);
+  // console.log("isAuthorized", isAuthorized);
 
   useLayoutEffect(() => {
     const dispose = initialize(() => {
