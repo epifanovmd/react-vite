@@ -1,9 +1,7 @@
 import { useTextInput } from "@force-dev/react";
+import { useProfileDataStore } from "@store";
+import { useNavigate } from "@tanstack/react-router";
 import { ChangeEvent, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { RoutePaths } from "../../../../routes";
-import { useProfileDataStore } from "../../../../store";
 
 export const useLoginVM = () => {
   const profileDataStore = useProfileDataStore();
@@ -34,7 +32,7 @@ export const useLoginVM = () => {
       });
 
       if (profileDataStore.profile) {
-        navigate(RoutePaths.ROOT);
+        navigate({ to: "/" });
       }
     }
   }, [navigate, password.value, profileDataStore, username.value]);

@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { useLoginVM } from "./hooks/hooks";
 
-export const Login = observer(() => {
+export const LoginPage = observer(() => {
   const {
     handleLogin,
     username,

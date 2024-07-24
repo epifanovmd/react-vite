@@ -1,8 +1,9 @@
+// @ts-ignore
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import dotenv from "dotenv";
 import path from "path";
 import { defineConfig } from "vite";
-// @ts-ignore
 import { cjsInterop } from "vite-plugin-cjs-interop";
 
 const projectRootDir = path.resolve(__dirname);
@@ -13,6 +14,7 @@ const base_url = process.env.VITE_BASE_URL;
 
 export default defineConfig({
   plugins: [
+    TanStackRouterVite(),
     react({
       babel: {
         configFile: true,
