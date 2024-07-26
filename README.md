@@ -25,9 +25,9 @@ Application listening on: http://localhost:3000
 
 ### Start app in docker container
 ```sh
-$ docker build -f Dockerfile -t lending_ssr:latest .
-$ [[ $(docker ps -f name=lending_ssr_container -q -a) != '' ]] && docker rm --force $(docker ps -f name=lending_ssr_container -q -a)
-$ docker run -u root -d --restart=always --network server-net -p 8080:4173 --name lending_ssr_container lending_ssr:latest
+$ docker build -f Dockerfile -t react-vite:latest .
+$ [[ $(docker ps -f name=react-vite_container -q -a) != '' ]] && docker rm --force $(docker ps -f name=react-vite_container -q -a)
+$ docker run -u root -d --restart=always --network server-net -p 8080:4173 --name react-vite_container react-vite:latest
 $ docker image prune -a --force
 ```
 
