@@ -11,13 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as AuthImport } from './routes/auth'
 import { Route as PublicImport } from './routes/_public'
 import { Route as PrivateImport } from './routes/_private'
 import { Route as PrivateIndexImport } from './routes/_private/index'
+import { Route as AuthLoginImport } from './routes/auth/login'
 import { Route as PublicFormIndexImport } from './routes/_public/form/index'
-import { Route as PublicAuthIndexImport } from './routes/_public/auth/index'
 
 // Create/Update Routes
+
+const AuthRoute = AuthImport.update({
+  path: '/auth',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const PublicRoute = PublicImport.update({
   id: '/_public',
@@ -34,13 +40,13 @@ const PrivateIndexRoute = PrivateIndexImport.update({
   getParentRoute: () => PrivateRoute,
 } as any)
 
-const PublicFormIndexRoute = PublicFormIndexImport.update({
-  path: '/form/',
-  getParentRoute: () => PublicRoute,
+const AuthLoginRoute = AuthLoginImport.update({
+  path: '/login',
+  getParentRoute: () => AuthRoute,
 } as any)
 
-const PublicAuthIndexRoute = PublicAuthIndexImport.update({
-  path: '/auth/',
+const PublicFormIndexRoute = PublicFormIndexImport.update({
+  path: '/form/',
   getParentRoute: () => PublicRoute,
 } as any)
 
@@ -62,19 +68,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicImport
       parentRoute: typeof rootRoute
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginImport
+      parentRoute: typeof AuthImport
+    }
     '/_private/': {
       id: '/_private/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PrivateIndexImport
       parentRoute: typeof PrivateImport
-    }
-    '/_public/auth/': {
-      id: '/_public/auth/'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof PublicAuthIndexImport
-      parentRoute: typeof PublicImport
     }
     '/_public/form/': {
       id: '/_public/form/'
@@ -90,10 +103,8 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   PrivateRoute: PrivateRoute.addChildren({ PrivateIndexRoute }),
-  PublicRoute: PublicRoute.addChildren({
-    PublicAuthIndexRoute,
-    PublicFormIndexRoute,
-  }),
+  PublicRoute: PublicRoute.addChildren({ PublicFormIndexRoute }),
+  AuthRoute: AuthRoute.addChildren({ AuthLoginRoute }),
 })
 
 /* prettier-ignore-end */
@@ -105,7 +116,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/_private",
-        "/_public"
+        "/_public",
+        "/auth"
       ]
     },
     "/_private": {
@@ -117,17 +129,22 @@ export const routeTree = rootRoute.addChildren({
     "/_public": {
       "filePath": "_public.tsx",
       "children": [
-        "/_public/auth/",
         "/_public/form/"
       ]
+    },
+    "/auth": {
+      "filePath": "auth.tsx",
+      "children": [
+        "/auth/login"
+      ]
+    },
+    "/auth/login": {
+      "filePath": "auth/login.tsx",
+      "parent": "/auth"
     },
     "/_private/": {
       "filePath": "_private/index.tsx",
       "parent": "/_private"
-    },
-    "/_public/auth/": {
-      "filePath": "_public/auth/index.tsx",
-      "parent": "/_public"
     },
     "/_public/form/": {
       "filePath": "_public/form/index.tsx",

@@ -35,17 +35,11 @@ const Component = observer(() => {
 });
 
 export const Route = createRootRoute({
-  beforeLoad: () => {
+  beforeLoad: async () => {
     const { isReady, isAuthorized, restore } = ISessionDataStore.getInstance();
 
     if (!isReady) {
-      restore().then(accessToken => {
-        if (!accessToken) {
-          throw redirect({ to: "/auth" });
-        }
-      });
-    } else if (!isAuthorized) {
-      throw redirect({ to: "/auth" });
+      restore().then();
     }
   },
   component: Component,
