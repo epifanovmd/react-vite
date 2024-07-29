@@ -1,13 +1,14 @@
 import { DataHolder } from "@force-dev/utils";
+import { PostModel } from "@models";
+import { IPost, IPostsService } from "@service";
 import { makeAutoObservable } from "mobx";
 
-import { PostModel } from "../../models";
-import { IPost, IPostsService } from "../../service";
 import { IPostDataStore } from "./PostData.types";
 
 @IPostDataStore()
 export class PostDataStore implements IPostDataStore {
   public holder: DataHolder<IPost> = new DataHolder<IPost>();
+  public model = new PostModel(() => this.data);
 
   constructor(@IPostsService() private _postService: IPostsService) {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -15,10 +16,6 @@ export class PostDataStore implements IPostDataStore {
 
   get data() {
     return this.holder.d;
-  }
-
-  get model() {
-    return this.data && new PostModel(this.data);
   }
 
   get error() {
