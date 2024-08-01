@@ -1,7 +1,6 @@
-import { DataHolder } from "@force-dev/utils";
+import { ApiResponse, DataHolder } from "@force-dev/utils";
 import { makeAutoObservable } from "mobx";
 
-import { ApiResponse } from "../../api";
 import {
   IProfile,
   IProfileService,

@@ -19,8 +19,8 @@ export class PostsDataStore implements IPostsDataStore {
   constructor(@IPostsService() private _postsService: IPostsService) {
     makeAutoObservable(this, {}, { autoBind: true });
     this.holder.initialize({
-      pageSize: 10,
-      onFetchData: this._onRefresh,
+      pageSize: 30,
+      onFetchData: query => this._onRefresh(query),
       keyExtractor: item => item.id,
     });
   }
@@ -68,11 +68,15 @@ export class PostsDataStore implements IPostsDataStore {
     return this.holder.performLoadMore(args);
   }
 
-  private async _onRefresh({ offset, ...params }: RefreshArgs & IPostsRequest) {
+  private async _onRefresh({
+    offset,
+    limit,
+    ...params
+  }: RefreshArgs & IPostsRequest) {
     const res = await this._postsService.getAll({
       ...params,
       skip: offset,
-      limit: params.limit ?? params.limit,
+      limit: limit,
     });
 
     if (res.error) {

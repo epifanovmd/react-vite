@@ -1,10 +1,11 @@
 import { usePostsDataStore } from "@store";
 import { useNavigate } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 export const PostsPage = observer(() => {
-  const { models, onRefresh } = usePostsDataStore();
+  const { models, onRefresh, onLoadMore } = usePostsDataStore();
+  const ref = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
 
@@ -13,8 +14,26 @@ export const PostsPage = observer(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleOnScroll = () => {
+    if (
+      ref.current &&
+      window.scrollY + window.innerHeight >= ref.current.scrollHeight - 100
+    ) {
+      onLoadMore();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleOnScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleOnScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div>
+    <div ref={ref}>
       <h1>Posts page</h1>
       {models.map(post => (
         <div

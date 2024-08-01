@@ -20,16 +20,17 @@ export class SessionDataStore implements ISessionDataStore {
   }
 
   initialize(authRedirect: () => void) {
-    this._apiService.onError(async ({ status, error }) => {
-      console.log("status", status);
-      console.log("error", error);
+    this._apiService.onError(async ({ status, error, isCanceled }) => {
+      if (!isCanceled) {
+        console.log("error", error);
 
-      if (status === 401) {
-        authRedirect();
-      }
+        if (status === 401) {
+          authRedirect();
+        }
 
-      if (status === 403) {
-        await this._profileDataStore.updateToken();
+        if (status === 403) {
+          await this._profileDataStore.updateToken();
+        }
       }
     });
 
@@ -46,7 +47,10 @@ export class SessionDataStore implements ISessionDataStore {
           }
         },
       ),
-      reaction(() => this._tokenService.token, this.holder.setData),
+      reaction(
+        () => this._tokenService.token,
+        token => this.holder.setData(token),
+      ),
       () => this._interval.stop(),
     ];
   }

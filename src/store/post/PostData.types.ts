@@ -1,4 +1,4 @@
-import { DataHolder, iocDecorator } from "@force-dev/utils";
+import { AsyncDataSource, iocDecorator } from "@force-dev/utils";
 
 import { PostModel } from "../../models";
 import { IPost } from "../../service";
@@ -6,7 +6,7 @@ import { IPost } from "../../service";
 export const IPostDataStore = iocDecorator<IPostDataStore>();
 
 export interface IPostDataStore {
-  holder: DataHolder<IPost>;
+  dataSource: AsyncDataSource<IPost, number>;
 
   data?: IPost;
   model?: PostModel;
