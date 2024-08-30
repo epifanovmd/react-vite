@@ -14,7 +14,7 @@ const DEV_BASE_URL = `${env.VITE_DEV_PROTOCOL}://${env.VITE_DEV_HOST}:${env.VITE
 export const BASE_URL = isDev ? DEV_BASE_URL : env.VITE_BASE_URL;
 export const SOCKET_BASE_URL = env.VITE_SOCKET_BASE_URL;
 
-export interface IApiService extends IIIApiService {}
+export type IApiService = IIIApiService
 export const IApiService = iocDecorator<ApiService1>();
 
 @IApiService({ inSingleton: true })

@@ -4,9 +4,7 @@ import { makeAutoObservable } from "mobx";
 import {
   IProfile,
   IProfileService,
-  IRefreshTokenResponse,
   ISignInRequest,
-  ISignInResponse,
   ITokenService,
 } from "~@service";
 

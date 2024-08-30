@@ -1,4 +1,4 @@
-import { ITheme } from "../src/theme";
+import { ITheme } from "~@theme";
 
 declare module "styled-components" {
   export interface DefaultTheme extends ITheme {}

@@ -3,9 +3,9 @@ import { Socket as SocketIO } from "socket.io-client";
 
 import { ClientSocketEmitEvents, ClientsSocketEvents } from "./clients";
 
-export interface SocketEvents extends ClientsSocketEvents {}
+export type SocketEvents = ClientsSocketEvents
 
-export interface SocketEmitEvents extends ClientSocketEmitEvents {}
+export type SocketEmitEvents = ClientSocketEmitEvents
 
 export type Socket = SocketIO<SocketEvents, SocketEmitEvents>;
 

@@ -1,10 +1,5 @@
 import { disposer } from "@force-dev/utils";
-import {
-  createRootRoute,
-  Outlet,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
 
@@ -19,7 +14,7 @@ const Component = observer(() => {
     const dispose = initialize(() => {
       navigate({
         to: "/auth",
-      });
+      }).then();
     });
 
     return () => {
@@ -37,7 +32,7 @@ const Component = observer(() => {
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
-    const { isReady, isAuthorized, restore } = ISessionDataStore.getInstance();
+    const { isReady, restore } = ISessionDataStore.getInstance();
 
     if (!isReady) {
       restore().then();

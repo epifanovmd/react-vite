@@ -4,8 +4,8 @@ import { ITokenService } from "./Token.types";
 
 @ITokenService({ inSingleton: true })
 export class TokenService implements ITokenService {
-  public token: string = "";
-  public refreshToken: string = "";
+  public token = "";
+  public refreshToken = "";
 
   constructor() {
     this.restoreRefreshToken().then();

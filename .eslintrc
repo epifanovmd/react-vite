@@ -2,7 +2,8 @@
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
-    "plugin:react/jsx-runtime"
+    "plugin:react/jsx-runtime",
+    "plugin:@typescript-eslint/recommended"
   ],
   "settings": {
     "react": {
@@ -33,6 +34,11 @@
 
     "no-undef": "off",
     "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
+
+    // typescript eslint
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-empty-interface": "off",
 
     // react-hooks
     "react-hooks/rules-of-hooks": "error",
