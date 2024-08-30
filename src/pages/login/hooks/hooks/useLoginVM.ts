@@ -1,7 +1,8 @@
 import { useTextInput } from "@force-dev/react";
-import { useProfileDataStore } from "@store";
 import { useNavigate } from "@tanstack/react-router";
 import { ChangeEvent, useCallback } from "react";
+
+import { useProfileDataStore } from "~@store";
 
 export const useLoginVM = () => {
   const profileDataStore = useProfileDataStore();

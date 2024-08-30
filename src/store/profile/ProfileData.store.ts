@@ -4,10 +4,12 @@ import { makeAutoObservable } from "mobx";
 import {
   IProfile,
   IProfileService,
+  IRefreshTokenResponse,
   ISignInRequest,
   ISignInResponse,
   ITokenService,
-} from "../../service";
+} from "~@service";
+
 import { IProfileDataStore } from "./ProfileData.types";
 
 @IProfileDataStore({ inSingleton: true })
@@ -55,14 +57,7 @@ export class ProfileDataStore implements IProfileDataStore {
 
     const res = await this._profileService.getProfile();
 
-    this._updateProfileHolder({
-      ...res,
-      data: res.data && {
-        ...res.data,
-        token: this._tokenService.token,
-        refreshToken: this._tokenService.refreshToken,
-      },
-    });
+    this._updateProfileHolder(res);
   }
 
   async signIn(params: ISignInRequest) {
@@ -91,13 +86,17 @@ export class ProfileDataStore implements IProfileDataStore {
     }
   }
 
-  private _updateProfileHolder(res: ApiResponse<ISignInResponse>) {
+  private _updateProfileHolder(res: ApiResponse<IProfile>) {
     if (res.error) {
       this._tokenService.clear();
       this.holder.setError({ msg: res.error.message });
     } else if (res.data) {
       this.holder.setData(res.data);
-      this._tokenService.setTokens(res.data.token, res.data.refreshToken);
+
+      this._tokenService.setTokens(
+        this._tokenService.token,
+        this._tokenService.refreshToken,
+      );
     }
   }
 }

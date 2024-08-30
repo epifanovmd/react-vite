@@ -1,6 +1,4 @@
-import { Container } from "@components";
 import { disposer } from "@force-dev/utils";
-import { ISessionDataStore, useSessionDataStore } from "@store";
 import {
   createRootRoute,
   Outlet,
@@ -9,6 +7,9 @@ import {
 } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import React, { useEffect } from "react";
+
+import { Container } from "~@components";
+import { ISessionDataStore, useSessionDataStore } from "~@store";
 
 const Component = observer(() => {
   const { initialize } = useSessionDataStore();

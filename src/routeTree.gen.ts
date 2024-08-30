@@ -16,7 +16,6 @@ import { Route as PublicImport } from './routes/_public'
 import { Route as PrivateImport } from './routes/_private'
 import { Route as PrivateIndexImport } from './routes/_private/index'
 import { Route as AuthLoginImport } from './routes/auth/login'
-import { Route as PublicFormIndexImport } from './routes/_public/form/index'
 import { Route as PrivatePostPostIdImport } from './routes/_private/post/$postId'
 
 // Create/Update Routes
@@ -44,11 +43,6 @@ const PrivateIndexRoute = PrivateIndexImport.update({
 const AuthLoginRoute = AuthLoginImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
-} as any)
-
-const PublicFormIndexRoute = PublicFormIndexImport.update({
-  path: '/form/',
-  getParentRoute: () => PublicRoute,
 } as any)
 
 const PrivatePostPostIdRoute = PrivatePostPostIdImport.update({
@@ -102,13 +96,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivatePostPostIdImport
       parentRoute: typeof PrivateImport
     }
-    '/_public/form/': {
-      id: '/_public/form/'
-      path: '/form'
-      fullPath: '/form'
-      preLoaderRoute: typeof PublicFormIndexImport
-      parentRoute: typeof PublicImport
-    }
   }
 }
 
@@ -119,7 +106,6 @@ export const routeTree = rootRoute.addChildren({
     PrivateIndexRoute,
     PrivatePostPostIdRoute,
   }),
-  PublicRoute: PublicRoute.addChildren({ PublicFormIndexRoute }),
   AuthRoute: AuthRoute.addChildren({ AuthLoginRoute }),
 })
 
@@ -144,10 +130,7 @@ export const routeTree = rootRoute.addChildren({
       ]
     },
     "/_public": {
-      "filePath": "_public.tsx",
-      "children": [
-        "/_public/form/"
-      ]
+      "filePath": "_public.tsx"
     },
     "/auth": {
       "filePath": "auth.tsx",
@@ -166,10 +149,6 @@ export const routeTree = rootRoute.addChildren({
     "/_private/post/$postId": {
       "filePath": "_private/post/$postId.tsx",
       "parent": "/_private"
-    },
-    "/_public/form/": {
-      "filePath": "_public/form/index.tsx",
-      "parent": "/_public"
     }
   }
 }

@@ -1,7 +1,8 @@
-import { usePostsDataStore } from "@store";
 import { useNavigate } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import React, { useEffect, useRef } from "react";
+
+import { usePostsDataStore } from "~@store";
 
 export const PostsPage = observer(() => {
   const { models, onRefresh, onLoadMore } = usePostsDataStore();
