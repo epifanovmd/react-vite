@@ -1,0 +1,10 @@
+services:
+  react-vite:
+    build: .
+    container_name: react-vite
+    ports:
+      - "3001:4173"
+    restart: unless-stopped
+
+volumes:
+  react-vite:
