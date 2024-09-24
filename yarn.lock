@@ -604,10 +604,10 @@
     reflect-metadata "^0.1.13"
     shortid "^2.2.16"
 
-"@force-dev/utils@^1.1.76":
-  version "1.1.76"
-  resolved "https://registry.yarnpkg.com/@force-dev/utils/-/utils-1.1.76.tgz#5a3bd53e148f07b2468890c8533bcec51c5c61a2"
-  integrity sha512-cQ/6sFvZ4BO8iok7QnnhZB5XHLg9fcYV2qtEy6BWE3S4riGrruRyZkNtXPh4NPvmxhtXvhj91dPHPY53+u8+CQ==
+"@force-dev/utils@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@force-dev/utils/-/utils-1.2.2.tgz#f3700c1eefbc11df874f7fdc55593cf970f2e0e2"
+  integrity sha512-8xhBpvdqGtYAQ2tt7r1UgW+3YDii3wPkH3eVcx3bmvdcRQmbSO/BC8OKYxR/fvov+wUhOK7UWsyYgFfz5EZpFg==
   dependencies:
     "@types/shortid" "^0.0.32"
     axios "^1.7.2"
