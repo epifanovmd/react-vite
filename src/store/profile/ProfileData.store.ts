@@ -5,6 +5,7 @@ import {
   IProfile,
   IProfileService,
   ISignInRequest,
+  ISignInResponse,
   ITokenService,
 } from "~@service";
 
@@ -28,7 +29,7 @@ export class ProfileDataStore implements IProfileDataStore {
       }
 
       return {
-        token: this._tokenService.token,
+        accessToken: this._tokenService.token,
         refreshToken: this._tokenService.refreshToken,
       };
     });
@@ -55,7 +56,12 @@ export class ProfileDataStore implements IProfileDataStore {
 
     const res = await this._profileService.getProfile();
 
-    this._updateProfileHolder(res);
+    if (res.error) {
+      this._tokenService.clear();
+      this.holder.setError({ msg: res.error.message });
+    } else if (res.data) {
+      this.holder.setData(res.data);
+    }
   }
 
   async signIn(params: ISignInRequest) {
@@ -80,21 +86,18 @@ export class ProfileDataStore implements IProfileDataStore {
     if (res.error) {
       this._tokenService.clear();
     } else if (res.data) {
-      this._tokenService.setTokens(res.data.token, res.data.refreshToken);
+      this._tokenService.setTokens(res.data.accessToken, res.data.refreshToken);
     }
   }
 
-  private _updateProfileHolder(res: ApiResponse<IProfile>) {
+  private _updateProfileHolder(res: ApiResponse<ISignInResponse>) {
     if (res.error) {
       this._tokenService.clear();
       this.holder.setError({ msg: res.error.message });
     } else if (res.data) {
       this.holder.setData(res.data);
 
-      this._tokenService.setTokens(
-        this._tokenService.token,
-        this._tokenService.refreshToken,
-      );
+      this._tokenService.setTokens(res.data.accessToken, res.data.refreshToken);
     }
   }
 }
