@@ -45,8 +45,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: DEV_PORT,
-    host: DEV_HOST,
+    port: PORT,
+    host: HOST,
     proxy: {
       "/api": {
         target: VITE_BASE_URL,
