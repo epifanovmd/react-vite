@@ -11,10 +11,10 @@ const projectRootDir = path.resolve(__dirname);
 
 dotenv.config({ path: [`.env.${process.env.NODE_ENV}`, ".env"] });
 
-const { VITE_DEV_HOST, VITE_DEV_PORT, VITE_BASE_URL } = process.env;
+const { VITE_HOST, VITE_PORT, VITE_BASE_URL } = process.env;
 
-const DEV_HOST = VITE_DEV_HOST;
-const DEV_PORT = VITE_DEV_PORT ? Number(VITE_DEV_PORT) : 3000;
+const HOST = VITE_HOST ?? "0.0.0.0";
+const PORT = VITE_PORT ? Number(VITE_PORT) : 3000;
 
 export default defineConfig({
   plugins: [
@@ -54,5 +54,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  },
+  preview: {
+    host: HOST,
+    port: PORT,
   },
 });
