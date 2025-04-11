@@ -3,6 +3,7 @@ import { disposer, InitializeDispose, Interval } from "@force-dev/utils";
 import { ISocketService } from "@service";
 import { makeAutoObservable, reaction } from "mobx";
 
+import { router } from "../../index.tsx";
 import { ISessionDataStore } from "../session";
 import { IAppDataStore } from "./AppData.types";
 
@@ -46,7 +47,7 @@ export class AppDataStore implements IAppDataStore {
             disposer(Array.from(disposers));
             disposers.clear();
 
-            location.replace("/");
+            router.navigate({ to: "/auth/signIn" });
           }
         },
       ),

@@ -1,20 +1,13 @@
 import { usePasskeyAuth } from "@common";
 import { useProfileDataStore, useSessionDataStore } from "@store";
-import { useNavigate } from "@tanstack/react-router";
-import { FC, memo, useCallback } from "react";
+import { FC, memo } from "react";
 
 import { AsyncButton, Button } from "../ui";
 
 export const Header: FC = memo(() => {
-  const navigate = useNavigate();
   const sessionDataStore = useSessionDataStore();
   const { profile } = useProfileDataStore();
   const { profileId, handleRegister, support } = usePasskeyAuth();
-
-  const onLogout = useCallback(() => {
-    sessionDataStore.clear();
-    navigate({ to: "/auth/signIn" }).then();
-  }, [navigate, sessionDataStore]);
 
   return (
     <div
@@ -35,7 +28,7 @@ export const Header: FC = memo(() => {
             {"Passkey reg"}
           </AsyncButton>
         )}
-        <Button onClick={onLogout}>{"Выход"}</Button>
+        <Button onClick={sessionDataStore.clear}>{"Выход"}</Button>
       </div>
     </div>
   );

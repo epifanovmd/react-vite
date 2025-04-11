@@ -15,7 +15,7 @@ const lang = localStorage.getItem("i18nextLng");
 initLocalization({ initLang: lang ?? undefined }).finally();
 
 // Create a new router instance
-const router = createRouter({
+export const router = createRouter({
   routeTree,
   defaultPendingMinMs: 500,
   defaultPendingComponent: () => (
