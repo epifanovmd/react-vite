@@ -186,6 +186,9 @@ export const KanbanBoard: React.FC = memo(() => {
               </h2>
 
               <Droppable
+                isCombineEnabled={false}
+                direction={"vertical"}
+                ignoreContainerClipping={false}
                 droppableId={column.id}
                 isDropDisabled={
                   isDragging &&
@@ -233,6 +236,7 @@ export const KanbanBoard: React.FC = memo(() => {
                               },
                             )}
                           >
+                            <div>{task.id}</div>
                             {task.content}
                             <div className="text-xs text-gray-500 mt-1">
                               Allowed columns: {task.allowedColumns.join(", ")}
