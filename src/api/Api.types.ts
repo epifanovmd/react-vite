@@ -1,3 +1,10 @@
+import { createServiceDecorator } from "@force-dev/utils";
+
+import { Api } from "./api-gen/Api.ts";
+
+export const IApiService = createServiceDecorator<IApiService>();
+export type IApiService = Api<ApiError, ApiError>;
+
 export type ApiRequest<T extends object = object> = T & {
   skip?: number;
   limit?: number;

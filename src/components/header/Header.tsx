@@ -24,7 +24,7 @@ export const Header: FC = memo(() => {
       }
     >
       <div>{"Wireguard"}</div>
-      <div>
+      <div className={"flex gap-2"}>
         {support && profile && (
           <AsyncButton
             type={"primary"}

@@ -8,7 +8,7 @@ import { IProfileDataStore } from "../profile";
 import { ISessionDataStore } from "./SessionData.types";
 
 @ISessionDataStore({ inSingleton: true })
-export class SessionDataStore implements ISessionDataStore {
+class SessionDataStore implements ISessionDataStore {
   private _interval = new Interval({ timeout: 60000 });
   private holder: DataHolder<string> = new DataHolder<string>();
 

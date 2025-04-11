@@ -1,8 +1,8 @@
+import { useApi } from "@api";
 import {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
-  useApi,
-} from "@api";
+} from "@api/api-gen/data-contracts.ts";
 import {
   browserSupportsWebAuthn,
   startAuthentication,

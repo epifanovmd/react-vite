@@ -13,7 +13,7 @@ import { makeAutoObservable } from "mobx";
 import { IProfileDataStore } from "./ProfileData.types";
 
 @IProfileDataStore({ inSingleton: true })
-export class ProfileDataStore implements IProfileDataStore {
+class ProfileDataStore implements IProfileDataStore {
   public holder = new DataHolder<IProfileDto>();
 
   constructor(

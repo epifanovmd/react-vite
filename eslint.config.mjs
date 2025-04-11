@@ -40,6 +40,7 @@ export default tseslint.config(
 
       "no-undef": "off",
       "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off",
 
       // typescript eslint
       "@typescript-eslint/ban-types": "off",
