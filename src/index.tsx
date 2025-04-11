@@ -1,5 +1,6 @@
 import "./styles/index.scss";
 import "./styles/tailwind.css";
+import "@ant-design/v5-patch-for-react-19";
 
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { ThemeProvider } from "@theme";

@@ -30,11 +30,12 @@
     "check-packages-updates": "yarn outdated"
   },
   "dependencies": {
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.25.9",
     "@force-dev/react": "^1.1.26",
     "@force-dev/react-web": "^0.0.14",
-    "@force-dev/utils": "^1.4.4",
+    "@force-dev/utils": "^1.4.6",
     "@hookform/resolvers": "^5.0.1",
     "@mdx-js/rollup": "^3.1.0",
     "@simplewebauthn/browser": "^13.1.0",

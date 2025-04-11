@@ -1,11 +1,21 @@
-import { ITokensDto } from "@api/api-gen/data-contracts.ts";
+import {
+  ISignInRequest,
+  ITokensDto,
+  TSignUpRequest,
+} from "@api/api-gen/data-contracts.ts";
 import { createServiceDecorator, SupportInitialize } from "@force-dev/utils";
 
 export const ISessionDataStore = createServiceDecorator<ISessionDataStore>();
 
-export interface ISessionDataStore extends SupportInitialize<() => void> {
+export interface ISessionDataStore extends SupportInitialize {
+  isLoading: boolean;
   isAuthorized: boolean;
-  isReady: boolean;
 
-  restore(tokens?: ITokensDto): Promise<string>;
+  updateToken(
+    refreshToken?: string,
+  ): Promise<Record<keyof ITokensDto, string | null>>;
+  signIn(params: ISignInRequest): Promise<void>;
+  signUp(params: TSignUpRequest): Promise<void>;
+  restore(tokens?: ITokensDto): Promise<void>;
+  clear(): void;
 }
