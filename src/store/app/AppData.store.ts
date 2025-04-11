@@ -25,17 +25,18 @@ export class AppDataStore implements IAppDataStore {
       this._apiService.onError(async ({ status }) => {
         if (status === 401 && this.sessionDataStore.isAuthorized) {
           this.sessionDataStore.clear();
+          location.replace("/");
         }
 
         if (status === 403) {
-          const { accessToken } = await this.sessionDataStore.updateToken();
+          await this.sessionDataStore.updateToken();
         }
       }),
       reaction(
         () => this.sessionDataStore.isAuthorized,
         isAuthorized => {
           if (isAuthorized) {
-            // disposers.add(this._socketService.initialize());
+            disposers.add(this._socketService.initialize());
 
             this._interval.start(async () => {
               await this.sessionDataStore.updateToken();
@@ -45,6 +46,7 @@ export class AppDataStore implements IAppDataStore {
 
             disposer(Array.from(disposers));
             disposers.clear();
+            location.replace("/");
           }
         },
       ),

@@ -60,7 +60,7 @@ export class SessionDataStore implements ISessionDataStore {
       const res = await this._apiService.refresh({ refreshToken });
 
       if (res.error) {
-        this._tokenService.clear();
+        this.clear();
       } else if (res.data) {
         this.holder.setData(res.data.accessToken);
         this._tokenService.setTokens(
@@ -69,7 +69,7 @@ export class SessionDataStore implements ISessionDataStore {
         );
       }
     } else {
-      this._tokenService.clear();
+      this.clear();
     }
 
     return {
