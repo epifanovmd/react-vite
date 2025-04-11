@@ -16,12 +16,10 @@ import { useCallback, useEffect, useState } from "react";
 
 export const usePasskeyAuth = () => {
   const [support, setSupport] = useState<boolean>(false);
+  // Сохраненный profileId в localStorage, означает что доступен вход по биометрии
+  const [profileId, setProfileId] = useState(localStorage.getItem("profileId"));
 
   const api = useApi();
-
-  // Сохраненный profileId в localStorage, означает что доступен вход по биометрии
-  const profileId = localStorage.getItem("profileId");
-
   const { restore } = useSessionDataStore();
   const navigate = useNavigate();
 
@@ -33,8 +31,6 @@ export const usePasskeyAuth = () => {
 
   const handleRegister = useCallback(
     async (profileId: string) => {
-      localStorage.setItem("profileId", profileId);
-
       // Получите challenge и другие данные с сервера
       const response = await api.generateRegistrationOptions({ profileId });
 
@@ -42,17 +38,36 @@ export const usePasskeyAuth = () => {
         notification.error({ message: response.error.message });
       } else if (response.data) {
         // Запустите процесс регистрации
-        const data = await startRegistration({
+        return await startRegistration({
           optionsJSON: response.data as PublicKeyCredentialCreationOptionsJSON,
-        });
-        // Отправьте результат обратно на сервер
+        })
+          .then(async data => {
+            const isVerified = await api
+              .verifyRegistration({
+                profileId,
+                data: data as RegistrationResponseJSON,
+              })
+              .then(res => !!res.data?.verified)
+              .catch(
+                err =>
+                  err.message === "The authenticator was previously registered",
+              );
 
-        const verifyResponse = await api.verifyRegistration({
-          profileId,
-          data: data as RegistrationResponseJSON,
-        });
+            if (isVerified) {
+              localStorage.setItem("profileId", profileId);
+              setProfileId(profileId);
+            }
 
-        return !!verifyResponse.data?.verified;
+            return isVerified;
+          })
+          .catch(err => {
+            if (err.message === "The authenticator was previously registered") {
+              localStorage.setItem("profileId", profileId);
+              setProfileId(profileId);
+            }
+
+            return false;
+          });
       }
 
       return false;

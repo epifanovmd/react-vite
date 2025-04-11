@@ -9,7 +9,7 @@ export const Header: FC = memo(() => {
   const navigate = useNavigate();
   const sessionDataStore = useSessionDataStore();
   const { profile } = useProfileDataStore();
-  const { handleRegister, support } = usePasskeyAuth();
+  const { profileId, handleRegister, support } = usePasskeyAuth();
 
   const onLogout = useCallback(() => {
     sessionDataStore.clear();
@@ -24,7 +24,7 @@ export const Header: FC = memo(() => {
     >
       <div>{"Wireguard"}</div>
       <div className={"flex gap-2"}>
-        {support && profile && (
+        {support && profile && !profileId && (
           <AsyncButton
             type={"primary"}
             onClick={async () => {
