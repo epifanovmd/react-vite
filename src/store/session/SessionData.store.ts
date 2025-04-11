@@ -1,8 +1,8 @@
+import { IApiService } from "@api";
+import { ITokensDto } from "@api/api-gen/data-contracts.ts";
 import { DataHolder, Interval } from "@force-dev/utils";
+import { ITokenService } from "@service";
 import { makeAutoObservable, reaction } from "mobx";
-
-import { IApiService } from "~@api";
-import { ITokenService } from "~@service";
 
 import { IProfileDataStore } from "../profile";
 import { ISessionDataStore } from "./SessionData.types";
@@ -21,17 +21,13 @@ export class SessionDataStore implements ISessionDataStore {
   }
 
   initialize(authRedirect: () => void) {
-    this._apiService.onError(async ({ status, error, isCanceled }) => {
-      if (!isCanceled) {
-        console.log("error", error);
+    this._apiService.onError(async ({ status }) => {
+      if (status === 401) {
+        authRedirect();
+      }
 
-        if (status === 401) {
-          authRedirect();
-        }
-
-        if (status === 403) {
-          await this._profileDataStore.updateToken();
-        }
+      if (status === 403) {
+        await this._profileDataStore.updateToken();
       }
     });
 
@@ -48,10 +44,7 @@ export class SessionDataStore implements ISessionDataStore {
           }
         },
       ),
-      reaction(
-        () => this._tokenService.token,
-        token => this.holder.setData(token),
-      ),
+      reaction(() => this._tokenService.accessToken, this.holder.setData),
       () => this._interval.stop(),
     ];
   }
@@ -64,13 +57,22 @@ export class SessionDataStore implements ISessionDataStore {
     return this.holder.isReady;
   }
 
-  async restore() {
-    this.holder.setLoading();
+  async restore(tokens?: ITokensDto) {
+    if (tokens) {
+      this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
+      await this._profileDataStore.getProfile();
 
-    const { accessToken } = await this._profileDataStore.updateToken();
+      return tokens.accessToken;
+    } else {
+      this.holder.setLoading();
 
-    this.holder.setData(accessToken);
+      const { accessToken } = await this._profileDataStore.updateToken();
 
-    return accessToken;
+      await this._profileDataStore.getProfile();
+
+      this.holder.setData(accessToken);
+
+      return accessToken;
+    }
   }
 }

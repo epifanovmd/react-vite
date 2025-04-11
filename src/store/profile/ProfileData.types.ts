@@ -1,23 +1,26 @@
-import { DataHolder, iocDecorator } from "@force-dev/utils";
+import {
+  IProfileDto,
+  ISignInRequest,
+  ITokensDto,
+  TSignUpRequest,
+} from "@api/api-gen/data-contracts.ts";
+import { createServiceDecorator, DataHolder } from "@force-dev/utils";
 
-import { IProfile, IRefreshTokenResponse, ISignInRequest } from "../../service";
-
-export const IProfileDataStore = iocDecorator<IProfileDataStore>();
+export const IProfileDataStore = createServiceDecorator<IProfileDataStore>();
 
 export interface IProfileDataStore {
-  holder: DataHolder<IProfile>;
-  profile?: IProfile;
+  holder: DataHolder<IProfileDto>;
+  profile?: IProfileDto;
   isLoading: boolean;
   isError: boolean;
   isEmpty: boolean;
+  isAdmin: boolean;
 
-  updateToken(): Promise<IRefreshTokenResponse>;
+  getProfile(): Promise<IProfileDto | undefined>;
+
+  updateToken(): Promise<ITokensDto>;
 
   signIn(params: ISignInRequest): Promise<void>;
 
-  signIn(params: ISignInRequest): Promise<void>;
-
-  // signUp(params: ISignUpRequest): void;
-
-  getProfile(): Promise<void>;
+  signUp(params: TSignUpRequest): Promise<void>;
 }

@@ -1,6 +1,6 @@
 interface EnvVariables {
   BASE_URL: string;
-  MODE: string;
+  MODE: "development" | "productions";
   DEV: boolean;
   PROD: boolean;
   SSR: boolean;
@@ -10,7 +10,6 @@ interface EnvVariables {
   VITE_PORT: string;
   VITE_BASE_URL: string;
   VITE_SOCKET_BASE_URL: string;
-
   VITE_APP_NAME: string;
 }
 

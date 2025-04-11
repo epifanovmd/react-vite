@@ -1,10 +1,9 @@
+import { ConfirmModalProvider, Container } from "@components";
 import { disposer } from "@force-dev/utils";
+import { useSessionDataStore } from "@store";
 import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
-
-import { Container } from "~@components";
-import { ISessionDataStore, useSessionDataStore } from "~@store";
+import { useEffect } from "react";
 
 const Component = observer(() => {
   const { initialize } = useSessionDataStore();
@@ -13,7 +12,7 @@ const Component = observer(() => {
   useEffect(() => {
     const dispose = initialize(() => {
       navigate({
-        to: "/auth",
+        to: "/auth/signIn",
       }).then();
     });
 
@@ -25,19 +24,14 @@ const Component = observer(() => {
 
   return (
     <Container>
-      <Outlet />
+      <ConfirmModalProvider>
+        <Outlet />
+      </ConfirmModalProvider>
     </Container>
   );
 });
 
 export const Route = createRootRoute({
-  beforeLoad: async () => {
-    const { isReady, restore } = ISessionDataStore.getInstance();
-
-    if (!isReady) {
-      restore().then();
-    }
-  },
   component: Component,
   pendingMinMs: 0,
   pendingMs: 0,

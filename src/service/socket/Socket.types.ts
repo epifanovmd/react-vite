@@ -1,15 +1,18 @@
-import { iocDecorator, SupportInitialize } from "@force-dev/utils";
+import { createServiceDecorator, SupportInitialize } from "@force-dev/utils";
 import { Socket as SocketIO } from "socket.io-client";
 
+import { CallSocketEmitEvents, CallSocketEvents } from "./call";
 import { ClientSocketEmitEvents, ClientsSocketEvents } from "./clients";
 
-export type SocketEvents = ClientsSocketEvents
+export interface SocketEvents extends CallSocketEvents, ClientsSocketEvents {}
 
-export type SocketEmitEvents = ClientSocketEmitEvents
+export interface SocketEmitEvents
+  extends CallSocketEmitEvents,
+    ClientSocketEmitEvents {}
 
 export type Socket = SocketIO<SocketEvents, SocketEmitEvents>;
 
-export const ISocketService = iocDecorator<ISocketService>();
+export const ISocketService = createServiceDecorator<ISocketService>();
 
 export interface ISocketService extends SupportInitialize {
   get socket(): Socket;

@@ -1,5 +1,4 @@
 import React, { PropsWithChildren, useEffect } from "react";
-import { ThemeProvider as StyledComponentsThemeProvider } from "styled-components";
 
 import { ThemeContext } from "./ThemeContext";
 import { ITheme, IThemeContext } from "./types";
@@ -50,7 +49,6 @@ export const ThemeProvider = React.memo<PropsWithChildren>(props => {
         isDarkMode ? DEFAULT_DARK_THEME_ID : DEFAULT_LIGHT_THEME_ID,
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const memoizedValue = React.useMemo(() => {
@@ -66,9 +64,7 @@ export const ThemeProvider = React.memo<PropsWithChildren>(props => {
 
   return (
     <ThemeContext.Provider value={memoizedValue}>
-      <StyledComponentsThemeProvider theme={memoizedValue.theme}>
-        {theme ? props.children : null}
-      </StyledComponentsThemeProvider>
+      {theme ? props.children : null}
     </ThemeContext.Provider>
   );
 });

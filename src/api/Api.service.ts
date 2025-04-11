@@ -1,24 +1,23 @@
-import {
-  ApiService,
-  IApiService as IIIApiService,
-  iocDecorator,
-} from "@force-dev/utils";
+import { createServiceDecorator } from "@force-dev/utils";
+import { ITokenService } from "@service/token";
 
-import { ITokenService } from "~@service/token";
+import { ApiError } from "./Api.types";
+import { Api } from "./api-gen/Api";
 
 const env = import.meta.env;
 const isDev = env.MODE === "development";
 
-const DEV_BASE_URL = `${env.VITE_PROTOCOL}://${env.VITE_HOST}:${env.VITE_PORT}/api`;
+const DEV_BASE_URL = `${env.VITE_PROTOCOL}://${env.VITE_HOST}:${env.VITE_PORT}`;
 
 export const BASE_URL = isDev ? DEV_BASE_URL : env.VITE_BASE_URL;
 export const SOCKET_BASE_URL = env.VITE_SOCKET_BASE_URL;
 
-export type IApiService = IIIApiService;
-export const IApiService = iocDecorator<ApiService1>();
+export type IApiService = Api<ApiError, ApiError>;
+
+export const IApiService = createServiceDecorator<ApiService>();
 
 @IApiService({ inSingleton: true })
-class ApiService1 extends ApiService {
+class ApiService extends Api<ApiError, ApiError> {
   constructor(@ITokenService() private _tokenService: ITokenService) {
     super(
       {
@@ -26,12 +25,18 @@ class ApiService1 extends ApiService {
         withCredentials: true,
         baseURL: BASE_URL,
       },
-      error => error,
+      error =>
+        new ApiError(
+          error.response?.data.name ?? error.name,
+          error.response?.data.message ?? error.message,
+          error.status ?? 400,
+          error.response?.data.reason ?? error.cause,
+        ),
     );
 
     this.instance.interceptors.request.use(async request => {
       const headers = request.headers;
-      const token = this._tokenService.token;
+      const token = this._tokenService.accessToken;
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);

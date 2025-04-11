@@ -1,38 +1,39 @@
-import { ApiResponse, DataHolder } from "@force-dev/utils";
-import { makeAutoObservable } from "mobx";
-
+import { ApiError, IApiService } from "@api";
 import {
-  IProfile,
-  IProfileService,
+  ERole,
+  IProfileDto,
+  IProfileWithTokensDto,
   ISignInRequest,
-  ISignInResponse,
-  ITokenService,
-} from "~@service";
+  TSignUpRequest,
+} from "@api/api-gen/data-contracts.ts";
+import { ApiResponse, DataHolder } from "@force-dev/utils";
+import { ITokenService } from "@service";
+import { makeAutoObservable } from "mobx";
 
 import { IProfileDataStore } from "./ProfileData.types";
 
 @IProfileDataStore({ inSingleton: true })
 export class ProfileDataStore implements IProfileDataStore {
-  public holder = new DataHolder<IProfile>();
+  public holder = new DataHolder<IProfileDto>();
 
   constructor(
-    @IProfileService() private _profileService: IProfileService,
+    @IApiService() private _apiService: IApiService,
     @ITokenService() private _tokenService: ITokenService,
   ) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  updateToken() {
-    return this._tokenService.restoreRefreshToken().then(async refreshToken => {
-      if (refreshToken) {
-        await this._refresh(refreshToken);
-      }
+  async updateToken() {
+    const refreshToken = await this._tokenService.restoreRefreshToken();
 
-      return {
-        accessToken: this._tokenService.token,
-        refreshToken: this._tokenService.refreshToken,
-      };
-    });
+    if (refreshToken) {
+      await this._refresh(refreshToken);
+    }
+
+    return {
+      accessToken: this._tokenService.accessToken,
+      refreshToken: this._tokenService.refreshToken,
+    };
   }
 
   get profile() {
@@ -51,37 +52,44 @@ export class ProfileDataStore implements IProfileDataStore {
     return this.holder.isEmpty;
   }
 
-  async getProfile() {
-    this.holder.setLoading();
-
-    const res = await this._profileService.getProfile();
-
-    if (res.error) {
-      this._tokenService.clear();
-      this.holder.setError({ msg: res.error.message });
-    } else if (res.data) {
-      this.holder.setData(res.data);
-    }
+  get isAdmin() {
+    return this.holder.d?.role.name === ERole.Admin;
   }
 
   async signIn(params: ISignInRequest) {
     this.holder.setLoading();
 
-    const res = await this._profileService.signIn(params);
+    const res = await this._apiService.signIn(params);
 
     this._updateProfileHolder(res);
   }
 
-  // async signUp(params: ISignUpRequest) {
-  //   this.holder.setLoading();
-  //
-  //   const res = await this._profileService.signUp(params);
-  //
-  //   this._updateProfileHolder(res);
-  // }
+  async signUp(params: TSignUpRequest) {
+    this.holder.setLoading();
+
+    const res = await this._apiService.signUp(params);
+
+    this._updateProfileHolder(res);
+  }
+
+  async getProfile() {
+    this.holder.setLoading();
+
+    const res = await this._apiService.getMyProfile();
+
+    if (res.error) {
+      this.holder.setError({ msg: res.error.message });
+    } else if (res.data) {
+      this.holder.setData(res.data);
+
+      return res.data;
+    }
+
+    return undefined;
+  }
 
   private async _refresh(refreshToken: string) {
-    const res = await this._profileService.refresh({ refreshToken });
+    const res = await this._apiService.refresh({ refreshToken });
 
     if (res.error) {
       this._tokenService.clear();
@@ -90,14 +98,17 @@ export class ProfileDataStore implements IProfileDataStore {
     }
   }
 
-  private _updateProfileHolder(res: ApiResponse<ISignInResponse>) {
+  private _updateProfileHolder(
+    res: ApiResponse<IProfileWithTokensDto, ApiError>,
+  ) {
     if (res.error) {
       this._tokenService.clear();
       this.holder.setError({ msg: res.error.message });
     } else if (res.data) {
-      this.holder.setData(res.data);
+      const { tokens, ...profile } = res.data;
 
-      this._tokenService.setTokens(res.data.accessToken, res.data.refreshToken);
+      this.holder.setData(profile);
+      this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
     }
   }
 }

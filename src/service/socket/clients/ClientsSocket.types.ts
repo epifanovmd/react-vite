@@ -1,9 +1,35 @@
-import { iocDecorator } from "@force-dev/utils";
+import { createServiceDecorator } from "@force-dev/utils";
 
-export const IClientsSocketService = iocDecorator<IClientsSocketService>();
+export interface IWireguardPeerStatus {
+  allowedIps: string;
+  latestHandshakeAt?: string;
+  transferRx: number;
+  transferTx: number;
+  persistentKeepalive: number;
+}
 
-export interface IClientsSocketService {}
+export type IWireguardPeerStatusDto = Record<
+  string,
+  IWireguardPeerStatus | null
+>;
 
-export interface ClientsSocketEvents {}
+export interface ClientsSocketEvents {
+  client: (...args: [clients: IWireguardPeerStatusDto]) => void;
+}
 
-export interface ClientSocketEmitEvents {}
+export interface ClientSocketEmitEvents {
+  subscribeToClient: (...args: [clientId: string[]]) => void;
+  unsubscribeFromClient: () => void;
+}
+
+export const IClientsSocketService =
+  createServiceDecorator<IClientsSocketService>();
+
+export interface IClientsSocketService {
+  subscribeClient(
+    clientId: string[],
+    onData?: (data: IWireguardPeerStatusDto) => void,
+  ): void;
+
+  unsubscribeClient(): void;
+}

@@ -1,6 +1,5 @@
+import { SOCKET_BASE_URL } from "@api";
 import { connect } from "socket.io-client";
-
-import { SOCKET_BASE_URL } from "~@api";
 
 import { ITokenService } from "../token";
 import {
@@ -58,9 +57,10 @@ export class SocketService implements ISocketService {
     } else {
       this._socket = connect(SOCKET_BASE_URL, {
         withCredentials: true,
-        query: { token: this._tokenService.token },
+        query: { access_token: this._tokenService.accessToken },
         autoConnect: true,
         reconnection: true,
+        useNativeTimers: true,
       });
 
       this._socket.on("connect", () => {

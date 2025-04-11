@@ -1,8 +1,7 @@
+import { Header } from "@components";
+import { ISessionDataStore } from "@store";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import React, { memo } from "react";
-
-import { Header } from "~@components";
-import { ISessionDataStore } from "~@store";
+import { memo } from "react";
 
 const Component = memo(() => {
   return (
@@ -21,10 +20,10 @@ export const Route = createFileRoute("/_private")({
       const accessToken = await restore();
 
       if (!accessToken) {
-        throw redirect({ to: "/auth/login" });
+        throw redirect({ to: "/auth/signIn" });
       }
     } else if (!isAuthorized) {
-      throw redirect({ to: "/auth/login" });
+      throw redirect({ to: "/auth/signIn" });
     }
   },
   component: Component,

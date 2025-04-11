@@ -1,8 +1,10 @@
-import { createRouter, RouterProvider } from "@tanstack/react-router";
-import React, { StrictMode } from "react";
-import ReactDOM from "react-dom/client";
+import "./styles/index.scss";
+import "./styles/tailwind.css";
 
-import { ThemeProvider } from "~@theme";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { ThemeProvider } from "@theme";
+import { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
 
 import { initLocalization } from "./localization";
 // Import the generated route tree
@@ -20,7 +22,7 @@ const router = createRouter({
     <div
       style={{
         height: "100vh",
-        width: "100vw",
+        width: "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -39,7 +41,6 @@ declare module "@tanstack/react-router" {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
