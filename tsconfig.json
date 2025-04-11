@@ -48,6 +48,7 @@
       "@routes/*": ["./src/routes/*"]
     }
   },
+  "include": ["./src/**/*"],
   "exclude": [
     "node_modules",
     "build",
