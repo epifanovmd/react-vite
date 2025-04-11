@@ -25,7 +25,6 @@ export class AppDataStore implements IAppDataStore {
       this._apiService.onError(async ({ status }) => {
         if (status === 401 && this.sessionDataStore.isAuthorized) {
           this.sessionDataStore.clear();
-          location.replace("/");
         }
 
         if (status === 403) {
@@ -46,6 +45,7 @@ export class AppDataStore implements IAppDataStore {
 
             disposer(Array.from(disposers));
             disposers.clear();
+
             location.replace("/");
           }
         },
