@@ -62,11 +62,12 @@ export class SessionDataStore implements ISessionDataStore {
       if (res.error) {
         this.clear();
       } else if (res.data) {
-        this.holder.setData(res.data.accessToken);
         this._tokenService.setTokens(
           res.data.accessToken,
           res.data.refreshToken,
         );
+
+        this.holder.setData(this._tokenService.accessToken);
       }
     } else {
       this.clear();
@@ -116,8 +117,8 @@ export class SessionDataStore implements ISessionDataStore {
       const { tokens, ...profile } = res.data;
 
       this._profileDataStore.holder.setData(profile);
-      this.holder.setData(tokens.accessToken);
       this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
+      this.holder.setData(this._tokenService.accessToken);
     }
   }
 }

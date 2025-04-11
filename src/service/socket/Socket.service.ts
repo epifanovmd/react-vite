@@ -55,6 +55,10 @@ export class SocketService implements ISocketService {
     if (this._socket) {
       return this._socket.connect();
     } else {
+      console.log(
+        "this._tokenService.accessToken",
+        this._tokenService.accessToken,
+      );
       this._socket = connect(SOCKET_BASE_URL, {
         withCredentials: true,
         query: { access_token: this._tokenService.accessToken },
@@ -72,7 +76,6 @@ export class SocketService implements ISocketService {
       });
 
       this._socket.on("connect_error", err => {
-        console.log("SOCKET_BASE_URL", SOCKET_BASE_URL);
         console.log("Error connect", err);
       });
 
