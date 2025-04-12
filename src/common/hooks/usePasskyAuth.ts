@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 
 export const usePasskeyAuth = () => {
   const [support, setSupport] = useState<boolean>(false);
-  // Сохраненный profileId в localStorage, означает что доступен вход по биометрии
+  // Сохраненный userId в localStorage, означает что доступен вход по биометрии
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
 
   const api = useApi();

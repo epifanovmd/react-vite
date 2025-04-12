@@ -2,13 +2,13 @@ import { createServiceDecorator, SupportInitialize } from "@force-dev/utils";
 import { Socket as SocketIO } from "socket.io-client";
 
 export interface SocketEvents {
-  authenticated: (...args: [{ profileId: string }]) => void;
+  authenticated: (...args: [{ userId: string }]) => void;
   auth_error: (...args: [{ message: string }]) => void;
 }
 
 export interface SocketEmitEvents {
   checkOnline: (
-    ...args: [profileId: string, callback: (isOnline: boolean) => void]
+    ...args: [userId: string, callback: (isOnline: boolean) => void]
   ) => void;
 }
 
