@@ -1,19 +1,19 @@
 import { IApiService } from "@api";
-import { IProfileDto } from "@api/api-gen/data-contracts.ts";
+import { IUserDto } from "@api/api-gen/data-contracts.ts";
 import { DataHolder } from "@force-dev/utils";
 import { makeAutoObservable } from "mobx";
 
-import { IProfileDataStore } from "./ProfileData.types";
+import { IUserDataStore } from "./UserData.types.ts";
 
-@IProfileDataStore({ inSingleton: true })
-class ProfileDataStore implements IProfileDataStore {
-  public holder = new DataHolder<IProfileDto>();
+@IUserDataStore({ inSingleton: true })
+class UserDataStore implements IUserDataStore {
+  public holder = new DataHolder<IUserDto>();
 
   constructor(@IApiService() private _apiService: IApiService) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  get profile() {
+  get user() {
     return this.holder.d;
   }
 
@@ -29,10 +29,10 @@ class ProfileDataStore implements IProfileDataStore {
     return this.holder.isEmpty;
   }
 
-  async getProfile() {
+  async getUser() {
     this.holder.setLoading();
 
-    const res = await this._apiService.getMyProfile();
+    const res = await this._apiService.getMyUser();
 
     if (res.error) {
       this.holder.setError(res.error.message);

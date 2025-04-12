@@ -1,13 +1,13 @@
 import { usePasskeyAuth } from "@common";
-import { useProfileDataStore, useSessionDataStore } from "@store";
+import { useSessionDataStore, useUserDataStore } from "@store";
 import { FC, memo } from "react";
 
 import { AsyncButton, Button } from "../ui";
 
 export const Header: FC = memo(() => {
   const sessionDataStore = useSessionDataStore();
-  const { profile } = useProfileDataStore();
-  const { profileId, handleRegister, support } = usePasskeyAuth();
+  const { user } = useUserDataStore();
+  const { userId, handleRegister, support } = usePasskeyAuth();
 
   return (
     <div
@@ -17,11 +17,11 @@ export const Header: FC = memo(() => {
     >
       <div>{"Wireguard"}</div>
       <div className={"flex gap-2"}>
-        {support && profile && !profileId && (
+        {support && user && !userId && (
           <AsyncButton
             type={"primary"}
             onClick={async () => {
-              await handleRegister(profile.id);
+              await handleRegister(user.id);
             }}
             className={"mr-2"}
           >

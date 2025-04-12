@@ -1,28 +1,30 @@
 import { createServiceDecorator, SupportInitialize } from "@force-dev/utils";
 import { Socket as SocketIO } from "socket.io-client";
 
-import { CallSocketEmitEvents, CallSocketEvents } from "./call";
-import { ClientSocketEmitEvents, ClientsSocketEvents } from "./clients";
+export interface SocketEvents {
+  authenticated: (...args: [{ profileId: string }]) => void;
+  auth_error: (...args: [{ message: string }]) => void;
+}
 
-export interface SocketEvents extends CallSocketEvents, ClientsSocketEvents {}
-
-export interface SocketEmitEvents
-  extends CallSocketEmitEvents,
-    ClientSocketEmitEvents {}
+export interface SocketEmitEvents {
+  checkOnline: (
+    ...args: [profileId: string, callback: (isOnline: boolean) => void]
+  ) => void;
+}
 
 export type Socket = SocketIO<SocketEvents, SocketEmitEvents>;
 
 export const ISocketService = createServiceDecorator<ISocketService>();
 
 export interface ISocketService extends SupportInitialize {
-  get socket(): Socket;
+  isConnected: boolean;
 
   initialize(): () => void;
 
   emit<K extends keyof SocketEmitEvents>(
     event: K,
     ...args: Parameters<SocketEmitEvents[K]>
-  ): Socket;
+  ): Promise<Socket>;
 
   on<K extends keyof SocketEvents>(
     event: K,
@@ -30,7 +32,7 @@ export interface ISocketService extends SupportInitialize {
     unsubscribe?: () => void,
   ): () => void;
 
-  connect(): Socket | undefined;
+  connect(): Promise<Socket | undefined>;
 
   disconnect(): void;
 }

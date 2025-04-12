@@ -9,7 +9,7 @@ import { IAppDataStore } from "./AppData.types";
 
 @IAppDataStore()
 export class AppDataStore implements IAppDataStore {
-  private _interval = new Interval({ timeout: 6000 });
+  private _interval = new Interval({ timeout: 20000 });
 
   constructor(
     @ISessionDataStore() public sessionDataStore: ISessionDataStore,

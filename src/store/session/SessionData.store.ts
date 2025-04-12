@@ -1,8 +1,8 @@
 import { ApiError, IApiService } from "@api";
 import {
-  IProfileWithTokensDto,
   ISignInRequest,
   ITokensDto,
+  IUserWithTokensDto,
   TSignUpRequest,
 } from "@api/api-gen/data-contracts.ts";
 import { ApiResponse, DataHolder } from "@force-dev/utils";
@@ -10,7 +10,7 @@ import { ITokenService } from "@service";
 import { notification } from "antd";
 import { makeAutoObservable } from "mobx";
 
-import { IProfileDataStore } from "../profile";
+import { IUserDataStore } from "../user";
 import { ISessionDataStore } from "./SessionData.types";
 
 @ISessionDataStore({ inSingleton: true })
@@ -18,7 +18,7 @@ export class SessionDataStore implements ISessionDataStore {
   private holder = new DataHolder<string | null>(null);
 
   constructor(
-    @IProfileDataStore() private _profileDataStore: IProfileDataStore,
+    @IUserDataStore() private _userDataStore: IUserDataStore,
     @IApiService() private _apiService: IApiService,
     @ITokenService() private _tokenService: ITokenService,
   ) {
@@ -84,7 +84,7 @@ export class SessionDataStore implements ISessionDataStore {
 
     if (tokens) {
       this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
-      await this._profileDataStore.getProfile();
+      await this._userDataStore.getUser();
     } else {
       const refreshToken = await this._tokenService.restoreRefreshToken();
 
@@ -92,7 +92,7 @@ export class SessionDataStore implements ISessionDataStore {
         const { accessToken } = await this.updateToken(refreshToken);
 
         if (accessToken) {
-          await this._profileDataStore.getProfile();
+          await this._userDataStore.getUser();
 
           return;
         }
@@ -104,19 +104,19 @@ export class SessionDataStore implements ISessionDataStore {
   public clear() {
     this.holder.clear();
     this._tokenService.clear();
-    this._profileDataStore.holder.clear();
+    this._userDataStore.holder.clear();
   }
 
-  private _handleResponse(res: ApiResponse<IProfileWithTokensDto, ApiError>) {
+  private _handleResponse(res: ApiResponse<IUserWithTokensDto, ApiError>) {
     if (res.error) {
       this._tokenService.clear();
       this.holder.setError(res.error.message);
 
       notification.error({ message: res.error.message });
     } else if (res.data) {
-      const { tokens, ...profile } = res.data;
+      const { tokens, ...user } = res.data;
 
-      this._profileDataStore.holder.setData(profile);
+      this._userDataStore.holder.setData(user);
       this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
       this.holder.setData(this._tokenService.accessToken);
     }
