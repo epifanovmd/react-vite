@@ -2,7 +2,7 @@ import {
   ISignInRequest,
   ITokensDto,
   TSignUpRequest,
-} from "@api/api-gen/data-contracts.ts";
+} from "@api/api-gen/data-contracts";
 import { createServiceDecorator, SupportInitialize } from "@force-dev/utils";
 
 export const ISessionDataStore = createServiceDecorator<ISessionDataStore>();

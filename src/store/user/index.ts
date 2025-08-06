@@ -1,3 +1,3 @@
 export * from "./hooks";
-export * from "./UserData.store.ts";
-export * from "./UserData.types.ts";
+export * from "./UserData.store";
+export * from "./UserData.types";

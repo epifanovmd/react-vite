@@ -1,9 +1,9 @@
 import { IApiService } from "@api";
-import { IUserDto } from "@api/api-gen/data-contracts.ts";
+import { IUserDto } from "@api/api-gen/data-contracts";
 import { DataHolder } from "@force-dev/utils";
 import { makeAutoObservable } from "mobx";
 
-import { IUserDataStore } from "./UserData.types.ts";
+import { IUserDataStore } from "./UserData.types";
 
 @IUserDataStore({ inSingleton: true })
 class UserDataStore implements IUserDataStore {

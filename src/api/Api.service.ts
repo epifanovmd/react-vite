@@ -1,8 +1,6 @@
 import { ApiError, IApiService } from "./Api.types";
 import { Api } from "./api-gen/Api";
-import { RefreshPayload } from "./api-gen/data-contracts.ts";
-import { RequestParams } from "./api-gen/http-client.ts";
-import { IApiTokenProvider } from "./ApiToken.provider.ts";
+import { IApiTokenProvider } from "./ApiToken.provider";
 
 const env = import.meta.env;
 const isDev = env.MODE === "development";

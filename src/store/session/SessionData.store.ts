@@ -4,7 +4,7 @@ import {
   ITokensDto,
   IUserWithTokensDto,
   TSignUpRequest,
-} from "@api/api-gen/data-contracts.ts";
+} from "@api/api-gen/data-contracts";
 import { ApiResponse, DataHolder } from "@force-dev/utils";
 import { notification } from "antd";
 import { makeAutoObservable } from "mobx";

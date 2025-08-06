@@ -1,6 +1,6 @@
 import { createServiceDecorator } from "@force-dev/utils";
 
-import { Api } from "./api-gen/Api.ts";
+import { Api } from "./api-gen/Api";
 
 export const IApiService = createServiceDecorator<IApiService>();
 export interface IApiService extends Api<ApiError, ApiError> {

@@ -1,4 +1,4 @@
-import { IUserDto } from "@api/api-gen/data-contracts.ts";
+import { IUserDto } from "@api/api-gen/data-contracts";
 import { createServiceDecorator, DataHolder } from "@force-dev/utils";
 
 export const IUserDataStore = createServiceDecorator<IUserDataStore>();

@@ -1,1 +1,1 @@
-export * from "./useUserDataStore.ts";
+export * from "./useUserDataStore";

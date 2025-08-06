@@ -1,2 +1,2 @@
 export * from "./useApi";
-export * from "./useApiTokenProvider.ts";
+export * from "./useApiTokenProvider";

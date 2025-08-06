@@ -1,6 +1,5 @@
 import { iocHook } from "@force-dev/react";
 
-import { IApiService } from "../Api.types.ts";
-import { IApiTokenProvider } from "../ApiToken.provider.ts";
+import { IApiTokenProvider } from "../ApiToken.provider";
 
 export const useApiTokenProvider = iocHook(IApiTokenProvider);
