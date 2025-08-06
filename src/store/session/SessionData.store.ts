@@ -14,7 +14,7 @@ import { ISessionDataStore } from "./SessionData.types";
 
 @ISessionDataStore({ inSingleton: true })
 export class SessionDataStore implements ISessionDataStore {
-  private holder = new DataHolder();
+  private holder = new DataHolder<string | null>(null);
 
   constructor(
     @IUserDataStore() private _userDataStore: IUserDataStore,
