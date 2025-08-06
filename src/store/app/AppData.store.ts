@@ -23,15 +23,6 @@ export class AppDataStore implements IAppDataStore {
     const disposers = new Set<InitializeDispose>();
 
     return [
-      this._apiService.onError(async ({ status }) => {
-        if (status === 401 && this.sessionDataStore.isAuthorized) {
-          this.sessionDataStore.clear();
-        }
-
-        if (status === 403) {
-          await this.sessionDataStore.updateToken();
-        }
-      }),
       reaction(
         () => this.sessionDataStore.isAuthorized,
         isAuthorized => {
@@ -39,7 +30,7 @@ export class AppDataStore implements IAppDataStore {
             disposers.add(this._socketService.initialize());
 
             this._interval.start(async () => {
-              await this.sessionDataStore.updateToken();
+              await this._apiService.updateToken();
             });
           } else {
             this._interval.stop();

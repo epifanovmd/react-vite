@@ -1,4 +1,4 @@
-import { ApiError, IApiService } from "@api";
+import { ApiError, IApiService, IApiTokenProvider } from "@api";
 import {
   ISignInRequest,
   ITokensDto,
@@ -6,7 +6,6 @@ import {
   TSignUpRequest,
 } from "@api/api-gen/data-contracts.ts";
 import { ApiResponse, DataHolder } from "@force-dev/utils";
-import { ITokenService } from "@service";
 import { notification } from "antd";
 import { makeAutoObservable } from "mobx";
 
@@ -15,12 +14,12 @@ import { ISessionDataStore } from "./SessionData.types";
 
 @ISessionDataStore({ inSingleton: true })
 export class SessionDataStore implements ISessionDataStore {
-  private holder = new DataHolder<string | null>(null);
+  private holder = new DataHolder();
 
   constructor(
     @IUserDataStore() private _userDataStore: IUserDataStore,
     @IApiService() private _apiService: IApiService,
-    @ITokenService() private _tokenService: ITokenService,
+    @IApiTokenProvider() private _tokenProvider: IApiTokenProvider,
   ) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -53,47 +52,21 @@ export class SessionDataStore implements ISessionDataStore {
     this._handleResponse(res);
   }
 
-  public async updateToken(
-    refreshToken: string | null = this._tokenService.refreshToken,
-  ) {
-    if (refreshToken) {
-      const res = await this._apiService.refresh({ refreshToken });
-
-      if (res.error) {
-        this.clear();
-      } else if (res.data) {
-        this._tokenService.setTokens(
-          res.data.accessToken,
-          res.data.refreshToken,
-        );
-
-        this.holder.setData(this._tokenService.accessToken);
-      }
-    } else {
-      this.clear();
-    }
-
-    return {
-      accessToken: this._tokenService.accessToken,
-      refreshToken: this._tokenService.refreshToken,
-    };
-  }
-
   async restore(tokens?: ITokensDto) {
     this.holder.setLoading();
 
     if (tokens) {
-      this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
+      this._tokenProvider.setTokens(tokens.accessToken, tokens.refreshToken);
       await this._userDataStore.getUser();
     } else {
-      const refreshToken = await this._tokenService.restoreRefreshToken();
+      const refreshToken = await this._tokenProvider.restoreRefreshToken();
 
       if (refreshToken) {
-        const { accessToken } = await this.updateToken(refreshToken);
+        await this._apiService.updateToken();
 
-        if (accessToken) {
+        if (this._tokenProvider.accessToken) {
           await this._userDataStore.getUser();
-
+          this.holder.setData(this._tokenProvider.accessToken);
           return;
         }
       }
@@ -103,13 +76,13 @@ export class SessionDataStore implements ISessionDataStore {
 
   public clear() {
     this.holder.clear();
-    this._tokenService.clear();
+    this._tokenProvider.clear();
     this._userDataStore.holder.clear();
   }
 
   private _handleResponse(res: ApiResponse<IUserWithTokensDto, ApiError>) {
     if (res.error) {
-      this._tokenService.clear();
+      this._tokenProvider.clear();
       this.holder.setError(res.error.message);
 
       notification.error({ message: res.error.message });
@@ -117,8 +90,8 @@ export class SessionDataStore implements ISessionDataStore {
       const { tokens, ...user } = res.data;
 
       this._userDataStore.holder.setData(user);
-      this._tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
-      this.holder.setData(this._tokenService.accessToken);
+      this._tokenProvider.setTokens(tokens.accessToken, tokens.refreshToken);
+      this.holder.setData(this._tokenProvider.accessToken);
     }
   }
 }

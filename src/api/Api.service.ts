@@ -1,7 +1,8 @@
-import { ITokenService } from "@service/token";
-
 import { ApiError, IApiService } from "./Api.types";
 import { Api } from "./api-gen/Api";
+import { RefreshPayload } from "./api-gen/data-contracts.ts";
+import { RequestParams } from "./api-gen/http-client.ts";
+import { IApiTokenProvider } from "./ApiToken.provider.ts";
 
 const env = import.meta.env;
 const isDev = env.MODE === "development";
@@ -13,25 +14,36 @@ export const SOCKET_BASE_URL = env.VITE_SOCKET_BASE_URL;
 
 @IApiService({ inSingleton: true })
 class ApiService extends Api<ApiError, ApiError> implements IApiService {
-  constructor(@ITokenService() private _tokenService: ITokenService) {
+  constructor(@IApiTokenProvider() private _tokenProvider: IApiTokenProvider) {
     super(
       {
         timeout: 2 * 60 * 1000,
         withCredentials: true,
         baseURL: BASE_URL,
       },
-      error =>
-        new ApiError(
+      error => {
+        const err = new ApiError(
           error.response?.data.name ?? error.name,
           error.response?.data.message ?? error.message,
           error.status ?? 400,
           error.response?.data.reason ?? error.cause,
-        ),
+        );
+
+        if (err.status === 401 && this._tokenProvider.accessToken) {
+          this._tokenProvider.clear();
+        }
+
+        if (err.status === 403) {
+          this.updateToken().then();
+        }
+
+        return err;
+      },
     );
 
     this.instance.interceptors.request.use(async request => {
       const headers = request.headers;
-      const token = this._tokenService.accessToken;
+      const token = this._tokenProvider.accessToken;
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -39,5 +51,20 @@ class ApiService extends Api<ApiError, ApiError> implements IApiService {
 
       return request;
     });
+  }
+
+  public async updateToken() {
+    const res = await this.refresh({
+      refreshToken: this._tokenProvider.refreshToken,
+    });
+
+    if (res.data) {
+      this._tokenProvider.setTokens(
+        res.data.accessToken,
+        res.data.refreshToken,
+      );
+    } else {
+      this._tokenProvider.clear();
+    }
   }
 }

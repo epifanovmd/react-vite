@@ -3,7 +3,9 @@ import { createServiceDecorator } from "@force-dev/utils";
 import { Api } from "./api-gen/Api.ts";
 
 export const IApiService = createServiceDecorator<IApiService>();
-export type IApiService = Api<ApiError, ApiError>;
+export interface IApiService extends Api<ApiError, ApiError> {
+  updateToken(): Promise<void>;
+}
 
 export type ApiRequest<T extends object = object> = T & {
   skip?: number;
