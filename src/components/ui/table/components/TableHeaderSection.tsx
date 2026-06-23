@@ -1,0 +1,30 @@
+import * as React from "react";
+
+import { cn } from "../../cn";
+import { type TanstackTable } from "../TableTypes";
+import { TableHeadCell } from "./TableHeadCell";
+import { TableHeader, TableRow } from "./TablePrimitive";
+
+interface TableHeaderSectionProps<TData> {
+  table: TanstackTable<TData>;
+  sorting?: boolean;
+  stickyHeader?: boolean;
+}
+
+export const TableHeaderSection = <TData,>({
+  table,
+  sorting,
+  stickyHeader,
+}: TableHeaderSectionProps<TData>) => {
+  return (
+    <TableHeader className={cn(stickyHeader && "sticky top-0 z-20 bg-card shadow-[0_1px_0_0_hsl(var(--border))]")}>
+      {table.getHeaderGroups().map(headerGroup => (
+        <TableRow key={headerGroup.id} className="hover:bg-transparent">
+          {headerGroup.headers.map(header => (
+            <TableHeadCell key={header.id} header={header} sorting={sorting} />
+          ))}
+        </TableRow>
+      ))}
+    </TableHeader>
+  );
+};
