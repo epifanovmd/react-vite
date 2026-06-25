@@ -51,15 +51,22 @@ export function createFormField<TComponentProps extends object>(
         description={description}
         required={required}
         fieldClassName={fieldClassName}
-        render={(field, fieldState) => (
-          <C
-            {...(componentProps as TComponentProps)}
-            {...mapToProps(
-              field as unknown as ControllerRenderProps<FieldValues, string>,
-              fieldState,
-            )}
-          />
-        )}
+        render={(field, fieldState) => {
+          const mapped = mapToProps(
+            field as unknown as ControllerRenderProps<FieldValues, string>,
+            fieldState,
+          );
+          const wired = Object.fromEntries(
+            Object.entries(mapped).filter(([, v]) => v !== undefined),
+          ) as Partial<TComponentProps>;
+
+          return (
+            <C
+              {...(componentProps as TComponentProps)}
+              {...(wired as TComponentProps)}
+            />
+          );
+        }}
       />
     );
   }
