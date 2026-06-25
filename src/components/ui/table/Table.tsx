@@ -9,6 +9,7 @@ import {
 import * as React from "react";
 import { PropsWithChildren } from "react";
 
+import { cn } from "../foundation";
 import { TableBodySection } from "./components/TableBodySection";
 import { TableContext } from "./components/TableContext";
 import { TableFooterSection } from "./components/TableFooterSection";
@@ -87,7 +88,9 @@ const TableComponent = <TData,>(
 
   return (
     <TableContext.Provider value={{ size, variant }}>
-      <div className="overflow-auto rounded-lg border">
+      <div
+        className={cn("overflow-auto rounded-lg border", containerClassName)}
+      >
         <TableRoot className={className}>
           {caption && <TableCaption>{caption}</TableCaption>}
           <TableHeaderSection

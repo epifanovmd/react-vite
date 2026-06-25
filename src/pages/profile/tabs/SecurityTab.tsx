@@ -1,6 +1,6 @@
 import { AsyncButton, Badge, Button, Card } from "@components/ui";
+import { usePasskeyAuth } from "@core/auth";
 import { useNotification } from "@core/notifications";
-import { usePasskeyAuth } from "@hooks";
 import { useAuthStore, useSecurityStore } from "@store";
 import {
   Fingerprint,

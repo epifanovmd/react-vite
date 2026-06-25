@@ -44,8 +44,6 @@
       "@components/*": ["./src/components/*"],
       "@models": ["./src/store/models"],
       "@models/*": ["./src/store/models/*"],
-      "@socket": ["./src/socket"],
-      "@socket/*": ["./src/socket/*"],
       "@store": ["./src/store"],
       "@store/*": ["./src/store/*"]
     }

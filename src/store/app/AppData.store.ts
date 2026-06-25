@@ -1,8 +1,8 @@
+import { ISocketTransport } from "@core/socket";
 import { disposer, InitializeDispose } from "@di";
 import { makeAutoObservable, reaction } from "mobx";
 
 import { router } from "../../router";
-import { ISocketTransport } from "../../socket";
 import { IAuthStore } from "../auth";
 import { IAppDataStore } from "./AppData.types";
 

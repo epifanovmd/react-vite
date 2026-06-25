@@ -40,7 +40,6 @@ export default defineConfig({
       "@di": path.resolve(projectRootDir, "src/di"),
       "@components": path.resolve(projectRootDir, "src/components"),
       "@models": path.resolve(projectRootDir, "src/store/models"),
-      "@socket": path.resolve(projectRootDir, "src/socket"),
       "@store": path.resolve(projectRootDir, "src/store"),
       "@theme": path.resolve(projectRootDir, "src/theme"),
     },
