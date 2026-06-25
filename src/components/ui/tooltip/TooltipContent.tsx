@@ -17,7 +17,7 @@ const TooltipContent = React.forwardRef<
     <TooltipPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={cn(tooltipContentVariants({ variant, className }))}
+      className={cn(tooltipContentVariants({ variant }), className)}
       {...props}
     />
   </TooltipPrimitive.Portal>

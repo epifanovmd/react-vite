@@ -12,12 +12,17 @@ export interface CollapseContextValue extends UseCollapseResult {
   size: CollapseSize;
 }
 
-export const CollapseContext = React.createContext<CollapseContextValue | null>(null);
+export const CollapseContext = React.createContext<CollapseContextValue | null>(
+  null,
+);
 
 export const useCollapseContext = (): CollapseContextValue => {
   const ctx = React.useContext(CollapseContext);
 
-  if (!ctx) throw new Error("Collapse compound components must be used within <Collapse>");
+  if (!ctx)
+    throw new Error(
+      "Collapse compound components must be used within <Collapse>",
+    );
 
   return ctx;
 };

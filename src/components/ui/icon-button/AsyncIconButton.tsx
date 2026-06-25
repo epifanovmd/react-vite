@@ -29,7 +29,12 @@ export const AsyncIconButton = forwardRef<
   );
 
   return (
-    <IconButton ref={ref} disabled={isDisabled} onClick={handleClick} {...props}>
+    <IconButton
+      ref={ref}
+      disabled={isDisabled}
+      onClick={handleClick}
+      {...props}
+    >
       {loading ? <Loader2 className="animate-spin" size={15} /> : children}
     </IconButton>
   );

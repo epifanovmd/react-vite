@@ -2,7 +2,12 @@ import { Info } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "../cn";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../tooltip";
 import type { FieldProps } from "./types";
 
 export type { FieldProps };

@@ -1,5 +1,10 @@
 import { type VariantProps } from "class-variance-authority";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 import * as React from "react";
 
 import { Button } from "../button";
@@ -16,6 +21,7 @@ export interface PaginationProps
   totalPages: number;
   onPageChange: (page: number) => void;
   showFirstLast?: boolean;
+  maxVisible?: number;
 }
 
 export const Pagination = React.memo(
@@ -27,12 +33,17 @@ export const Pagination = React.memo(
         currentPage,
         totalPages,
         onPageChange,
-        showFirstLast = true,
+        showFirstLast = false,
+        maxVisible,
         ...props
       },
       ref,
     ) => {
-      const { pages, hasPrev, hasNext } = usePagination({ currentPage, totalPages });
+      const { pages, hasPrev, hasNext } = usePagination({
+        currentPage,
+        totalPages,
+        maxVisible,
+      });
       const btnSize = size === "sm" ? "sm" : size === "lg" ? "lg" : "md";
 
       return (
@@ -43,6 +54,18 @@ export const Pagination = React.memo(
           className={cn(paginationVariants({ size, className }))}
           {...props}
         >
+          {showFirstLast && (
+            <Button
+              variant="outline"
+              size={btnSize}
+              onClick={() => onPageChange(1)}
+              disabled={!hasPrev}
+              aria-label="Go to first page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size={btnSize}
@@ -76,6 +99,18 @@ export const Pagination = React.memo(
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+
+          {showFirstLast && (
+            <Button
+              variant="outline"
+              size={btnSize}
+              onClick={() => onPageChange(totalPages)}
+              disabled={!hasNext}
+              aria-label="Go to last page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          )}
         </nav>
       );
     },

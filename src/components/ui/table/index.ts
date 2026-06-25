@@ -13,7 +13,11 @@ export {
   TableRoot,
   TableRow,
 } from "./components/TablePrimitive";
-export { tableCellVariants, tableHeadVariants, tableVariants } from "./components/tableVariants";
+export {
+  tableCellVariants,
+  tableHeadVariants,
+  tableVariants,
+} from "./components/tableVariants";
 export { useTableInstance } from "./hooks/useTableInstance";
 export { useTableState } from "./hooks/useTableState";
 export type { TablePaginationProps } from "./pagination/TablePagination";

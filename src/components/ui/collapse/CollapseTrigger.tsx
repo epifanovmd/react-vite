@@ -8,9 +8,7 @@ import { collapseTriggerVariants } from "./collapseVariants";
 export interface CollapseTriggerProps {
   children: React.ReactNode;
   className?: string;
-  /** Override the default chevron. Pass `false` to hide it entirely. */
   icon?: React.ReactNode | false;
-  /** Icon placed before the label */
   leadingIcon?: React.ReactNode;
 }
 
@@ -33,7 +31,9 @@ export const CollapseTrigger = React.forwardRef<
       className={cn(collapseTriggerVariants({ variant, size }), className)}
     >
       {leadingIcon && (
-        <span className="flex-shrink-0 text-muted-foreground">{leadingIcon}</span>
+        <span className="flex-shrink-0 text-muted-foreground">
+          {leadingIcon}
+        </span>
       )}
       <span className="flex-1 font-medium">{children}</span>
       {icon === false ? null : icon ? (

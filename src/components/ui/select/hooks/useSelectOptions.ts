@@ -13,7 +13,6 @@ export interface UseSelectOptionsProps<TData, V extends string> {
   fetchOptions?: (query: string, signal?: AbortSignal) => Promise<TData[]>;
   getOption?: (item: TData) => SelectOption<V>;
   fetchOnMount?: boolean;
-  /** Load once on first open, then keep options — re-fetch only when query changes */
   loadOnce?: boolean;
   debounce?: number;
   search?: boolean;
@@ -26,9 +25,6 @@ export interface UseSelectOptionsResult<V extends string> {
   loading: boolean;
 }
 
-// Хук-инфраструктура. Держит state/refs/doFetch; решение «когда fetch'ить»
-// делегируется useAsyncFetchCoordinator (см. resolveStrategies/). Решение «что
-// отдать в sync-режиме» делегируется resolveSource (там же).
 export function useSelectOptions<TData = unknown, V extends string = string>({
   options: optionsProp,
   fetchOptions,
@@ -43,12 +39,10 @@ export function useSelectOptions<TData = unknown, V extends string = string>({
   const [asyncOptions, setAsyncOptions] = React.useState<SelectOption<V>[]>([]);
   const [loading, setLoading] = React.useState(false);
 
-  // Ref'ы состояния политик — обновляются внутри doFetch/политик.
   const lastFetchedQueryRef = React.useRef<string | null>(null);
   const lazyFetchedRef = React.useRef(false);
   const hasLoadedRef = React.useRef(false);
 
-  // Стабильные ref'ы, чтобы не таскать fetchOptions/getOption в deps useEffect'ов.
   const fetchRef = React.useRef(fetchOptions);
   const getOptionRef = React.useRef(getOption);
 

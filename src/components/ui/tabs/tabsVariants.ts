@@ -19,8 +19,7 @@ export const tabsListVariants = cva(
     variants: {
       variant: {
         default: "w-fit max-w-full bg-muted",
-        underline:
-          "w-full rounded-none bg-transparent border-b border-border",
+        underline: "w-full rounded-none bg-transparent border-b border-border",
       },
       size: {
         sm: "h-8 text-xs",

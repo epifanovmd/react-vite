@@ -26,7 +26,6 @@ export interface TableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, any>[];
 
-  // Appearance
   variant?: "default" | "striped" | "bordered";
   size?: "sm" | "md" | "lg";
   caption?: React.ReactNode;
@@ -89,25 +88,23 @@ const TableComponent = <TData,>(
   return (
     <TableContext.Provider value={{ size, variant }}>
       <div className="overflow-auto rounded-lg border">
-        <div className="overflow-auto rounded-lg border">
-          <TableRoot className={className}>
-            {caption && <TableCaption>{caption}</TableCaption>}
-            <TableHeaderSection
-              table={table}
-              sorting={sorting}
-              stickyHeader={stickyHeader}
-            />
-            <TableBodySection
-              rows={rows}
-              totalColumns={totalColumns}
-              loading={loading}
-              refreshing={refreshing}
-              empty={empty}
-              onRowClick={onRowClick}
-            />
-            {hasFooter && <TableFooterSection table={table} />}
-          </TableRoot>
-        </div>
+        <TableRoot className={className}>
+          {caption && <TableCaption>{caption}</TableCaption>}
+          <TableHeaderSection
+            table={table}
+            sorting={sorting}
+            stickyHeader={stickyHeader}
+          />
+          <TableBodySection
+            rows={rows}
+            totalColumns={totalColumns}
+            loading={loading}
+            refreshing={refreshing}
+            empty={empty}
+            onRowClick={onRowClick}
+          />
+          {hasFooter && <TableFooterSection table={table} />}
+        </TableRoot>
 
         {pagination && <TablePagination {...pagination} />}
       </div>

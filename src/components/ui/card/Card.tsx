@@ -49,7 +49,9 @@ const _Card = React.forwardRef<HTMLDivElement, CardProps>(
             {description && <CardDescription>{description}</CardDescription>}
           </CardHeader>
         )}
-        {children && <CardContent className={contentClassName}>{children}</CardContent>}
+        {children && (
+          <CardContent className={contentClassName}>{children}</CardContent>
+        )}
         {footer && <CardFooter>{footer}</CardFooter>}
       </div>
     );

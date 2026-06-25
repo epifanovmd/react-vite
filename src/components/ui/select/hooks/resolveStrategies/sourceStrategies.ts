@@ -9,10 +9,15 @@ export type SourceStrategy<V extends string> =
 
 // Выбор стратегии по форме optionsProp. Массив → static, функция → getter, иначе none.
 export const pickSource = <V extends string>(
-  optionsProp: SelectOption<V>[] | ((q: string) => SelectOption<V>[]) | undefined,
+  optionsProp:
+    | SelectOption<V>[]
+    | ((q: string) => SelectOption<V>[])
+    | undefined,
 ): SourceStrategy<V> => {
-  if (Array.isArray(optionsProp)) return { kind: "static", options: optionsProp };
-  if (typeof optionsProp === "function") return { kind: "getter", fn: optionsProp };
+  if (Array.isArray(optionsProp))
+    return { kind: "static", options: optionsProp };
+  if (typeof optionsProp === "function")
+    return { kind: "getter", fn: optionsProp };
 
   return { kind: "none" };
 };
@@ -36,7 +41,9 @@ export const resolveSource = <V extends string>(
 ): SelectOption<V>[] => {
   switch (source.kind) {
     case "static":
-      return search && query ? filterByLabel(source.options, query) : source.options;
+      return search && query
+        ? filterByLabel(source.options, query)
+        : source.options;
     case "getter":
       return source.fn(query);
     case "none":

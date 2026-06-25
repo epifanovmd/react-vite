@@ -22,17 +22,13 @@ type ContentProps = Omit<
 type ModalVariantProps = VariantProps<typeof modalContentVariants>;
 
 export interface ModalContentProps extends ContentProps, ModalVariantProps {
-  // Layout
   disableInteractOutside?: boolean;
   hideCloseButton?: boolean;
 
-  // Skeleton mode — triggered when any of these are provided
   title?: React.ReactNode;
   description?: React.ReactNode;
-  /** Custom footer content. Takes precedence over onConfirm/onCancel buttons. */
   footer?: React.ReactNode;
 
-  // Quick action buttons (skeleton footer)
   onConfirm?: () => void | Promise<void>;
   confirmLabel?: string;
   confirmVariant?: ButtonProps["variant"];
@@ -162,7 +158,6 @@ export const ModalContent = React.forwardRef<
             </DialogPrimitive.Close>
           )}
 
-          {/* Hidden trigger for programmatic close after async confirm/cancel */}
           <DialogPrimitive.Close
             ref={closeRef}
             className="sr-only"

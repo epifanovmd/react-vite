@@ -12,16 +12,21 @@ export interface PopoverContentProps
 export const PopoverContent = React.forwardRef<
   React.ComponentRef<typeof PopoverPrimitive.Content>,
   PopoverContentProps
->(({ className, align = "center", sideOffset = 6, variant, size, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
-    <PopoverPrimitive.Content
-      ref={ref}
-      align={align}
-      sideOffset={sideOffset}
-      className={cn(popoverContentVariants({ variant, size }), className)}
-      {...props}
-    />
-  </PopoverPrimitive.Portal>
-));
+>(
+  (
+    { className, align = "center", sideOffset = 6, variant, size, ...props },
+    ref,
+  ) => (
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Content
+        ref={ref}
+        align={align}
+        sideOffset={sideOffset}
+        className={cn(popoverContentVariants({ variant, size }), className)}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  ),
+);
 
 PopoverContent.displayName = "PopoverContent";

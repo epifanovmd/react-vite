@@ -5,6 +5,7 @@ export type PageItem = number | "ellipsis";
 export interface UsePaginationOptions {
   currentPage: number;
   totalPages: number;
+  maxVisible?: number;
 }
 
 export interface UsePaginationResult {
@@ -16,10 +17,10 @@ export interface UsePaginationResult {
 export const usePagination = ({
   currentPage,
   totalPages,
+  maxVisible = 5,
 }: UsePaginationOptions): UsePaginationResult => {
   const pages = useMemo<PageItem[]>(() => {
     const result: PageItem[] = [];
-    const maxVisible = 5;
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) result.push(i);
@@ -42,7 +43,7 @@ export const usePagination = ({
     }
 
     return result;
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, maxVisible]);
 
   return {
     pages,

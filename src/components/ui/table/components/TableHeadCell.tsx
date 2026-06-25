@@ -9,7 +9,8 @@ interface SortIconProps {
 
 const SortIcon = ({ direction }: SortIconProps) => {
   if (direction === "asc") return <ArrowUp className="h-3.5 w-3.5 shrink-0" />;
-  if (direction === "desc") return <ArrowDown className="h-3.5 w-3.5 shrink-0" />;
+  if (direction === "desc")
+    return <ArrowDown className="h-3.5 w-3.5 shrink-0" />;
 
   return <ArrowUpDown className="h-3.5 w-3.5 shrink-0 opacity-40" />;
 };
@@ -19,12 +20,18 @@ interface TableHeadCellProps<TData = unknown> {
   sorting?: boolean;
 }
 
-export const TableHeadCell = <TData = unknown,>({ header, sorting }: TableHeadCellProps<TData>) => {
+export const TableHeadCell = <TData = unknown,>({
+  header,
+  sorting,
+}: TableHeadCellProps<TData>) => {
   if (header.isPlaceholder) {
     return <TableHead colSpan={header.colSpan} />;
   }
 
-  const content = flexRender(header.column.columnDef.header, header.getContext());
+  const content = flexRender(
+    header.column.columnDef.header,
+    header.getContext(),
+  );
   const canSort = sorting && header.column.getCanSort();
 
   return (

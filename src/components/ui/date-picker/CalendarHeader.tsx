@@ -13,7 +13,13 @@ interface CalendarHeaderProps {
 }
 
 export const CalendarHeader = React.memo(
-  ({ headerText, viewMode, onPrevious, onNext, onHeaderClick }: CalendarHeaderProps) => (
+  ({
+    headerText,
+    viewMode,
+    onPrevious,
+    onNext,
+    onHeaderClick,
+  }: CalendarHeaderProps) => (
     <div className="flex items-center justify-between p-3 border-b">
       <button
         type="button"

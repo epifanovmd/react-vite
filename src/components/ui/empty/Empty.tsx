@@ -47,8 +47,7 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
         return icon;
       }
 
-      const IconComponent =
-        iconMap[icon as keyof typeof iconMap] || Inbox;
+      const IconComponent = iconMap[icon as keyof typeof iconMap] || Inbox;
 
       return (
         <div className="relative flex items-center justify-center">
@@ -68,9 +67,7 @@ const Empty = React.forwardRef<HTMLDivElement, EmptyProps>(
       >
         {renderIcon()}
         <div className="flex flex-col items-center gap-1">
-          {title && (
-            <p className="font-medium text-foreground">{title}</p>
-          )}
+          {title && <p className="font-medium text-foreground">{title}</p>}
           {description && (
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
               {description}

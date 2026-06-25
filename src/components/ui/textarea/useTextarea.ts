@@ -24,7 +24,11 @@ interface UseTextareaReturn {
 const getLength = (
   v: React.TextareaHTMLAttributes<HTMLTextAreaElement>["value"],
 ): number =>
-  typeof v === "string" ? v.length : typeof v === "number" ? String(v).length : 0;
+  typeof v === "string"
+    ? v.length
+    : typeof v === "number"
+      ? String(v).length
+      : 0;
 
 export const useTextarea = ({
   ref,
@@ -40,8 +44,6 @@ export const useTextarea = ({
   const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
 
   const setRef = useMergedRef(ref, innerRef);
-
-  // ── Character count ──────────────────────────────────────────────────────
 
   const [charCount, setCharCount] = React.useState(() =>
     value !== undefined ? getLength(value) : getLength(defaultValue),
@@ -59,8 +61,6 @@ export const useTextarea = ({
         : charCount >= maxLength * 0.8
           ? "text-warning"
           : "text-muted-foreground";
-
-  // ── Auto-resize ──────────────────────────────────────────────────────────
 
   const adjustHeight = React.useCallback(() => {
     const el = innerRef.current;
@@ -85,12 +85,10 @@ export const useTextarea = ({
     }
   }, [maxRows]);
 
-  // Initial sizing + controlled value changes
   React.useLayoutEffect(() => {
     if (autoResize) adjustHeight();
   }, [autoResize, adjustHeight, value]);
 
-  // Re-adjust on container width change (word wrap reflow)
   React.useEffect(() => {
     if (!autoResize) return;
 
@@ -113,8 +111,6 @@ export const useTextarea = ({
 
     return () => ro.disconnect();
   }, [autoResize, adjustHeight]);
-
-  // ── Handlers ─────────────────────────────────────────────────────────────
 
   const handleChange = React.useCallback<
     React.ChangeEventHandler<HTMLTextAreaElement>

@@ -23,9 +23,7 @@ const _Tooltip = React.forwardRef<
     );
   }
 
-  return (
-    <TooltipPrimitive.Root {...props}>{children}</TooltipPrimitive.Root>
-  );
+  return <TooltipPrimitive.Root {...props}>{children}</TooltipPrimitive.Root>;
 });
 
 _Tooltip.displayName = "Tooltip";

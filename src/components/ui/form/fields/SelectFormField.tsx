@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-  type Control,
-  type FieldValues,
-  type Path,
-} from "react-hook-form";
+import { type Control, type FieldValues, type Path } from "react-hook-form";
 
 import { Select, type SelectHandle, type SelectProps } from "../../select";
 import { FormField } from "../FormField";
@@ -11,7 +7,13 @@ import type { FieldProps } from "../types";
 
 type FieldOwnProps = Omit<FieldProps, "children" | "error" | "htmlFor">;
 
-type MappedProps = "ref" | "value" | "clearable" | "onChange" | "onOpenChange" | "variant";
+type MappedProps =
+  | "ref"
+  | "value"
+  | "clearable"
+  | "onChange"
+  | "onOpenChange"
+  | "variant";
 
 export function SelectFormField<
   TFormData extends FieldValues = FieldValues,

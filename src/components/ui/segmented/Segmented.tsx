@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import * as React from "react";
 
 import { cn } from "../cn";
+import { scrollIntoViewCenter } from "../scrollIntoViewCenter";
 import {
   segmentedIndicatorVariants,
   segmentedItemVariants,
@@ -52,17 +53,10 @@ const Segmented = React.forwardRef<HTMLDivElement, SegmentedProps>(
 
     const setRef = useMergedRef(ref, innerRef);
 
-    // Smoothly center the active segment when the row overflows horizontally.
     React.useEffect(() => {
-      const active = innerRef.current?.querySelector<HTMLElement>(
-        '[data-active="true"]',
+      scrollIntoViewCenter(
+        innerRef.current?.querySelector<HTMLElement>('[data-active="true"]'),
       );
-
-      active?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
     }, [value]);
 
     const handleSelect = (optionValue: string, disabled?: boolean) => {

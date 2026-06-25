@@ -8,11 +8,8 @@ import { useTextarea } from "./useTextarea";
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement>,
     VariantProps<typeof textareaVariants> {
-  /** Grow with content automatically. Default: true. */
   autoResize?: boolean;
-  /** Maximum rows before scroll appears (only with autoResize). Default: 6. */
   maxRows?: number;
-  /** Show character counter below. Requires maxLength to show "n / max". */
   showCount?: boolean;
 }
 

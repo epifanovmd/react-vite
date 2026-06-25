@@ -21,8 +21,6 @@ export function useKeyboardNav({
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const listRef = React.useRef<HTMLDivElement>(null);
 
-  // Stable refs — handleKeyDown always calls the latest version without being
-  // recreated when these callbacks or focusedIndex change.
   const onSelectRef = React.useRef(onSelect);
   const onCloseRef = React.useRef(onClose);
   const focusedIndexRef = React.useRef(focusedIndex);
@@ -56,10 +54,9 @@ export function useKeyboardNav({
           break;
       }
     },
-    [count], // only count matters for arrow bounds; rest read from refs
+    [count],
   );
 
-  // Scroll focused item into view
   React.useEffect(() => {
     if (focusedIndex < 0 || !listRef.current) return;
     const item = listRef.current.children[focusedIndex] as
@@ -69,7 +66,6 @@ export function useKeyboardNav({
     item?.scrollIntoView({ block: "nearest" });
   }, [focusedIndex]);
 
-  // Reset when option count changes
   React.useEffect(() => {
     setFocusedIndex(-1);
   }, [count]);

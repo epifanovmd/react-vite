@@ -1,5 +1,4 @@
 export { Popover } from "./Popover";
-// Re-export Radix primitives for convenience
 export type { PopoverArrowProps } from "./PopoverArrow";
 export { PopoverArrow } from "./PopoverArrow";
 export type { PopoverContentProps } from "./PopoverContent";

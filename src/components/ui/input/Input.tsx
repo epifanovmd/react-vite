@@ -1,9 +1,13 @@
+import { useMergedRef } from "@mantine/hooks";
 import { type VariantProps } from "class-variance-authority";
 import { Eye, EyeOff, Loader2, X } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "../cn";
 import { inputVariants } from "./inputVariants";
+
+const toText = (v: React.InputHTMLAttributes<HTMLInputElement>["value"]) =>
+  v == null ? "" : String(v);
 
 export interface InputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
@@ -28,36 +32,47 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onClear,
       loading,
       value,
+      defaultValue,
       onChange,
       ...props
     },
     ref,
   ) => {
     const [showPassword, setShowPassword] = React.useState(false);
-    const [internalValue, setInternalValue] = React.useState(value || "");
     const isPassword = type === "password";
+    const isControlled = value !== undefined;
 
-    React.useEffect(() => {
-      setInternalValue(value || "");
-    }, [value]);
+    const innerRef = React.useRef<HTMLInputElement>(null);
+    const mergedRef = useMergedRef(ref, innerRef);
+
+    const [internalValue, setInternalValue] = React.useState(() =>
+      toText(value ?? defaultValue),
+    );
+    const currentValue = isControlled ? toText(value) : internalValue;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInternalValue(e.target.value);
+      if (!isControlled) setInternalValue(e.target.value);
       onChange?.(e);
     };
 
     const handleClear = () => {
-      setInternalValue("");
-      onClear?.();
-      const event = {
-        target: { value: "" },
-      } as React.ChangeEvent<HTMLInputElement>;
+      const input = innerRef.current;
 
-      onChange?.(event);
+      if (input) {
+        const setter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          "value",
+        )?.set;
+
+        setter?.call(input, "");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      onClear?.();
     };
 
-    const showClearButton = clearable && internalValue && !loading;
-    const showPasswordToggle = isPassword && internalValue;
+    const hasValue = currentValue.length > 0;
+    const showClearButton = clearable && hasValue && !loading;
+    const showPasswordToggle = isPassword && hasValue;
 
     return (
       <div className="flex grow relative w-full">
@@ -75,8 +90,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "pr-10",
             className,
           )}
-          ref={ref}
-          value={value}
+          ref={mergedRef}
+          {...(isControlled ? { value } : { defaultValue })}
           onChange={handleChange}
           {...props}
         />

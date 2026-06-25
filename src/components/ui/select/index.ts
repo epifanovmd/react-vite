@@ -1,27 +1,16 @@
-// Main components
 export { GroupedSelect } from "./GroupedSelect";
-export type { SelectHandle } from "./Select";
-export { Select } from "./Select";
-export type { GroupedSelectProps, SelectProps } from "./types";
-
-// Hooks
-export type { UseKeyboardNavProps, UseKeyboardNavResult } from "./hooks/useKeyboardNav";
+export type {
+  UseKeyboardNavProps,
+  UseKeyboardNavResult,
+} from "./hooks/useKeyboardNav";
 export { useKeyboardNav } from "./hooks/useKeyboardNav";
-export type { UseSelectOptionsProps, UseSelectOptionsResult } from "./hooks/useSelectOptions";
+export type {
+  UseSelectOptionsProps,
+  UseSelectOptionsResult,
+} from "./hooks/useSelectOptions";
 export { useSelectOptions } from "./hooks/useSelectOptions";
 export type { UseSelectStateResult } from "./hooks/useSelectState";
 export { useSelectState } from "./hooks/useSelectState";
-// Types
-export type {
-  SelectOption,
-  SelectOptionGroup,
-  SelectOptionsArray,
-  SelectOptionsFetcher,
-  SelectOptionsGetter,
-  SelectTriggerAppearance,
-} from "./types";
-
-// Primitives — available for custom select assembly
 export { SelectEmpty } from "./primitives/SelectEmpty";
 export type { SelectListGroupProps } from "./primitives/SelectListGroup";
 export { SelectListGroup } from "./primitives/SelectListGroup";
@@ -36,3 +25,14 @@ export type { SelectTriggerBaseProps } from "./primitives/SelectTriggerBase";
 export { SelectTriggerBase } from "./primitives/SelectTriggerBase";
 export type { SelectTriggerIconProps } from "./primitives/SelectTriggerIcon";
 export { SelectTriggerIcon } from "./primitives/SelectTriggerIcon";
+export type { SelectHandle } from "./Select";
+export { Select } from "./Select";
+export type { GroupedSelectProps, SelectProps } from "./types";
+export type {
+  SelectOption,
+  SelectOptionGroup,
+  SelectOptionsArray,
+  SelectOptionsFetcher,
+  SelectOptionsGetter,
+  SelectTriggerAppearance,
+} from "./types";

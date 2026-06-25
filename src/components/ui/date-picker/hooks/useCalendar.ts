@@ -26,8 +26,12 @@ export const useCalendar = ({
 }: UseCalendarOptions = {}): UseCalendarResult => {
   const now = new Date();
   const [viewMode, setViewMode] = useState<ViewMode>("day");
-  const [currentMonth, setCurrentMonth] = useState(initialMonth ?? now.getMonth());
-  const [currentYear, setCurrentYear] = useState(initialYear ?? now.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(
+    initialMonth ?? now.getMonth(),
+  );
+  const [currentYear, setCurrentYear] = useState(
+    initialYear ?? now.getFullYear(),
+  );
 
   const handlePrevious = useCallback(() => {
     if (viewMode === "day") {

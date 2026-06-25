@@ -60,12 +60,15 @@ export const RangeCalendar = React.memo(
 
         return {
           wrapper: cn(
-            // Middle days — full strip
             isInRange && "absolute inset-y-1 left-0 right-0 bg-primary/15",
-            // Start day — right half strip (only when range is complete)
-            hasRange && isStart && !isSingle && "absolute inset-y-1 left-1/2 right-0 bg-primary/15",
-            // End day — left half strip (only when range is complete)
-            hasRange && isEnd && !isSingle && "absolute inset-y-1 left-0 right-1/2 bg-primary/15",
+            hasRange &&
+              isStart &&
+              !isSingle &&
+              "absolute inset-y-1 left-1/2 right-0 bg-primary/15",
+            hasRange &&
+              isEnd &&
+              !isSingle &&
+              "absolute inset-y-1 left-0 right-1/2 bg-primary/15",
           ),
           button: cn(
             "rounded-full",
@@ -74,9 +77,7 @@ export const RangeCalendar = React.memo(
               !isEnd &&
               !isInRange &&
               "bg-accent text-accent-foreground",
-            isToday &&
-              isInRange &&
-              "ring-1 ring-primary/40",
+            isToday && isInRange && "ring-1 ring-primary/40",
             (isStart || isEnd) &&
               "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
           ),
@@ -104,10 +105,16 @@ export const RangeCalendar = React.memo(
           />
         )}
         {viewMode === "month" && (
-          <CalendarMonthView currentMonth={currentMonth} onMonthSelect={handleMonthSelect} />
+          <CalendarMonthView
+            currentMonth={currentMonth}
+            onMonthSelect={handleMonthSelect}
+          />
         )}
         {viewMode === "year" && (
-          <CalendarYearView currentYear={currentYear} onYearSelect={handleYearSelect} />
+          <CalendarYearView
+            currentYear={currentYear}
+            onYearSelect={handleYearSelect}
+          />
         )}
       </div>
     );

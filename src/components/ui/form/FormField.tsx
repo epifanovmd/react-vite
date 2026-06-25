@@ -16,28 +16,13 @@ export interface FormFieldProps<
   TName extends Path<TFormData> = Path<TFormData>,
 > extends Omit<FieldProps, "children" | "error" | "htmlFor"> {
   name: TName;
-  /** Optional when using FormProvider. */
   control?: Control<TFormData>;
-  /**
-   * Render function receives react-hook-form field & fieldState.
-   * `field.value` is narrowed to the exact type of the named field.
-   * Attach `field.ref` to the focusable element for scroll-to-error support.
-   */
   render: (
     field: ControllerRenderProps<TFormData, TName>,
     fieldState: ControllerFieldState,
   ) => React.ReactNode;
 }
 
-/**
- * Low-level FormField that wires react-hook-form's Controller with the Field
- * wrapper. Use this when you need full control over the rendered component.
- *
- * `control` is optional — if omitted the field reads from the nearest FormProvider.
- *
- * For common cases prefer the factory-created variants:
- * InputFormField, SelectFormField, CheckboxFormField, SwitchFormField.
- */
 export function FormField<
   TFormData extends FieldValues,
   TName extends Path<TFormData> = Path<TFormData>,

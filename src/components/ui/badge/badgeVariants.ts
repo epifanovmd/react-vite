@@ -9,7 +9,7 @@ export const badgeVariants = cva(
         primary: "bg-primary text-primary-foreground",
         secondary: "bg-secondary text-secondary-foreground",
         destructive: "bg-destructive/15 text-destructive",
-        // aliases
+
         danger: "bg-destructive/15 text-destructive",
         gray: "bg-secondary text-secondary-foreground",
         purple: "bg-purple/15 text-purple",

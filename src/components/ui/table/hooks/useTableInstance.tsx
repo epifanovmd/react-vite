@@ -94,11 +94,16 @@ export const useTableInstance = <TData,>(
     manualSorting,
   });
 
+  const onSelectedRowsChangeRef = React.useRef(onSelectedRowsChange);
+
+  onSelectedRowsChangeRef.current = onSelectedRowsChange;
+
   React.useEffect(() => {
-    if (!onSelectedRowsChange || !selection) return;
-    onSelectedRowsChange(table.getSelectedRowModel().rows.map(r => r.original));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.rowSelection]);
+    if (!onSelectedRowsChangeRef.current || !selection) return;
+    onSelectedRowsChangeRef.current(
+      table.getSelectedRowModel().rows.map(r => r.original),
+    );
+  }, [state.rowSelection, selection, table]);
 
   const rows = table.getRowModel().rows;
   const totalColumns = table.getVisibleLeafColumns().length;

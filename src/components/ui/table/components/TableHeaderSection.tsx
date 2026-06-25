@@ -17,7 +17,12 @@ export const TableHeaderSection = <TData,>({
   stickyHeader,
 }: TableHeaderSectionProps<TData>) => {
   return (
-    <TableHeader className={cn(stickyHeader && "sticky top-0 z-20 bg-card shadow-[0_1px_0_0_hsl(var(--border))]")}>
+    <TableHeader
+      className={cn(
+        stickyHeader &&
+          "sticky top-0 z-20 bg-card shadow-[0_1px_0_0_hsl(var(--border))]",
+      )}
+    >
       {table.getHeaderGroups().map(headerGroup => (
         <TableRow key={headerGroup.id} className="hover:bg-transparent">
           {headerGroup.headers.map(header => (

@@ -18,7 +18,8 @@ export const switchVariants = cva(
       variant: {
         default: "",
         error: "shadow-ring-error focus-visible:shadow-focus-error-offset",
-        success: "shadow-ring-success focus-visible:shadow-focus-success-offset",
+        success:
+          "shadow-ring-success focus-visible:shadow-focus-success-offset",
       },
     },
     defaultVariants: {

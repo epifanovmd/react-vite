@@ -12,19 +12,13 @@ export type ModalContent =
   | ((props: ModalRenderProps) => React.ReactNode);
 
 export interface ModalOptions {
-  /** Body content — ReactNode or render prop receiving { id, onClose }. */
   content?: ModalContent;
-
-  // Appearance
   size?: "sm" | "md" | "lg" | "xl" | "full";
   position?: "center" | "top" | "bottom";
   disableInteractOutside?: boolean;
   hideCloseButton?: boolean;
-
-  // Skeleton mode
   title?: React.ReactNode;
   description?: React.ReactNode;
-  /** Custom footer. Takes precedence over onConfirm/onCancel buttons. */
   footer?: React.ReactNode;
   onConfirm?: () => void | Promise<void>;
   confirmLabel?: string;
@@ -32,7 +26,6 @@ export interface ModalOptions {
   onCancel?: () => void;
   cancelLabel?: string;
 
-  // Lifecycle
   onClose?: () => void;
 }
 
@@ -54,13 +47,9 @@ export interface ModalEntry {
 }
 
 export interface ModalContextValue {
-  /** Open a modal. Returns the modal id. */
   openModal: (options: ModalOptions) => string;
-  /** Close a modal by id. */
   closeModal: (id: string) => void;
-  /** Close all currently open modals. */
   closeAll: () => void;
-  /** Open a confirmation dialog. */
   confirm: (options: ConfirmOptions) => void;
 }
 

@@ -1,6 +1,6 @@
 import { type VariantProps } from "class-variance-authority";
 import { format, isValid, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { useMemo } from "react";
 
@@ -9,6 +9,7 @@ import { Popover, type PopoverContentProps } from "../popover";
 import { Calendar, type CalendarProps } from "./Calendar";
 import { DatePickerTrigger } from "./DatePickerTrigger";
 import { datePickerTriggerVariants } from "./datePickerVariants";
+import { TriggerClearButton } from "./TriggerClearButton";
 
 export interface DatePickerProps
   extends VariantProps<typeof datePickerTriggerVariants> {
@@ -16,15 +17,10 @@ export interface DatePickerProps
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
-  /** Extra className on the trigger button */
   className?: string;
-  /** Format string passed to date-fns `format()`. Default: "d MMMM yyyy" */
   dateFormat?: string;
-  /** Whether to show a clear button when a date is selected */
   clearable?: boolean;
-  /** Props forwarded to PopoverContent */
   contentProps?: Partial<PopoverContentProps>;
-  /** Props forwarded to the inner Calendar */
   calendarProps?: Omit<CalendarProps, "selected" | "onSelect">;
 }
 
@@ -68,21 +64,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               {value ? format(value, dateFormat) : placeholder}
             </span>
             {showClear && (
-              <span
-                role="button"
-                tabIndex={-1}
-                onPointerDown={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onClick={e => {
-                  e.stopPropagation();
-                  onChange?.(undefined);
-                }}
-                className="shrink-0 opacity-50 hover:opacity-100 transition-opacity cursor-pointer inline-flex items-center justify-center"
-              >
-                <X className="h-4 w-4" />
-              </span>
+              <TriggerClearButton onClear={() => onChange?.(undefined)} />
             )}
           </DatePickerTrigger>
         </Popover.Trigger>

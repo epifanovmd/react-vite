@@ -27,8 +27,6 @@ export const SelectListItem = React.memo(
     onBlur,
     children,
   }: SelectListItemProps) => {
-    // Store latest callbacks in refs so stable handlers always call the current version.
-    // This allows React.memo to skip re-renders when only callbacks change reference.
     const onSelectRef = React.useRef(onSelect);
     const onFocusRef = React.useRef(onFocus);
     const onBlurRef = React.useRef(onBlur);

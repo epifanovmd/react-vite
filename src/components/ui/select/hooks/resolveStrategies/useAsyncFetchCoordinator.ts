@@ -25,6 +25,5 @@ export const useAsyncFetchCoordinator = <V extends string>({
   useMountFetch<V>({ ...ctx, enabled: policy === "mount" });
   useLazyOpenFetch<V>({ ...ctx, enabled: policy === "lazyOpen" });
   useLoadOnceFetch<V>({ ...ctx, enabled: policy === "loadOnce" });
-  // query-refetch активен при любом async-режиме.
   useQueryRefetch<V>({ ...ctx, enabled: policy !== "never" });
 };

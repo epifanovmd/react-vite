@@ -42,7 +42,11 @@ export const SelectTriggerBase = React.forwardRef<
       {...props}
     >
       {children}
-      <SelectTriggerIcon loading={loading} showClear={showClear} onClear={onClear} />
+      <SelectTriggerIcon
+        loading={loading}
+        showClear={showClear}
+        onClear={onClear}
+      />
     </div>
   ),
 );

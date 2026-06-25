@@ -8,7 +8,9 @@ interface TableFooterSectionProps<TData> {
   table: TanstackTable<TData>;
 }
 
-export const TableFooterSection = <TData,>({ table }: TableFooterSectionProps<TData>) => {
+export const TableFooterSection = <TData,>({
+  table,
+}: TableFooterSectionProps<TData>) => {
   return (
     <TableFooter>
       {table.getFooterGroups().map(footerGroup => (

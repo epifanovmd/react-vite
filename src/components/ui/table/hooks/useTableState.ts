@@ -25,8 +25,11 @@ export const useTableState = ({
   rowSelection,
   onRowSelectionChange,
 }: UseTableStateOptions): TableState => {
-  const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
-  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>(
+    [],
+  );
+  const [internalRowSelection, setInternalRowSelection] =
+    React.useState<RowSelectionState>({});
 
   return {
     sorting: sortingState ?? internalSorting,

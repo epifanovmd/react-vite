@@ -8,7 +8,7 @@ import { collapseContentVariants } from "./collapseVariants";
 export interface CollapseContentProps {
   children: React.ReactNode;
   className?: string;
-  /** Extra className applied to the inner padding wrapper */
+
   innerClassName?: string;
 }
 

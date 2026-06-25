@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import * as React from "react";
 
 import { cn } from "../cn";
+import { scrollIntoViewCenter } from "../scrollIntoViewCenter";
 import { TabsContext } from "./TabsContext";
 import { tabsListVariants, tabsMotionVariants } from "./tabsVariants";
 
@@ -39,8 +40,6 @@ const TabsList = React.forwardRef<
       return;
     }
 
-    // offsetLeft/offsetWidth are relative to the list (offset parent), so the
-    // indicator stays aligned even when the list is scrolled horizontally.
     const newLeft = active.offsetLeft;
     const newWidth = active.offsetWidth;
 
@@ -48,12 +47,7 @@ const TabsList = React.forwardRef<
     setLeft(prev => (prev === newLeft ? prev : newLeft));
     setWidth(prev => (prev === newWidth ? prev : newWidth));
 
-    // Smoothly center the active tab when the list overflows horizontally.
-    active.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    scrollIntoViewCenter(active);
   }, []);
 
   React.useEffect(() => {

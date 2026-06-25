@@ -8,7 +8,9 @@ export interface ConfirmOptions {
   variant?: "default" | "danger";
 }
 
-export const useConfirm = (): ((options: ConfirmOptions) => Promise<boolean>) => {
+export const useConfirm = (): ((
+  options: ConfirmOptions,
+) => Promise<boolean>) => {
   const { confirm } = useModal();
 
   return (options: ConfirmOptions): Promise<boolean> =>
@@ -16,7 +18,8 @@ export const useConfirm = (): ((options: ConfirmOptions) => Promise<boolean>) =>
       confirm({
         title: options.title,
         description: options.message,
-        confirmVariant: options.variant === "danger" ? "destructive" : "default",
+        confirmVariant:
+          options.variant === "danger" ? "destructive" : "default",
         confirmLabel: options.confirmLabel,
         cancelLabel: options.cancelLabel,
         onConfirm: () => resolve(true),

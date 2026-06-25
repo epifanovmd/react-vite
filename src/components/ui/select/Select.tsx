@@ -19,8 +19,6 @@ import {
 } from "./primitives";
 import { type SelectProps } from "./types";
 
-// ─── Select ────────────────────────────────────────────────────────────────────
-
 export interface SelectHandle {
   focus(): void;
 }
@@ -96,7 +94,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
-  // Normalize value to array for uniform handling
   const selectedValues = React.useMemo<V[]>(
     () =>
       multi
@@ -112,8 +109,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     [selectedValues],
   );
 
-  // ─── Handlers ─────────────────────────────────────────────────────────────
-
   const handleSelect = React.useCallback(
     (optValue: V) => {
       if (multi) {
@@ -123,7 +118,6 @@ function SelectInner<TData = unknown, V extends string = string>(
           : [...cur, optValue];
 
         (onChange as (v: V[]) => void)?.(next);
-        // Multi: don't close on select
       } else {
         (onChange as (v: V) => void)?.(optValue);
         handleOpen(false, inputRef);
@@ -152,8 +146,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     [multi, rawValue, onChange],
   );
 
-  // ─── Keyboard nav ──────────────────────────────────────────────────────────
-
   const { focusedIndex, setFocusedIndex, handleKeyDown, listRef } =
     useKeyboardNav({
       count: options.length,
@@ -166,8 +158,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     : rawValue != null && rawValue !== "";
 
   const showClear = clearable && !loading && hasValue;
-
-  // ─── Trigger content ───────────────────────────────────────────────────────
 
   const searchInputProps: ComponentPropsWithRef<"input"> = {
     ref: inputRef,
@@ -183,12 +173,10 @@ function SelectInner<TData = unknown, V extends string = string>(
   };
 
   const renderTriggerContent = () => {
-    // ── Multi ──────────────────────────────────────────────────────────────
     if (multi) {
       const vals = selectedValues;
 
       if (tagsDisplay) {
-        // No values + no search → plain placeholder span
         if (!search && vals.length === 0) {
           return (
             <span className="flex-1 truncate text-sm text-muted-foreground">
@@ -197,7 +185,6 @@ function SelectInner<TData = unknown, V extends string = string>(
           );
         }
 
-        // Tags (+ search input when enabled)
         return (
           <div className="flex flex-wrap gap-1 flex-1 min-w-0 overflow-hidden items-center py-0.5">
             {vals.map(v => (
@@ -219,8 +206,6 @@ function SelectInner<TData = unknown, V extends string = string>(
         );
       }
 
-      // Comma-separated — same pattern as single + search:
-      // closed → comma text as value; open → search query, comma text as placeholder
       const commaLabel =
         vals.length > 0
           ? vals.map(v => String(getLabel(v))).join(", ")
@@ -254,7 +239,6 @@ function SelectInner<TData = unknown, V extends string = string>(
       );
     }
 
-    // ── Single + search ────────────────────────────────────────────────────
     if (search) {
       const displayLabel = hasValue
         ? String(getLabel(rawValue as V))
@@ -275,7 +259,6 @@ function SelectInner<TData = unknown, V extends string = string>(
       );
     }
 
-    // ── Single, no search ──────────────────────────────────────────────────
     return (
       <span
         className={cn(
@@ -288,8 +271,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     );
   };
 
-  // ─── Open handler ──────────────────────────────────────────────────────────
-
   const handleOpenChange = React.useCallback(
     (nextOpen: boolean) => {
       handleOpen(nextOpen, inputRef);
@@ -297,8 +278,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     },
     [handleOpen, onOpenChangeProp],
   );
-
-  // ─── Prevent popover close when clicking inside search trigger ─────────────
 
   const onInteractOutside = React.useCallback(
     (e: Event) => {
@@ -316,11 +295,7 @@ function SelectInner<TData = unknown, V extends string = string>(
     [search],
   );
 
-  // ─── Non-search keyboard on trigger ───────────────────────────────────────
-
   const triggerKeyDown = !search ? handleKeyDown : undefined;
-
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>

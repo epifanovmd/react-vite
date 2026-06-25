@@ -22,3 +22,5 @@ export const ThemeToggle = memo<ButtonProps>(props => {
     </Button>
   );
 });
+
+ThemeToggle.displayName = "ThemeToggle";

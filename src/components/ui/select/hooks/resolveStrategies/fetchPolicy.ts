@@ -7,11 +7,8 @@
 export type FetchPolicyKind = "mount" | "lazyOpen" | "loadOnce" | "never";
 
 export interface PickPolicyInput {
-  /** Есть ли fetchOptions. */
   isAsync: boolean;
-  /** Загружать при mount'е. */
   fetchOnMount: boolean;
-  /** Загрузить один раз при первом открытии. */
   loadOnce: boolean;
 }
 

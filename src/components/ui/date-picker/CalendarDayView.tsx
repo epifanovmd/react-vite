@@ -5,9 +5,8 @@ import { DAYS_OF_WEEK } from "./constants";
 import { getDaysInMonth, getFirstDayOfMonth } from "./utils";
 
 export interface DayState {
-  /** Classes applied to the background strip div (for range fills). */
   wrapper?: string;
-  /** Classes applied to the day button itself. */
+
   button?: string;
 }
 
@@ -19,10 +18,18 @@ interface CalendarDayViewProps {
 }
 
 export const CalendarDayView = React.memo(
-  ({ currentMonth, currentYear, onDaySelect, getDayClassName }: CalendarDayViewProps) => {
+  ({
+    currentMonth,
+    currentYear,
+    onDaySelect,
+    getDayClassName,
+  }: CalendarDayViewProps) => {
     const daysInMonth = getDaysInMonth(currentMonth, currentYear);
     const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
-    const cells: (number | null)[] = Array.from({ length: firstDay }, () => null);
+    const cells: (number | null)[] = Array.from(
+      { length: firstDay },
+      () => null,
+    );
 
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
@@ -43,7 +50,10 @@ export const CalendarDayView = React.memo(
             const state = day !== null ? getDayClassName(day) : undefined;
 
             return (
-              <div key={i} className="relative h-9 flex items-center justify-center">
+              <div
+                key={i}
+                className="relative h-9 flex items-center justify-center"
+              >
                 {state?.wrapper && <div className={state.wrapper} />}
                 {day !== null && (
                   <button

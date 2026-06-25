@@ -1,6 +1,6 @@
 import { type VariantProps } from "class-variance-authority";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "../cn";
@@ -8,6 +8,7 @@ import { Popover, type PopoverContentProps } from "../popover";
 import { DatePickerTrigger } from "./DatePickerTrigger";
 import { datePickerTriggerVariants } from "./datePickerVariants";
 import { RangeCalendar, type RangeCalendarProps } from "./RangeCalendar";
+import { TriggerClearButton } from "./TriggerClearButton";
 import type { DateRange } from "./types";
 
 export interface DateRangePickerProps
@@ -16,15 +17,10 @@ export interface DateRangePickerProps
   onChange?: (range: DateRange | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
-  /** Extra className on the trigger button */
   className?: string;
-  /** Format string passed to date-fns `format()`. Default: "d MMM yyyy" */
   dateFormat?: string;
-  /** Whether to show a clear button when a range is selected */
   clearable?: boolean;
-  /** Props forwarded to PopoverContent */
   contentProps?: Partial<PopoverContentProps>;
-  /** Props forwarded to the inner RangeCalendar */
   calendarProps?: Omit<RangeCalendarProps, "selected" | "onSelect">;
 }
 
@@ -74,21 +70,7 @@ export const DateRangePicker = React.forwardRef<
               {label ?? placeholder}
             </span>
             {showClear && (
-              <span
-                role="button"
-                tabIndex={-1}
-                onPointerDown={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onClick={e => {
-                  e.stopPropagation();
-                  onChange?.(undefined);
-                }}
-                className="shrink-0 opacity-50 hover:opacity-100 transition-opacity cursor-pointer inline-flex items-center justify-center"
-              >
-                <X className="h-4 w-4" />
-              </span>
+              <TriggerClearButton onClear={() => onChange?.(undefined)} />
             )}
           </DatePickerTrigger>
         </Popover.Trigger>
