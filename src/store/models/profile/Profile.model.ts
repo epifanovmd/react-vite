@@ -61,7 +61,6 @@ export class ProfileModel extends DataModelBase<ProfileDto> {
     return this.data.user?.emailVerified;
   }
 
-  /** Человекочитаемая метка роли (первая роль пользователя). */
   get roleLabel() {
     const roles = this.data.user?.roles ?? [];
 

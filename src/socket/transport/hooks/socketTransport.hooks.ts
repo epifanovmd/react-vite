@@ -2,4 +2,4 @@ import { iocHook } from "@di";
 
 import { ISocketTransport } from "../socketTransport.types";
 
-export const socketTransportHooks = iocHook(ISocketTransport);
+export const useSocketTransport = iocHook(ISocketTransport);

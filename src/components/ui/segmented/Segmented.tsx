@@ -1,3 +1,4 @@
+import { useMergedRef } from "@mantine/hooks";
 import { type VariantProps } from "class-variance-authority";
 import { motion } from "motion/react";
 import * as React from "react";
@@ -49,15 +50,7 @@ const Segmented = React.forwardRef<HTMLDivElement, SegmentedProps>(
     const value =
       controlledValue !== undefined ? controlledValue : selectedValue;
 
-    const setRef = React.useCallback(
-      (node: HTMLDivElement | null) => {
-        innerRef.current = node;
-        if (typeof ref === "function") ref(node);
-        else if (ref)
-          (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
-      },
-      [ref],
-    );
+    const setRef = useMergedRef(ref, innerRef);
 
     // Smoothly center the active segment when the row overflows horizontally.
     React.useEffect(() => {

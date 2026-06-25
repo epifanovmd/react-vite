@@ -1,5 +1,6 @@
 import { IAuthStore } from "@store";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { memo } from "react";
 
 import { ErrorPage, NotFoundPage } from "../pages/errors";
 
@@ -11,7 +12,7 @@ export const Route = createRootRoute({
       await auth.restore();
     }
   },
-  component: () => <Outlet />,
+  component: memo(() => <Outlet />),
   notFoundComponent: NotFoundPage,
   errorComponent: ErrorPage,
 });

@@ -1,3 +1,4 @@
+import { useMergedRef } from "@mantine/hooks";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { type VariantProps } from "class-variance-authority";
 import { motion } from "motion/react";
@@ -73,15 +74,7 @@ const TabsList = React.forwardRef<
     return () => observer.disconnect();
   }, [updateIndicator]);
 
-  const mergedRef = React.useCallback(
-    (node: HTMLDivElement | null) => {
-      (listRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-      if (typeof ref === "function") ref(node);
-      else if (ref)
-        (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
-    },
-    [ref],
-  );
+  const mergedRef = useMergedRef(listRef, ref);
 
   const ctxValue = React.useMemo(() => ({ variant, size }), [variant, size]);
 

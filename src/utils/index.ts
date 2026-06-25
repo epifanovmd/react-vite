@@ -9,5 +9,4 @@ export * from "./pluralize";
 export * from "./pluralizeHelper";
 export * from "./regex";
 export * from "./string";
-export * from "./timeoutManager";
 export * from "./typeGuards";

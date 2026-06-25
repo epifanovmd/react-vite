@@ -127,7 +127,6 @@ class AuthStore implements IAuthStore {
     }
   }
 
-  /** Подтверждение второго фактора паролем после `signIn`, вернувшего require2FA. */
   async verify2FA(password: string) {
     if (!this.twoFactorToken) {
       return;

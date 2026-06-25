@@ -1,9 +1,5 @@
 import { createServiceDecorator } from "@di";
 
-/**
- * Абстракция key-value хранилища.
- * Web: localStorage. React Native: AsyncStorage / MMKV.
- */
 export interface IStorageService {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;

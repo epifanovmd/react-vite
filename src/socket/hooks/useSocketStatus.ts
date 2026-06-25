@@ -3,14 +3,6 @@ import { useEffect, useState } from "react";
 
 import { ISocketTransport, SocketTransportState } from "../transport";
 
-/**
- * Returns the current socket connection state.
- * Triggers re-render on every status change.
- *
- * @example
- * const { status, error } = useSocketStatus();
- * if (status === "reconnecting") return <Spinner />;
- */
 export function useSocketStatus(): SocketTransportState {
   const transport = iocHook(ISocketTransport)();
   const [state, setState] = useState<SocketTransportState>(transport.state);
@@ -22,9 +14,6 @@ export function useSocketStatus(): SocketTransportState {
   return state;
 }
 
-// ─── useIsSocketConnected ─────────────────────────────────────────────────────
-
-/** Lightweight boolean for components that only care about connectivity. */
 export function useIsSocketConnected(): boolean {
   const { status } = useSocketStatus();
 

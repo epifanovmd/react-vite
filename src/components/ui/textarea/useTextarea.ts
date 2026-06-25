@@ -1,3 +1,4 @@
+import { useMergedRef } from "@mantine/hooks";
 import * as React from "react";
 
 interface UseTextareaOptions {
@@ -38,14 +39,7 @@ export const useTextarea = ({
 }: UseTextareaOptions): UseTextareaReturn => {
   const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
 
-  const setRef = React.useCallback(
-    (el: HTMLTextAreaElement | null) => {
-      innerRef.current = el;
-      if (typeof ref === "function") ref(el);
-      else if (ref) ref.current = el;
-    },
-    [ref],
-  );
+  const setRef = useMergedRef(ref, innerRef);
 
   // ── Character count ──────────────────────────────────────────────────────
 

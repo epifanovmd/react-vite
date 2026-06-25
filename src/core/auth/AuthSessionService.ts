@@ -51,9 +51,6 @@ export class AuthSessionService implements IAuthSessionService {
     if (!token) return false;
 
     try {
-      // Use _forceRefresh to deduplicate concurrent restore calls.
-      // Without this, two simultaneous navigations could both call _doRefresh()
-      // with the same single-use refresh token — the second would fail and clear the session.
       await this._forceRefresh();
     } catch {
       return false;
