@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 
-import { CONTROL_SQUARE } from "../controlSize";
+import { CONTROL_SQUARE } from "../foundation/controlSize";
 
 export const iconButtonVariants = cva(
   "inline-flex items-center justify-center rounded-md transition-colors cursor-pointer disabled:pointer-events-none disabled:opacity-50",

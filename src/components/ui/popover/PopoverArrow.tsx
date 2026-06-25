@@ -1,7 +1,7 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 
 export type PopoverArrowProps = React.ComponentPropsWithoutRef<
   typeof PopoverPrimitive.Arrow

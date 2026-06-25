@@ -2,7 +2,7 @@ import { type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import { spinnerVariants } from "./spinnerVariants";
 
 export interface SpinnerProps

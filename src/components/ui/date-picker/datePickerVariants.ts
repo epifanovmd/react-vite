@@ -4,7 +4,7 @@ import {
   FIELD_BASE,
   FIELD_SIZE_VARIANTS,
   FIELD_VARIANT_MAP,
-} from "../fieldVariants";
+} from "../foundation/fieldVariants";
 
 export const datePickerTriggerVariants = cva(
   `${FIELD_BASE} items-center gap-2 cursor-pointer`,

@@ -4,7 +4,7 @@ import {
   FIELD_BASE,
   FIELD_SIZE_VARIANTS,
   FIELD_VARIANT_MAP,
-} from "../fieldVariants";
+} from "../foundation/fieldVariants";
 
 export const selectContentClasses = [
   "z-50 overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-md",

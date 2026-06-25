@@ -1,7 +1,7 @@
 import { Info } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import {
   Tooltip,
   TooltipContent,

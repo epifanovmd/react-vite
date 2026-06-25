@@ -1,7 +1,7 @@
 import { flexRender, type Row } from "@tanstack/react-table";
 import * as React from "react";
 
-import { cn } from "../../cn";
+import { cn } from "../../foundation/cn";
 import { TableCell, TableRow } from "./TablePrimitive";
 
 interface TableDataRowProps<TData = unknown> {

@@ -3,7 +3,7 @@ import { type VariantProps } from "class-variance-authority";
 import { Eye, EyeOff, Loader2, X } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import { inputVariants } from "./inputVariants";
 
 const toText = (v: React.InputHTMLAttributes<HTMLInputElement>["value"]) =>

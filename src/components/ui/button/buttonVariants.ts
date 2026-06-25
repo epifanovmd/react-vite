@@ -1,25 +1,22 @@
 import { cva } from "class-variance-authority";
 
-import { CONTROL_HEIGHT } from "../controlSize";
+import { CONTROL_HEIGHT } from "../foundation/controlSize";
+import { INTENT_SOLID } from "../foundation/intent";
+
+const ELEVATED = "shadow-sm hover:shadow-md";
 
 export const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md",
-        primary:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md",
-        success:
-          "bg-success text-success-foreground hover:bg-success/90 shadow-sm hover:shadow-md",
-        warning:
-          "bg-warning text-warning-foreground hover:bg-warning/90 shadow-sm hover:shadow-md",
-        info: "bg-info text-info-foreground hover:bg-info/90 shadow-sm hover:shadow-md",
+        default: `${INTENT_SOLID.primary} hover:bg-primary/90 ${ELEVATED}`,
+        primary: `${INTENT_SOLID.primary} hover:bg-primary/90 ${ELEVATED}`,
+        secondary: `${INTENT_SOLID.secondary} hover:bg-secondary/80 hover:shadow-sm`,
+        destructive: `${INTENT_SOLID.destructive} hover:bg-destructive/90 ${ELEVATED}`,
+        success: `${INTENT_SOLID.success} hover:bg-success/90 ${ELEVATED}`,
+        warning: `${INTENT_SOLID.warning} hover:bg-warning/90 ${ELEVATED}`,
+        info: `${INTENT_SOLID.info} hover:bg-info/90 ${ELEVATED}`,
         outline:
           "border border-border bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground/20",
         ghost: "hover:bg-accent hover:text-accent-foreground",

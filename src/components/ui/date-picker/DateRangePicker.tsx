@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import { Popover, type PopoverContentProps } from "../popover";
 import { DatePickerTrigger } from "./DatePickerTrigger";
 import { datePickerTriggerVariants } from "./datePickerVariants";

@@ -3,8 +3,8 @@ import { type VariantProps } from "class-variance-authority";
 import { motion } from "motion/react";
 import * as React from "react";
 
-import { cn } from "../cn";
-import { scrollIntoViewCenter } from "../scrollIntoViewCenter";
+import { cn } from "../foundation/cn";
+import { scrollIntoViewCenter } from "../foundation/scrollIntoViewCenter";
 import {
   segmentedIndicatorVariants,
   segmentedItemVariants,

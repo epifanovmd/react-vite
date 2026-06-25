@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 
-import { CONTROL_HEIGHT } from "../controlSize";
+import { CONTROL_HEIGHT } from "../foundation/controlSize";
 
 export const segmentedVariants = cva(
   "flex grow items-center gap-1 rounded-lg p-1 transition-colors overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",

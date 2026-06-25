@@ -8,7 +8,7 @@ import {
 import * as React from "react";
 
 import { Button } from "../button";
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import { usePagination } from "./hooks";
 import { PaginationButton } from "./PaginationButton";
 import { PaginationEllipsis } from "./PaginationEllipsis";

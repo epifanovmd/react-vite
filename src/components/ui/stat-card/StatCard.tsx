@@ -1,6 +1,7 @@
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
+import { INTENT_SOFT } from "../foundation/intent";
 
 export type StatCardColor =
   | "default"
@@ -15,17 +16,11 @@ const COLOR_CLASSES: Record<StatCardColor, { icon: string; text: string }> = {
     icon: "bg-secondary text-secondary-foreground",
     text: "text-foreground",
   },
-  success: { icon: "bg-success/15 text-success", text: "text-success" },
-  warning: { icon: "bg-warning/15 text-warning", text: "text-warning" },
-  danger: {
-    icon: "bg-destructive/15 text-destructive",
-    text: "text-destructive",
-  },
-  info: { icon: "bg-info/15 text-info", text: "text-info" },
-  purple: {
-    icon: "bg-purple/15 text-purple",
-    text: "text-purple",
-  },
+  success: { icon: INTENT_SOFT.success, text: "text-success" },
+  warning: { icon: INTENT_SOFT.warning, text: "text-warning" },
+  danger: { icon: INTENT_SOFT.destructive, text: "text-destructive" },
+  info: { icon: INTENT_SOFT.info, text: "text-info" },
+  purple: { icon: INTENT_SOFT.purple, text: "text-purple" },
 };
 
 export interface StatCardProps {

@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import * as React from "react";
 
 import { Button, type ButtonProps } from "../button";
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import { IconButton } from "../icon-button";
 import { ModalBody } from "./ModalBody";
 import { ModalDescription } from "./ModalDescription";

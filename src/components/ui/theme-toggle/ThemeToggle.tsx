@@ -3,7 +3,7 @@ import { Moon, Sun } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
 
-import { Button, ButtonProps } from "./button";
+import { Button, ButtonProps } from "../button";
 
 export const ThemeToggle = memo<ButtonProps>(props => {
   const { toggleTheme } = useTheme();

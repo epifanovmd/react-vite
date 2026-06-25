@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 import { useCollapseContext } from "./CollapseContext";
 import { collapseContentVariants } from "./collapseVariants";
 

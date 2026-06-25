@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 
-import { CONTROL_HEIGHT } from "../controlSize";
+import { CONTROL_HEIGHT } from "../foundation/controlSize";
 
 export const tabsMotionVariants = cva("absolute z-0", {
   variants: {

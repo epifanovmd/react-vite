@@ -4,7 +4,7 @@ import {
   FIELD_BASE,
   FIELD_SIZE_VARIANTS,
   FIELD_VARIANT_MAP,
-} from "../fieldVariants";
+} from "../foundation/fieldVariants";
 
 export const inputVariants = cva(
   `${FIELD_BASE} py-2 placeholder:text-muted-foreground`,

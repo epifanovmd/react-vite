@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "../cn";
+import { cn } from "../foundation/cn";
 
 export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   extra?: React.ReactNode;

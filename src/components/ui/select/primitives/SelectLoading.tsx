@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "../../cn";
+import { cn } from "../../foundation/cn";
 import { Spinner } from "../../spinner";
 
 export const SelectLoading = ({ className }: { className?: string }) => (

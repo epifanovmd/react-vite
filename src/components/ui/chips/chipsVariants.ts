@@ -1,19 +1,19 @@
 import { cva } from "class-variance-authority";
 
+import { INTENT_SOLID } from "../foundation/intent";
+
 export const chipsVariants = cva(
   "inline-flex items-center gap-1.5 rounded-full font-medium transition-all duration-200",
   {
     variants: {
       variant: {
-        default: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        success: "bg-success text-success-foreground hover:bg-success/90",
-        warning: "bg-warning text-warning-foreground hover:bg-warning/90",
-        info: "bg-info text-info-foreground hover:bg-info/90",
+        default: `${INTENT_SOLID.secondary} hover:bg-secondary/80`,
+        primary: `${INTENT_SOLID.primary} hover:bg-primary/90`,
+        secondary: `${INTENT_SOLID.secondary} hover:bg-secondary/80`,
+        destructive: `${INTENT_SOLID.destructive} hover:bg-destructive/90`,
+        success: `${INTENT_SOLID.success} hover:bg-success/90`,
+        warning: `${INTENT_SOLID.warning} hover:bg-warning/90`,
+        info: `${INTENT_SOLID.info} hover:bg-info/90`,
         outline:
           "border border-border bg-background text-foreground hover:bg-accent",
       },
