@@ -1,7 +1,7 @@
 import * as React from "react";
 import { type Control, type FieldValues, type Path } from "react-hook-form";
 
-import { Select, type SelectHandle, type SelectProps } from "../../select";
+import { Select, type SelectHandle, type SelectProps, type SelectValue } from "../../select";
 import { FormField } from "../FormField";
 import type { FieldProps } from "../types";
 
@@ -11,7 +11,7 @@ type MappedProps = "ref" | "value" | "clearable" | "onChange" | "variant";
 
 export function SelectFormField<
   TFormData extends FieldValues = FieldValues,
-  V extends string = string,
+  V extends SelectValue = string,
 >({
   name,
   control,

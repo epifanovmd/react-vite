@@ -1,13 +1,13 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption } from "../types";
+import type { SelectDataProps, SelectOption, SelectValue } from "../types";
 import { filterByLabel } from "./filterByLabel";
 
 export interface UseStaticOptionsConfig {
   search?: boolean;
 }
 
-export const useStaticOptions = <V extends string>(
+export const useStaticOptions = <V extends SelectValue>(
   options: SelectOption<V>[],
   { search }: UseStaticOptionsConfig = {},
 ): SelectDataProps<V> => {

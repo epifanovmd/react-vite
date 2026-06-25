@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption } from "../types";
+import type { SelectDataProps, SelectOption, SelectValue } from "../types";
 
-export interface UseAsyncOptionsConfig<TData, V extends string> {
+export interface UseAsyncOptionsConfig<TData, V extends SelectValue> {
   fetch: (query: string, signal: AbortSignal) => Promise<TData[]>;
   getOption: (item: TData) => SelectOption<V>;
   debounce?: number;
@@ -11,7 +11,7 @@ export interface UseAsyncOptionsConfig<TData, V extends string> {
   refetchInterval?: number;
 }
 
-export function useAsyncOptions<TData, V extends string>({
+export function useAsyncOptions<TData, V extends SelectValue>({
   fetch,
   getOption,
   debounce = 300,

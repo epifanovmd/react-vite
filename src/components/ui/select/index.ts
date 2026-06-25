@@ -45,4 +45,5 @@ export type {
   SelectOptionsArray,
   SelectOptionsFetcher,
   SelectTriggerAppearance,
+  SelectValue,
 } from "./types";

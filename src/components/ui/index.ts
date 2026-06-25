@@ -138,6 +138,7 @@ export type {
   SelectOptionsFetcher,
   SelectProps,
   SelectTriggerAppearance,
+  SelectValue,
   UseAsyncOptionsConfig,
   UseControlledOptionsConfig,
   UseEagerOptionsConfig,

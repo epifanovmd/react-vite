@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption } from "../types";
+import type { SelectDataProps, SelectOption, SelectValue } from "../types";
 
-export interface UseInfiniteOptionsConfig<TData, V extends string> {
+export interface UseInfiniteOptionsConfig<TData, V extends SelectValue> {
   fetchPage: (
     query: string,
     page: number,
@@ -13,7 +13,7 @@ export interface UseInfiniteOptionsConfig<TData, V extends string> {
   debounce?: number;
 }
 
-export function useInfiniteOptions<TData, V extends string>({
+export function useInfiniteOptions<TData, V extends SelectValue>({
   fetchPage,
   getOption,
   pageSize = 20,

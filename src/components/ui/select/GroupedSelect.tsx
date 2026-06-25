@@ -6,11 +6,12 @@ import {
   type GroupedSelectProps,
   type SelectOption,
   type SelectProps,
+  type SelectValue,
 } from "./types";
 
 export { GroupedSelectProps };
 
-export function GroupedSelect<V extends string = string>(
+export function GroupedSelect<V extends SelectValue = string>(
   props: GroupedSelectProps<V>,
 ): React.ReactElement {
   const { groups = [], ...rest } = props;

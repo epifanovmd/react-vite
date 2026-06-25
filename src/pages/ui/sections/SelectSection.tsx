@@ -6,7 +6,6 @@ import {
   CardTitle,
   GroupedSelect,
   Select,
-  SelectOption,
   useAsyncOptions,
   useControlledOptions,
   useEagerOptions,
@@ -31,21 +30,6 @@ const FRUITS = [
   { value: "orange", label: "Orange" },
   { value: "peach", label: "Peach" },
 ];
-
-const opts = [
-  { value: "apple", label: "Apple" },
-  { value: "banana", label: "Banana" },
-  { value: "cherry", label: "Cherry (disabled)", disabled: true },
-  { value: "mango", label: "Mango" },
-  { value: "orange", label: "Orange" },
-  { value: "peach", label: "Peach" },
-];
-
-const t = () => {
-  const options = useStaticOptions(opts, { search: true });
-
-  return null;
-};
 
 const COLORS = [
   { id: "red", name: "Red" },

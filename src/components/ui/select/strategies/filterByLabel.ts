@@ -1,6 +1,6 @@
-import type { SelectOption } from "../types";
+import type { SelectOption, SelectValue } from "../types";
 
-export const filterByLabel = <V extends string>(
+export const filterByLabel = <V extends SelectValue>(
   list: SelectOption<V>[],
   query: string,
 ): SelectOption<V>[] => {

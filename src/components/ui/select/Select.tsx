@@ -17,13 +17,13 @@ import {
   SelectTriggerBase,
   SelectTriggerContent,
 } from "./primitives";
-import { type SelectOnChange, type SelectProps } from "./types";
+import { type SelectOnChange, type SelectProps, type SelectValue } from "./types";
 
 export interface SelectHandle {
   focus(): void;
 }
 
-const SelectInner = <V extends string = string>(
+const SelectInner = <V extends SelectValue = string>(
   props: SelectProps<V>,
   ref: React.ForwardedRef<SelectHandle>,
 ) => {
@@ -235,7 +235,7 @@ const SelectInner = <V extends string = string>(
 };
 
 export const Select = React.forwardRef(SelectInner) as <
-  V extends string = string,
+  V extends SelectValue = string,
 >(
   props: SelectProps<V> & { ref?: React.Ref<SelectHandle> },
 ) => React.ReactElement;

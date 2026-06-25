@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption } from "../types";
+import type { SelectDataProps, SelectOption, SelectValue } from "../types";
 import { filterByLabel } from "./filterByLabel";
 
-export interface UseControlledOptionsConfig<TData, V extends string> {
+export interface UseControlledOptionsConfig<TData, V extends SelectValue> {
   data: TData[] | undefined;
   getOption: (item: TData) => SelectOption<V>;
   loading?: boolean;
   search?: boolean;
 }
 
-export function useControlledOptions<TData, V extends string>({
+export function useControlledOptions<TData, V extends SelectValue>({
   data,
   getOption,
   loading,

@@ -1,16 +1,16 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption } from "../types";
+import type { SelectDataProps, SelectOption, SelectValue } from "../types";
 import { filterByLabel } from "./filterByLabel";
 
-export interface UseEagerOptionsConfig<TData, V extends string> {
+export interface UseEagerOptionsConfig<TData, V extends SelectValue> {
   fetch: (signal: AbortSignal) => Promise<TData[]>;
   getOption: (item: TData) => SelectOption<V>;
   search?: boolean;
   fetchKey?: string | number;
 }
 
-export function useEagerOptions<TData, V extends string>({
+export function useEagerOptions<TData, V extends SelectValue>({
   fetch,
   getOption,
   search,
