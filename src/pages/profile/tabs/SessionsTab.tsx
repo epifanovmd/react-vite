@@ -7,7 +7,7 @@ import {
 } from "@components/ui";
 import { useNotification } from "@core/notifications";
 import { useSessionsStore } from "@store";
-import { LogOut,Monitor } from "lucide-react";
+import { LogOut, Monitor } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { FC, useEffect } from "react";
 
@@ -55,7 +55,11 @@ export const SessionsTab: FC = observer(() => {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-end">
-        <AsyncButton size="sm" variant="outline" onClick={handleTerminateOthers}>
+        <AsyncButton
+          size="sm"
+          variant="outline"
+          onClick={handleTerminateOthers}
+        >
           Завершить остальные
         </AsyncButton>
       </div>

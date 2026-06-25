@@ -2,47 +2,46 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as React from "react";
 import { ComponentPropsWithRef } from "react";
 
-import { cn } from "../foundation/cn";
+import { Spinner } from "../spinner";
 import {
   useKeyboardNav,
   useLabelCache,
-  useSelectOptions,
   useSelectState,
+  useSelectValue,
 } from "./hooks";
 import {
   SelectEmpty,
   SelectListItem,
   SelectLoading,
   SelectPopoverContent,
-  SelectTag,
   SelectTriggerBase,
+  SelectTriggerContent,
 } from "./primitives";
-import { type SelectProps } from "./types";
+import { type SelectOnChange, type SelectProps } from "./types";
 
 export interface SelectHandle {
   focus(): void;
 }
 
-function SelectInner<TData = unknown, V extends string = string>(
-  props: SelectProps<TData, V>,
+const SelectInner = <V extends string = string>(
+  props: SelectProps<V>,
   ref: React.ForwardedRef<SelectHandle>,
-): React.ReactElement {
+) => {
   const {
-    options: optionsProp,
-    fetchOptions,
-    getOption,
-    fetchOnMount,
-    loadOnce,
-    debounce,
-    search,
-    loading: loadingProp,
+    options,
+    loading,
+    loadingMore,
+    search = false,
+    searchValue,
+    onSearch,
+    onScrollEnd,
+    onOpenChange: onOpenChangeProp,
     disabled,
     placeholder,
     empty,
     size,
     variant,
     className,
-    onOpenChange: onOpenChangeProp,
     renderOptions,
   } = props;
 
@@ -50,15 +49,16 @@ function SelectInner<TData = unknown, V extends string = string>(
   const clearable = props.clearable === true;
   const tagsDisplay = !multi || props.tagsDisplay !== false;
 
-  const rawValue = props.value;
-  const onChange = props.onChange as
-    | ((v: V) => void)
-    | ((v: V | null) => void)
-    | ((v: V[]) => void)
-    | undefined;
+  const onChange = props.onChange as SelectOnChange | undefined;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const triggerRef = React.useRef<HTMLDivElement>(null);
+
+  const { open, query, setQuery, handleOpen } = useSelectState({
+    search,
+    searchValue,
+    onSearch,
+  });
 
   React.useImperativeHandle(ref, () => ({
     focus() {
@@ -71,22 +71,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     },
   }));
 
-  const { open, query, setQuery, handleOpen } = useSelectState(search);
-
-  const { options, loading: optionsLoading } = useSelectOptions<TData, V>({
-    options: optionsProp,
-    fetchOptions,
-    getOption,
-    fetchOnMount,
-    loadOnce,
-    debounce,
-    search,
-    query,
-    open,
-  });
-
-  const loading = loadingProp ?? optionsLoading;
-
   const { updateCache, getLabel } = useLabelCache<V>();
 
   React.useMemo(() => {
@@ -94,68 +78,31 @@ function SelectInner<TData = unknown, V extends string = string>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
-  const selectedValues = React.useMemo<V[]>(
-    () =>
-      multi
-        ? ((rawValue as V[] | undefined) ?? [])
-        : rawValue != null
-          ? [rawValue as V]
-          : [],
-    [multi, rawValue],
+  const close = React.useCallback(
+    () => handleOpen(false, inputRef),
+    [handleOpen],
   );
 
-  const isSelected = React.useCallback(
-    (v: V) => selectedValues.includes(v),
-    [selectedValues],
-  );
-
-  const handleSelect = React.useCallback(
-    (optValue: V) => {
-      if (multi) {
-        const cur = (rawValue as V[] | undefined) ?? [];
-        const next = cur.includes(optValue)
-          ? cur.filter(v => v !== optValue)
-          : [...cur, optValue];
-
-        (onChange as (v: V[]) => void)?.(next);
-      } else {
-        (onChange as (v: V) => void)?.(optValue);
-        handleOpen(false, inputRef);
-      }
-    },
-    [multi, rawValue, onChange, handleOpen],
-  );
-
-  const handleClear = React.useCallback(() => {
-    if (multi) {
-      (onChange as (v: V[]) => void)?.([]);
-    } else {
-      (onChange as (v: V | null) => void)?.(null);
-    }
-    setQuery("");
-    handleOpen(false, inputRef);
-  }, [multi, onChange, setQuery, handleOpen]);
-
-  const handleRemoveTag = React.useCallback(
-    (v: V) => {
-      if (!multi) return;
-      const cur = (rawValue as V[] | undefined) ?? [];
-
-      (onChange as (v: V[]) => void)?.(cur.filter(x => x !== v));
-    },
-    [multi, rawValue, onChange],
-  );
+  const {
+    selectedValues,
+    isSelected,
+    hasValue,
+    handleSelect,
+    handleClear,
+    handleRemoveTag,
+  } = useSelectValue<V>({
+    multi,
+    value: props.value as V | V[] | null | undefined,
+    onChange,
+    close,
+  });
 
   const { focusedIndex, setFocusedIndex, handleKeyDown, listRef } =
     useKeyboardNav({
       count: options.length,
       onSelect: i => handleSelect(options[i].value as V),
-      onClose: () => handleOpen(false, inputRef),
+      onClose: close,
     });
-
-  const hasValue = multi
-    ? selectedValues.length > 0
-    : rawValue != null && rawValue !== "";
 
   const showClear = clearable && !loading && hasValue;
 
@@ -170,105 +117,6 @@ function SelectInner<TData = unknown, V extends string = string>(
     onPointerDown: (e: React.PointerEvent) => {
       if (open) e.stopPropagation();
     },
-  };
-
-  const renderTriggerContent = () => {
-    if (multi) {
-      const vals = selectedValues;
-
-      if (tagsDisplay) {
-        if (!search && vals.length === 0) {
-          return (
-            <span className="flex-1 truncate text-sm text-muted-foreground">
-              {placeholder}
-            </span>
-          );
-        }
-
-        return (
-          <div className="flex flex-wrap gap-1 flex-1 min-w-0 overflow-hidden items-center py-0.5">
-            {vals.map(v => (
-              <SelectTag
-                key={v}
-                label={getLabel(v)}
-                onRemove={() => handleRemoveTag(v)}
-                disabled={disabled}
-              />
-            ))}
-            {search && (
-              <input
-                {...searchInputProps}
-                value={open ? query : ""}
-                placeholder={vals.length === 0 ? placeholder : undefined}
-              />
-            )}
-          </div>
-        );
-      }
-
-      const commaLabel =
-        vals.length > 0
-          ? vals.map(v => String(getLabel(v))).join(", ")
-          : undefined;
-
-      if (search) {
-        return (
-          <input
-            {...searchInputProps}
-            value={open ? query : (commaLabel ?? "")}
-            placeholder={
-              open
-                ? (commaLabel ?? placeholder)
-                : commaLabel
-                  ? undefined
-                  : placeholder
-            }
-          />
-        );
-      }
-
-      return (
-        <span
-          className={cn(
-            "flex-1 truncate text-sm",
-            !commaLabel && "text-muted-foreground",
-          )}
-        >
-          {commaLabel ?? placeholder}
-        </span>
-      );
-    }
-
-    if (search) {
-      const displayLabel = hasValue
-        ? String(getLabel(rawValue as V))
-        : undefined;
-
-      return (
-        <input
-          {...searchInputProps}
-          value={open ? query : (displayLabel ?? "")}
-          placeholder={
-            open
-              ? (displayLabel ?? placeholder)
-              : hasValue
-                ? undefined
-                : placeholder
-          }
-        />
-      );
-    }
-
-    return (
-      <span
-        className={cn(
-          "flex-1 truncate text-sm",
-          !hasValue && "text-muted-foreground",
-        )}
-      >
-        {hasValue ? String(getLabel(rawValue as V)) : placeholder}
-      </span>
-    );
   };
 
   const handleOpenChange = React.useCallback(
@@ -295,7 +143,15 @@ function SelectInner<TData = unknown, V extends string = string>(
     [search],
   );
 
-  const triggerKeyDown = !search ? handleKeyDown : undefined;
+  const handleScroll = React.useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!onScrollEnd) return;
+      const el = e.currentTarget;
+
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 48) onScrollEnd();
+    },
+    [onScrollEnd],
+  );
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>
@@ -310,11 +166,24 @@ function SelectInner<TData = unknown, V extends string = string>(
           onClear={handleClear}
           cursorText={search}
           tabIndex={!search ? 0 : undefined}
-          onKeyDown={triggerKeyDown}
+          onKeyDown={!search ? handleKeyDown : undefined}
           data-disabled={disabled ? "" : undefined}
           style={disabled ? { pointerEvents: "none", opacity: 0.5 } : undefined}
         >
-          {renderTriggerContent()}
+          <SelectTriggerContent<V>
+            multi={multi}
+            tagsDisplay={tagsDisplay}
+            search={search}
+            open={open}
+            query={query}
+            placeholder={placeholder}
+            disabled={disabled}
+            selectedValues={selectedValues}
+            hasValue={hasValue}
+            getLabel={getLabel}
+            searchInputProps={searchInputProps}
+            onRemoveTag={handleRemoveTag}
+          />
         </SelectTriggerBase>
       </PopoverPrimitive.Trigger>
 
@@ -324,44 +193,51 @@ function SelectInner<TData = unknown, V extends string = string>(
           className="overflow-y-auto max-h-60 p-1"
           role="listbox"
           aria-multiselectable={multi}
+          onScroll={onScrollEnd ? handleScroll : undefined}
         >
           {loading ? (
             <SelectLoading />
           ) : options.length === 0 ? (
             <SelectEmpty>{empty}</SelectEmpty>
-          ) : renderOptions ? (
-            renderOptions({
-              focusedIndex,
-              setFocusedIndex,
-              isSelected,
-              onSelect: handleSelect,
-            })
           ) : (
-            options.map((opt, index) => (
-              <SelectListItem
-                key={opt.value}
-                selected={isSelected(opt.value as V)}
-                focused={index === focusedIndex}
-                disabled={opt.disabled}
-                onSelect={() => handleSelect(opt.value as V)}
-                onFocus={() => setFocusedIndex(index)}
-                onBlur={() => setFocusedIndex(-1)}
-              >
-                {opt.label}
-              </SelectListItem>
-            ))
+            <>
+              {renderOptions
+                ? renderOptions({
+                    focusedIndex,
+                    setFocusedIndex,
+                    isSelected,
+                    onSelect: handleSelect,
+                  })
+                : options.map((opt, index) => (
+                    <SelectListItem
+                      key={opt.value}
+                      selected={isSelected(opt.value as V)}
+                      focused={index === focusedIndex}
+                      disabled={opt.disabled}
+                      onSelect={() => handleSelect(opt.value as V)}
+                      onFocus={() => setFocusedIndex(index)}
+                      onBlur={() => setFocusedIndex(-1)}
+                    >
+                      {opt.label}
+                    </SelectListItem>
+                  ))}
+              {loadingMore && (
+                <div className="flex items-center justify-center py-2">
+                  <Spinner size="sm" />
+                </div>
+              )}
+            </>
           )}
         </div>
       </SelectPopoverContent>
     </PopoverPrimitive.Root>
   );
-}
+};
 
 export const Select = React.forwardRef(SelectInner) as <
-  TData = unknown,
   V extends string = string,
 >(
-  props: SelectProps<TData, V> & { ref?: React.Ref<SelectHandle> },
+  props: SelectProps<V> & { ref?: React.Ref<SelectHandle> },
 ) => React.ReactElement;
 
 (Select as { displayName?: string }).displayName = "Select";

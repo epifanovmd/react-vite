@@ -72,33 +72,29 @@ export const useUsersListVM = () => {
   );
 
   const columns: ColumnDef<PublicUserModel>[] = useMemo(
-    () =>
-     [
-            ...userColumns,
-            {
-              id: "actions",
-              header: "",
-              cell: ({ row }) => (
-                <div
-                  className="flex items-center justify-end gap-1"
-                  onClick={e => e.stopPropagation()}
-                >
-                  <AsyncIconButton
-                    title="Удалить"
-                    variant={"destructive"}
-                    onClick={() =>
-                      handleDelete(
-                        row.original.data.userId,
-                        row.original.displayName,
-                      )
-                    }
-                  >
-                    <Trash2 size={15} />
-                  </AsyncIconButton>
-                </div>
-              ),
-            },
-          ],
+    () => [
+      ...userColumns,
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <div
+            className="flex items-center justify-end gap-1"
+            onClick={e => e.stopPropagation()}
+          >
+            <AsyncIconButton
+              title="Удалить"
+              variant={"destructive"}
+              onClick={() =>
+                handleDelete(row.original.data.userId, row.original.displayName)
+              }
+            >
+              <Trash2 size={15} />
+            </AsyncIconButton>
+          </div>
+        ),
+      },
+    ],
     [handleDelete],
   );
 

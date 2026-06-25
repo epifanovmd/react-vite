@@ -1,9 +1,4 @@
-import {
-  AsyncIconButton,
-  Card,
-  Empty,
-  Spinner,
-} from "@components/ui";
+import { AsyncIconButton, Card, Empty, Spinner } from "@components/ui";
 import { useConfirm } from "@components/ui";
 import { useNotification } from "@core/notifications";
 import { useDevicesStore } from "@store";

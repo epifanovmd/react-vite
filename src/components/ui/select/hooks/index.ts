@@ -5,9 +5,12 @@ export type {
 export { useKeyboardNav } from "./useKeyboardNav";
 export { useLabelCache } from "./useLabelCache";
 export type {
-  UseSelectOptionsProps,
-  UseSelectOptionsResult,
-} from "./useSelectOptions";
-export { useSelectOptions } from "./useSelectOptions";
-export type { UseSelectStateResult } from "./useSelectState";
+  UseSelectStateOptions,
+  UseSelectStateResult,
+} from "./useSelectState";
 export { useSelectState } from "./useSelectState";
+export type {
+  UseSelectValueOptions,
+  UseSelectValueResult,
+} from "./useSelectValue";
+export { useSelectValue } from "./useSelectValue";

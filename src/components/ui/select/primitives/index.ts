@@ -10,5 +10,7 @@ export type { SelectTagProps } from "./SelectTag";
 export { SelectTag } from "./SelectTag";
 export type { SelectTriggerBaseProps } from "./SelectTriggerBase";
 export { SelectTriggerBase } from "./SelectTriggerBase";
+export type { SelectTriggerContentProps } from "./SelectTriggerContent";
+export { SelectTriggerContent } from "./SelectTriggerContent";
 export type { SelectTriggerIconProps } from "./SelectTriggerIcon";
 export { SelectTriggerIcon } from "./SelectTriggerIcon";

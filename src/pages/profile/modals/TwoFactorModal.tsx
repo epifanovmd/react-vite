@@ -68,9 +68,7 @@ export const TwoFactorModal: FC<TwoFactorModalProps> = ({
       <ModalOverlay />
       <ModalContent className="max-w-md">
         <ModalHeader>
-          <ModalTitle>
-            {isEnable ? "Включить 2FA" : "Отключить 2FA"}
-          </ModalTitle>
+          <ModalTitle>{isEnable ? "Включить 2FA" : "Отключить 2FA"}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <FormProvider {...methods}>

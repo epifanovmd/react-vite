@@ -2,7 +2,11 @@ import * as React from "react";
 
 import { SelectListGroup, SelectListItem } from "./primitives";
 import { Select } from "./Select";
-import { type GroupedSelectProps, type SelectOption } from "./types";
+import {
+  type GroupedSelectProps,
+  type SelectOption,
+  type SelectProps,
+} from "./types";
 
 export { GroupedSelectProps };
 
@@ -17,37 +21,38 @@ export function GroupedSelect<V extends string = string>(
   );
 
   return (
-    <Select<unknown, V>
-      {...(rest as any)}
-      options={flatOptions}
-      renderOptions={({
-        focusedIndex,
-        setFocusedIndex,
-        isSelected,
-        onSelect,
-      }) =>
-        groups.map(group => (
-          <SelectListGroup key={group.group} label={group.group}>
-            {group.options.map(opt => {
-              const flatIdx = flatOptions.indexOf(opt as SelectOption<V>);
+    <Select<V>
+      {...({
+        ...rest,
+        options: flatOptions,
+        renderOptions: ({
+          focusedIndex,
+          setFocusedIndex,
+          isSelected,
+          onSelect,
+        }) =>
+          groups.map(group => (
+            <SelectListGroup key={group.group} label={group.group}>
+              {group.options.map(opt => {
+                const flatIdx = flatOptions.indexOf(opt as SelectOption<V>);
 
-              return (
-                <SelectListItem
-                  key={opt.value}
-                  selected={isSelected(opt.value as V)}
-                  focused={flatIdx === focusedIndex}
-                  disabled={opt.disabled}
-                  onSelect={() => onSelect(opt.value as V)}
-                  onFocus={() => setFocusedIndex(flatIdx)}
-                  onBlur={() => setFocusedIndex(-1)}
-                >
-                  {opt.label}
-                </SelectListItem>
-              );
-            })}
-          </SelectListGroup>
-        ))
-      }
+                return (
+                  <SelectListItem
+                    key={opt.value}
+                    selected={isSelected(opt.value as V)}
+                    focused={flatIdx === focusedIndex}
+                    disabled={opt.disabled}
+                    onSelect={() => onSelect(opt.value as V)}
+                    onFocus={() => setFocusedIndex(flatIdx)}
+                    onBlur={() => setFocusedIndex(-1)}
+                  >
+                    {opt.label}
+                  </SelectListItem>
+                );
+              })}
+            </SelectListGroup>
+          )),
+      } as SelectProps<V>)}
     />
   );
 }

@@ -21,15 +21,24 @@ export const ErrorPage: ErrorRouteComponent = ({ error, reset }) => {
           Что-то пошло не так
         </p>
         <p className="max-w-md text-sm text-muted-foreground">
-          {error?.message ?? "Произошла непредвиденная ошибка при загрузке страницы."}
+          {error?.message ??
+            "Произошла непредвиденная ошибка при загрузке страницы."}
         </p>
       </div>
 
       <div className="flex items-center gap-3">
-        <Button size="sm" variant="outline" onClick={() => router.navigate({ to: "/" })}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => router.navigate({ to: "/" })}
+        >
           На главную
         </Button>
-        <Button size="sm" leftIcon={<RotateCw size={14} />} onClick={handleRetry}>
+        <Button
+          size="sm"
+          leftIcon={<RotateCw size={14} />}
+          onClick={handleRetry}
+        >
           Повторить
         </Button>
       </div>

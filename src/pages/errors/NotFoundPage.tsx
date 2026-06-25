@@ -1,12 +1,6 @@
 import { Button } from "@components/ui";
 import { Link, useRouter } from "@tanstack/react-router";
-import {
-  Grid2x2,
-  LayoutGrid,
-  MoveLeft,
-  User,
-  Users,
-} from "lucide-react";
+import { Grid2x2, LayoutGrid, MoveLeft, User, Users } from "lucide-react";
 import { FC } from "react";
 
 const QUICK_LINKS = [

@@ -7,17 +7,10 @@ import type { FieldProps } from "../types";
 
 type FieldOwnProps = Omit<FieldProps, "children" | "error" | "htmlFor">;
 
-type MappedProps =
-  | "ref"
-  | "value"
-  | "clearable"
-  | "onChange"
-  | "onOpenChange"
-  | "variant";
+type MappedProps = "ref" | "value" | "clearable" | "onChange" | "variant";
 
 export function SelectFormField<
   TFormData extends FieldValues = FieldValues,
-  TData = unknown,
   V extends string = string,
 >({
   name,
@@ -27,12 +20,13 @@ export function SelectFormField<
   description,
   required,
   fieldClassName,
+  onOpenChange,
   ...selectProps
 }: {
   name: Path<TFormData>;
   control?: Control<TFormData>;
 } & FieldOwnProps &
-  Omit<SelectProps<TData, V>, MappedProps>): React.ReactElement {
+  Omit<SelectProps<V>, MappedProps>): React.ReactElement {
   return (
     <FormField<TFormData>
       name={name}
@@ -43,7 +37,7 @@ export function SelectFormField<
       required={required}
       fieldClassName={fieldClassName}
       render={(field, fieldState) => (
-        <Select<TData, V>
+        <Select<V>
           {...({
             ...selectProps,
             ref: field.ref as React.Ref<SelectHandle>,
@@ -52,9 +46,10 @@ export function SelectFormField<
             onChange: (v: V | null) => field.onChange(v ?? undefined),
             onOpenChange: (open: boolean) => {
               if (!open) field.onBlur();
+              onOpenChange?.(open);
             },
             variant: fieldState.invalid ? "error" : undefined,
-          } as SelectProps<TData, V> & { ref?: React.Ref<SelectHandle> })}
+          } as SelectProps<V> & { ref?: React.Ref<SelectHandle> })}
         />
       )}
     />

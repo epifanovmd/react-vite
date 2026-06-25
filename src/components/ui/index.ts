@@ -131,18 +131,21 @@ export type { SegmentedOption, SegmentedProps } from "./segmented";
 export { Segmented, segmentedVariants } from "./segmented";
 export type {
   GroupedSelectProps,
+  SelectDataProps,
   SelectOption,
   SelectOptionGroup,
   SelectOptionsArray,
   SelectOptionsFetcher,
-  SelectOptionsGetter,
   SelectProps,
   SelectTriggerAppearance,
+  UseAsyncOptionsConfig,
+  UseControlledOptionsConfig,
+  UseEagerOptionsConfig,
+  UseInfiniteOptionsConfig,
   UseKeyboardNavProps,
   UseKeyboardNavResult,
-  UseSelectOptionsProps,
-  UseSelectOptionsResult,
   UseSelectStateResult,
+  UseStaticOptionsConfig,
 } from "./select";
 export {
   GroupedSelect,
@@ -154,10 +157,15 @@ export {
   SelectPopoverContent,
   SelectTag,
   SelectTriggerBase,
+  SelectTriggerContent,
   SelectTriggerIcon,
+  useAsyncOptions,
+  useControlledOptions,
+  useEagerOptions,
+  useInfiniteOptions,
   useKeyboardNav,
-  useSelectOptions,
   useSelectState,
+  useStaticOptions,
 } from "./select";
 export type { SeparatorProps } from "./separator";
 export { Divider, Separator } from "./separator";

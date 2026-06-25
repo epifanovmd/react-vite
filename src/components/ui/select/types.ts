@@ -9,6 +9,11 @@ export interface SelectOption<V extends string = string> {
   disabled?: boolean;
 }
 
+export type SelectOnChange<V extends string = string> =
+  | ((v: V) => void)
+  | ((v: V | null) => void)
+  | ((v: V[]) => void);
+
 export interface SelectOptionGroup<V extends string = string> {
   group: string;
   options: SelectOption<V>[];
@@ -16,19 +21,25 @@ export interface SelectOptionGroup<V extends string = string> {
 
 export type SelectOptionsArray<V extends string = string> = SelectOption<V>[];
 
-export type SelectOptionsGetter<V extends string = string> = (
-  query: string,
-) => SelectOption<V>[];
-
 export type SelectOptionsFetcher<TData = unknown> = (
   query: string,
-  signal?: AbortSignal,
+  signal: AbortSignal,
 ) => Promise<TData[]>;
+
+export interface SelectDataProps<V extends string = string> {
+  options: SelectOption<V>[];
+  loading?: boolean;
+  loadingMore?: boolean;
+  search?: boolean;
+  searchValue?: string;
+  onSearch?: (query: string) => void;
+  onScrollEnd?: () => void;
+  onOpenChange?: (open: boolean) => void;
+}
 
 export interface SelectTriggerAppearance
   extends VariantProps<typeof selectTriggerVariants> {
   placeholder?: string;
-
   className?: string;
 }
 
@@ -39,19 +50,11 @@ export interface RenderOptionsContext<V extends string = string> {
   onSelect: (v: V) => void;
 }
 
-interface SelectBaseProps<TData = unknown, V extends string = string>
-  extends SelectTriggerAppearance {
-  options?: SelectOptionsArray<V> | SelectOptionsGetter<V>;
-  fetchOptions?: SelectOptionsFetcher<TData>;
-  getOption?: (item: TData) => SelectOption<V>;
-  search?: boolean;
-  fetchOnMount?: boolean;
-  loadOnce?: boolean;
-  debounce?: number;
-  loading?: boolean;
+interface SelectBaseProps<V extends string = string>
+  extends SelectTriggerAppearance,
+    SelectDataProps<V> {
   disabled?: boolean;
   empty?: React.ReactNode;
-  onOpenChange?: (open: boolean) => void;
   renderOptions?: (ctx: RenderOptionsContext<V>) => React.ReactNode;
 }
 
@@ -77,21 +80,18 @@ interface SelectMultiProps<V extends string = string> {
   tagsDisplay?: boolean;
 }
 
-export type SelectProps<
-  TData = unknown,
-  V extends string = string,
-> = SelectBaseProps<TData, V> &
+export type SelectProps<V extends string = string> = SelectBaseProps<V> &
   (SelectSingleProps<V> | SelectSingleClearableProps<V> | SelectMultiProps<V>);
 
 export type GroupedSelectProps<V extends string = string> = Omit<
-  SelectProps<unknown, V>,
+  SelectProps<V>,
   | "options"
-  | "fetchOptions"
-  | "getOption"
-  | "search"
-  | "fetchOnMount"
-  | "debounce"
   | "renderOptions"
+  | "search"
+  | "searchValue"
+  | "onSearch"
+  | "onScrollEnd"
+  | "loadingMore"
 > & {
   groups?: SelectOptionGroup<V>[];
 };

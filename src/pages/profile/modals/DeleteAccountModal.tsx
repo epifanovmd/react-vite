@@ -63,9 +63,7 @@ export const DeleteAccountModal: FC<DeleteAccountModalProps> = ({
               Это действие необратимо. Все ваши данные будут удалены без
               возможности восстановления.
             </p>
-            <Field
-              label={`Введите «${CONFIRM_WORD}» для подтверждения`}
-            >
+            <Field label={`Введите «${CONFIRM_WORD}» для подтверждения`}>
               <Input
                 value={value}
                 onChange={e => setValue(e.target.value)}

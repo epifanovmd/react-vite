@@ -2,7 +2,13 @@ import { AsyncButton, Badge, Button, Card } from "@components/ui";
 import { useNotification } from "@core/notifications";
 import { usePasskeyAuth } from "@hooks";
 import { useAuthStore, useSecurityStore } from "@store";
-import { Fingerprint, KeyRound, Mail, ShieldCheck, UserCog } from "lucide-react";
+import {
+  Fingerprint,
+  KeyRound,
+  Mail,
+  ShieldCheck,
+  UserCog,
+} from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { FC, ReactNode, useState } from "react";
 
@@ -75,7 +81,11 @@ export const SecurityTab: FC = observer(() => {
         title="Пароль"
         description="Используется для входа в аккаунт"
       >
-        <Button size="sm" variant="outline" onClick={() => setPasswordOpen(true)}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setPasswordOpen(true)}
+        >
           Изменить пароль
         </Button>
       </SettingRow>
@@ -85,7 +95,11 @@ export const SecurityTab: FC = observer(() => {
         title="Username"
         description={user?.username ? `@${user.username}` : "Не задан"}
       >
-        <Button size="sm" variant="outline" onClick={() => setUsernameOpen(true)}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setUsernameOpen(true)}
+        >
           Изменить
         </Button>
       </SettingRow>
@@ -101,7 +115,11 @@ export const SecurityTab: FC = observer(() => {
           </Badge>
         ) : (
           user?.email && (
-            <AsyncButton size="sm" variant="outline" onClick={handleVerifyEmail}>
+            <AsyncButton
+              size="sm"
+              variant="outline"
+              onClick={handleVerifyEmail}
+            >
               Подтвердить
             </AsyncButton>
           )

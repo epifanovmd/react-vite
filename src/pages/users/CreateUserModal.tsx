@@ -29,9 +29,7 @@ export const CreateUserModal: FC<CreateUserModalProps> = ({
   const toast = useNotification();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (
-    data: CreateUserFormData,
-  ) => {
+  const handleSubmit = async (data: CreateUserFormData) => {
     setLoading(true);
     try {
       const signUpData: TSignUpRequestDto = {

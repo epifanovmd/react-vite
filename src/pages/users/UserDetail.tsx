@@ -84,7 +84,9 @@ export const UserDetail: FC<UserDetailProps> = observer(
               <UserInfoCard
                 displayName={vm.model?.displayName ?? "?"}
                 login={vm.model?.login}
-                role={user.roles.map(r => String(r.name)).join(", ") || undefined}
+                role={
+                  user.roles.map(r => String(r.name)).join(", ") || undefined
+                }
                 emailVerified={vm.model?.emailVerified}
                 registeredAt={vm.model?.createdAt}
                 lastOnline={vm.model?.lastOnline}
@@ -109,7 +111,10 @@ export const UserDetail: FC<UserDetailProps> = observer(
                       <Row label="Телефон" value={user.phone} />
                       <Row label="Username" value={user.username} />
                       <Row label="ID" value={user.id} />
-                      <Row label="Зарегистрирован" value={vm.model?.createdAt} />
+                      <Row
+                        label="Зарегистрирован"
+                        value={vm.model?.createdAt}
+                      />
                     </div>
                     <div className="mt-4 flex justify-end">
                       <Button

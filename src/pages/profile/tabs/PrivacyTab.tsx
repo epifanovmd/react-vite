@@ -82,7 +82,7 @@ export const PrivacyTab: FC = observer(() => {
                   </p>
                 </div>
                 <div className="w-40 flex-shrink-0">
-                  <Select<unknown, EPrivacyLevel>
+                  <Select<EPrivacyLevel>
                     size="sm"
                     options={LEVEL_OPTIONS}
                     value={store.settings?.[field.key]}

@@ -1,5 +1,11 @@
 import * as React from "react";
 
+export interface UseSelectStateOptions {
+  search?: boolean;
+  searchValue?: string;
+  onSearch?: (query: string) => void;
+}
+
 export interface UseSelectStateResult {
   open: boolean;
   query: string;
@@ -10,9 +16,24 @@ export interface UseSelectStateResult {
   ) => void;
 }
 
-export function useSelectState(search?: boolean): UseSelectStateResult {
+export function useSelectState({
+  search,
+  searchValue,
+  onSearch,
+}: UseSelectStateOptions): UseSelectStateResult {
   const [open, setOpen] = React.useState(false);
-  const [query, setQuery] = React.useState("");
+  const [internalQuery, setInternalQuery] = React.useState("");
+
+  const isControlled = searchValue !== undefined;
+  const query = isControlled ? searchValue : internalQuery;
+
+  const setQuery = React.useCallback(
+    (q: string) => {
+      if (!isControlled) setInternalQuery(q);
+      onSearch?.(q);
+    },
+    [isControlled, onSearch],
+  );
 
   const handleOpen = React.useCallback(
     (
@@ -26,7 +47,7 @@ export function useSelectState(search?: boolean): UseSelectStateResult {
         setTimeout(() => inputRef.current?.focus(), 0);
       }
     },
-    [search],
+    [search, setQuery],
   );
 
   return { open, query, setQuery, handleOpen };

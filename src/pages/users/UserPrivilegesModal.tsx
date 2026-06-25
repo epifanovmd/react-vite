@@ -16,6 +16,8 @@ import {
   ModalOverlay,
   ModalTitle,
   Select,
+  SelectOption,
+  useStaticOptions,
 } from "@components/ui";
 import { useNotification } from "@core/notifications";
 import { useUsersDataStore } from "@store";
@@ -25,7 +27,7 @@ import { FC, useEffect, useState } from "react";
 const PERMISSION_OPTIONS = Object.values(KnownPermission).map(value => ({
   value,
   label: value,
-}));
+})) as SelectOption<KnownPermission>[];
 
 interface UserPrivilegesModalProps {
   open: boolean;
@@ -41,6 +43,9 @@ export const UserPrivilegesModal: FC<UserPrivilegesModalProps> = observer(
 
     const [roles, setRoles] = useState<string[]>([]);
     const [permissions, setPermissions] = useState<string[]>([]);
+
+    const rolesData = useStaticOptions(store.roleOptions, { search: true });
+    const permsData = useStaticOptions(PERMISSION_OPTIONS, { search: true });
 
     useEffect(() => {
       if (open) {
@@ -77,15 +82,17 @@ export const UserPrivilegesModal: FC<UserPrivilegesModalProps> = observer(
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-4 my-2">
-              <Field label="Роли" description="Заменяют текущие роли пользователя">
+              <Field
+                label="Роли"
+                description="Заменяют текущие роли пользователя"
+              >
                 <Select
                   multi
                   value={roles}
                   onChange={setRoles}
-                  options={store.roleOptions}
                   loading={store.rolesHolder.isLoading}
                   placeholder="Выберите роли"
-                  search
+                  {...rolesData}
                 />
               </Field>
 
@@ -97,9 +104,8 @@ export const UserPrivilegesModal: FC<UserPrivilegesModalProps> = observer(
                   multi
                   value={permissions}
                   onChange={setPermissions}
-                  options={PERMISSION_OPTIONS}
                   placeholder="Выберите разрешения"
-                  search
+                  {...permsData}
                 />
               </Field>
             </div>

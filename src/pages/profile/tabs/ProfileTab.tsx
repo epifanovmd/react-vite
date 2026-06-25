@@ -12,8 +12,13 @@ import { FormProvider } from "react-hook-form";
 import { ProfileFormData, useProfileVM } from "../hooks/useProfileVM";
 
 export const ProfileTab: FC = observer(() => {
-  const { model, sendingVerification, methods, onSubmit, sendEmailVerification } =
-    useProfileVM();
+  const {
+    model,
+    sendingVerification,
+    methods,
+    onSubmit,
+    sendEmailVerification,
+  } = useProfileVM();
 
   return (
     <FormProvider {...methods}>

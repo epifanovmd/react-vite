@@ -1,11 +1,6 @@
 import { PageHeader, PageLayout } from "@components/layouts";
 import { UserInfoCard } from "@components/shared";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@components/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui";
 import { useAuthStore } from "@store";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
