@@ -1,63 +1,101 @@
-import { createServiceDecorator } from "@di";
 import React from "react";
 import { toast } from "react-hot-toast";
 
 import { CustomToast, ToastVariant } from "./CustomToast";
-
-export interface NotificationOptions {
-  duration?: number;
-}
-
-export const INotificationService =
-  createServiceDecorator<INotificationService>();
-
-export interface INotificationService {
-  success(message: string, options?: NotificationOptions): void;
-  error(message: string, options?: NotificationOptions): void;
-  warning(message: string, options?: NotificationOptions): void;
-  info(message: string, options?: NotificationOptions): void;
-}
+import {
+  INotificationService,
+  NotificationOptions,
+  PromiseMessages,
+} from "./Notification.types";
 
 const DEFAULT_DURATION: Record<ToastVariant, number> = {
   success: 4000,
   error: 5000,
   warning: 4000,
   info: 4000,
+  loading: Infinity,
 };
 
 @INotificationService({ inSingleton: true })
 export class NotificationService implements INotificationService {
-  success(message: string, { duration } = {} as NotificationOptions): void {
-    this._show("success", message, duration);
+  success(message: React.ReactNode, options?: NotificationOptions): string {
+    return this._show("success", message, options);
   }
 
-  error(message: string, { duration } = {} as NotificationOptions): void {
-    this._show("error", message, duration);
+  error(message: React.ReactNode, options?: NotificationOptions): string {
+    return this._show("error", message, options);
   }
 
-  warning(message: string, { duration } = {} as NotificationOptions): void {
-    this._show("warning", message, duration);
+  warning(message: React.ReactNode, options?: NotificationOptions): string {
+    return this._show("warning", message, options);
   }
 
-  info(message: string, { duration } = {} as NotificationOptions): void {
-    this._show("info", message, duration);
+  info(message: React.ReactNode, options?: NotificationOptions): string {
+    return this._show("info", message, options);
+  }
+
+  loading(message: React.ReactNode, options?: NotificationOptions): string {
+    return this._show("loading", message, options);
+  }
+
+  promise<T>(
+    promise: Promise<T>,
+    messages: PromiseMessages<T>,
+    options?: NotificationOptions,
+  ): Promise<T> {
+    const id = this.loading(messages.loading, options);
+
+    promise.then(
+      value => {
+        const text =
+          typeof messages.success === "function"
+            ? messages.success(value)
+            : messages.success;
+
+        this.success(text, { ...options, id });
+      },
+      (error: unknown) => {
+        const text =
+          typeof messages.error === "function"
+            ? messages.error(error)
+            : messages.error;
+
+        this.error(text, { ...options, id });
+      },
+    );
+
+    return promise;
+  }
+
+  dismiss(id?: string): void {
+    toast.dismiss(id);
   }
 
   private _show(
     variant: ToastVariant,
-    message: string,
-    duration = DEFAULT_DURATION[variant],
-  ): void {
-    toast.custom(
+    message: React.ReactNode,
+    { id, title, duration, action }: NotificationOptions = {},
+  ): string {
+    return toast.custom(
       t => (
         <CustomToast
           id={t.id}
-          message={message}
           variant={variant}
+          message={message}
+          title={title}
+          action={action}
           visible={t.visible}
+          dismissible={variant !== "loading"}
         />
       ),
-      { duration },
+      {
+        id,
+        duration: duration ?? DEFAULT_DURATION[variant],
+        ariaProps: {
+          role: "status",
+          "aria-live": variant === "error" ? "assertive" : "polite",
+        },
+      },
     );
   }
 }

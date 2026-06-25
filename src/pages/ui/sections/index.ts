@@ -10,6 +10,7 @@ import { EmptySection } from "./EmptySection";
 import { FormSection } from "./FormSection";
 import { InputsSection } from "./InputsSection";
 import { ModalsSection } from "./ModalsSection";
+import { NotificationsSection } from "./NotificationsSection";
 import { PaginationSection } from "./PaginationSection";
 import { PopoverSection } from "./PopoverSection";
 import { SegmentedSection } from "./SegmentedSection";
@@ -34,6 +35,11 @@ export const UI_SECTIONS: UISection[] = [
   { value: "tags", label: "Теги и бейджи", Component: TagsBadgesSection },
   { value: "avatars", label: "Аватары", Component: AvatarsSection },
   { value: "alerts", label: "Алерты", Component: AlertsSection },
+  {
+    value: "notifications",
+    label: "Уведомления",
+    Component: NotificationsSection,
+  },
   { value: "separators", label: "Разделители", Component: SeparatorsSection },
   { value: "select", label: "Селекты", Component: SelectSection },
   { value: "segmented", label: "Segmented", Component: SegmentedSection },

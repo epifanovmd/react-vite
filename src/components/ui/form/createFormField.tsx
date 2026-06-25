@@ -23,6 +23,7 @@ export function createFormField<TComponentProps extends object>(
   mapToProps: (
     field: ControllerRenderProps<FieldValues, string>,
     fieldState: ControllerFieldState,
+    ownProps: Partial<TComponentProps>,
   ) => Partial<TComponentProps>,
 ) {
   const C = Component as ComponentWithRef<TComponentProps>;
@@ -55,6 +56,7 @@ export function createFormField<TComponentProps extends object>(
           const mapped = mapToProps(
             field as unknown as ControllerRenderProps<FieldValues, string>,
             fieldState,
+            componentProps as Partial<TComponentProps>,
           );
           const wired = Object.fromEntries(
             Object.entries(mapped).filter(([, v]) => v !== undefined),

@@ -63,7 +63,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
             type="button"
             onClick={onClose}
             aria-label="Dismiss"
-            className="-mr-1 -mt-1 shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground cursor-pointer"
+            className="-mr-1 shrink-0 self-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>

@@ -28,6 +28,7 @@ export interface FormFieldBaseProps<
 export type ControllerMapper<TComponentProps extends object> = (
   field: ControllerRenderProps<FieldValues, string>,
   fieldState: ControllerFieldState,
+  ownProps: Partial<TComponentProps>,
 ) => Partial<TComponentProps>;
 
 export type CreatedFormFieldProps<

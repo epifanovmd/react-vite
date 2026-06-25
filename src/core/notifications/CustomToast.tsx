@@ -1,58 +1,81 @@
+import { Alert } from "@components/ui/alert";
+import { Button, type ButtonProps } from "@components/ui/button";
 import { clsx } from "clsx";
-import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "react-hot-toast";
 import { twMerge } from "tailwind-merge";
 
-export type ToastVariant = "success" | "error" | "warning" | "info";
+export type ToastVariant = "success" | "error" | "warning" | "info" | "loading";
 
-const ICONS: Record<ToastVariant, React.ReactNode> = {
-  success: <CheckCircle size={16} />,
-  error: <AlertCircle size={16} />,
-  warning: <AlertTriangle size={16} />,
-  info: <Info size={16} />,
-};
-
-const VARIANT_CLASSES: Record<ToastVariant, string> = {
-  success: "border-success/40 text-success",
-  error: "border-destructive/40 text-destructive",
-  warning: "border-warning/40 text-warning",
-  info: "border-info/40 text-info",
-};
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+  variant?: ButtonProps["variant"];
+  dismiss?: boolean;
+}
 
 export interface CustomToastProps {
   id: string;
-  message: string;
   variant: ToastVariant;
+  message: React.ReactNode;
+  title?: React.ReactNode;
+  action?: ToastAction | ToastAction[];
   visible: boolean;
+  dismissible?: boolean;
 }
+
+const SPINNER = <Loader2 className="h-4 w-4 animate-spin" />;
 
 export const CustomToast: React.FC<CustomToastProps> = ({
   id,
-  message,
   variant,
+  message,
+  title,
+  action,
   visible,
-}) => (
-  <div
-    className={twMerge(
-      clsx(
-        "flex items-start gap-2.5 px-4 py-3 rounded-lg border shadow-lg",
-        "min-w-[280px] max-w-[400px] bg-card text-card-foreground",
-        VARIANT_CLASSES[variant],
-        visible
-          ? "animate-in slide-in-from-right-5 fade-in duration-300 ease-out"
-          : "animate-out slide-out-to-right-5 fade-out duration-200 ease-in fill-mode-forwards",
-      ),
-    )}
-  >
-    <span className="flex-shrink-0 mt-0.5">{ICONS[variant]}</span>
-    <span className="flex-1 text-sm leading-snug">{message}</span>
-    <button
-      type="button"
-      onClick={() => toast.dismiss(id)}
-      className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity mt-0.5 cursor-pointer"
+  dismissible = true,
+}) => {
+  const isLoading = variant === "loading";
+  const actions = action ? (Array.isArray(action) ? action : [action]) : [];
+
+  return (
+    <div
+      className={twMerge(
+        clsx(
+          "min-w-[280px] max-w-[400px] rounded-lg bg-card shadow-lg",
+          visible
+            ? "animate-in slide-in-from-right-5 fade-in duration-300 ease-out"
+            : "animate-out slide-out-to-right-5 fade-out duration-200 ease-in fill-mode-forwards",
+        ),
+      )}
     >
-      <X size={14} />
-    </button>
-  </div>
-);
+      <Alert
+        variant={isLoading ? "info" : variant}
+        title={title}
+        icon={isLoading ? SPINNER : undefined}
+        onClose={dismissible ? () => toast.dismiss(id) : undefined}
+      >
+        {message}
+        {actions.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {actions.map(a => (
+              <Button
+                key={a.label}
+                type="button"
+                size="sm"
+                variant={a.variant ?? "outline"}
+                onClick={() => {
+                  a.onClick();
+                  if (a.dismiss !== false) toast.dismiss(id);
+                }}
+              >
+                {a.label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </Alert>
+    </div>
+  );
+};
