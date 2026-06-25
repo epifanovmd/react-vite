@@ -10,6 +10,7 @@ import {
   RadioFormField,
   SelectFormField,
   SwitchFormField,
+  TextareaFormField,
 } from "@components/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, UserPlus } from "lucide-react";
@@ -23,9 +24,7 @@ const roleOptions = [
   { value: "admin", label: "Administrator" },
   { value: "moderator", label: "Moderator" },
   { value: "viewer", label: "Viewer (read-only)" },
-] as const;
-
-type RoleValue = (typeof roleOptions)[number]["value"];
+];
 
 const countryOptions = [
   { value: "ru", label: "Russia" },
@@ -154,12 +153,7 @@ const CreateUserForm = ({
             description="Defines what this user can do"
             placeholder="Select role…"
             required
-            options={
-              roleOptions as unknown as Array<{
-                value: RoleValue;
-                label: string;
-              }>
-            }
+            options={roleOptions}
           />
           <SelectFormField<FormData>
             name="country"
@@ -182,33 +176,12 @@ const CreateUserForm = ({
           <Radio value="team" label="Team" />
         </RadioFormField>
 
-        {/* Bio — raw FormField (demonstrates render prop + TName narrowing) */}
-        <FormField<FormData, "bio">
-          name="bio"
+        <TextareaFormField
+          name={"bio"}
           label="Bio"
           description="Short description, max 200 characters"
           hint="Displayed on the user's public profile"
-          render={(field, fieldState) => (
-            <textarea
-              id="bio"
-              name={field.name}
-              ref={field.ref}
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              rows={3}
-              placeholder="Tell us a bit about yourself…"
-              className={[
-                "flex w-full rounded-lg px-3 py-2 text-sm transition-all duration-200",
-                "placeholder:text-muted-foreground bg-input-background border",
-                "focus-visible:outline-none focus-visible:shadow-focus",
-                "disabled:cursor-not-allowed disabled:opacity-50 resize-none",
-                fieldState.invalid
-                  ? "border-destructive focus-visible:shadow-focus-error"
-                  : "border-border",
-              ].join(" ")}
-            />
-          )}
+          placeholder="Tell us a bit about yourself…"
         />
 
         <div className="border-t pt-4 flex flex-col gap-3">
@@ -224,10 +197,7 @@ const CreateUserForm = ({
 
           {/* Checkbox + custom inline label */}
           <div className="flex items-start gap-3">
-            <CheckboxFormField<FormData>
-              name="acceptTerms"
-              fieldClassName="mt-0.5 shrink-0"
-            />
+            <CheckboxFormField<FormData> name="acceptTerms" />
             <label
               htmlFor="acceptTerms"
               className="text-sm leading-snug cursor-pointer -mt-0.5"
