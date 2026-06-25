@@ -30,8 +30,8 @@ export interface UISection {
 export const UI_SECTIONS: UISection[] = [
   { value: "buttons", label: "Кнопки", Component: ButtonsSection },
   { value: "inputs", label: "Поля ввода", Component: InputsSection },
-  { value: "tags", label: "Теги и бейджи", Component: TagsBadgesSection },
   { value: "controls", label: "Переключатели", Component: ControlsSection },
+  { value: "tags", label: "Теги и бейджи", Component: TagsBadgesSection },
   { value: "avatars", label: "Аватары", Component: AvatarsSection },
   { value: "alerts", label: "Алерты", Component: AlertsSection },
   { value: "separators", label: "Разделители", Component: SeparatorsSection },
