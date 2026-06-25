@@ -99,7 +99,9 @@ export const DatePickersSection: FC = () => {
 
         {/* Clearable */}
         <div>
-          <p className="text-xs text-muted-foreground mb-3">С кнопкой очистки</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            С кнопкой очистки
+          </p>
           <div className="space-y-2 max-w-xs">
             <DatePicker
               value={date}

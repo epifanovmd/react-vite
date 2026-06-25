@@ -55,7 +55,14 @@ export const SelectSection: FC = () => {
     if (open && !hasLoadedLazy) {
       setIsLoadingLazy(true);
       setTimeout(() => {
-        setLazyOptions(["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"]);
+        setLazyOptions([
+          "Item 1",
+          "Item 2",
+          "Item 3",
+          "Item 4",
+          "Item 5",
+          "Item 6",
+        ]);
         setIsLoadingLazy(false);
         setHasLoadedLazy(true);
       }, 2000);

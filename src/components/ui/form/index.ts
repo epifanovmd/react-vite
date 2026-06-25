@@ -5,6 +5,7 @@ export {
   CheckboxFormField,
   DatePickerFormField,
   InputFormField,
+  RadioFormField,
   SelectFormField,
   SwitchFormField,
   TextareaFormField,

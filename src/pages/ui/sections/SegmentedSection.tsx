@@ -24,7 +24,9 @@ export const SegmentedSection: FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-2">Default variant</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Default variant
+            </p>
             <Segmented
               value={segmentedValue}
               onChange={setSegmentedValue}
@@ -44,7 +46,9 @@ export const SegmentedSection: FC = () => {
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-2">Primary variant</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Primary variant
+            </p>
             <Segmented
               value={segmentedNav}
               onChange={setSegmentedNav}
@@ -86,7 +90,9 @@ export const SegmentedSection: FC = () => {
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-2">Outline variant</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Outline variant
+            </p>
             <Segmented
               defaultValue="option1"
               size="sm"

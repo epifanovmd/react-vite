@@ -17,11 +17,15 @@ export const TooltipSection: FC = () => (
   <Card>
     <CardHeader>
       <CardTitle className="text-base">Tooltip</CardTitle>
-      <CardDescription className="text-xs">Всплывающие подсказки</CardDescription>
+      <CardDescription className="text-xs">
+        Всплывающие подсказки
+      </CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
       <div>
-        <p className="text-xs text-muted-foreground mb-3">Через пропс content</p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Через пропс content
+        </p>
         <div className="flex items-center gap-3 flex-wrap">
           <Tooltip content="Default tooltip">
             <Button size="sm">Default</Button>

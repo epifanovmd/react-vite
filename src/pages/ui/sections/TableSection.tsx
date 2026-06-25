@@ -29,14 +29,70 @@ const statusVariant: Record<
 };
 
 const tableData: Transaction[] = [
-  { id: "001", name: "John Doe", email: "john@example.com", status: "paid", amount: 250, date: "2024-01-15" },
-  { id: "002", name: "Jane Smith", email: "jane@example.com", status: "pending", amount: 150, date: "2024-01-16" },
-  { id: "003", name: "Bob Johnson", email: "bob@example.com", status: "failed", amount: 350, date: "2024-01-17" },
-  { id: "004", name: "Alice Brown", email: "alice@example.com", status: "paid", amount: 420, date: "2024-01-18" },
-  { id: "005", name: "Charlie Wilson", email: "charlie@example.com", status: "paid", amount: 180, date: "2024-01-19" },
-  { id: "006", name: "Diana Prince", email: "diana@example.com", status: "pending", amount: 560, date: "2024-01-20" },
-  { id: "007", name: "Edward Norton", email: "edward@example.com", status: "failed", amount: 90, date: "2024-01-21" },
-  { id: "008", name: "Fiona Green", email: "fiona@example.com", status: "paid", amount: 730, date: "2024-01-22" },
+  {
+    id: "001",
+    name: "John Doe",
+    email: "john@example.com",
+    status: "paid",
+    amount: 250,
+    date: "2024-01-15",
+  },
+  {
+    id: "002",
+    name: "Jane Smith",
+    email: "jane@example.com",
+    status: "pending",
+    amount: 150,
+    date: "2024-01-16",
+  },
+  {
+    id: "003",
+    name: "Bob Johnson",
+    email: "bob@example.com",
+    status: "failed",
+    amount: 350,
+    date: "2024-01-17",
+  },
+  {
+    id: "004",
+    name: "Alice Brown",
+    email: "alice@example.com",
+    status: "paid",
+    amount: 420,
+    date: "2024-01-18",
+  },
+  {
+    id: "005",
+    name: "Charlie Wilson",
+    email: "charlie@example.com",
+    status: "paid",
+    amount: 180,
+    date: "2024-01-19",
+  },
+  {
+    id: "006",
+    name: "Diana Prince",
+    email: "diana@example.com",
+    status: "pending",
+    amount: 560,
+    date: "2024-01-20",
+  },
+  {
+    id: "007",
+    name: "Edward Norton",
+    email: "edward@example.com",
+    status: "failed",
+    amount: 90,
+    date: "2024-01-21",
+  },
+  {
+    id: "008",
+    name: "Fiona Green",
+    email: "fiona@example.com",
+    status: "paid",
+    amount: 730,
+    date: "2024-01-22",
+  },
 ];
 
 const tableColumns: ColumnDef<Transaction>[] = [

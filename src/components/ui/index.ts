@@ -1,3 +1,7 @@
+export type { AlertProps } from "./alert";
+export { Alert, alertVariants } from "./alert";
+export type { AvatarGroupProps, AvatarProps } from "./avatar";
+export { Avatar, AvatarGroup, avatarVariants } from "./avatar";
 export type { BadgeProps } from "./badge";
 export { Badge, badgeVariants } from "./badge";
 export type { AsyncButtonProps, ButtonLinkProps, ButtonProps } from "./button";
@@ -82,6 +86,7 @@ export {
   Field,
   FormField,
   InputFormField,
+  RadioFormField,
   SelectFormField,
   SwitchFormField,
   TextareaFormField,
@@ -120,6 +125,8 @@ export {
   PopoverContent,
   popoverContentVariants,
 } from "./popover";
+export type { RadioGroupProps, RadioProps } from "./radio";
+export { Radio, RadioGroup, radioVariants } from "./radio";
 export type { SegmentedOption, SegmentedProps } from "./segmented";
 export { Segmented, segmentedVariants } from "./segmented";
 export type {
@@ -152,6 +159,8 @@ export {
   useSelectOptions,
   useSelectState,
 } from "./select";
+export type { SeparatorProps } from "./separator";
+export { Divider, Separator } from "./separator";
 export type { SpinnerProps } from "./spinner";
 export { Spinner, spinnerVariants } from "./spinner";
 export type { StatCardColor, StatCardProps } from "./stat-card";

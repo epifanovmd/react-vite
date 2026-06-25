@@ -138,7 +138,9 @@ export const PopoverSection: FC = () => (
               </Popover.Trigger>
               <Popover.Content size="sm" side={side}>
                 <p className="font-medium capitalize">{side}</p>
-                <p className="text-muted-foreground mt-1">Панель со стрелкой.</p>
+                <p className="text-muted-foreground mt-1">
+                  Панель со стрелкой.
+                </p>
                 <Popover.Arrow />
               </Popover.Content>
             </Popover>

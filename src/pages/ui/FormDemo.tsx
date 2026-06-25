@@ -6,6 +6,8 @@ import {
   InputFormField,
   Modal,
   ModalContent,
+  Radio,
+  RadioFormField,
   SelectFormField,
   SwitchFormField,
 } from "@components/ui";
@@ -55,6 +57,9 @@ const schema = z
       required_error: "Please select a role",
     }),
     country: z.string().min(1, "Please select a country"),
+    plan: z.enum(["free", "pro", "team"], {
+      required_error: "Please choose a plan",
+    }),
     bio: z.string().max(200, "Bio must be at most 200 characters").optional(),
     emailNotifications: z.boolean(),
     acceptTerms: z
@@ -84,6 +89,7 @@ const CreateUserForm = ({
       confirmPassword: "",
       role: undefined,
       country: "",
+      plan: undefined,
       bio: "",
       emailNotifications: false,
       acceptTerms: false,
@@ -162,6 +168,19 @@ const CreateUserForm = ({
             options={countryOptions}
           />
         </div>
+
+        {/* Plan — RadioFormField with Radio options as children */}
+        <RadioFormField<FormData>
+          name="plan"
+          label="Plan"
+          description="Choose a subscription tier"
+          required
+          orientation="horizontal"
+        >
+          <Radio value="free" label="Free" />
+          <Radio value="pro" label="Pro" />
+          <Radio value="team" label="Team" />
+        </RadioFormField>
 
         {/* Bio — raw FormField (demonstrates render prop + TName narrowing) */}
         <FormField<FormData, "bio">
