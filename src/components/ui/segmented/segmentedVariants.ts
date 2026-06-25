@@ -1,5 +1,7 @@
 import { cva } from "class-variance-authority";
 
+import { CONTROL_HEIGHT } from "../controlSize";
+
 export const segmentedVariants = cva(
   "flex grow items-center gap-1 rounded-lg p-1 transition-colors overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
   {
@@ -11,9 +13,9 @@ export const segmentedVariants = cva(
         outline: "border border-border bg-transparent",
       },
       size: {
-        sm: "h-8 text-xs",
-        md: "h-10 text-sm",
-        lg: "h-12 text-base",
+        sm: `${CONTROL_HEIGHT.sm} text-xs`,
+        md: `${CONTROL_HEIGHT.md} text-sm`,
+        lg: `${CONTROL_HEIGHT.lg} text-base`,
       },
     },
     defaultVariants: {

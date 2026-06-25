@@ -1,5 +1,7 @@
 import { cva } from "class-variance-authority";
 
+import { CONTROL_HEIGHT } from "../controlSize";
+
 export const tabsMotionVariants = cva("absolute z-0", {
   variants: {
     variant: {
@@ -22,9 +24,9 @@ export const tabsListVariants = cva(
         underline: "w-full rounded-none bg-transparent border-b border-border",
       },
       size: {
-        sm: "h-8 text-xs",
-        md: "h-10 text-sm",
-        lg: "h-12 text-base",
+        sm: `${CONTROL_HEIGHT.sm} text-xs`,
+        md: `${CONTROL_HEIGHT.md} text-sm`,
+        lg: `${CONTROL_HEIGHT.lg} text-base`,
       },
     },
     defaultVariants: {

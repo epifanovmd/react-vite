@@ -1,12 +1,20 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
+import { CONTROL_HEIGHT } from "./controlSize";
+
 export const FIELD_BASE =
   "flex grow min-w-0 rounded-lg px-3 transition-all duration-200 focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
 
+export const FIELD_SIZE_TYPO = {
+  sm: "text-sm px-2",
+  md: "text-sm",
+  lg: "text-base px-4",
+} as const;
+
 export const FIELD_SIZE_VARIANTS = {
-  sm: "h-8 text-sm px-2",
-  md: "h-10 text-sm",
-  lg: "h-12 text-base px-4",
+  sm: `${CONTROL_HEIGHT.sm} ${FIELD_SIZE_TYPO.sm}`,
+  md: `${CONTROL_HEIGHT.md} ${FIELD_SIZE_TYPO.md}`,
+  lg: `${CONTROL_HEIGHT.lg} ${FIELD_SIZE_TYPO.lg}`,
 } as const;
 
 export const FIELD_VARIANT_MAP = {

@@ -1,5 +1,7 @@
 import { cva } from "class-variance-authority";
 
+import { CONTROL_SQUARE } from "../controlSize";
+
 export const iconButtonVariants = cva(
   "inline-flex items-center justify-center rounded-md transition-colors cursor-pointer disabled:pointer-events-none disabled:opacity-50",
   {
@@ -15,9 +17,9 @@ export const iconButtonVariants = cva(
           "rounded-full bg-primary text-primary-foreground hover:bg-primary/85 shadow-sm hover:shadow-md",
       },
       size: {
-        sm: "h-7 w-7 p-1",
-        md: "h-9 w-9 p-1.5",
-        lg: "h-11 w-11 p-2",
+        sm: `${CONTROL_SQUARE.sm} p-1`,
+        md: `${CONTROL_SQUARE.md} p-1.5`,
+        lg: `${CONTROL_SQUARE.lg} p-2`,
       },
     },
     defaultVariants: {
