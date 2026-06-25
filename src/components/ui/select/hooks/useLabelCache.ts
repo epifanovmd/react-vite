@@ -1,20 +1,28 @@
 import * as React from "react";
 
-import { SelectOption, SelectValue } from "../types";
+import type { SelectOption, SelectValue } from "../types";
 
-export function useLabelCache<V extends SelectValue>() {
-  const cacheRef = React.useRef<Partial<Record<string, React.ReactNode>>>({});
+export const useLabelCache = <V extends SelectValue>() => {
+  const cacheRef = React.useRef<Map<V, string>>(new Map());
 
   const updateCache = React.useCallback((opts: SelectOption<V>[]) => {
     opts.forEach(o => {
-      cacheRef.current[String(o.value)] = o.label;
+      cacheRef.current.set(o.value, o.label as string);
+    });
+  }, []);
+
+  const seedCache = React.useCallback((opts: SelectOption<V>[]) => {
+    opts.forEach(o => {
+      if (!cacheRef.current.has(o.value)) {
+        cacheRef.current.set(o.value, o.label as string);
+      }
     });
   }, []);
 
   const getLabel = React.useCallback(
-    (v: V): React.ReactNode => cacheRef.current[String(v)] ?? v,
+    (v: V): string => cacheRef.current.get(v) ?? String(v ?? ""),
     [],
   );
 
-  return { updateCache, getLabel };
-}
+  return { updateCache, seedCache, getLabel };
+};
