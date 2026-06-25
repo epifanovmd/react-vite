@@ -8,53 +8,106 @@ import {
   Chips,
   Tag,
 } from "@components/ui";
-import { FC } from "react";
+import { type FC, type ReactNode } from "react";
+
+const Row = ({ children }: { children: ReactNode }) => (
+  <div className="flex flex-wrap gap-2 items-center">{children}</div>
+);
 
 export const TagsBadgesSection: FC = () => (
   <Card>
     <CardHeader>
       <CardTitle className="text-base">Tags & Badges</CardTitle>
-      <CardDescription className="text-xs">Метки и теги</CardDescription>
+      <CardDescription className="text-xs">
+        Tag, Badge и Chips — общая палитра вариантов
+      </CardDescription>
     </CardHeader>
-    <CardContent className="space-y-3">
-      <div className="flex flex-wrap gap-1.5">
-        <Tag size="sm">Default</Tag>
-        <Tag size="sm" variant="primary">
-          Primary
-        </Tag>
-        <Tag size="sm" variant="success">
-          Success
-        </Tag>
-        <Tag size="sm" variant="warning">
-          Warning
-        </Tag>
-        <Tag size="sm" variant="destructive">
-          Error
-        </Tag>
-        <Tag size="sm" variant="info">
-          Info
-        </Tag>
+    <CardContent className="flex flex-col gap-4">
+      <div>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          Tag — метка с вариантами
+        </p>
+        <Row>
+          <Tag>Default</Tag>
+          <Tag variant="primary">Primary</Tag>
+          <Tag variant="secondary">Secondary</Tag>
+          <Tag variant="success">Success</Tag>
+          <Tag variant="warning">Warning</Tag>
+          <Tag variant="destructive">Destructive</Tag>
+          <Tag variant="danger">Danger</Tag>
+          <Tag variant="info">Info</Tag>
+          <Tag variant="gray">Gray</Tag>
+          <Tag variant="outline">Outline</Tag>
+          <Tag variant="muted">Muted</Tag>
+          <Tag variant="primary" onRemove={() => {}}>Removable</Tag>
+          <Tag variant="success" leftIcon={<span>✓</span>}>Icon</Tag>
+        </Row>
       </div>
-      <div className="flex flex-wrap gap-2 items-center">
-        <Badge size="sm">5</Badge>
-        <Badge size="sm" variant="primary">
-          99+
-        </Badge>
-        <Badge size="sm" variant="success">
-          New
-        </Badge>
-        <Badge size="sm" variant="destructive">
-          !
-        </Badge>
+
+      <hr className="border-border" />
+
+      <div>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          Badge — счётчик / индикатор (без remove)
+        </p>
+        <Row>
+          <Badge>Default</Badge>
+          <Badge variant="primary">Primary</Badge>
+          <Badge variant="secondary">Secondary</Badge>
+          <Badge variant="success">Success</Badge>
+          <Badge variant="warning">Warning</Badge>
+          <Badge variant="destructive">Destructive</Badge>
+          <Badge variant="danger">Danger</Badge>
+          <Badge variant="info">Info</Badge>
+          <Badge variant="gray">Gray</Badge>
+          <Badge variant="purple">Purple</Badge>
+          <Badge variant="outline">Outline</Badge>
+          <Badge variant="muted">Muted</Badge>
+          <Badge variant="primary" dot>Dot</Badge>
+          <Badge variant="success" dot>Online</Badge>
+        </Row>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        <Chips size="sm">Chip 1</Chips>
-        <Chips size="sm" variant="primary">
-          Chip 2
-        </Chips>
-        <Chips size="sm" onRemove={() => {}}>
-          Removable
-        </Chips>
+
+      <hr className="border-border" />
+
+      <div>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          Chips — active (active=true, default)
+        </p>
+        <Row>
+          <Chips>Default</Chips>
+          <Chips variant="primary">Primary</Chips>
+          <Chips variant="secondary">Secondary</Chips>
+          <Chips variant="success">Success</Chips>
+          <Chips variant="warning">Warning</Chips>
+          <Chips variant="destructive">Destructive</Chips>
+          <Chips variant="danger">Danger</Chips>
+          <Chips variant="info">Info</Chips>
+          <Chips variant="gray">Gray</Chips>
+          <Chips variant="outline">Outline</Chips>
+          <Chips variant="muted">Muted</Chips>
+          <Chips onRemove={() => {}}>Removable</Chips>
+          <Chips variant="primary" onRemove={() => {}}>Primary ×</Chips>
+          <Chips variant="success" leftIcon={<span>✓</span>}>Icon</Chips>
+        </Row>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-2 mb-2">
+          Chips — inactive (active=false)
+        </p>
+        <Row>
+          <Chips active={false}>Default</Chips>
+          <Chips variant="primary" active={false}>Primary</Chips>
+          <Chips variant="secondary" active={false}>Secondary</Chips>
+          <Chips variant="success" active={false}>Success</Chips>
+          <Chips variant="warning" active={false}>Warning</Chips>
+          <Chips variant="destructive" active={false}>Destructive</Chips>
+          <Chips variant="danger" active={false}>Danger</Chips>
+          <Chips variant="info" active={false}>Info</Chips>
+          <Chips variant="gray" active={false}>Gray</Chips>
+          <Chips variant="outline" active={false}>Outline</Chips>
+          <Chips variant="muted" active={false}>Muted</Chips>
+          <Chips onRemove={() => {}} active={false}>Removable</Chips>
+          <Chips variant="primary" onRemove={() => {}} active={false}>Primary ×</Chips>
+        </Row>
       </div>
     </CardContent>
   </Card>

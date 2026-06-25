@@ -34,7 +34,7 @@ export const UserInfoCard: FC<UserInfoCardProps> = ({
         </div>
         <div className="flex flex-wrap items-center justify-center gap-1.5">
           {role && (
-            <Badge variant="secondary" size="sm">
+            <Badge variant="secondary">
               {role}
             </Badge>
           )}

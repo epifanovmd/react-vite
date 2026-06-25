@@ -9,6 +9,8 @@ export interface UseAsyncOptionsConfig<TData, V extends SelectValue> {
   loadOnce?: boolean;
   deps?: React.DependencyList;
   refetchInterval?: number;
+  fetchOnMount?: boolean;
+  minQueryLength?: number;
 }
 
 export function useAsyncOptions<TData, V extends SelectValue>({
@@ -18,6 +20,8 @@ export function useAsyncOptions<TData, V extends SelectValue>({
   loadOnce = false,
   deps = [],
   refetchInterval,
+  fetchOnMount = false,
+  minQueryLength = 0,
 }: UseAsyncOptionsConfig<TData, V>): SelectDataProps<V> {
   const [options, setOptions] = React.useState<SelectOption<V>[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -27,34 +31,68 @@ export function useAsyncOptions<TData, V extends SelectValue>({
   const fetchRef = React.useRef(fetch);
   const getOptionRef = React.useRef(getOption);
   const loadedRef = React.useRef(false);
+  const mountedRef = React.useRef(false);
 
   fetchRef.current = fetch;
   getOptionRef.current = getOption;
 
-  const doFetch = React.useCallback(async (q: string, signal: AbortSignal) => {
-    setLoading(true);
-    try {
-      const data = await fetchRef.current(q, signal);
+  const doFetch = React.useCallback(
+    async (q: string, signal: AbortSignal, keepOptions?: boolean) => {
+      if (!keepOptions) setOptions([]);
 
-      if (!signal.aborted) {
-        setOptions(data.map(item => getOptionRef.current(item)));
-        loadedRef.current = true;
+      setLoading(true);
+      try {
+        const data = await fetchRef.current(q, signal);
+
+        if (!signal.aborted) {
+          setOptions(data.map(item => getOptionRef.current(item)));
+          loadedRef.current = true;
+        }
+      } catch {
+        if (!signal.aborted) setOptions([]);
+      } finally {
+        if (!signal.aborted) setLoading(false);
       }
-    } catch {
-      if (!signal.aborted) setOptions([]);
-    } finally {
-      if (!signal.aborted) setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
+  // Сброс loadedRef при изменении deps
   React.useEffect(() => {
     loadedRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
+  // fetchOnMount — отдельный эффект, не зависит от open
+  React.useEffect(() => {
+    if (!fetchOnMount) return;
+
+    const ctrl = new AbortController();
+
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      doFetch("", ctrl.signal, true);
+    }
+
+    return () => {
+      ctrl.abort();
+      mountedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchOnMount, ...deps]);
+
+  // Open / query — основной fetch
   React.useEffect(() => {
     if (!open) return;
+
+    // Если fetchOnMount уже загрузил данные, не фетчим при открытии
+    if (fetchOnMount && loadedRef.current && query === "") return;
+
+    // loadOnce — кеш, не перезапрашиваем
     if (loadOnce && loadedRef.current && query === "") return;
+
+    // minQueryLength — не фетчить пока недостаточно символов
+    if (query.length < minQueryLength) return;
 
     const ctrl = new AbortController();
     const timer = setTimeout(
@@ -67,8 +105,9 @@ export function useAsyncOptions<TData, V extends SelectValue>({
       ctrl.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, query, debounce, loadOnce, doFetch, ...deps]);
+  }, [open, query, debounce, loadOnce, minQueryLength, doFetch, fetchOnMount, ...deps]);
 
+  // refetchInterval — поллинг пока открыт
   React.useEffect(() => {
     if (!refetchInterval || !open) return;
 

@@ -18,7 +18,7 @@ export const SelectTag = ({
 }: SelectTagProps) => (
   <span
     className={cn(
-      "inline-flex items-center gap-0.5 rounded bg-accent text-accent-foreground",
+      "inline-flex items-center gap-0.5 rounded-sm bg-accent text-accent-foreground",
       "px-1.5 py-0.5 text-xs font-medium max-w-[150px]",
       disabled && "opacity-50",
       className,

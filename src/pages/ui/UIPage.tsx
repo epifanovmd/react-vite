@@ -1,4 +1,5 @@
 import { PageHeader, PageLayout } from "@components/layouts";
+import { ThemeToggle } from "@components/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui";
 import { LayoutGrid } from "lucide-react";
 import { FC } from "react";
@@ -12,6 +13,7 @@ export const UIPage: FC = () => (
         title="UI Kit"
         subtitle="Библиотека компонентов на Radix UI, Tailwind CSS и CVA"
         icon={<LayoutGrid size={18} />}
+        actions={<ThemeToggle />}
       />
     }
   >

@@ -83,7 +83,7 @@ export const Dashboard: FC = observer(() => {
             <p className="text-sm font-semibold text-foreground">
               Быстрый доступ
             </p>
-            <Badge size="sm" variant="secondary">
+            <Badge variant="secondary">
               {QUICK_LINKS.length}
             </Badge>
           </div>

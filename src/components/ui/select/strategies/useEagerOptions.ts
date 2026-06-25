@@ -1,6 +1,11 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption, SelectValue } from "../types";
+import type {
+  FilterOptionPredicate,
+  SelectDataProps,
+  SelectOption,
+  SelectValue,
+} from "../types";
 import { filterByLabel } from "./filterByLabel";
 
 export interface UseEagerOptionsConfig<TData, V extends SelectValue> {
@@ -8,6 +13,7 @@ export interface UseEagerOptionsConfig<TData, V extends SelectValue> {
   getOption: (item: TData) => SelectOption<V>;
   search?: boolean;
   fetchKey?: string | number;
+  filterOption?: boolean | FilterOptionPredicate<V>;
 }
 
 export function useEagerOptions<TData, V extends SelectValue>({
@@ -15,6 +21,7 @@ export function useEagerOptions<TData, V extends SelectValue>({
   getOption,
   search,
   fetchKey,
+  filterOption,
 }: UseEagerOptionsConfig<TData, V>): SelectDataProps<V> {
   const [data, setData] = React.useState<TData[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -30,6 +37,8 @@ export function useEagerOptions<TData, V extends SelectValue>({
     const ctrl = new AbortController();
 
     setLoading(true);
+    setData([]);
+
     fetchRef
       .current(ctrl.signal)
       .then(d => {
@@ -43,6 +52,7 @@ export function useEagerOptions<TData, V extends SelectValue>({
       });
 
     return () => ctrl.abort();
+     
   }, [fetchKey]);
 
   const all = React.useMemo(
@@ -50,9 +60,14 @@ export function useEagerOptions<TData, V extends SelectValue>({
     [data],
   );
 
+  const doFilter = search && filterOption !== false;
+
+  const predicate =
+    typeof filterOption === "function" ? filterOption : undefined;
+
   const filtered = React.useMemo(
-    () => (search ? filterByLabel(all, query) : all),
-    [all, query, search],
+    () => (doFilter ? filterByLabel(all, query, predicate) : all),
+    [all, query, doFilter, predicate],
   );
 
   if (!search) return { options: all, loading };

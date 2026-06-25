@@ -139,7 +139,7 @@ export const UserDetail: FC<UserDetailProps> = observer(
                         <div className="flex flex-wrap gap-1.5">
                           {user.roles.length ? (
                             user.roles.map(r => (
-                              <Badge key={r.id} variant="secondary" size="sm">
+                              <Badge key={r.id} variant="secondary">
                                 {String(r.name)}
                               </Badge>
                             ))
@@ -158,7 +158,7 @@ export const UserDetail: FC<UserDetailProps> = observer(
                         <div className="flex flex-wrap gap-1.5">
                           {user.directPermissions.length ? (
                             user.directPermissions.map(p => (
-                              <Badge key={p.id} variant="gray" size="sm">
+                              <Badge key={p.id} variant="gray">
                                 {String(p.name)}
                               </Badge>
                             ))

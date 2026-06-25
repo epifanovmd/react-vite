@@ -5,6 +5,11 @@ export type {
 export { useKeyboardNav } from "./useKeyboardNav";
 export { useLabelCache } from "./useLabelCache";
 export type {
+  UseLabelInValueBridgeOptions,
+  UseLabelInValueBridgeResult,
+} from "./useLabelInValueBridge";
+export { useLabelInValueBridge } from "./useLabelInValueBridge";
+export type {
   UseSelectStateOptions,
   UseSelectStateResult,
 } from "./useSelectState";

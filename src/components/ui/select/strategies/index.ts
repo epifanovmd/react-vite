@@ -3,6 +3,8 @@ export type { UseAsyncOptionsConfig } from "./useAsyncOptions";
 export { useAsyncOptions } from "./useAsyncOptions";
 export type { UseControlledOptionsConfig } from "./useControlledOptions";
 export { useControlledOptions } from "./useControlledOptions";
+export type { UseDependentOptionsConfig } from "./useDependentOptions";
+export { useDependentOptions } from "./useDependentOptions";
 export type { UseEagerOptionsConfig } from "./useEagerOptions";
 export { useEagerOptions } from "./useEagerOptions";
 export type { UseInfiniteOptionsConfig } from "./useInfiniteOptions";

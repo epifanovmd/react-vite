@@ -14,7 +14,7 @@ export { GroupedSelectProps };
 export function GroupedSelect<V extends SelectValue = string>(
   props: GroupedSelectProps<V>,
 ): React.ReactElement {
-  const { groups = [], ...rest } = props;
+  const { groups = [], optionRender, ...rest } = props;
 
   const flatOptions = React.useMemo<SelectOption<V>[]>(
     () => groups.flatMap(g => g.options as SelectOption<V>[]),
@@ -47,7 +47,15 @@ export function GroupedSelect<V extends SelectValue = string>(
                     onFocus={() => setFocusedIndex(flatIdx)}
                     onBlur={() => setFocusedIndex(-1)}
                   >
-                    {opt.label}
+                    {optionRender
+                      ? optionRender({
+                          option: opt as SelectOption<V>,
+                          index: flatIdx,
+                          selected: isSelected(opt.value as V),
+                          focused: flatIdx === focusedIndex,
+                          disabled: !!opt.disabled,
+                        })
+                      : opt.label}
                   </SelectListItem>
                 );
               })}

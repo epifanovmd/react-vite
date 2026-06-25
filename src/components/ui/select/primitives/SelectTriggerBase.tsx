@@ -23,6 +23,7 @@ export const SelectTriggerBase = React.forwardRef<
       className,
       size,
       variant,
+      valid,
       loading,
       showClear,
       onClear,
@@ -35,7 +36,7 @@ export const SelectTriggerBase = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        selectTriggerVariants({ size, variant }),
+        selectTriggerVariants({ size, variant, valid }),
         cursorText ? "cursor-text" : "cursor-pointer",
         className,
       )}

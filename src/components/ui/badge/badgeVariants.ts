@@ -3,7 +3,7 @@ import { cva } from "class-variance-authority";
 import { INTENT_SOFT, INTENT_SOLID } from "../foundation/intent";
 
 export const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 justify-center rounded-full font-semibold max-w-full overflow-hidden truncate transition-all duration-200",
+  "inline-flex items-center gap-1.5 justify-center rounded-full font-semibold max-w-full overflow-hidden truncate transition-all duration-200 h-5 min-w-5 px-2 text-xs",
   {
     variants: {
       variant: {
@@ -20,15 +20,9 @@ export const badgeVariants = cva(
         outline: "border border-border bg-background text-foreground",
         muted: "bg-muted text-muted-foreground",
       },
-      size: {
-        sm: "h-5 min-w-5 px-2 text-xs",
-        md: "h-6 min-w-6 px-2.5 text-sm",
-        lg: "h-7 min-w-7 px-3 text-base",
-      },
     },
     defaultVariants: {
       variant: "default",
-      size: "sm",
     },
   },
 );

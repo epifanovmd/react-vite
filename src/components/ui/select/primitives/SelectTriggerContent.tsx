@@ -17,6 +17,7 @@ export interface SelectTriggerContentProps<V> {
   getLabel: (v: V) => React.ReactNode;
   searchInputProps: ComponentPropsWithRef<"input">;
   onRemoveTag: (v: V) => void;
+  maxTagCount?: number;
 }
 
 export function SelectTriggerContent<V>({
@@ -32,6 +33,7 @@ export function SelectTriggerContent<V>({
   getLabel,
   searchInputProps,
   onRemoveTag,
+  maxTagCount,
 }: SelectTriggerContentProps<V>): React.ReactElement {
   if (multi) {
     const vals = selectedValues;
@@ -45,9 +47,16 @@ export function SelectTriggerContent<V>({
         );
       }
 
+      const visibleVals =
+        maxTagCount != null && vals.length > maxTagCount
+          ? vals.slice(0, maxTagCount)
+          : vals;
+      const overflowCount =
+        maxTagCount != null ? vals.length - maxTagCount : 0;
+
       return (
         <div className="flex flex-wrap gap-1 flex-1 min-w-0 overflow-hidden items-center py-0.5">
-          {vals.map((v, index) => (
+          {visibleVals.map((v, index) => (
             <SelectTag
               key={index}
               label={getLabel(v)}
@@ -55,6 +64,11 @@ export function SelectTriggerContent<V>({
               disabled={disabled}
             />
           ))}
+          {overflowCount > 0 && (
+            <span className="inline-flex items-center rounded-md bg-accent px-2 py-0.5 text-xs font-medium text-muted-foreground opacity-60">
+              +{overflowCount}
+            </span>
+          )}
           {search && (
             <input
               {...searchInputProps}

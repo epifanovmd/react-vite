@@ -110,7 +110,7 @@ export const SecurityTab: FC = observer(() => {
         description={user?.email ?? "Email не указан"}
       >
         {user?.emailVerified ? (
-          <Badge variant="success" dot size="sm">
+          <Badge variant="success" dot>
             Подтверждён
           </Badge>
         ) : (

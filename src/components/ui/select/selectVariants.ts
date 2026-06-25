@@ -28,6 +28,10 @@ export const selectTriggerVariants = cva(
     variants: {
       size: FIELD_SIZE_VARIANTS,
       variant: FIELD_VARIANT_MAP,
+      valid: {
+        true: "shadow-state-success focus-visible:shadow-focus-success",
+        false: "shadow-state-error focus-visible:shadow-focus-error",
+      },
     },
     defaultVariants: {
       size: "md",

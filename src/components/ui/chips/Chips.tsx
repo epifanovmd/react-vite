@@ -18,7 +18,7 @@ const Chips = React.forwardRef<HTMLDivElement, ChipsProps>(
     {
       className,
       variant,
-      size,
+      active,
       onRemove,
       leftIcon,
       avatar,
@@ -34,7 +34,7 @@ const Chips = React.forwardRef<HTMLDivElement, ChipsProps>(
     return (
       <div
         className={cn(
-          chipsVariants({ variant, size, clickable: isClickable, className }),
+          chipsVariants({ variant, active, clickable: isClickable, className }),
         )}
         ref={ref}
         onClick={onClick}

@@ -14,12 +14,12 @@ export interface TagProps
 
 const Tag = React.forwardRef<HTMLDivElement, TagProps>(
   (
-    { className, variant, size, onRemove, leftIcon, children, ...props },
+    { className, variant, onRemove, leftIcon, children, ...props },
     ref,
   ) => {
     return (
       <div
-        className={cn(tagVariants({ variant, size, className }))}
+        className={cn(tagVariants({ variant, className }))}
         ref={ref}
         {...props}
       >

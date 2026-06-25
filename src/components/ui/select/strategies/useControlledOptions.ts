@@ -1,6 +1,11 @@
 import * as React from "react";
 
-import type { SelectDataProps, SelectOption, SelectValue } from "../types";
+import type {
+  FilterOptionPredicate,
+  SelectDataProps,
+  SelectOption,
+  SelectValue,
+} from "../types";
 import { filterByLabel } from "./filterByLabel";
 
 export interface UseControlledOptionsConfig<TData, V extends SelectValue> {
@@ -8,6 +13,7 @@ export interface UseControlledOptionsConfig<TData, V extends SelectValue> {
   getOption: (item: TData) => SelectOption<V>;
   loading?: boolean;
   search?: boolean;
+  filterOption?: boolean | FilterOptionPredicate<V>;
 }
 
 export function useControlledOptions<TData, V extends SelectValue>({
@@ -15,6 +21,7 @@ export function useControlledOptions<TData, V extends SelectValue>({
   getOption,
   loading,
   search,
+  filterOption,
 }: UseControlledOptionsConfig<TData, V>): SelectDataProps<V> {
   const [query, setQuery] = React.useState("");
 
@@ -23,9 +30,14 @@ export function useControlledOptions<TData, V extends SelectValue>({
     [data, getOption],
   );
 
+  const doFilter = search && filterOption !== false;
+
+  const predicate =
+    typeof filterOption === "function" ? filterOption : undefined;
+
   const filtered = React.useMemo(
-    () => (search ? filterByLabel(all, query) : all),
-    [all, query, search],
+    () => (doFilter ? filterByLabel(all, query, predicate) : all),
+    [all, query, doFilter, predicate],
   );
 
   if (!search) return { options: all, loading };

@@ -33,7 +33,7 @@ export const HeaderNavItem: FC<HeaderNavItemProps> = ({
     <item.icon size={NAV_ICON_SIZE} className="flex-shrink-0" />
     <span className={cn(list && "flex-1", "truncate")}>{item.label}</span>
     {item.badge ? (
-      <Badge size="sm" variant="secondary">
+      <Badge variant="secondary">
         {item.badge}
       </Badge>
     ) : null}

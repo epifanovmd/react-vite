@@ -1,7 +1,7 @@
 import * as React from "react";
 import { type Control, type FieldValues, type Path } from "react-hook-form";
 
-import { Select, type SelectHandle, type SelectProps, type SelectValue } from "../../select";
+import { type ISelectRef, Select, type SelectProps, type SelectValue } from "../../select";
 import { FormField } from "../FormField";
 import type { FieldProps } from "../types";
 
@@ -40,7 +40,7 @@ export function SelectFormField<
         <Select<V>
           {...({
             ...selectProps,
-            ref: field.ref as React.Ref<SelectHandle>,
+            ref: field.ref as React.Ref<ISelectRef>,
             value: (field.value as V | null | undefined) ?? null,
             clearable: true,
             onChange: (v: V | null) => field.onChange(v ?? undefined),
@@ -49,7 +49,7 @@ export function SelectFormField<
               onOpenChange?.(open);
             },
             variant: fieldState.invalid ? "error" : undefined,
-          } as SelectProps<V> & { ref?: React.Ref<SelectHandle> })}
+          } as SelectProps<V> & { ref?: React.Ref<ISelectRef> })}
         />
       )}
     />

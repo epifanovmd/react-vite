@@ -5,6 +5,11 @@ export type {
 } from "./hooks/useKeyboardNav";
 export { useKeyboardNav } from "./hooks/useKeyboardNav";
 export { useLabelCache } from "./hooks/useLabelCache";
+export type {
+  UseLabelInValueBridgeOptions,
+  UseLabelInValueBridgeResult,
+} from "./hooks/useLabelInValueBridge";
+export { useLabelInValueBridge } from "./hooks/useLabelInValueBridge";
 export type { UseSelectStateResult } from "./hooks/useSelectState";
 export { useSelectState } from "./hooks/useSelectState";
 export type { UseSelectValueResult } from "./hooks/useSelectValue";
@@ -25,12 +30,13 @@ export type { SelectTriggerContentProps } from "./primitives/SelectTriggerConten
 export { SelectTriggerContent } from "./primitives/SelectTriggerContent";
 export type { SelectTriggerIconProps } from "./primitives/SelectTriggerIcon";
 export { SelectTriggerIcon } from "./primitives/SelectTriggerIcon";
-export type { SelectHandle } from "./Select";
 export { Select } from "./Select";
 export type { UseAsyncOptionsConfig } from "./strategies/useAsyncOptions";
 export { useAsyncOptions } from "./strategies/useAsyncOptions";
 export type { UseControlledOptionsConfig } from "./strategies/useControlledOptions";
 export { useControlledOptions } from "./strategies/useControlledOptions";
+export type { UseDependentOptionsConfig } from "./strategies/useDependentOptions";
+export { useDependentOptions } from "./strategies/useDependentOptions";
 export type { UseEagerOptionsConfig } from "./strategies/useEagerOptions";
 export { useEagerOptions } from "./strategies/useEagerOptions";
 export type { UseInfiniteOptionsConfig } from "./strategies/useInfiniteOptions";
@@ -39,6 +45,17 @@ export type { UseStaticOptionsConfig } from "./strategies/useStaticOptions";
 export { useStaticOptions } from "./strategies/useStaticOptions";
 export type { GroupedSelectProps, SelectProps } from "./types";
 export type {
+  DropdownAlign,
+  DropdownCollisionPadding,
+  DropdownMaxWidth,
+  DropdownPlacementProps,
+  DropdownSide,
+  DropdownWidth,
+  FilterOptionPredicate,
+  ISelectRef,
+  LabeledValue,
+  OptionRenderer,
+  OptionRenderInfo,
   SelectDataProps,
   SelectOption,
   SelectOptionGroup,

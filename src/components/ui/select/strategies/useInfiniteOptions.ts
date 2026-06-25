@@ -11,6 +11,7 @@ export interface UseInfiniteOptionsConfig<TData, V extends SelectValue> {
   getOption: (item: TData) => SelectOption<V>;
   pageSize?: number;
   debounce?: number;
+  minQueryLength?: number;
 }
 
 export function useInfiniteOptions<TData, V extends SelectValue>({
@@ -18,6 +19,7 @@ export function useInfiniteOptions<TData, V extends SelectValue>({
   getOption,
   pageSize = 20,
   debounce = 300,
+  minQueryLength = 0,
 }: UseInfiniteOptionsConfig<TData, V>): SelectDataProps<V> {
   const [options, setOptions] = React.useState<SelectOption<V>[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -63,6 +65,8 @@ export function useInfiniteOptions<TData, V extends SelectValue>({
 
   React.useEffect(() => {
     if (!open) return;
+    if (query.length < minQueryLength) return;
+
     pageRef.current = 0;
     hasMoreRef.current = true;
 
@@ -76,7 +80,7 @@ export function useInfiniteOptions<TData, V extends SelectValue>({
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [open, query, debounce, load]);
+  }, [open, query, debounce, load, minQueryLength]);
 
   const onScrollEnd = React.useCallback(() => {
     if (loading || loadingMore || !hasMoreRef.current) return;
