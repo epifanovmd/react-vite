@@ -8,7 +8,7 @@ import {
   IUserWithTokensDto,
   TSignUpRequestDto,
   UserDto,
-} from "@api/api-gen/data-contracts";
+} from "@api/gen/model";
 import { IAuthSessionService } from "@core/auth";
 import { ProfileModel } from "@models";
 import { EntityHolder } from "@store";
@@ -135,7 +135,7 @@ class AuthStore implements IAuthStore {
     this._setStatus(AuthStatus.Loading);
     this.verifyError = undefined;
 
-    const res = await this._api.verify2Fa({
+    const res = await this._api.verify2FA({
       twoFactorToken: this.twoFactorToken,
       password,
     });

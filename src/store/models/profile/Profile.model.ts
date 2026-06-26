@@ -1,4 +1,4 @@
-import { ProfileDto } from "@api/api-gen/data-contracts";
+import { ProfileDto } from "@api/gen/model";
 import { LambdaValue } from "@utils/lambdaValue";
 import { computed, makeObservable } from "mobx";
 

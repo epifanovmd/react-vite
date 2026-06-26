@@ -1,4 +1,4 @@
-import { useApi } from "@api/hooks";
+import { useApi } from "@api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";

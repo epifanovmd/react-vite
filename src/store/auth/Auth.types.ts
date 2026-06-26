@@ -1,4 +1,4 @@
-import { ApiError } from "@api";
+import { ApiError, ApiResponse } from "@api";
 import {
   IProfileUpdateRequestDto,
   ISignInRequestDto,
@@ -6,8 +6,7 @@ import {
   ProfileDto,
   TSignUpRequestDto,
   UserDto,
-} from "@api/api-gen/data-contracts";
-import { ApiResponse } from "@api/api-gen/http-client";
+} from "@api/gen/model";
 import { createServiceDecorator } from "@di";
 import { ProfileModel } from "@models";
 import { IEntityHolderResult, IHolderError } from "@store";

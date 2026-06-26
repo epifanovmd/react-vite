@@ -1,4 +1,4 @@
-import { useApi } from "@api/hooks";
+import { useApi } from "@api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useHotkeys } from "@mantine/hooks";
 import { useNavigate } from "@tanstack/react-router";

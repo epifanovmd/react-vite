@@ -1,4 +1,4 @@
-import { UserDto } from "@api/api-gen/data-contracts";
+import { UserDto } from "@api/gen/model";
 import { computed, makeObservable } from "mobx";
 
 import { DataModelBase } from "../DataModelBase";

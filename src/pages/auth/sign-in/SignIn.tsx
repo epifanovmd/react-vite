@@ -1,6 +1,5 @@
 import { AuthFormCard } from "@components/layouts";
 import { Alert, AsyncButton, InputFormField } from "@components/ui";
-import { usePasskeyAuth } from "@core/auth";
 import { useHotkeys } from "@mantine/hooks";
 import { useAuthStore } from "@store";
 import { Link } from "@tanstack/react-router";
@@ -9,7 +8,7 @@ import { FormProvider } from "react-hook-form";
 
 import { TSignInForm } from "../validations";
 import { PasskeyLogin, TwoFactorPrompt } from "./components";
-import { useSignInVM } from "./hooks";
+import { usePasskeyAuth, useSignInVM } from "./hooks";
 
 export const SignIn = observer(() => {
   const auth = useAuthStore();

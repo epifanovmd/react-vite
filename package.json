@@ -24,7 +24,7 @@
     "prod": "vite preview",
     "build": "vite build",
     "lint:fix": "eslint --fix \"**/*{.ts,.tsx}\"",
-    "generate:api": "tsx ./scripts/generate-api.ts",
+    "generate:orval": "orval --config ./orval.config.ts",
     "prettier:fix": "prettier --parser typescript --write src/**/*.{ts,tsx}",
     "check-packages-updates": "yarn outdated"
   },
@@ -66,6 +66,7 @@
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",
     "motion": "^12.37.0",
+    "orval": "^8.19.0",
     "query-string": "^9.1.1",
     "react": "^19.1.0",
     "react-beautiful-dnd": "^13.1.1",
@@ -109,10 +110,8 @@
     "plop": "^4.0.1",
     "prettier": "^3.5.3",
     "sass": "^1.86.3",
-    "swagger-typescript-api": "13.6.5",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
-    "tsx": "^4.19.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1"
   },
