@@ -7,7 +7,6 @@ import { CardsSection } from "./CardsSection";
 import { ControlsSection } from "./ControlsSection";
 import { DatePickersSection } from "./DatePickersSection";
 import { EmptySection } from "./EmptySection";
-import { FormSection } from "./FormSection";
 import { InputsSection } from "./InputsSection";
 import { ModalsSection } from "./ModalsSection";
 import { NotificationsSection } from "./NotificationsSection";
@@ -53,5 +52,4 @@ export const UI_SECTIONS: UISection[] = [
   { value: "cards", label: "Карточки", Component: CardsSection },
   { value: "spinner", label: "Спиннеры", Component: SpinnerSection },
   { value: "empty", label: "Пустые состояния", Component: EmptySection },
-  { value: "forms", label: "Формы", Component: FormSection },
 ];

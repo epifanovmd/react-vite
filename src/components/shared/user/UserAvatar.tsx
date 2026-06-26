@@ -1,4 +1,4 @@
-import { cva, VariantProps } from "class-variance-authority";
+import { Avatar } from "@components/ui";
 import { FC } from "react";
 
 const COLORS = [
@@ -21,39 +21,22 @@ function colorFromString(s: string): string {
   return COLORS[Math.abs(h) % COLORS.length];
 }
 
-const avatarVariants = cva(
-  "rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0",
-  {
-    variants: {
-      size: {
-        sm: "w-7 h-7 text-xs",
-        md: "w-8 h-8 text-sm",
-        lg: "w-10 h-10 text-base",
-      },
-    },
-    defaultVariants: {
-      size: "md",
-    },
-  },
-);
-
-type UserAvatarProps = { name: string } & VariantProps<typeof avatarVariants>;
-
-export const UserAvatar: FC<UserAvatarProps> = ({
-  name,
-  size = "md",
-}) => {
-  const initials =
-    name
-      .split(" ")
-      .map(w => w[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "?";
-
-  return (
-    <div className={avatarVariants({ size, className: colorFromString(name) })}>
-      {initials}
-    </div>
-  );
+const SIZE_CLASS: Record<NonNullable<UserAvatarProps["size"]>, string> = {
+  sm: "w-7 h-7 text-xs",
+  md: "w-8 h-8 text-sm",
+  lg: "w-10 h-10 text-base",
+  xl: "w-20 h-20 text-2xl ring-4 ring-card shadow-md",
 };
+
+type UserAvatarProps = {
+  name: string;
+  size?: "sm" | "md" | "lg" | "xl";
+};
+
+export const UserAvatar: FC<UserAvatarProps> = ({ name, size = "md" }) => (
+  <Avatar
+    name={name}
+    fallback="?"
+    className={`${colorFromString(name)} font-semibold text-white ${SIZE_CLASS[size]}`}
+  />
+);

@@ -96,6 +96,8 @@ export type { FieldVariantProps } from "./foundation/fieldVariants";
 export { fieldVariants } from "./foundation/fieldVariants";
 export type { AsyncIconButtonProps, IconButtonProps } from "./icon-button";
 export { AsyncIconButton, IconButton, iconButtonVariants } from "./icon-button";
+export type { InfoFieldProps } from "./info-field";
+export { InfoField } from "./info-field";
 export type { InputProps } from "./input";
 export { Input, inputVariants } from "./input";
 export type { ModalContentProps, ModalOptions } from "./modal";

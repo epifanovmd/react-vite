@@ -13,19 +13,16 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
-import { Route as AppUsersRouteImport } from './routes/_app/users'
-import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 
 const UiLazyRouteImport = createFileRoute('/ui')()
-const AppIndexLazyRouteImport = createFileRoute('/_app/')()
 const AuthSignUpLazyRouteImport = createFileRoute('/_auth/sign-up')()
 const AuthSignInLazyRouteImport = createFileRoute('/_auth/sign-in')()
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
 const AppProfileLazyRouteImport = createFileRoute('/_app/profile')()
-const AppUsersIndexLazyRouteImport = createFileRoute('/_app/users/')()
 
 const UiLazyRoute = UiLazyRouteImport.update({
   id: '/ui',
@@ -40,11 +37,11 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexLazyRoute = AppIndexLazyRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
-} as any).lazy(() => import('./routes/_app/index.lazy').then((d) => d.Route))
+} as any)
 const AuthSignUpLazyRoute = AuthSignUpLazyRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
@@ -74,37 +71,15 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_auth/reset-password.lazy').then((d) => d.Route),
 )
-const AppUsersRoute = AppUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppUsersIndexLazyRoute = AppUsersIndexLazyRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppUsersRoute,
-} as any).lazy(() =>
-  import('./routes/_app/users/index.lazy').then((d) => d.Route),
-)
-const AppUsersUserIdRoute = AppUsersUserIdRouteImport.update({
-  id: '/$userId',
-  path: '/$userId',
-  getParentRoute: () => AppUsersRoute,
-} as any).lazy(() =>
-  import('./routes/_app/users/$userId.lazy').then((d) => d.Route),
-)
 
 export interface FileRoutesByFullPath {
   '/ui': typeof UiLazyRoute
-  '/users': typeof AppUsersRouteWithChildren
   '/reset-password': typeof AuthResetPasswordRoute
   '/profile': typeof AppProfileLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/sign-in': typeof AuthSignInLazyRoute
   '/sign-up': typeof AuthSignUpLazyRoute
-  '/': typeof AppIndexLazyRoute
-  '/users/$userId': typeof AppUsersUserIdRoute
-  '/users/': typeof AppUsersIndexLazyRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/ui': typeof UiLazyRoute
@@ -113,38 +88,30 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/sign-in': typeof AuthSignInLazyRoute
   '/sign-up': typeof AuthSignUpLazyRoute
-  '/': typeof AppIndexLazyRoute
-  '/users/$userId': typeof AppUsersUserIdRoute
-  '/users': typeof AppUsersIndexLazyRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/ui': typeof UiLazyRoute
-  '/_app/users': typeof AppUsersRouteWithChildren
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_app/profile': typeof AppProfileLazyRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/_auth/sign-in': typeof AuthSignInLazyRoute
   '/_auth/sign-up': typeof AuthSignUpLazyRoute
-  '/_app/': typeof AppIndexLazyRoute
-  '/_app/users/$userId': typeof AppUsersUserIdRoute
-  '/_app/users/': typeof AppUsersIndexLazyRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/ui'
-    | '/users'
     | '/reset-password'
     | '/profile'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
     | '/'
-    | '/users/$userId'
-    | '/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/ui'
@@ -154,22 +121,17 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/'
-    | '/users/$userId'
-    | '/users'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
     | '/ui'
-    | '/_app/users'
     | '/_auth/reset-password'
     | '/_app/profile'
     | '/_auth/forgot-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
     | '/_app/'
-    | '/_app/users/$userId'
-    | '/_app/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,7 +167,7 @@ declare module '@tanstack/react-router' {
       id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexLazyRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_auth/sign-up': {
@@ -243,54 +205,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_app/users': {
-      id: '/_app/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AppUsersRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/users/': {
-      id: '/_app/users/'
-      path: '/'
-      fullPath: '/users/'
-      preLoaderRoute: typeof AppUsersIndexLazyRouteImport
-      parentRoute: typeof AppUsersRoute
-    }
-    '/_app/users/$userId': {
-      id: '/_app/users/$userId'
-      path: '/$userId'
-      fullPath: '/users/$userId'
-      preLoaderRoute: typeof AppUsersUserIdRouteImport
-      parentRoute: typeof AppUsersRoute
-    }
   }
 }
 
-interface AppUsersRouteChildren {
-  AppUsersUserIdRoute: typeof AppUsersUserIdRoute
-  AppUsersIndexLazyRoute: typeof AppUsersIndexLazyRoute
-}
-
-const AppUsersRouteChildren: AppUsersRouteChildren = {
-  AppUsersUserIdRoute: AppUsersUserIdRoute,
-  AppUsersIndexLazyRoute: AppUsersIndexLazyRoute,
-}
-
-const AppUsersRouteWithChildren = AppUsersRoute._addFileChildren(
-  AppUsersRouteChildren,
-)
-
 interface AppRouteChildren {
-  AppUsersRoute: typeof AppUsersRouteWithChildren
   AppProfileLazyRoute: typeof AppProfileLazyRoute
-  AppIndexLazyRoute: typeof AppIndexLazyRoute
+  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppUsersRoute: AppUsersRouteWithChildren,
   AppProfileLazyRoute: AppProfileLazyRoute,
-  AppIndexLazyRoute: AppIndexLazyRoute,
+  AppIndexRoute: AppIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

@@ -194,6 +194,8 @@ class AuthStore implements IAuthStore {
     if (res.data && user) {
       this._userHolder.setData({ ...user, profile: res.data });
     }
+
+    return res;
   }
 
   async restore(tokens?: ITokensDto) {

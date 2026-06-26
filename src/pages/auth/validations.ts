@@ -18,5 +18,12 @@ export const signUpFormValidationSchema = z
     message: "Пароли не совпадают.",
   });
 
+export const forgotPasswordFormValidationSchema = z.object({
+  login: z.string().min(1, "Email или телефон обязателен"),
+});
+
 export type TSignInForm = z.infer<typeof signInFormValidationSchema>;
 export type TSignUpForm = z.infer<typeof signUpFormValidationSchema>;
+export type TForgotPasswordForm = z.infer<
+  typeof forgotPasswordFormValidationSchema
+>;

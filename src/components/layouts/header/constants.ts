@@ -1,10 +1,5 @@
 import { type LinkProps } from "@tanstack/react-router";
-import {
-  LayoutDashboard,
-  LayoutGrid,
-  type LucideIcon,
-  Users,
-} from "lucide-react";
+import { LayoutGrid, type LucideIcon, User } from "lucide-react";
 
 export interface NavItem {
   to: LinkProps["to"];
@@ -24,19 +19,9 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     items: [
       {
-        to: "/",
-        label: "Дашборд",
-        icon: LayoutDashboard,
-      },
-    ],
-  },
-  {
-    label: "Управление",
-    items: [
-      {
-        to: "/users",
-        label: "Пользователи",
-        icon: Users,
+        to: "/profile",
+        label: "Профиль",
+        icon: User,
       },
     ],
   },

@@ -1,10 +1,13 @@
+import { ApiError } from "@api";
 import {
   IProfileUpdateRequestDto,
   ISignInRequestDto,
   ITokensDto,
+  ProfileDto,
   TSignUpRequestDto,
   UserDto,
 } from "@api/api-gen/data-contracts";
+import { ApiResponse } from "@api/api-gen/http-client";
 import { createServiceDecorator } from "@di";
 import { ProfileModel } from "@models";
 import { IEntityHolderResult, IHolderError } from "@store";
@@ -35,7 +38,9 @@ export interface IAuthStore {
   signIn(params: ISignInRequestDto): Promise<void>;
   verify2FA(password: string): Promise<void>;
   signUp(params: TSignUpRequestDto): Promise<void>;
-  updateProfile(data: IProfileUpdateRequestDto): Promise<void>;
+  updateProfile(
+    data: IProfileUpdateRequestDto,
+  ): Promise<ApiResponse<ProfileDto, ApiError>>;
   restore(tokens?: ITokensDto): Promise<void>;
   signOut(): void;
 }
