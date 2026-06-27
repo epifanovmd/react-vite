@@ -1,6 +1,6 @@
 import { useNotification } from "@core/notifications";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuthStore } from "@store";
+import { useUserStore } from "@store";
 import { parseISO } from "date-fns";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -16,7 +16,7 @@ export const useEditProfileVM = ({
   open,
   onSuccess,
 }: UseEditProfileVMOptions) => {
-  const authStore = useAuthStore();
+  const userStore = useUserStore();
   const toast = useNotification();
 
   const form = useForm<TProfileForm>({
@@ -27,7 +27,7 @@ export const useEditProfileVM = ({
   useEffect(() => {
     if (!open) return;
 
-    const profile = authStore.user?.profile;
+    const profile = userStore.user?.profile;
 
     form.reset({
       firstName: profile?.firstName ?? "",
@@ -39,7 +39,7 @@ export const useEditProfileVM = ({
   }, [open]);
 
   const submit = form.handleSubmit(async data => {
-    const res = await authStore.updateProfile({
+    const res = await userStore.updateProfile({
       firstName: data.firstName || undefined,
       lastName: data.lastName || undefined,
       gender: data.gender || undefined,

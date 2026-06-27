@@ -1,15 +1,9 @@
-import { ApiError, ApiResponse } from "@api";
 import {
-  IProfileUpdateRequestDto,
   ISignInRequestDto,
   ITokensDto,
-  ProfileDto,
   TSignUpRequestDto,
-  UserDto,
 } from "@api/gen/model";
 import { createServiceDecorator } from "@di";
-import { ProfileModel } from "@models";
-import { IEntityHolderResult, IHolderError } from "@store";
 
 export enum AuthStatus {
   Idle = "idle",
@@ -20,10 +14,12 @@ export enum AuthStatus {
 
 export const IAuthStore = createServiceDecorator<IAuthStore>();
 
+/**
+ * Стор аутентификации и сессии. Доменные данные пользователя (профиль, роли,
+ * permissions) живут в `IUserStore`.
+ */
 export interface IAuthStore {
   readonly status: AuthStatus;
-  readonly user: UserDto | null;
-  readonly profile: ProfileModel | null;
   readonly error: string | undefined;
   readonly isIdle: boolean;
   readonly isAuthenticated: boolean;
@@ -33,13 +29,9 @@ export interface IAuthStore {
   readonly twoFactorHint?: string;
   readonly isTwoFactorRequired: boolean;
 
-  load(): Promise<IEntityHolderResult<UserDto, IHolderError>>;
   signIn(params: ISignInRequestDto): Promise<void>;
   verify2FA(password: string): Promise<void>;
   signUp(params: TSignUpRequestDto): Promise<void>;
-  updateProfile(
-    data: IProfileUpdateRequestDto,
-  ): Promise<ApiResponse<ProfileDto, ApiError>>;
   restore(tokens?: ITokensDto): Promise<void>;
   signOut(): void;
 }

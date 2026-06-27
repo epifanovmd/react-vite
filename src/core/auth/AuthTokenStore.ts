@@ -8,8 +8,8 @@ const REFRESH_TOKEN_KEY = "app:refresh_token";
 export const IAuthTokenStore = createServiceDecorator<IAuthTokenStore>();
 
 export interface IAuthTokenStore {
-  accessToken: string;
-  refreshToken: string;
+  readonly accessToken: string;
+  readonly refreshToken: string;
 
   isTokenExpiringSoon(bufferSeconds?: number): boolean;
   setTokens(accessToken: string, refreshToken: string): void;

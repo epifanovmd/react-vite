@@ -39,7 +39,7 @@ export default defineConfig({
       "@hooks": path.resolve(projectRootDir, "src/hooks"),
       "@di": path.resolve(projectRootDir, "src/di"),
       "@components": path.resolve(projectRootDir, "src/components"),
-      "@models": path.resolve(projectRootDir, "src/store/models"),
+      "@models": path.resolve(projectRootDir, "src/models"),
       "@store": path.resolve(projectRootDir, "src/store"),
       "@theme": path.resolve(projectRootDir, "src/theme"),
     },

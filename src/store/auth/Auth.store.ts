@@ -1,32 +1,32 @@
 import { IApiService } from "@api";
 import {
   I2FARequiredDto,
-  IProfileUpdateRequestDto,
   ISignInRequestDto,
   ISignInResponseDto,
   ITokensDto,
   IUserWithTokensDto,
   TSignUpRequestDto,
-  UserDto,
 } from "@api/gen/model";
 import { IAuthSessionService } from "@core/auth";
-import { ProfileModel } from "@models";
-import { EntityHolder } from "@store";
-import { createEnumModelBase } from "@store/models";
+import { createEnumModelBase } from "@models";
+import { EntityHolder } from "@store/holders";
+import { IUserStore } from "@store/user";
 import { makeAutoObservable } from "mobx";
 
 import { AuthStatus, IAuthStore } from "./Auth.types";
 
 const AuthStatusModel = createEnumModelBase<typeof AuthStatus>(AuthStatus);
 
+/**
+ * Стор **аутентификации и сессии**: вход, регистрация, 2FA, восстановление
+ * сессии и статус. Доменными данными пользователя (профиль, роли, permissions)
+ * владеет `IUserStore` — сюда они намеренно не входят.
+ */
 @IAuthStore({ inSingleton: true })
 class AuthStore implements IAuthStore {
   private statusModel = new AuthStatusModel(() => this.status);
   public status = AuthStatus.Idle;
 
-  private _userHolder = new EntityHolder<UserDto>({
-    onFetch: () => this._api.getMyUser(),
-  });
   private _signHolder = new EntityHolder<
     ISignInResponseDto,
     ISignInRequestDto
@@ -41,29 +41,16 @@ class AuthStore implements IAuthStore {
   constructor(
     @IApiService() private _api: IApiService,
     @IAuthSessionService() private _session: IAuthSessionService,
+    @IUserStore() private _user: IUserStore,
   ) {
     makeAutoObservable(this, {}, { autoBind: true });
-  }
-
-  get user() {
-    return this._userHolder.data;
-  }
-
-  get profile() {
-    return this.user?.profile
-      ? new ProfileModel({
-          user: this.user,
-          ...this.user.profile,
-        })
-      : null;
   }
 
   get error() {
     return (
       this.verifyError ??
       this._signHolder.error?.message ??
-      this._signUpHolder.error?.message ??
-      this._userHolder.error?.message
+      this._signUpHolder.error?.message
     );
   }
 
@@ -85,14 +72,6 @@ class AuthStore implements IAuthStore {
 
   get isReady() {
     return !this.isIdle && !this.isLoading;
-  }
-
-  public load() {
-    if (this.user) {
-      return this._userHolder.refresh();
-    }
-
-    return this._userHolder.load();
   }
 
   async signIn(params: ISignInRequestDto) {
@@ -121,8 +100,8 @@ class AuthStore implements IAuthStore {
       const { tokens, ...userDto } = res.data;
 
       this._session.setTokens(tokens.accessToken, tokens.refreshToken);
-      this._userHolder.setData(userDto);
-      await this.load();
+      this._user.seed(userDto);
+      await this._user.load();
       this._setStatus(AuthStatus.Authenticated);
     }
   }
@@ -151,10 +130,10 @@ class AuthStore implements IAuthStore {
       const { tokens, ...userDto } = res.data;
 
       this._session.setTokens(tokens.accessToken, tokens.refreshToken);
-      this._userHolder.setData(userDto);
+      this._user.seed(userDto);
       this.twoFactorToken = null;
       this.twoFactorHint = undefined;
-      await this.load();
+      await this._user.load();
       this._setStatus(AuthStatus.Authenticated);
     }
   }
@@ -182,20 +161,9 @@ class AuthStore implements IAuthStore {
       const { tokens, ...userDto } = res.data;
 
       this._session.setTokens(tokens.accessToken, tokens.refreshToken);
-      this._userHolder.setData(userDto);
+      this._user.seed(userDto);
       this._setStatus(AuthStatus.Authenticated);
     }
-  }
-
-  async updateProfile(data: IProfileUpdateRequestDto) {
-    const res = await this._api.updateMyProfile(data);
-    const user = this._userHolder.data;
-
-    if (res.data && user) {
-      this._userHolder.setData({ ...user, profile: res.data });
-    }
-
-    return res;
   }
 
   async restore(tokens?: ITokensDto) {
@@ -213,7 +181,7 @@ class AuthStore implements IAuthStore {
       }
     }
 
-    const { data } = await this.load();
+    const { data } = await this._user.load();
 
     this._setStatus(
       data ? AuthStatus.Authenticated : AuthStatus.Unauthenticated,
@@ -222,7 +190,7 @@ class AuthStore implements IAuthStore {
 
   signOut() {
     this._session.clearTokens();
-    this._userHolder.reset();
+    this._user.reset();
     this._signHolder.reset();
     this._signUpHolder.reset();
     this.twoFactorToken = null;
@@ -235,3 +203,5 @@ class AuthStore implements IAuthStore {
     this.status = status;
   }
 }
+
+export { AuthStore };

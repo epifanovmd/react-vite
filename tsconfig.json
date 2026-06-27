@@ -42,8 +42,8 @@
       "@di/*": ["./src/di/*"],
       "@components": ["./src/components"],
       "@components/*": ["./src/components/*"],
-      "@models": ["./src/store/models"],
-      "@models/*": ["./src/store/models/*"],
+      "@models": ["./src/models"],
+      "@models/*": ["./src/models/*"],
       "@store": ["./src/store"],
       "@store/*": ["./src/store/*"]
     }

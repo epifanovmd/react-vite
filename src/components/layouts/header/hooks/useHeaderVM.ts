@@ -1,25 +1,14 @@
-import { useAuthStore } from "@store";
+import { useUserStore } from "@store";
 import { useState } from "react";
 
 import { NAV_GROUPS, NavItem } from "../constants";
 
 export const useHeaderVM = () => {
-  const { user } = useAuthStore();
+  const { user, model } = useUserStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const displayName =
-    [user?.profile?.firstName, user?.profile?.lastName]
-      .filter(Boolean)
-      .join(" ") ||
-    user?.email ||
-    "Admin";
-
-  const initials =
-    [user?.profile?.firstName, user?.profile?.lastName]
-      .filter(Boolean)
-      .map(s => s![0])
-      .join("")
-      .toUpperCase() || (user?.email?.[0] ?? "A").toUpperCase();
+  const displayName = model?.displayName ?? "Admin";
+  const initials = model?.initials ?? "A";
 
   const subtitle =
     user?.email ??

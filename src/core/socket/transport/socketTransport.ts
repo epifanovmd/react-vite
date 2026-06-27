@@ -1,4 +1,4 @@
-import { IAuthSessionService, IAuthTokenStore } from "@core/auth";
+import { IAuthSessionService } from "@core/auth";
 import { SOCKET_BASE_URL } from "@core/env";
 import { reaction } from "mobx";
 import { connect } from "socket.io-client";
@@ -29,7 +29,6 @@ export class SocketTransport implements ISocketTransport {
   private _state: SocketTransportState = { status: "idle", error: null };
 
   constructor(
-    @IAuthTokenStore() private _tokenStore: IAuthTokenStore,
     @IAuthSessionService() private _session: IAuthSessionService,
   ) {}
 
@@ -39,7 +38,7 @@ export class SocketTransport implements ISocketTransport {
 
   initialize(): () => void {
     const disposeTokenReaction = reaction(
-      () => this._tokenStore.accessToken,
+      () => this._session.accessToken,
       token => {
         if (this._socket && token) {
           this._socket.auth = { token };
@@ -168,7 +167,7 @@ export class SocketTransport implements ISocketTransport {
     return new Promise<void>((resolve, reject) => {
       this._teardown();
 
-      const accessToken = this._tokenStore.accessToken;
+      const accessToken = this._session.accessToken;
 
       if (!accessToken) {
         const err = new Error("[Socket] No access token available");

@@ -1,18 +1,18 @@
 import { useApi } from "@api";
 import { useNotification } from "@core/notifications";
-import { useAuthStore } from "@store";
+import { useUserStore } from "@store";
 import { useCallback, useEffect, useState } from "react";
 
 export const useProfileVM = () => {
   const api = useApi();
   const toast = useNotification();
-  const authStore = useAuthStore();
+  const userStore = useUserStore();
 
   const [isEditOpen, setEditOpen] = useState(false);
   const [isVerifyingEmail, setVerifyingEmail] = useState(false);
 
   useEffect(() => {
-    authStore.load().then();
+    userStore.load().then();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -33,8 +33,8 @@ export const useProfileVM = () => {
   }, [api, toast]);
 
   return {
-    model: authStore.profile,
-    profile: authStore.user?.profile,
+    model: userStore.profile,
+    profile: userStore.user?.profile,
     isEditOpen,
     openEdit,
     closeEdit,
