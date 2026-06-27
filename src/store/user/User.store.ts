@@ -1,6 +1,7 @@
 import { IApiService } from "@api";
 import {
   IProfileUpdateRequestDto,
+  ProfileDto,
   TPermission,
   TRole,
   UserDto,
@@ -74,6 +75,27 @@ class UserStore implements IUserStore {
 
   seed(user: UserDto) {
     this._holder.setData(user);
+  }
+
+  /** Точечно обновить поля текущего пользователя (например, из socket-события). */
+  patchUser(patch: Partial<UserDto>) {
+    const user = this._holder.data;
+
+    if (!user) return;
+
+    this._holder.setData({ ...user, ...patch });
+  }
+
+  /** Точечно обновить профиль текущего пользователя. */
+  patchProfile(patch: Partial<ProfileDto>) {
+    const user = this._holder.data;
+
+    if (!user?.profile) return;
+
+    this._holder.setData({
+      ...user,
+      profile: { ...user.profile, ...patch },
+    });
   }
 
   load() {

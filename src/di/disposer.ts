@@ -22,3 +22,26 @@ export const disposer = (dispose: InitializeDispose | InitializeDispose[]) => {
     dispose();
   }
 };
+
+export class Disposer {
+  private _disposes = new Set<InitializeDispose>();
+
+  add = (...disposes: InitializeDispose[]): this => {
+    disposes.forEach(dispose => this._disposes.add(dispose));
+
+    return this;
+  };
+
+  dispose = (): void => {
+    const disposes = Array.from(this._disposes);
+
+    this._disposes.clear();
+    disposer(disposes);
+  };
+
+  get size(): number {
+    return this._disposes.size;
+  }
+}
+
+export const createDisposer = (): Disposer => new Disposer();

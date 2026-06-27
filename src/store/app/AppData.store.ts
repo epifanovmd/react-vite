@@ -1,9 +1,10 @@
 import { ISocketTransport } from "@core/socket";
-import { disposer, InitializeDispose } from "@di";
+import { createDisposer } from "@di";
 import { makeAutoObservable, reaction } from "mobx";
 
 import { router } from "../../router";
 import { IAuthStore } from "../auth";
+import { IUserRealtime } from "../user";
 import { IAppDataStore } from "./AppData.types";
 
 @IAppDataStore({ inSingleton: true })
@@ -11,31 +12,31 @@ export class AppDataStore implements IAppDataStore {
   constructor(
     @IAuthStore() private _authStore: IAuthStore,
     @ISocketTransport() private _socketTransport: ISocketTransport,
+    @IUserRealtime() private _userRealtime: IUserRealtime,
   ) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
   initialize() {
-    const disposers = new Set<InitializeDispose>();
+    const disposers = createDisposer();
 
     return [
       reaction(
         () => this._authStore.isAuthenticated,
         isAuthenticated => {
           if (isAuthenticated) {
-            disposers.add(this._socketTransport.initialize());
+            disposers.add(
+              this._socketTransport.initialize(),
+              this._userRealtime.initialize(),
+            );
           } else {
-            disposer(Array.from(disposers));
-            disposers.clear();
+            disposers.dispose();
 
             router.navigate({ to: "/sign-in" });
           }
         },
       ),
-      () => {
-        disposer(Array.from(disposers));
-        disposers.clear();
-      },
+      disposers.dispose,
     ];
   }
 }

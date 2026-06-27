@@ -7,7 +7,7 @@ import {
   TRole,
   UserDto,
 } from "@api/gen/model";
-import { createServiceDecorator } from "@di";
+import { createServiceDecorator, SupportInitialize } from "@di";
 import { ProfileModel, UserModel } from "@models";
 import { IEntityHolderResult, IHolderError } from "@store/holders";
 
@@ -37,6 +37,10 @@ export interface IUserStore {
 
   /** Мгновенно положить пользователя без запроса (например, из ответа login). */
   seed(user: UserDto): void;
+  /** Точечно обновить поля текущего пользователя (например, из socket-события). */
+  patchUser(patch: Partial<UserDto>): void;
+  /** Точечно обновить профиль текущего пользователя. */
+  patchProfile(patch: Partial<ProfileDto>): void;
   /**
    * Загрузить текущего пользователя с сервера. Если данные уже есть —
    * обновляет их «тихо» (не сбрасывая видимое состояние).
@@ -49,3 +53,12 @@ export interface IUserStore {
   ): Promise<ApiResponse<ProfileDto, ApiError>>;
   reset(): void;
 }
+
+export const IUserRealtime = createServiceDecorator<IUserRealtime>();
+
+/**
+ * Realtime-мост: подписывается на socket-события текущего пользователя и
+ * синхронизирует `IUserStore` без поллинга. Запускается на время авторизованной
+ * сессии (см. `AppDataStore.initialize`), `initialize()` возвращает отписку.
+ */
+export type IUserRealtime = SupportInitialize;
