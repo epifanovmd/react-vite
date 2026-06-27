@@ -1,4 +1,4 @@
-import { AppSocket } from "./socketTransport.types";
+import { AppSocket } from "../Socket.transport.types";
 
 export class EmitQueue {
   private _queue: Array<(socket: AppSocket) => void> = [];

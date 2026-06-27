@@ -1,12 +1,12 @@
 import React from "react";
 import { toast } from "react-hot-toast";
 
-import { CustomToast, ToastVariant } from "./CustomToast";
 import {
   INotificationService,
   NotificationOptions,
   PromiseMessages,
 } from "./Notification.types";
+import { NotificationToast, ToastVariant } from "./NotificationToast";
 
 const DEFAULT_DURATION: Record<ToastVariant, number> = {
   success: 4000,
@@ -78,7 +78,7 @@ export class NotificationService implements INotificationService {
   ): string {
     return toast.custom(
       t => (
-        <CustomToast
+        <NotificationToast
           id={t.id}
           variant={variant}
           message={message}

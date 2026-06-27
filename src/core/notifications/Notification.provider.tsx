@@ -11,7 +11,7 @@ const TOAST_OPTIONS: DefaultToastOptions = {
   },
 };
 
-export const ToastProvider: React.FC<PropsWithChildren> = memo(
+export const NotificationProvider: React.FC<PropsWithChildren> = memo(
   ({ children }) => (
     <>
       {children}

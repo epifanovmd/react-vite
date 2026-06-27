@@ -1,25 +1,13 @@
-import { createServiceDecorator } from "@di";
 import axios from "axios";
 
 import { BASE_URL } from "../env";
-import { IAuthTokenStore } from "./AuthTokenStore";
+import {
+  IAuthSessionService,
+  IAuthTokenStorage,
+  RefreshResponse,
+} from "./Auth.types";
 
 const REFRESH_PATH = "/api/auth/refresh";
-
-type RefreshResponse = { accessToken: string; refreshToken: string };
-
-export const IAuthSessionService =
-  createServiceDecorator<IAuthSessionService>();
-
-export interface IAuthSessionService {
-  readonly accessToken: string;
-
-  setTokens(accessToken: string, refreshToken: string): void;
-  clearTokens(): void;
-  restoreSession(): Promise<boolean>;
-  ensureFreshToken(): Promise<void>;
-  refreshToken(): Promise<void>;
-}
 
 @IAuthSessionService({ inSingleton: true })
 export class AuthSessionService implements IAuthSessionService {
@@ -31,22 +19,22 @@ export class AuthSessionService implements IAuthSessionService {
     withCredentials: true,
   });
 
-  constructor(@IAuthTokenStore() private _tokenStore: IAuthTokenStore) {}
+  constructor(@IAuthTokenStorage() private _tokenStorage: IAuthTokenStorage) {}
 
   get accessToken(): string {
-    return this._tokenStore.accessToken;
+    return this._tokenStorage.accessToken;
   }
 
   setTokens(accessToken: string, refreshToken: string): void {
-    this._tokenStore.setTokens(accessToken, refreshToken);
+    this._tokenStorage.setTokens(accessToken, refreshToken);
   }
 
   clearTokens(): void {
-    this._tokenStore.clear();
+    this._tokenStorage.clear();
   }
 
   async restoreSession(): Promise<boolean> {
-    const token = this._tokenStore.restoreRefreshToken();
+    const token = this._tokenStorage.restoreRefreshToken();
 
     if (!token) return false;
 
@@ -56,12 +44,12 @@ export class AuthSessionService implements IAuthSessionService {
       return false;
     }
 
-    return !!this._tokenStore.accessToken;
+    return !!this._tokenStorage.accessToken;
   }
 
   async ensureFreshToken(): Promise<void> {
-    if (!this._tokenStore.refreshToken) return;
-    if (!this._tokenStore.isTokenExpiringSoon()) return;
+    if (!this._tokenStorage.refreshToken) return;
+    if (!this._tokenStorage.isTokenExpiringSoon()) return;
 
     return this._forceRefresh();
   }
@@ -71,10 +59,10 @@ export class AuthSessionService implements IAuthSessionService {
   }
 
   private async _doRefresh(): Promise<void> {
-    const refreshToken = this._tokenStore.refreshToken;
+    const refreshToken = this._tokenStorage.refreshToken;
 
     if (!refreshToken) {
-      this._tokenStore.clear();
+      this._tokenStorage.clear();
       throw new Error("No refresh token available");
     }
 
@@ -83,9 +71,9 @@ export class AuthSessionService implements IAuthSessionService {
         refreshToken,
       });
 
-      this._tokenStore.setTokens(data.accessToken, data.refreshToken);
+      this._tokenStorage.setTokens(data.accessToken, data.refreshToken);
     } catch (error) {
-      this._tokenStore.clear();
+      this._tokenStorage.clear();
       throw error;
     }
   }

@@ -1,24 +1,12 @@
-import { createServiceDecorator } from "@di";
 import { makeAutoObservable } from "mobx";
 
 import { IStorageService } from "../platform";
+import { IAuthTokenStorage } from "./Auth.types";
 
 const REFRESH_TOKEN_KEY = "app:refresh_token";
 
-export const IAuthTokenStore = createServiceDecorator<IAuthTokenStore>();
-
-export interface IAuthTokenStore {
-  readonly accessToken: string;
-  readonly refreshToken: string;
-
-  isTokenExpiringSoon(bufferSeconds?: number): boolean;
-  setTokens(accessToken: string, refreshToken: string): void;
-  restoreRefreshToken(): string | null;
-  clear(): void;
-}
-
-@IAuthTokenStore({ inSingleton: true })
-export class AuthTokenStore implements IAuthTokenStore {
+@IAuthTokenStorage({ inSingleton: true })
+export class AuthTokenStorage implements IAuthTokenStorage {
   public accessToken = "";
   public refreshToken = "";
 

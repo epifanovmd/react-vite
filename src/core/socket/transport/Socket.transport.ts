@@ -7,14 +7,13 @@ import {
   SocketClientToServerEvents,
   SocketServerToClientEvents,
 } from "../events";
-import { EmitQueue } from "./emitQueue";
-import { PersistentListeners } from "./persistentListeners";
+import { EmitQueue, PersistentListeners } from "./helpers";
 import {
   AppSocket,
   ISocketTransport,
   SocketStatusListener,
   SocketTransportState,
-} from "./socketTransport.types";
+} from "./Socket.transport.types";
 
 @ISocketTransport({ inSingleton: true })
 export class SocketTransport implements ISocketTransport {

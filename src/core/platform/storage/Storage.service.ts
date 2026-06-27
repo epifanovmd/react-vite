@@ -1,12 +1,4 @@
-import { createServiceDecorator } from "@di";
-
-export interface IStorageService {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
-
-export const IStorageService = createServiceDecorator<IStorageService>();
+import { IStorageService } from "./Storage.types";
 
 @IStorageService({ inSingleton: true })
 export class WebStorageService implements IStorageService {

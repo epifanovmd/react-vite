@@ -1,1 +1,1 @@
-export * from "./IStorageService";
+export * from "./storage";

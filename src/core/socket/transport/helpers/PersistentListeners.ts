@@ -1,4 +1,4 @@
-import { AppSocket } from "./socketTransport.types";
+import { AppSocket } from "../Socket.transport.types";
 
 type AnyHandler = (...args: any[]) => void;
 

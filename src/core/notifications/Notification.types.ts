@@ -1,7 +1,7 @@
 import { createServiceDecorator } from "@di";
 import type * as React from "react";
 
-import type { ToastAction } from "./CustomToast";
+import type { ToastAction } from "./NotificationToast";
 
 export interface NotificationOptions {
   id?: string;
