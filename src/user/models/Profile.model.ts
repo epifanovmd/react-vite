@@ -1,9 +1,8 @@
 import { ProfileDto } from "@api/gen/model";
+import { DataModelBase } from "@models";
+import { DateModel } from "@models/date";
 import { LambdaValue } from "@utils/lambdaValue";
 import { computed, makeObservable } from "mobx";
-
-import { DataModelBase } from "../DataModelBase";
-import { DateModel } from "../date";
 
 export class ProfileModel extends DataModelBase<ProfileDto> {
   public readonly registeredAtDate = new DateModel(() => this.data?.createdAt);

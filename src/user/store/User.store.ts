@@ -6,8 +6,8 @@ import {
   TRole,
   UserDto,
 } from "@api/gen/model";
-import { ProfileModel, UserModel } from "@models";
 import { EntityHolder } from "@store/holders";
+import { ProfileModel, UserModel } from "@user/models";
 import { makeAutoObservable } from "mobx";
 
 import { IUserStore } from "./User.types";

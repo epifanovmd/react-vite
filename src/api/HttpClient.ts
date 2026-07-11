@@ -1,7 +1,7 @@
 import { IAuthSessionService } from "@auth/services";
+import { createServiceDecorator } from "@di";
 import { BASE_URL } from "@lib/env";
 import { INotificationService } from "@lib/notifications";
-import { createServiceDecorator } from "@di";
 import axios, {
   AxiosHeaders,
   AxiosResponse,

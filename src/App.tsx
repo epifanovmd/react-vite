@@ -1,7 +1,7 @@
 import { ModalProvider, TooltipProvider } from "@components/ui";
+import { disposer } from "@di";
 import { NotificationProvider } from "@lib/notifications";
 import { ThemeProvider } from "@lib/theme";
-import { disposer } from "@di";
 import { useAppDataStore } from "@store";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode, useEffect } from "react";

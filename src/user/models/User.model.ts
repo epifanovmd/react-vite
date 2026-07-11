@@ -1,8 +1,7 @@
 import { UserDto } from "@api/gen/model";
+import { DataModelBase } from "@models";
+import { DateModel } from "@models/date";
 import { computed, makeObservable } from "mobx";
-
-import { DataModelBase } from "../DataModelBase";
-import { DateModel } from "../date";
 
 export class UserModel extends DataModelBase<UserDto> {
   public readonly createdAtDate = new DateModel(() => this.data.createdAt);

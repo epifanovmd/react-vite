@@ -8,8 +8,8 @@ import {
   UserDto,
 } from "@api/gen/model";
 import { createServiceDecorator, SupportInitialize } from "@di";
-import { ProfileModel, UserModel } from "@models";
 import { IEntityHolderResult, IHolderError } from "@store/holders";
+import { ProfileModel, UserModel } from "@user/models";
 
 export const IUserStore = createServiceDecorator<IUserStore>();
 

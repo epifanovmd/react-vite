@@ -3,13 +3,13 @@ import {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
 } from "@api/gen/model";
+import { useAuthStore } from "@auth/store";
 import {
   browserSupportsWebAuthn,
   startAuthentication,
   startRegistration,
 } from "@simplewebauthn/browser";
 import { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
-import { useAuthStore } from "@auth/store";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 

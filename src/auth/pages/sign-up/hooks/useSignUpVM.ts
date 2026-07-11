@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@auth/store";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { isEmail, isPhone } from "@utils";
 import { useCallback } from "react";

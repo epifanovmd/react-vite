@@ -1,6 +1,6 @@
+import { IAuthStore } from "@auth/store";
 import { AppLayout } from "@components/layouts";
 import { ErrorBoundary } from "@components/ui";
-import { IAuthStore } from "@auth/store";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { memo } from "react";
 

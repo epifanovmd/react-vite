@@ -1,6 +1,6 @@
+import { IStorageService } from "@lib/storage";
 import { makeAutoObservable } from "mobx";
 
-import { IStorageService } from "@lib/storage";
 import { IAuthTokenStorage } from "./Auth.types";
 
 const REFRESH_TOKEN_KEY = "app:refresh_token";
