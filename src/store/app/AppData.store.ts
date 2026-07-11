@@ -1,10 +1,10 @@
-import { ISocketTransport } from "@core/socket";
+import { ISocketTransport } from "@lib/socket";
 import { createDisposer } from "@di";
 import { makeAutoObservable, reaction } from "mobx";
 
 import { router } from "../../router";
-import { IAuthStore } from "../auth";
-import { IUserRealtime } from "../user";
+import { IAuthStore } from "@auth/store";
+import { IUserRealtime } from "@user/store";
 import { IAppDataStore } from "./AppData.types";
 
 @IAppDataStore({ inSingleton: true })

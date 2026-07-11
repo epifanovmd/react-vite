@@ -1,5 +1,5 @@
-import { IAuthSessionService } from "@core/auth";
-import { SOCKET_BASE_URL } from "@core/env";
+import { IAuthSessionService } from "@auth/services";
+import { SOCKET_BASE_URL } from "@lib/env";
 import { reaction } from "mobx";
 import { connect } from "socket.io-client";
 

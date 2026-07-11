@@ -1,4 +1,4 @@
-import { IAuthStore } from "@store";
+import { IAuthStore } from "@auth/store";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { memo } from "react";
 

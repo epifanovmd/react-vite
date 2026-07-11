@@ -1,6 +1,6 @@
 import { useApi } from "@api";
-import { useNotification } from "@core/notifications";
-import { useUserStore } from "@store";
+import { useNotification } from "@lib/notifications";
+import { useUserStore } from "@user/store";
 import { useCallback, useEffect, useState } from "react";
 
 export const useProfileVM = () => {

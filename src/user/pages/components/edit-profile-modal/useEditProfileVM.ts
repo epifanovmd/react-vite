@@ -1,6 +1,6 @@
-import { useNotification } from "@core/notifications";
+import { useNotification } from "@lib/notifications";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useUserStore } from "@store";
+import { useUserStore } from "@user/store";
 import { parseISO } from "date-fns";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";

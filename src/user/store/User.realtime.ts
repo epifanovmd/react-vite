@@ -1,4 +1,4 @@
-import { IUserSocketService } from "@core/socket";
+import { IUserSocketService } from "@lib/socket";
 
 import { IUserRealtime, IUserStore } from "./User.types";
 

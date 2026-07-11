@@ -7,7 +7,7 @@ import {
   CardTitle,
   Separator,
 } from "@components/ui";
-import { useNotification } from "@core/notifications";
+import { useNotification } from "@lib/notifications";
 import { FC, useRef } from "react";
 
 const wait = (ms: number, fail = false) =>

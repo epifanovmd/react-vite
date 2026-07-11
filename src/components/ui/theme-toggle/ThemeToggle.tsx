@@ -1,4 +1,4 @@
-import { useTheme } from "@core/theme";
+import { useTheme } from "@lib/theme";
 import { Moon, Sun } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";

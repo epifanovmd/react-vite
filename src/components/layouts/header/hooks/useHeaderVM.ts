@@ -1,4 +1,4 @@
-import { useUserStore } from "@store";
+import { useUserStore } from "@user/store";
 import { useState } from "react";
 
 import { NAV_GROUPS, NavItem } from "../constants";

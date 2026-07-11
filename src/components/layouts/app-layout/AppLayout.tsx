@@ -1,4 +1,4 @@
-import { useAuthStore } from "@store";
+import { useAuthStore } from "@auth/store";
 import { FC, ReactNode } from "react";
 
 import { Header } from "../header";

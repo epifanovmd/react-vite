@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-router";
 import { memo } from "react";
 
-import { ResetPassword } from "../../pages/reset-password";
+import { ResetPassword } from "../../auth/pages/reset-password";
 
 export const Route = createLazyFileRoute("/_auth/reset-password")({
   component: memo(() => {

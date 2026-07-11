@@ -33,7 +33,9 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@core": path.resolve(projectRootDir, "src/core"),
+      "@auth": path.resolve(projectRootDir, "src/auth"),
+      "@user": path.resolve(projectRootDir, "src/user"),
+      "@lib": path.resolve(projectRootDir, "src/lib"),
       "@api": path.resolve(projectRootDir, "src/api"),
       "@utils": path.resolve(projectRootDir, "src/utils"),
       "@hooks": path.resolve(projectRootDir, "src/hooks"),

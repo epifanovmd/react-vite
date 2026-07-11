@@ -7,10 +7,10 @@ import {
   IUserWithTokensDto,
   TSignUpRequestDto,
 } from "@api/gen/model";
-import { IAuthSessionService } from "@core/auth";
+import { IAuthSessionService } from "@auth/services";
 import { createEnumModelBase } from "@models";
 import { EntityHolder } from "@store/holders";
-import { IUserStore } from "@store/user";
+import { IUserStore } from "@user/store";
 import { makeAutoObservable } from "mobx";
 
 import { AuthStatus, IAuthStore } from "./Auth.types";

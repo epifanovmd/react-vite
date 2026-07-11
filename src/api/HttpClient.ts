@@ -1,6 +1,6 @@
-import { IAuthSessionService } from "@core/auth";
-import { BASE_URL } from "@core/env";
-import { INotificationService } from "@core/notifications";
+import { IAuthSessionService } from "@auth/services";
+import { BASE_URL } from "@lib/env";
+import { INotificationService } from "@lib/notifications";
 import { createServiceDecorator } from "@di";
 import axios, {
   AxiosHeaders,

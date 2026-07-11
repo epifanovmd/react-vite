@@ -1,7 +1,7 @@
 import { AuthFormCard } from "@components/layouts";
 import { Button, InputFormField } from "@components/ui";
 import { useHotkeys } from "@mantine/hooks";
-import { useAuthStore } from "@store";
+import { useAuthStore } from "@auth/store";
 import { Link } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import { FormProvider } from "react-hook-form";

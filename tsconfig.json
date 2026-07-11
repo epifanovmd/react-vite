@@ -30,8 +30,12 @@
     "removeComments": true,
 
     "paths": {
-      "@core": ["./src/core"],
-      "@core/*": ["./src/core/*"],
+      "@auth": ["./src/auth"],
+      "@auth/*": ["./src/auth/*"],
+      "@user": ["./src/user"],
+      "@user/*": ["./src/user/*"],
+      "@lib": ["./src/lib"],
+      "@lib/*": ["./src/lib/*"],
       "@api": ["./src/api"],
       "@api/*": ["./src/api/*"],
       "@utils": ["./src/utils"],

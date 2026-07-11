@@ -1,6 +1,6 @@
 import { ModalProvider, TooltipProvider } from "@components/ui";
-import { NotificationProvider } from "@core/notifications";
-import { ThemeProvider } from "@core/theme";
+import { NotificationProvider } from "@lib/notifications";
+import { ThemeProvider } from "@lib/theme";
 import { disposer } from "@di";
 import { useAppDataStore } from "@store";
 import { RouterProvider } from "@tanstack/react-router";
