@@ -1,6 +1,6 @@
 import mdx from "@mdx-js/rollup";
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import dotenv from "dotenv";
 import path from "path";
@@ -18,12 +18,8 @@ const PORT = VITE_PORT ? Number(VITE_PORT) : 3000;
 
 export default defineConfig({
   plugins: [
-    TanStackRouterVite(),
-    react({
-      babel: {
-        configFile: true,
-      },
-    }),
+    tanstackRouter(),
+    react(),
     mdx(),
     cjsInterop({
       // List of CJS dependencies that require interop
