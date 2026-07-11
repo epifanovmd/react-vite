@@ -12,6 +12,7 @@ const REFRESH_PATH = "/api/auth/refresh";
 @IAuthSessionService({ inSingleton: true })
 export class AuthSessionService implements IAuthSessionService {
   private _refreshPromise: Promise<void> | null = null;
+  private _sessionExpiredListeners = new Set<() => void>();
 
   private readonly _axios = axios.create({
     baseURL: BASE_URL,
@@ -58,6 +59,12 @@ export class AuthSessionService implements IAuthSessionService {
     return this._forceRefresh();
   }
 
+  onSessionExpired(listener: () => void): () => void {
+    this._sessionExpiredListeners.add(listener);
+
+    return () => this._sessionExpiredListeners.delete(listener);
+  }
+
   private async _doRefresh(): Promise<void> {
     const refreshToken = this._tokenStorage.refreshToken;
 
@@ -74,6 +81,7 @@ export class AuthSessionService implements IAuthSessionService {
       this._tokenStorage.setTokens(data.accessToken, data.refreshToken);
     } catch (error) {
       this._tokenStorage.clear();
+      this._sessionExpiredListeners.forEach(l => l());
       throw error;
     }
   }

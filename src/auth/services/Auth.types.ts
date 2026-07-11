@@ -28,4 +28,5 @@ export interface IAuthSessionService {
   restoreSession(): Promise<boolean>;
   ensureFreshToken(): Promise<void>;
   refreshToken(): Promise<void>;
+  onSessionExpired(listener: () => void): () => void;
 }

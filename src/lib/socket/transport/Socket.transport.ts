@@ -1,6 +1,5 @@
-import { IAuthSessionService } from "@auth/services";
 import { SOCKET_BASE_URL } from "@lib/env";
-import { reaction } from "mobx";
+import { ITokenProvider } from "@lib/socket/contract/TokenProvider.types";
 import { connect } from "socket.io-client";
 
 import {
@@ -26,9 +25,10 @@ export class SocketTransport implements ISocketTransport {
   private _emitQueue = new EmitQueue();
 
   private _state: SocketTransportState = { status: "idle", error: null };
+  private _disposeTokenReaction: (() => void) | null = null;
 
   constructor(
-    @IAuthSessionService() private _session: IAuthSessionService,
+    @ITokenProvider() private _tokenProvider: ITokenProvider,
   ) {}
 
   get state(): SocketTransportState {
@@ -36,16 +36,13 @@ export class SocketTransport implements ISocketTransport {
   }
 
   initialize(): () => void {
-    const disposeTokenReaction = reaction(
-      () => this._session.accessToken,
-      token => {
-        if (this._socket && token) {
-          this._socket.auth = { token };
-          (this._socket.io.opts.query as Record<string, string>).access_token =
-            token;
-        }
-      },
-    );
+    this._disposeTokenReaction = this._tokenProvider.onTokenChange(token => {
+      if (this._socket) {
+        this._socket.auth = { token };
+        (this._socket.io.opts.query as Record<string, string>).access_token =
+          token;
+      }
+    });
 
     const handleVisibilityChange = () => {
       if (
@@ -69,7 +66,7 @@ export class SocketTransport implements ISocketTransport {
     this.connect().catch(() => {});
 
     return () => {
-      disposeTokenReaction();
+      this._disposeTokenReaction?.();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("online", handleOnline);
       this.disconnect();
@@ -166,7 +163,7 @@ export class SocketTransport implements ISocketTransport {
     return new Promise<void>((resolve, reject) => {
       this._teardown();
 
-      const accessToken = this._session.accessToken;
+      const accessToken = this._tokenProvider.accessToken;
 
       if (!accessToken) {
         const err = new Error("[Socket] No access token available");
@@ -245,7 +242,7 @@ export class SocketTransport implements ISocketTransport {
     this._setState({ status: "disconnected" });
 
     if (reason === "io server disconnect") {
-      this._session
+      this._tokenProvider
         .refreshToken()
         .then(() => this.connect())
         .catch(err => this._setState({ status: "error", error: err }));
@@ -259,7 +256,7 @@ export class SocketTransport implements ISocketTransport {
 
   private _onAuthError = ({ message }: { message: string }): void => {
     console.warn("[Socket] Auth error:", message);
-    this._session
+    this._tokenProvider
       .restoreSession()
       .then(() => this.connect())
       .catch(err => this._setState({ status: "error", error: err }));

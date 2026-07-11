@@ -2,6 +2,7 @@ import { IStorageService } from "@lib/storage";
 import { makeAutoObservable } from "mobx";
 
 import { IAuthTokenStorage } from "./Auth.types";
+import { IAuthJwtService } from "./AuthJwt.types";
 
 const REFRESH_TOKEN_KEY = "app:refresh_token";
 
@@ -10,19 +11,17 @@ export class AuthTokenStorage implements IAuthTokenStorage {
   public accessToken = "";
   public refreshToken = "";
 
-  constructor(@IStorageService() private _storage: IStorageService) {
+  constructor(
+    @IStorageService() private _storage: IStorageService,
+    @IAuthJwtService() private _jwt: IAuthJwtService,
+  ) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
   isTokenExpiringSoon(bufferSeconds = 60): boolean {
     if (!this.accessToken) return true;
-    try {
-      const payload = JSON.parse(atob(this.accessToken.split(".")[1]));
 
-      return Date.now() / 1000 > payload.exp - bufferSeconds;
-    } catch {
-      return true;
-    }
+    return this._jwt.isExpired(this.accessToken, bufferSeconds);
   }
 
   setTokens(accessToken: string, refreshToken: string): void {

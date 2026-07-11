@@ -43,6 +43,7 @@ class HttpClient implements IHttpClient {
     headers: DEFAULT_HEADERS,
   });
   private readonly _queryRace = new QueryRace();
+  private _refreshPromise: Promise<boolean> | null = null;
 
   constructor(
     @IAuthSessionService() private _session: IAuthSessionService,
@@ -99,11 +100,9 @@ class HttpClient implements IHttpClient {
         if (status === 401 && config && !config._retry) {
           config._retry = true;
 
-          try {
-            await this._session.refreshToken();
-          } catch {
-            return { error };
-          }
+          const refreshed = await this._handleConcurrentRefresh();
+
+          if (!refreshed) return { error };
 
           return this.request(config, {
             useQueryRace: false,
@@ -115,6 +114,21 @@ class HttpClient implements IHttpClient {
         return { error, isCanceled: e instanceof CanceledError };
       },
     );
+  }
+
+  /** Дедуплицирует concurrent refresh-запросы при 401 шторме. */
+  private _handleConcurrentRefresh(): Promise<boolean> {
+    if (!this._refreshPromise) {
+      this._refreshPromise = this._session
+        .refreshToken()
+        .then(() => true)
+        .catch(() => false)
+        .finally(() => {
+          this._refreshPromise = null;
+        });
+    }
+
+    return this._refreshPromise;
   }
 
   private _notifyError(error: ApiError): void {
