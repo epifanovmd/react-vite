@@ -1,39 +1,63 @@
-# Wireguard Admin
+# React Vite
+
+Messenger/admin panel built with React + Vite + MobX + Inversify.
 
 ##### Stack:
-  - Typescript
-  - React
-  - Vite
+- TypeScript 6
+- React 19
+- Vite 8
+- MobX 6 (state management)
+- Inversify 8 (DI)
+- Axios (HTTP) + orval (codegen)
+- TanStack Router (file-based routing)
+- Tailwind CSS 4
+- Socket.IO (real-time)
+
+### Architecture
+
+```
+src/
+  auth/     ← аутентификация (services, store, pages)
+  user/     ← пользователь (store, pages, models)
+  lib/      ← инфраструктура (storage, socket, notification, theme)
+  api/      ← HTTP client + orval codegen
+  store/    ← shared state (AppDataStore, holders)
+  components/ ← shared UI kit
+  di/       ← DI-контейнер
+  routes/   ← TanStack Router
+```
+
+Подробнее: [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### Installation
+
 ```sh
-$ git clone https://github.com/epifanovmd/react-vite.git
-$ cd react-vite
-$ yarn
+git clone https://github.com/epifanovmd/react-vite.git
+cd react-vite
+yarn
 ```
 
 ### Run
+
 ```sh
-$ yarn dev
+yarn dev
 ```
-```sh
+
 Application listening on: http://localhost:3000
-```
 
-### Start app in docker container (with Server Side Rendering)
-```sh
-$ docker build -f Dockerfile -t react-vite:latest .
-$ [[ $(docker ps -f name=react-vite_container -q -a) != '' ]] && docker rm --force $(docker ps -f name=react-vite_container -q -a)
-$ docker run -u root -d --restart=always --network server-net -p 3000:4173 --name react-vite_container react-vite:latest
-$ docker image prune -a --force
-```
+### Build
 
 ```sh
-Application listening on: http://localhost:3000
+yarn build
 ```
 
-License
-----
+### Lint
+
+```sh
+yarn lint:fix
+```
+
+### License
 
 MIT
 
