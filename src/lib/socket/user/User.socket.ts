@@ -11,7 +11,13 @@ export class UserSocketService implements IUserSocketService {
     const disposers = createDisposer();
 
     if (handlers.onProfileUpdated) {
-      this._transport.emit("profile:subscribe");
+      // Если сокет уже подключён — отправляем подписку сразу.
+      // onConnect сработает ТОЛЬКО при будущих переподключениях (не ретроактивно),
+      // поэтому дубля не будет.
+      if (this._transport.state.status === "connected") {
+        this._transport.emit("profile:subscribe");
+      }
+
       disposers.add(
         this._transport.onConnect(() => {
           this._transport.emit("profile:subscribe");

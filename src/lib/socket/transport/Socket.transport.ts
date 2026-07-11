@@ -7,6 +7,7 @@ import {
   SocketServerToClientEvents,
 } from "../events";
 import { EmitQueue, PersistentListeners } from "./helpers";
+import { ReconnectScheduler } from "./ReconnectScheduler";
 import {
   AppSocket,
   ISocketTransport,
@@ -26,6 +27,8 @@ export class SocketTransport implements ISocketTransport {
 
   private _state: SocketTransportState = { status: "idle", error: null };
   private _disposeTokenReaction: (() => void) | null = null;
+  private _initializeDisposers: (() => void) | null = null;
+  private _reconnect = new ReconnectScheduler();
 
   constructor(
     @ITokenProvider() private _tokenProvider: ITokenProvider,
@@ -36,12 +39,14 @@ export class SocketTransport implements ISocketTransport {
   }
 
   initialize(): () => void {
+    if (this._initializeDisposers) return this._initializeDisposers;
+
     this._disposeTokenReaction = this._tokenProvider.onTokenChange(token => {
-      if (this._socket) {
-        this._socket.auth = { token };
-        (this._socket.io.opts.query as Record<string, string>).access_token =
-          token;
-      }
+      if (!this._socket || this._isManualDisconnect) return;
+
+      this._socket.auth = { token };
+      (this._socket.io.opts.query as Record<string, string>).access_token =
+        token;
     });
 
     const handleVisibilityChange = () => {
@@ -65,12 +70,17 @@ export class SocketTransport implements ISocketTransport {
 
     this.connect().catch(() => {});
 
-    return () => {
+    const disposers = () => {
       this._disposeTokenReaction?.();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("online", handleOnline);
       this.disconnect();
+      this._initializeDisposers = null;
     };
+
+    this._initializeDisposers = disposers;
+
+    return disposers;
   }
 
   connect(): Promise<void> {
@@ -86,6 +96,7 @@ export class SocketTransport implements ISocketTransport {
 
   disconnect(): void {
     this._isManualDisconnect = true;
+    this._reconnect.reset();
     this._emitQueue.clear();
     this._persistentListeners.clear();
     this._teardown();
@@ -230,6 +241,7 @@ export class SocketTransport implements ISocketTransport {
   }
 
   private _onConnect = (): void => {
+    this._reconnect.reset();
     this._setState({ status: "connected", error: null });
     if (this._socket) {
       this._emitQueue.flush(this._socket);
@@ -239,26 +251,32 @@ export class SocketTransport implements ISocketTransport {
   private _onDisconnect = (reason: string): void => {
     if (this._isManualDisconnect) return;
 
-    this._setState({ status: "disconnected" });
+    this._setState({ status: "connecting" });
 
     if (reason === "io server disconnect") {
-      this._tokenProvider
-        .refreshToken()
-        .then(() => this.connect())
-        .catch(err => this._setState({ status: "error", error: err }));
+      this._reconnect.schedule(() =>
+        this._tokenProvider
+          .refreshToken()
+          .then(() => this.connect())
+          .catch(() => {}),
+      );
     }
   };
 
   private _onConnectError = (err: Error): void => {
     console.error("[Socket] Connection error:", err.message);
-    this._setState({ status: "error", error: err });
   };
 
   private _onAuthError = ({ message }: { message: string }): void => {
     console.warn("[Socket] Auth error:", message);
-    this._tokenProvider
-      .restoreSession()
-      .then(() => this.connect())
-      .catch(err => this._setState({ status: "error", error: err }));
+
+    this._reconnect.schedule(() =>
+      this._tokenProvider
+        .restoreSession()
+        .then((restored): void => {
+          if (restored) this.connect();
+        })
+        .catch(() => {}),
+    );
   };
 }
