@@ -1,4 +1,4 @@
-export * from "./api";
+export * from "./Api";
 export * from "./Api.types";
 export * from "./ApiError";
 export * from "./hooks";
