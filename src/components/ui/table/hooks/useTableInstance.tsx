@@ -8,8 +8,8 @@ import {
 import * as React from "react";
 
 import { Checkbox } from "../../checkbox";
-import { type TableProps } from "../Table";
-import { type TableInstanceResult } from "../TableTypes";
+import { type TableProps } from "../Table.types";
+import { type TableInstanceResult } from "../Table.types";
 import { useTableState } from "./useTableState";
 
 export const useTableInstance = <TData,>(

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { cn } from "../../foundation/cn";
-import { type TanstackTable } from "../TableTypes";
+import { type TanstackTable } from "../Table.types";
 import { TableHeadCell } from "./TableHeadCell";
 import { TableHeader, TableRow } from "./TablePrimitive";
 

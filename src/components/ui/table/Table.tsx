@@ -1,11 +1,5 @@
 import { createSlot, useSlotProps } from "@components/slots";
-import {
-  type ColumnDef,
-  type OnChangeFn,
-  type Row,
-  type RowSelectionState,
-  type SortingState,
-} from "@tanstack/react-table";
+import { type OnChangeFn, type Row, type RowSelectionState, type SortingState } from "@tanstack/react-table";
 import * as React from "react";
 import { PropsWithChildren } from "react";
 
@@ -16,55 +10,13 @@ import { TableFooterSection } from "./components/TableFooterSection";
 import { TableHeaderSection } from "./components/TableHeaderSection";
 import { TableCaption, TableRoot } from "./components/TablePrimitive";
 import { useTableInstance } from "./hooks/useTableInstance";
-import {
-  TablePagination,
-  TablePaginationProps,
-} from "./pagination/TablePagination";
+import type { TablePaginationProps } from "./pagination/TablePagination";
+import { TablePagination } from "./pagination/TablePagination";
+import type { TableProps } from "./Table.types";
 
-export type { ColumnDef };
+const PaginationSlot = createSlot<TablePaginationProps>("Pagination");
 
-export interface TableProps<TData> {
-  data: TData[];
-  columns: ColumnDef<TData, any>[];
-
-  variant?: "default" | "striped" | "bordered";
-  size?: "sm" | "md" | "lg";
-  caption?: React.ReactNode;
-  stickyHeader?: boolean;
-  className?: string;
-  containerClassName?: string;
-
-  // Sorting
-  sorting?: boolean;
-  sortingState?: SortingState;
-  onSortingChange?: OnChangeFn<SortingState>;
-  manualSorting?: boolean;
-
-  // Global filter
-  globalFilter?: string;
-  onGlobalFilterChange?: OnChangeFn<string>;
-
-  // Row selection
-  selection?: boolean;
-  rowSelection?: RowSelectionState;
-  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
-  onSelectedRowsChange?: (rows: TData[]) => void;
-
-  // State
-  loading?: boolean;
-  refreshing?: boolean;
-  empty?: React.ReactNode;
-
-  // Row
-  onRowClick?: (
-    row: TData,
-    event: React.MouseEvent<HTMLTableRowElement>,
-  ) => void;
-  getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
-}
-
-const Pagination = createSlot<TablePaginationProps>("Pagination");
-
+/* eslint-disable react-refresh/only-export-components */
 const TableComponent = <TData,>(
   props: PropsWithChildren<TableProps<TData>>,
 ) => {
@@ -83,7 +35,7 @@ const TableComponent = <TData,>(
     children,
   } = props;
 
-  const { table, rows, totalColumns, hasFooter } = useTableInstance(props);
+  const { table, rows, totalColumns, hasFooter } = useTableInstance<TData>(props);
   const { pagination } = useSlotProps(Table, children);
 
   return (
@@ -118,5 +70,5 @@ const TableComponent = <TData,>(
 TableComponent.displayName = "Table";
 
 export const Table = Object.assign(TableComponent, {
-  Pagination,
+  Pagination: PaginationSlot,
 });

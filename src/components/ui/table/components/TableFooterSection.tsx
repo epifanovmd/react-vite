@@ -1,7 +1,7 @@
 import { flexRender } from "@tanstack/react-table";
 import * as React from "react";
 
-import { type TanstackTable } from "../TableTypes";
+import { type TanstackTable } from "../Table.types";
 import { TableFooter, TableHead, TableRow } from "./TablePrimitive";
 
 interface TableFooterSectionProps<TData> {
