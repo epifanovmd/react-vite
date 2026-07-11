@@ -1,7 +1,8 @@
-import { Popover, ThemeToggle } from "@components/ui";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, LogOut, User } from "lucide-react";
 import { FC } from "react";
+
+import { Popover, ThemeToggle } from "../../../ui";
 
 interface ProfileMenuProps {
   displayName: string;

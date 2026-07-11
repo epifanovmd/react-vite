@@ -9,7 +9,8 @@ import {
 } from "@api/gen/model";
 import { createServiceDecorator, SupportInitialize } from "@di";
 import { IEntityHolderResult, IHolderError } from "@store/holders";
-import { ProfileModel, UserModel } from "@user/models";
+
+import { ProfileModel, UserModel } from "../models";
 
 export const IUserStore = createServiceDecorator<IUserStore>();
 

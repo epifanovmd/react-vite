@@ -1,5 +1,6 @@
-import { Avatar } from "@components/ui";
 import { FC } from "react";
+
+import { Avatar } from "../../ui";
 
 const COLORS = [
   "bg-violet-500",

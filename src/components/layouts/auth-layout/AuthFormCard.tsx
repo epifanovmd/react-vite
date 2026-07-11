@@ -1,5 +1,6 @@
-import { Card } from "@components/ui";
 import { FC, ReactNode } from "react";
+
+import { Card } from "../../ui";
 
 interface AuthFormCardProps {
   title?: string;

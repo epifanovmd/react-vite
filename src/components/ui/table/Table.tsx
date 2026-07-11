@@ -1,8 +1,8 @@
-import { createSlot, useSlotProps } from "@components/slots";
 import { type OnChangeFn, type Row, type RowSelectionState, type SortingState } from "@tanstack/react-table";
 import * as React from "react";
 import { PropsWithChildren } from "react";
 
+import { createSlot, useSlotProps } from "../../slots";
 import { cn } from "../foundation";
 import { TableBodySection } from "./components/TableBodySection";
 import { TableContext } from "./components/TableContext";

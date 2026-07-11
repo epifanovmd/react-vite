@@ -7,9 +7,9 @@ import {
   UserDto,
 } from "@api/gen/model";
 import { EntityHolder } from "@store/holders";
-import { ProfileModel, UserModel } from "@user/models";
 import { makeAutoObservable } from "mobx";
 
+import { ProfileModel, UserModel } from "../models";
 import { IUserStore } from "./User.types";
 
 @IUserStore({ inSingleton: true })

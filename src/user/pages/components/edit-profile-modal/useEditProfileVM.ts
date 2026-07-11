@@ -1,10 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNotification } from "@lib/notifications";
-import { useUserStore } from "@user/store";
 import { parseISO } from "date-fns";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
+import { useUserStore } from "../../../store";
 import { profileFormValidationSchema, TProfileForm } from "./validations";
 
 interface UseEditProfileVMOptions {

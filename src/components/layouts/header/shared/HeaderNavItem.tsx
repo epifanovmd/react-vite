@@ -1,7 +1,7 @@
-import { Badge, cn } from "@components/ui";
 import { Link } from "@tanstack/react-router";
 import { FC } from "react";
 
+import { Badge, cn } from "../../../ui";
 import { NAV_ICON_SIZE, NavItem } from "../constants";
 
 interface HeaderNavItemProps {

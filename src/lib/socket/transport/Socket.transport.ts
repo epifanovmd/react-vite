@@ -1,7 +1,7 @@
-import { SOCKET_BASE_URL } from "@lib/env";
-import { ITokenProvider } from "@lib/socket/contract/TokenProvider.types";
 import { connect } from "socket.io-client";
 
+import { SOCKET_BASE_URL } from "../../env";
+import { ITokenProvider } from "../contract/TokenProvider.types";
 import {
   SocketClientToServerEvents,
   SocketServerToClientEvents,

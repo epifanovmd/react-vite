@@ -1,7 +1,8 @@
 import { useApi } from "@api";
 import { useNotification } from "@lib/notifications";
-import { useUserStore } from "@user/store";
 import { useCallback, useEffect, useState } from "react";
+
+import { useUserStore } from "../../store";
 
 export const useProfileVM = () => {
   const api = useApi();

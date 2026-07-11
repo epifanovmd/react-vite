@@ -1,9 +1,8 @@
 import { ITokensDto, TSignUpRequestDto } from "@api/gen/model";
-import { IAuthApiService } from "@auth/services";
-import { IAuthSessionService } from "@auth/services";
 import { createEnumModelBase } from "@models";
 import { makeAutoObservable } from "mobx";
 
+import { IAuthApiService, IAuthSessionService } from "../services";
 import { AuthStatus, IAuthStore } from "./Auth.types";
 
 const AuthStatusModel = createEnumModelBase<typeof AuthStatus>(AuthStatus);

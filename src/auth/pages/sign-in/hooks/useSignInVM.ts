@@ -1,9 +1,9 @@
-import { useAuthStore } from "@auth/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 
+import { useAuthStore } from "../../../store";
 import { signInFormValidationSchema, TSignInForm } from "../../validations";
 
 export const useSignInVM = () => {

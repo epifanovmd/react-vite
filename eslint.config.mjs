@@ -5,6 +5,26 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import tseslint from "typescript-eslint";
 
+/** Модули, в которых запрещены self-imports через алиасы. */
+const MODULES = ["auth", "user", "lib", "store", "api", "models", "components"];
+
+const moduleSelfImportRestrictions = MODULES.map(mod => ({
+  files: [`src/${mod}/**`],
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: [`@${mod}/*`, `@${mod}`],
+            message: `Внутри ${mod}/ используй относительные пути вместо @${mod}/*`,
+          },
+        ],
+      },
+    ],
+  },
+}));
+
 export default tseslint.config(
   { ignores: ["dist", "src/api/api-gen/**"] },
   {
@@ -82,4 +102,5 @@ export default tseslint.config(
       ],
     },
   },
+  ...moduleSelfImportRestrictions,
 );

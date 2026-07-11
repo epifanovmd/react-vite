@@ -1,9 +1,9 @@
-import { IconButton, ThemeToggle } from "@components/ui";
 import { Link } from "@tanstack/react-router";
 import { LogOut, User, X } from "lucide-react";
 import { FC } from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
+import { IconButton, ThemeToggle } from "../../../ui";
 import { AppLogoLink } from "../../app-logo-link";
 import { NavGroup } from "../constants";
 import { HeaderNavItem } from "./HeaderNavItem";

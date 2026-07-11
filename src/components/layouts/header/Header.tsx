@@ -1,8 +1,8 @@
-import { IconButton } from "@components/ui";
 import { Menu } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
+import { IconButton } from "../../ui";
 import { AppLogoLink } from "../app-logo-link";
 import { useHeaderVM } from "./hooks";
 import { HeaderNavItem, MobileMenu, ProfileMenu } from "./shared";

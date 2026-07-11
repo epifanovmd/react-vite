@@ -1,4 +1,3 @@
-import { useAuthStore } from "@auth/store";
 import { AuthFormCard } from "@components/layouts";
 import { Alert, AsyncButton, InputFormField } from "@components/ui";
 import { useHotkeys } from "@mantine/hooks";
@@ -6,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import { FormProvider } from "react-hook-form";
 
+import { useAuthStore } from "../../store";
 import { TSignInForm } from "../validations";
 import { PasskeyLogin, TwoFactorPrompt } from "./components";
 import { usePasskeyAuth, useSignInVM } from "./hooks";
