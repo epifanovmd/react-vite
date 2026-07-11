@@ -73,22 +73,22 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
 )
 
 export interface FileRoutesByFullPath {
+  '/': typeof AppIndexRoute
   '/ui': typeof UiLazyRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/profile': typeof AppProfileLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/sign-in': typeof AuthSignInLazyRoute
   '/sign-up': typeof AuthSignUpLazyRoute
-  '/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AppIndexRoute
   '/ui': typeof UiLazyRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/profile': typeof AppProfileLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/sign-in': typeof AuthSignInLazyRoute
   '/sign-up': typeof AuthSignUpLazyRoute
-  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,22 +105,22 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/ui'
     | '/reset-password'
     | '/profile'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
-    | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/ui'
     | '/reset-password'
     | '/profile'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
-    | '/'
   id:
     | '__root__'
     | '/_app'
@@ -152,14 +152,14 @@ declare module '@tanstack/react-router' {
     '/_auth': {
       id: '/_auth'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
       id: '/_app'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }

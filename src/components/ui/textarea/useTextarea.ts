@@ -128,7 +128,7 @@ export const useTextarea = ({
       if (autoResize) adjustHeight();
       if (showCount || maxLength !== undefined)
         setCharCount(e.currentTarget.value.length);
-      onInput?.(e);
+      onInput?.(e as any);
     },
     [autoResize, adjustHeight, showCount, maxLength, onInput],
   );

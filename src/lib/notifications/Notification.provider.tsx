@@ -1,5 +1,5 @@
-import { memo, PropsWithChildren } from "react";
 import * as React from "react";
+import { memo, PropsWithChildren } from "react";
 import { DefaultToastOptions, Toaster } from "react-hot-toast";
 
 const TOAST_OPTIONS: DefaultToastOptions = {

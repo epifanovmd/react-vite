@@ -21,7 +21,16 @@ export default tseslint.config(
       react,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // react-hooks: только базовые правила, без React Compiler
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": [
+        "error",
+        {
+          additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)",
+        },
+      ],
+
+      // react-refresh
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
@@ -50,15 +59,6 @@ export default tseslint.config(
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-unsafe-function-type": "off",
-
-      // react-hooks
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": [
-        "error",
-        {
-          additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)",
-        },
-      ],
 
       // Stylistic
       "no-redeclare": "off",
