@@ -5,10 +5,13 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import tseslint from "typescript-eslint";
 
-/** Модули, в которых запрещены self-imports через алиасы. */
-const MODULES = ["auth", "user", "lib", "store", "api", "models", "components"];
+/** Модули в корне src/, в которых запрещены self-imports через алиасы. */
+const ROOT_MODULES = ["lib", "store", "api", "models", "components"];
 
-const moduleSelfImportRestrictions = MODULES.map(mod => ({
+/** Доменные модули в src/domains/, с теми же правилами. */
+const DOMAIN_MODULES = ["auth", "user"];
+
+const rootRestrictions = ROOT_MODULES.map(mod => ({
   files: [`src/${mod}/**`],
   rules: {
     "no-restricted-imports": [
@@ -24,6 +27,28 @@ const moduleSelfImportRestrictions = MODULES.map(mod => ({
     ],
   },
 }));
+
+const domainRestrictions = DOMAIN_MODULES.map(mod => ({
+  files: [`src/domains/${mod}/**`],
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: [`@${mod}/*`, `@${mod}`],
+            message: `Внутри domains/${mod}/ используй относительные пути вместо @${mod}/*`,
+          },
+        ],
+      },
+    ],
+  },
+}));
+
+const moduleSelfImportRestrictions = [
+  ...rootRestrictions,
+  ...domainRestrictions,
+];
 
 export default tseslint.config(
   { ignores: ["dist", "src/api/api-gen/**"] },
