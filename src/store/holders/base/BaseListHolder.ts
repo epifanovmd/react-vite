@@ -1,7 +1,7 @@
 import { action, computed, makeObservable, observable } from "mobx";
 
+import { IHolderError } from "../Holder.types";
 import { BaseHolder } from "./BaseHolder";
-import { IHolderError } from "./HolderTypes";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

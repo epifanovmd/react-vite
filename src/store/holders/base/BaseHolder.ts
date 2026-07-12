@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from "mobx";
 
-import { CancellablePromise, HolderStatus, IHolderError } from "./HolderTypes";
+import { CancellablePromise, HolderStatus, IHolderError } from "../Holder.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

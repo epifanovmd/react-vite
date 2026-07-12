@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable } from "mobx";
 
-import { BaseListHolder } from "./BaseListHolder";
+import { BaseListHolder } from "../base/BaseListHolder";
 import {
   CancellablePromise,
   HolderStatus,
@@ -11,7 +11,7 @@ import {
   isCancelResponse,
   PagedFetchFn,
   toHolderError,
-} from "./HolderTypes";
+} from "../Holder.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

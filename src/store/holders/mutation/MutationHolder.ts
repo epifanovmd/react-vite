@@ -14,7 +14,7 @@ import {
   MutationFn,
   MutationStatus,
   toHolderError,
-} from "./HolderTypes";
+} from "../Holder.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

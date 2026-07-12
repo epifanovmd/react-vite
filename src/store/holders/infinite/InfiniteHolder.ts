@@ -6,7 +6,7 @@ import {
   runInAction,
 } from "mobx";
 
-import { BaseListHolder } from "./BaseListHolder";
+import { BaseListHolder } from "../base/BaseListHolder";
 import {
   CancellablePromise,
   HolderStatus,
@@ -18,7 +18,7 @@ import {
   isCancelResponse,
   MutationStatus,
   toHolderError,
-} from "./HolderTypes";
+} from "../Holder.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

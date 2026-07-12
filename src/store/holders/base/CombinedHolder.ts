@@ -1,6 +1,6 @@
 import { computed, makeObservable } from "mobx";
 
-import { IHolderError } from "./HolderTypes";
+import { IHolderError } from "../Holder.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

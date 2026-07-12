@@ -19,7 +19,8 @@ src/
 
   lib/           ← generic-инфраструктура (storage, notification, socket, env)
   api/           ← HTTP client + codegen (orval)
-  store/         ← shared стор (AppDataStore, holders)
+  store/         ← shared стор (AppDataStore)
+  store/holders/ ← холдеры + хуки (EntityHolder, useEntity, ...)
   components/    ← shared UI kit (button, input, modal, layouts)
   models/        ← shared view-models (DataModelBase, DateModel)
   di/            ← DI-контейнер (Inversify)
@@ -133,15 +134,42 @@ domain/store/
 - Сторы регистрируются в DI через декоратор: `@IAuthStore({ inSingleton: true })`
 - Сторы получают зависимости через DI: `@IAuthApiService() private _authApi`
 
-### Холдеры (async state)
+### Холдеры (async state) + React-хуки
+
+Каждый холдер — самодостаточная папка с классом, React-хуком и опциональным Provider/Context:
 
 ```
 store/holders/
-  EntityHolder<T>     ← одна сущность (load, refresh, setData)
-  CollectionHolder<T> ← список без пагинации
-  PagedHolder<T>      ← серверная пагинация
-  InfiniteHolder<T>   ← infinite scroll
-  MutationHolder<T>   ← одноразовые мутации
+  entity/             ← EntityHolder<T> + useEntity + useEntityContext + EntityProvider
+  collection/         ← CollectionHolder<T> + useCollection + ...
+  paged/              ← PagedHolder<T> + usePaged + ...
+  infinite/           ← InfiniteHolder<T> + useInfinite + ...
+  mutation/           ← MutationHolder<T> + useMutation + ...
+  polling/            ← PollingHolder<T> + usePolling + ...
+  base/               ← BaseHolder, BaseListHolder, CombinedHolder
+  hooks/              ← shared: useHolderRef, useWatchEffect, contextHelpers
+  Holder.types.ts     ← IApiResponse, HolderStatus, IHolderError, типы fetch-функций
+```
+
+**React-хуки** (TanStack Query-like API):
+
+| Хук | Holder | Аналог TQ |
+|---|---|---|
+| `useEntity` | `EntityHolder` | `useQuery` |
+| `useCollection` | `CollectionHolder` | `useQuery` (list) |
+| `usePaged` | `PagedHolder` | `useQuery` (paginated) |
+| `useInfinite` | `InfiniteHolder` | `useInfiniteQuery` |
+| `useMutation` | `MutationHolder` | `useMutation` |
+| `usePolling` | `PollingHolder` | `useQuery` + refetchInterval |
+
+Ключевые фичи: `queryFn`, `watch` (авто-загрузка + перезапрос при изменении), `enabled` (пропуск условия), `isBusy`.
+
+**Provider/Context** — для шаринга состояния через дерево компонентов:
+
+```tsx
+<EntityProvider queryFn={(id) => api.getPost(id)} watch={[postId]}>
+  <Child />  {/* useEntityContext() — тот же holder */}
+</EntityProvider>
 ```
 
 - Все холдеры возвращают `{ data } | { error }`, никогда не кидают исключения

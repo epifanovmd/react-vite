@@ -1,7 +1,7 @@
 import { action, makeObservable, observable } from "mobx";
 
-import { EntityHolder, IEntityHolderOptions } from "./EntityHolder";
-import { IHolderError } from "./HolderTypes";
+import { EntityHolder, IEntityHolderOptions } from "../entity/EntityHolder";
+import { IHolderError } from "../Holder.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 
