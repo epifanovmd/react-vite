@@ -1,15 +1,22 @@
 import { type ReactNode } from "react";
 
 import { InfiniteCtx } from "./useInfiniteContext";
-import { useInfinite, type UseInfiniteOptions, type UseInfiniteResult } from "./useInfiniteHolder";
+import {
+  useInfinite,
+  type UseInfiniteOptions,
+  type UseInfiniteResult,
+} from "./useInfiniteHolder";
 
-export const InfiniteProvider = <TItem, TArgs = void,>({
+export const InfiniteProvider = <TItem, TArgs = void>({
   children,
   value: externalValue,
   ...options
-}: { children: ReactNode; value?: UseInfiniteResult<TItem, TArgs> } & UseInfiniteOptions<TItem, TArgs>) => {
-  const result = useInfinite<TItem, TArgs>(options as unknown as UseInfiniteOptions<TItem, TArgs>);
+}: {
+  children: ReactNode;
+  value?: UseInfiniteResult<TItem, TArgs>;
+} & UseInfiniteOptions<TItem, TArgs>) => {
+  const result = useInfinite<TItem, TArgs>(options);
   const value = externalValue ?? result;
 
-  return <InfiniteCtx.Provider value={value as any}>{children}</InfiniteCtx.Provider>;
+  return <InfiniteCtx.Provider value={value}>{children}</InfiniteCtx.Provider>;
 };

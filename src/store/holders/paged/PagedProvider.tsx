@@ -1,15 +1,22 @@
 import { type ReactNode } from "react";
 
 import { PagedCtx } from "./usePagedContext";
-import { usePaged, type UsePagedOptions, type UsePagedResult } from "./usePagedHolder";
+import {
+  usePaged,
+  type UsePagedOptions,
+  type UsePagedResult,
+} from "./usePagedHolder";
 
-export const PagedProvider = <TItem, TArgs = void,>({
+export const PagedProvider = <TItem, TArgs = void>({
   children,
   value: externalValue,
   ...options
-}: { children: ReactNode; value?: UsePagedResult<TItem, TArgs> } & UsePagedOptions<TItem, TArgs>) => {
-  const result = usePaged<TItem, TArgs>(options as unknown as UsePagedOptions<TItem, TArgs>);
+}: {
+  children: ReactNode;
+  value?: UsePagedResult<TItem, TArgs>;
+} & UsePagedOptions<TItem, TArgs>) => {
+  const result = usePaged<TItem, TArgs>(options);
   const value = externalValue ?? result;
 
-  return <PagedCtx.Provider value={value as any}>{children}</PagedCtx.Provider>;
+  return <PagedCtx.Provider value={value}>{children}</PagedCtx.Provider>;
 };
