@@ -40,21 +40,45 @@ export interface UsePagedOptions<TItem, TArgs = void> {
 /** Реактивные поля из PagedHolder (без методов). */
 type PagedReactive<TItem, TArgs, TError extends IHolderError> = Pick<
   PagedHolder<TItem, TArgs, TError>,
-  'isLoading' | 'isRefreshing' | 'isBusy' | 'isSuccess'
-  | 'isError' | 'isIdle' | 'error' | 'items' | 'isEmpty'
-  | 'pagination' | 'pageCount' | 'hasNextPage' | 'hasPrevPage'
+  | "isLoading"
+  | "isRefreshing"
+  | "isBusy"
+  | "isSuccess"
+  | "isError"
+  | "isIdle"
+  | "error"
+  | "items"
+  | "isEmpty"
+  | "pagination"
+  | "pageCount"
+  | "hasNextPage"
+  | "hasPrevPage"
 >;
 
 /** Методы PagedHolder (без holder). */
 type PagedMethods<TItem, TArgs, TError extends IHolderError> = Pick<
   PagedHolder<TItem, TArgs, TError>,
-  'load' | 'reload' | 'goToPage' | 'nextPage' | 'prevPage'
-  | 'setPage' | 'setPageSize'
-  | 'prependItem' | 'appendItem' | 'removeItem' | 'updateItem' | 'reset'
+  | "load"
+  | "reload"
+  | "goToPage"
+  | "nextPage"
+  | "prevPage"
+  | "setPage"
+  | "setPageSize"
+  | "prependItem"
+  | "appendItem"
+  | "removeItem"
+  | "updateItem"
+  | "reset"
 >;
 
-export interface UsePagedResult<TItem, TArgs = void, TError extends IHolderError = IHolderError>
-  extends PagedReactive<TItem, TArgs, TError>,
+export interface UsePagedResult<
+  TItem,
+  TArgs = void,
+  TError extends IHolderError = IHolderError,
+>
+  extends
+    PagedReactive<TItem, TArgs, TError>,
     PagedMethods<TItem, TArgs, TError> {
   /** Исходный холдер. */
   holder: PagedHolder<TItem, TArgs, TError>;
@@ -98,8 +122,7 @@ export const usePaged = <
 ): UsePagedResult<TItem, TArgs, TError> => {
   const holder = useHolderRef(() => {
     const fetchFn = (options?.queryFn ?? options?.onFetch) as
-      | PagedFetchFn<TItem, TArgs>
-      | undefined;
+      PagedFetchFn<TItem, TArgs> | undefined;
 
     return new PagedHolder<TItem, TArgs, TError>({
       onFetch: fetchFn,
@@ -108,25 +131,51 @@ export const usePaged = <
     });
   });
 
-  useWatchEffect(
-    holder.load as (...args: any[]) => unknown,
-    { watch: options?.watch as WatchOptions<TArgs>["watch"], enabled: options?.enabled },
-  );
+  useWatchEffect(holder.load.bind(holder) as (...args: any[]) => unknown, {
+    watch: options?.watch as WatchOptions<TArgs>["watch"],
+    enabled: options?.enabled,
+  });
 
   return {
-    get items() { return holder.items; },
-    get pagination() { return holder.pagination; },
-    get pageCount() { return holder.pageCount; },
-    get hasNextPage() { return holder.hasNextPage; },
-    get hasPrevPage() { return holder.hasPrevPage; },
-    get isLoading() { return holder.isLoading; },
-    get isRefreshing() { return holder.isRefreshing; },
-    get isBusy() { return holder.isBusy; },
-    get isSuccess() { return holder.isSuccess; },
-    get isError() { return holder.isError; },
-    get isIdle() { return holder.isIdle; },
-    get isEmpty() { return holder.isEmpty; },
-    get error() { return holder.error as TError | null; },
+    get items() {
+      return holder.items;
+    },
+    get pagination() {
+      return holder.pagination;
+    },
+    get pageCount() {
+      return holder.pageCount;
+    },
+    get hasNextPage() {
+      return holder.hasNextPage;
+    },
+    get hasPrevPage() {
+      return holder.hasPrevPage;
+    },
+    get isLoading() {
+      return holder.isLoading;
+    },
+    get isRefreshing() {
+      return holder.isRefreshing;
+    },
+    get isBusy() {
+      return holder.isBusy;
+    },
+    get isSuccess() {
+      return holder.isSuccess;
+    },
+    get isError() {
+      return holder.isError;
+    },
+    get isIdle() {
+      return holder.isIdle;
+    },
+    get isEmpty() {
+      return holder.isEmpty;
+    },
+    get error() {
+      return holder.error as TError | null;
+    },
 
     load: holder.load.bind(holder),
     reload: holder.reload.bind(holder),
@@ -143,7 +192,7 @@ export const usePaged = <
 
     holder,
   };
-}
+};
 
 /** @deprecated Используйте `usePaged` */
 export const usePagedHolder = usePaged;

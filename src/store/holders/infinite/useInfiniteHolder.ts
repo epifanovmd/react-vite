@@ -40,19 +40,33 @@ export interface UseInfiniteOptions<TItem, TArgs = void> {
 /** Реактивные поля из InfiniteHolder (без методов). */
 type InfiniteReactive<TItem, TArgs, TError extends IHolderError> = Pick<
   InfiniteHolder<TItem, TArgs, TError>,
-  'isLoading' | 'isRefreshing' | 'isBusy' | 'isSuccess'
-  | 'isError' | 'isIdle' | 'error' | 'items'
-  | 'isLoadingMore' | 'isLoadMoreError' | 'hasMore' | 'loadMoreError'
+  | "isLoading"
+  | "isRefreshing"
+  | "isBusy"
+  | "isSuccess"
+  | "isError"
+  | "isIdle"
+  | "error"
+  | "items"
+  | "isLoadingMore"
+  | "isLoadMoreError"
+  | "hasMore"
+  | "loadMoreError"
 >;
 
 /** Методы InfiniteHolder (без holder). */
 type InfiniteMethods<TItem, TArgs, TError extends IHolderError> = Pick<
   InfiniteHolder<TItem, TArgs, TError>,
-  'load' | 'refresh' | 'loadMore' | 'reset'
+  "load" | "refresh" | "loadMore" | "reset"
 >;
 
-export interface UseInfiniteResult<TItem, TArgs = void, TError extends IHolderError = IHolderError>
-  extends InfiniteReactive<TItem, TArgs, TError>,
+export interface UseInfiniteResult<
+  TItem,
+  TArgs = void,
+  TError extends IHolderError = IHolderError,
+>
+  extends
+    InfiniteReactive<TItem, TArgs, TError>,
     InfiniteMethods<TItem, TArgs, TError> {
   /** Исходный холдер. */
   holder: InfiniteHolder<TItem, TArgs, TError>;
@@ -96,8 +110,7 @@ export const useInfinite = <
 ): UseInfiniteResult<TItem, TArgs, TError> => {
   const holder = useHolderRef(() => {
     const fetchFn = (options?.queryFn ?? options?.onFetch) as
-      | InfiniteFetchFn<TItem, TArgs>
-      | undefined;
+      InfiniteFetchFn<TItem, TArgs> | undefined;
 
     return new InfiniteHolder<TItem, TArgs, TError>({
       onFetch: fetchFn,
@@ -106,33 +119,61 @@ export const useInfinite = <
     });
   });
 
-  useWatchEffect(
-    holder.load as (...args: any[]) => unknown,
-    { watch: options?.watch as WatchOptions<TArgs>["watch"], enabled: options?.enabled },
-  );
+  useWatchEffect(holder.load.bind(holder) as (...args: any[]) => unknown, {
+    watch: options?.watch as WatchOptions<TArgs>["watch"],
+    enabled: options?.enabled,
+  });
 
   return {
-    get items() { return holder.items; },
-    get isLoading() { return holder.isLoading; },
-    get isRefreshing() { return holder.isRefreshing; },
-    get isBusy() { return holder.isBusy; },
-    get isLoadingMore() { return holder.isLoadingMore; },
-    get isLoadMoreError() { return holder.isLoadMoreError; },
-    get hasMore() { return holder.hasMore; },
-    get isSuccess() { return holder.isSuccess; },
-    get isError() { return holder.isError; },
-    get isIdle() { return holder.isIdle; },
-    get error() { return holder.error as TError | null; },
-    get loadMoreError() { return holder.loadMoreError as TError | null; },
+    get items() {
+      return holder.items;
+    },
+    get isLoading() {
+      return holder.isLoading;
+    },
+    get isRefreshing() {
+      return holder.isRefreshing;
+    },
+    get isBusy() {
+      return holder.isBusy;
+    },
+    get isLoadingMore() {
+      return holder.isLoadingMore;
+    },
+    get isLoadMoreError() {
+      return holder.isLoadMoreError;
+    },
+    get hasMore() {
+      return holder.hasMore;
+    },
+    get isSuccess() {
+      return holder.isSuccess;
+    },
+    get isError() {
+      return holder.isError;
+    },
+    get isIdle() {
+      return holder.isIdle;
+    },
+    get error() {
+      return holder.error as TError | null;
+    },
+    get loadMoreError() {
+      return holder.loadMoreError as TError | null;
+    },
 
     load: holder.load.bind(holder),
     refresh: holder.refresh.bind(holder),
-    loadMore: holder.loadMore.bind(holder) as InfiniteHolder<TItem, TArgs, TError>["loadMore"],
+    loadMore: holder.loadMore.bind(holder) as InfiniteHolder<
+      TItem,
+      TArgs,
+      TError
+    >["loadMore"],
     reset: holder.reset.bind(holder),
 
     holder,
   };
-}
+};
 
 /** @deprecated Используйте `useInfinite` */
 export const useInfiniteHolder = useInfinite;

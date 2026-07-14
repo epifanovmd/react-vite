@@ -41,19 +41,40 @@ export interface UseCollectionOptions<TItem, TArgs = void> {
 /** Реактивные поля из CollectionHolder (без методов). */
 type CollectionReactive<TItem, TArgs, TError extends IHolderError> = Pick<
   CollectionHolder<TItem, TArgs, TError>,
-  'isLoading' | 'isRefreshing' | 'isBusy' | 'isSuccess'
-  | 'isError' | 'isIdle' | 'error' | 'items' | 'isEmpty' | 'count'
+  | "isLoading"
+  | "isRefreshing"
+  | "isBusy"
+  | "isSuccess"
+  | "isError"
+  | "isIdle"
+  | "error"
+  | "items"
+  | "isEmpty"
+  | "count"
 >;
 
 /** Методы CollectionHolder (без holder). */
 type CollectionMethods<TItem, TArgs, TError extends IHolderError> = Pick<
   CollectionHolder<TItem, TArgs, TError>,
-  'load' | 'refresh' | 'fromApi' | 'setItems'
-  | 'prependItem' | 'appendItem' | 'removeItem' | 'updateItem' | 'upsertItem' | 'reset'
+  | "load"
+  | "refresh"
+  | "fromApi"
+  | "setItems"
+  | "prependItem"
+  | "appendItem"
+  | "removeItem"
+  | "updateItem"
+  | "upsertItem"
+  | "reset"
 >;
 
-export interface UseCollectionResult<TItem, TArgs = void, TError extends IHolderError = IHolderError>
-  extends CollectionReactive<TItem, TArgs, TError>,
+export interface UseCollectionResult<
+  TItem,
+  TArgs = void,
+  TError extends IHolderError = IHolderError,
+>
+  extends
+    CollectionReactive<TItem, TArgs, TError>,
     CollectionMethods<TItem, TArgs, TError> {
   /** Исходный холдер. */
   holder: CollectionHolder<TItem, TArgs, TError>;
@@ -85,8 +106,7 @@ export const useCollection = <
 ): UseCollectionResult<TItem, TArgs, TError> => {
   const holder = useHolderRef(() => {
     const fetchFn = (options?.queryFn ?? options?.onFetch) as
-      | CollectionFetchFn<TItem, TArgs>
-      | undefined;
+      CollectionFetchFn<TItem, TArgs> | undefined;
 
     return new CollectionHolder<TItem, TArgs, TError>({
       onFetch: fetchFn,
@@ -94,26 +114,50 @@ export const useCollection = <
     });
   });
 
-  useWatchEffect(
-    holder.load as (...args: any[]) => unknown,
-    { watch: options?.watch as WatchOptions<TArgs>["watch"], enabled: options?.enabled },
-  );
+  useWatchEffect(holder.load.bind(holder) as (...args: any[]) => unknown, {
+    watch: options?.watch as WatchOptions<TArgs>["watch"],
+    enabled: options?.enabled,
+  });
 
   return {
-    get items() { return holder.items; },
-    get count() { return holder.count; },
-    get isLoading() { return holder.isLoading; },
-    get isRefreshing() { return holder.isRefreshing; },
-    get isBusy() { return holder.isBusy; },
-    get isSuccess() { return holder.isSuccess; },
-    get isError() { return holder.isError; },
-    get isIdle() { return holder.isIdle; },
-    get isEmpty() { return holder.isEmpty; },
-    get error() { return holder.error as TError | null; },
+    get items() {
+      return holder.items;
+    },
+    get count() {
+      return holder.count;
+    },
+    get isLoading() {
+      return holder.isLoading;
+    },
+    get isRefreshing() {
+      return holder.isRefreshing;
+    },
+    get isBusy() {
+      return holder.isBusy;
+    },
+    get isSuccess() {
+      return holder.isSuccess;
+    },
+    get isError() {
+      return holder.isError;
+    },
+    get isIdle() {
+      return holder.isIdle;
+    },
+    get isEmpty() {
+      return holder.isEmpty;
+    },
+    get error() {
+      return holder.error as TError | null;
+    },
 
     load: holder.load.bind(holder),
     refresh: holder.refresh.bind(holder),
-    fromApi: holder.fromApi.bind(holder) as CollectionHolder<TItem, TArgs, TError>["fromApi"],
+    fromApi: holder.fromApi.bind(holder) as CollectionHolder<
+      TItem,
+      TArgs,
+      TError
+    >["fromApi"],
     setItems: holder.setItems.bind(holder),
     prependItem: holder.prependItem.bind(holder),
     appendItem: holder.appendItem.bind(holder),
@@ -124,7 +168,7 @@ export const useCollection = <
 
     holder,
   };
-}
+};
 
 /** @deprecated Используйте `useCollection` */
 export const useCollectionHolder = useCollection;
