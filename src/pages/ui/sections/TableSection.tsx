@@ -140,7 +140,6 @@ export const TableSection: FC = () => (
           sorting
           selection
           onRowClick={row => console.log("clicked", row)}
-          caption="Recent transactions"
         />
       </div>
       <div>

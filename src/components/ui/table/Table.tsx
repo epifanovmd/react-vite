@@ -1,4 +1,3 @@
-import { type OnChangeFn, type Row, type RowSelectionState, type SortingState } from "@tanstack/react-table";
 import * as React from "react";
 import { PropsWithChildren } from "react";
 
@@ -8,7 +7,7 @@ import { TableBodySection } from "./components/TableBodySection";
 import { TableContext } from "./components/TableContext";
 import { TableFooterSection } from "./components/TableFooterSection";
 import { TableHeaderSection } from "./components/TableHeaderSection";
-import { TableCaption, TableRoot } from "./components/TablePrimitive";
+import { TableRoot } from "./components/TablePrimitive";
 import { useTableInstance } from "./hooks/useTableInstance";
 import type { TablePaginationProps } from "./pagination/TablePagination";
 import { TablePagination } from "./pagination/TablePagination";
@@ -23,7 +22,6 @@ const TableComponent = <TData,>(
   const {
     variant = "default",
     size = "md",
-    caption,
     stickyHeader,
     className,
     containerClassName,
@@ -35,16 +33,19 @@ const TableComponent = <TData,>(
     children,
   } = props;
 
-  const { table, rows, totalColumns, hasFooter } = useTableInstance<TData>(props);
+  const { table, rows, totalColumns, hasFooter } =
+    useTableInstance<TData>(props);
   const { pagination } = useSlotProps(Table, children);
 
   return (
     <TableContext.Provider value={{ size, variant }}>
       <div
-        className={cn("overflow-auto rounded-lg border", containerClassName)}
+        className={cn(
+          "flex-1 overflow-auto rounded-lg border",
+          containerClassName,
+        )}
       >
-        <TableRoot className={className}>
-          {caption && <TableCaption>{caption}</TableCaption>}
+        <TableRoot className={cn("h-full", className)}>
           <TableHeaderSection
             table={table}
             sorting={sorting}
@@ -60,9 +61,8 @@ const TableComponent = <TData,>(
           />
           {hasFooter && <TableFooterSection table={table} />}
         </TableRoot>
-
-        {pagination && <TablePagination {...pagination} />}
       </div>
+      {pagination && <TablePagination {...pagination} />}
     </TableContext.Provider>
   );
 };

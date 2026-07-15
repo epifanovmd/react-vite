@@ -1,4 +1,5 @@
 import {
+  type ColumnFiltersState,
   type OnChangeFn,
   type RowSelectionState,
   type SortingState,
@@ -10,6 +11,8 @@ interface UseTableStateOptions {
   onSortingChange?: OnChangeFn<SortingState>;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
 }
 
 export interface TableState {
@@ -17,6 +20,8 @@ export interface TableState {
   onSortingChange: OnChangeFn<SortingState>;
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
+  columnFilters: ColumnFiltersState;
+  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
 }
 
 export const useTableState = ({
@@ -24,17 +29,26 @@ export const useTableState = ({
   onSortingChange,
   rowSelection,
   onRowSelectionChange,
+  columnFilters,
+  onColumnFiltersChange,
 }: UseTableStateOptions): TableState => {
   const [internalSorting, setInternalSorting] = React.useState<SortingState>(
     [],
   );
+
   const [internalRowSelection, setInternalRowSelection] =
     React.useState<RowSelectionState>({});
+
+  const [internalColumnFilters, setInternalColumnFilters] =
+    React.useState<ColumnFiltersState>([]);
 
   return {
     sorting: sortingState ?? internalSorting,
     onSortingChange: onSortingChange ?? setInternalSorting,
     rowSelection: rowSelection ?? internalRowSelection,
     onRowSelectionChange: onRowSelectionChange ?? setInternalRowSelection,
+    columnFilters: columnFilters ?? internalColumnFilters,
+    onColumnFiltersChange:
+      onColumnFiltersChange ?? setInternalColumnFilters,
   };
 };

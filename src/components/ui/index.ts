@@ -195,11 +195,16 @@ export type { StatCardColor, StatCardProps } from "./stat-card";
 export { StatCard } from "./stat-card";
 export type { SwitchProps } from "./switch";
 export { Switch } from "./switch";
-export type { ColumnDef, TablePaginationProps, TableProps } from "./table";
+export type {
+  ColumnDef,
+  ColumnFilterConfig,
+  ColumnFilterOption,
+  TablePaginationProps,
+  TableProps,
+} from "./table";
 export {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHead,

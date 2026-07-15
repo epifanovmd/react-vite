@@ -1,5 +1,6 @@
 import type {
   ColumnDef,
+  ColumnFiltersState,
   OnChangeFn,
   Row,
   RowSelectionState,
@@ -8,13 +9,45 @@ import type {
 } from "@tanstack/react-table";
 import type * as React from "react";
 
+// ─── Per-column filters ──────────────────────────────────────────────────────
+
+/** Опция для select/multiselect фильтра колонки. */
+export interface ColumnFilterOption {
+  value: string;
+
+  label: React.ReactNode;
+}
+
+/**
+ * Конфиг фильтра колонки. Задаётся в `columnDef.meta.filter`.
+ * Тип определяет UI в поповере хидера:
+ * - `text` — инпут (с дебаунсом перед `column.setFilterValue`)
+ * - `select` — одиночный выбор (clearable)
+ * - `multiselect` — множественный выбор
+ *
+ * Для client-режима (без `manualFiltering`) на колонке стоит также задать
+ * `filterFn` (`"includesString"` / `"equals"` / `"arrIncludesSome"`).
+ * Для server-режима (`manualFiltering`) `filterFn` не нужен — фильтрацию
+ * делает сервер по `columnFilters`, которые родитель пробрасывает в запрос.
+ */
+export type ColumnFilterConfig =
+  | { type: "text"; placeholder?: string }
+  | { type: "select"; options: ColumnFilterOption[]; placeholder?: string }
+  | { type: "multiselect"; options: ColumnFilterOption[] };
+
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData, TValue> {
+    filter?: ColumnFilterConfig;
+  }
+}
+
+
 export interface TableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, any>[];
 
   variant?: "default" | "striped" | "bordered";
   size?: "sm" | "md" | "lg";
-  caption?: React.ReactNode;
   stickyHeader?: boolean;
   className?: string;
   containerClassName?: string;
@@ -28,6 +61,11 @@ export interface TableProps<TData> {
   // Global filter
   globalFilter?: string;
   onGlobalFilterChange?: OnChangeFn<string>;
+
+  // Per-column filters
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
+  manualFiltering?: boolean;
 
   // Row selection
   selection?: boolean;

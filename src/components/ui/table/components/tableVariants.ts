@@ -14,7 +14,7 @@ export const tableVariants = cva("w-full caption-bottom", {
 });
 
 export const tableHeadVariants = cva(
-  "text-left align-middle font-medium text-muted-foreground select-none [&:has([role=checkbox])]:w-10 [&:has([role=checkbox])]:px-3",
+  "text-left align-middle font-medium text-muted-foreground select-none",
   {
     variants: {
       size: {
@@ -30,7 +30,7 @@ export const tableHeadVariants = cva(
 );
 
 export const tableCellVariants = cva(
-  "align-middle [&:has([role=checkbox])]:w-10 [&:has([role=checkbox])]:px-3",
+  "align-middle",
   {
     variants: {
       size: {

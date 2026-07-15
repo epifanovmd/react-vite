@@ -30,6 +30,9 @@ export const useTableInstance = <TData,>(
     rowSelection,
     onRowSelectionChange,
     onSelectedRowsChange,
+    columnFilters,
+    onColumnFiltersChange,
+    manualFiltering,
   } = props;
 
   const state = useTableState({
@@ -37,13 +40,25 @@ export const useTableInstance = <TData,>(
     onSortingChange,
     rowSelection,
     onRowSelectionChange,
+    columnFilters,
+    onColumnFiltersChange,
   });
+
+  // Фильтрация по колонкам включена, если родитель передал controlled-стейт
+  // или колбэк (охватывает и server-, и client-режим).
+  const columnFilteringEnabled =
+    columnFilters !== undefined || onColumnFiltersChange !== undefined;
+
+  // Общий флаг: применяется ли хоть какая-то фильтрация на клиенте.
+  const clientFilteringEnabled =
+    !manualFiltering && (globalFilter !== undefined || columnFilteringEnabled);
 
   const checkboxSize = size === "lg" ? "md" : "sm";
 
   const selectionColumn = React.useMemo<ColumnDef<TData, unknown>>(
     () => ({
       id: "__selection__",
+      size: 32,
       header: ({ table }) => (
         <Checkbox
           size={checkboxSize}
@@ -65,6 +80,7 @@ export const useTableInstance = <TData,>(
       ),
       enableSorting: false,
       enableGlobalFilter: false,
+      enableColumnFilter: false,
     }),
     [checkboxSize],
   );
@@ -82,16 +98,25 @@ export const useTableInstance = <TData,>(
       ...(sorting && { sorting: state.sorting }),
       ...(globalFilter !== undefined && { globalFilter }),
       ...(selection && { rowSelection: state.rowSelection }),
+      ...(columnFilteringEnabled && { columnFilters: state.columnFilters }),
     },
     enableRowSelection: selection,
     onRowSelectionChange: selection ? state.onRowSelectionChange : undefined,
     onSortingChange: sorting ? state.onSortingChange : undefined,
     onGlobalFilterChange,
+    onColumnFiltersChange: columnFilteringEnabled
+      ? state.onColumnFiltersChange
+      : undefined,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: sorting ? getSortedRowModel() : undefined,
-    getFilteredRowModel:
-      globalFilter !== undefined ? getFilteredRowModel() : undefined,
+    // В manual-режиме сортировку/фильтрацию делает сервер — не подключаем
+    // клиентские row-модели, чтобы не дублировать поверх серверного результата.
+    getSortedRowModel:
+      sorting && !manualSorting ? getSortedRowModel() : undefined,
+    getFilteredRowModel: clientFilteringEnabled
+      ? getFilteredRowModel()
+      : undefined,
     manualSorting,
+    manualFiltering,
   });
 
   const onSelectedRowsChangeRef = React.useRef(onSelectedRowsChange);

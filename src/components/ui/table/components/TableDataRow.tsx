@@ -1,7 +1,7 @@
 import { flexRender, type Row } from "@tanstack/react-table";
 import * as React from "react";
 
-import { cn } from "../../foundation/cn";
+import { cn } from "../../foundation";
 import { TableCell, TableRow } from "./TablePrimitive";
 
 interface TableDataRowProps<TData = unknown> {
@@ -29,11 +29,22 @@ const TableDataRowInner = <TData = unknown,>({
       onClick={onRowClick ? handleClick : undefined}
       className={cn(onRowClick && "cursor-pointer")}
     >
-      {row.getVisibleCells().map(cell => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
+      {row.getVisibleCells().map(cell => {
+        const colWidth = cell.column.columnDef.size;
+
+        return (
+          <TableCell
+            key={cell.id}
+            style={
+              colWidth != null
+                ? { width: colWidth, minWidth: colWidth, maxWidth: colWidth }
+                : undefined
+            }
+          >
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        );
+      })}
     </TableRow>
   );
 };
