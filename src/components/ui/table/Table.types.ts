@@ -37,7 +37,7 @@ export type SelectionMode = boolean | "single" | "multi";
 
 export interface TableProps<TData> {
   data: TData[];
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData>[];
 
   variant?: "default" | "striped" | "bordered";
   size?: "sm" | "md" | "lg";

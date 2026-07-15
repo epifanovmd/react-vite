@@ -1,13 +1,19 @@
-import type { Table as TanstackTable } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";
 
 import { Pagination } from "../../pagination";
 import { Select } from "../../select";
 
+interface TableLike {
+  getPageCount(): number;
+  setPageIndex(index: number): void;
+  setPageSize(size: number): void;
+  getState(): { pagination: { pageIndex: number; pageSize: number } };
+}
+
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 export interface TablePaginationProps {
-  table?: TanstackTable<any>;
+  table?: TableLike;
   totalPages?: number;
   currentPage?: number;
   pageSize?: number;

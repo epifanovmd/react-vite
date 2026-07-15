@@ -10,7 +10,8 @@ const toText = (v: React.InputHTMLAttributes<HTMLInputElement>["value"]) =>
   v == null ? "" : String(v);
 
 export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
+  extends
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
     VariantProps<typeof inputVariants> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -75,7 +76,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const showPasswordToggle = isPassword && hasValue;
 
     return (
-      <div className="flex grow relative w-full">
+      <div className={cn("flex grow relative", className)}>
         {leftIcon && (
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             {leftIcon}
@@ -88,7 +89,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             leftIcon && "pl-10",
             (rightIcon || showClearButton || showPasswordToggle || loading) &&
               "pr-10",
-            className,
           )}
           ref={mergedRef}
           {...(isControlled ? { value } : { defaultValue })}

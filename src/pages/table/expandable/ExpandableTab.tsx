@@ -1,8 +1,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardTitle,
   Table,
 } from "@components/ui";
 import { type FC } from "react";
@@ -27,16 +25,12 @@ export const ExpandableTab: FC<ExpandableTabProps> = ({
   return (
     <Card
       className="flex flex-1 flex-col overflow-hidden"
-      title={
-        <CardTitle className="text-base">
-          Expandable строки (Invoice → Items)
-        </CardTitle>
-      }
+      title={<span className="text-base">Expandable строки (Invoice → Items)</span>}
       description={
-        <CardDescription className="text-xs">
+        <span className="text-xs">
           Sub-rows через renderSubComponent (вложенная таблица),
           selection=&quot;single&quot;, onRowDoubleClick, rowClassName.
-        </CardDescription>
+        </span>
       }
       contentClassName="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6 pt-0"
     >

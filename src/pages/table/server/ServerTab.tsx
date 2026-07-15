@@ -3,8 +3,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardTitle,
   Drawer,
   DrawerContent,
   DrawerDescription,
@@ -53,12 +51,12 @@ export const ServerTab: FC<ServerTabProps> = observer(
     return (
       <Card
         className="flex flex-1 flex-col overflow-hidden"
-        title={<CardTitle className="text-base">Таблица заказов</CardTitle>}
+        title={<span className="text-base">Таблица заказов</span>}
         description={
-          <CardDescription className="text-xs">
+          <span className="text-xs">
             Серверная пагинация (usePaged), ручная сортировка, фильтры колонок,
             sticky header, выбор строк, Drawer детализации.
-          </CardDescription>
+          </span>
         }
         contentClassName="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6 pt-0"
       >
@@ -70,13 +68,14 @@ export const ServerTab: FC<ServerTabProps> = observer(
             onChange={handleSearchChange}
             onClear={vm.onClearSearch}
             clearable
+            size={density}
             leftIcon={<Search className="h-4 w-4" />}
             loading={vm.isBusy}
           />
           <div className="ml-auto flex items-center gap-2">
             <Button
               variant="outline"
-              size="sm"
+              size={density}
               onClick={() => vm.reload()}
               loading={vm.isBusy}
               leftIcon={<RefreshCw className="h-4 w-4" />}

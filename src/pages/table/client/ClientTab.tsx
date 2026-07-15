@@ -1,13 +1,4 @@
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-  Input,
-  Table,
-} from "@components/ui";
+import { Badge, Button, Card, CardContent, Input, Table } from "@components/ui";
 import { Search, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type ChangeEvent, type FC, useCallback, useMemo } from "react";
@@ -49,15 +40,13 @@ export const ClientTab: FC<ClientTabProps> = observer(
       <Card
         className="flex flex-1 flex-col overflow-hidden"
         title={
-          <CardTitle className="text-base">
-            Клиентская таблица (500 записей)
-          </CardTitle>
+          <span className="text-base">Клиентская таблица (500 записей)</span>
         }
         description={
-          <CardDescription className="text-xs">
+          <span className="text-xs">
             Client-side пагинация (TanStack), ресайз колонок, column visibility,
             rowClassName (подсветка строк по статусу), multi-select.
-          </CardDescription>
+          </span>
         }
         contentClassName="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6 pt-0"
       >
@@ -69,6 +58,7 @@ export const ClientTab: FC<ClientTabProps> = observer(
             onChange={handleSearchChange}
             onClear={() => vm.onSearchChange("")}
             clearable
+            size={"sm"}
             leftIcon={<Search className="h-4 w-4" />}
           />
         </div>

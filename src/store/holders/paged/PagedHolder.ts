@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
 import { BaseListHolder } from "../base/BaseListHolder";
 import {
@@ -280,7 +280,9 @@ export class PagedHolder<
     const args = _args[0] as TArgs;
 
     this.lastArgs = args ?? null;
-    this.pagination = { ...this.pagination, page: 1 };
+    runInAction(() => {
+      this.pagination = { ...this.pagination, page: 1 };
+    });
 
     return this._runFetch(args, false);
   }
@@ -301,10 +303,12 @@ export class PagedHolder<
     page: number,
     options?: { refresh?: boolean },
   ): Promise<IPagedHolderResult<TItem, TError>> {
-    this.pagination = {
-      ...this.pagination,
-      page: Math.max(1, Math.min(page, this.pageCount)),
-    };
+    runInAction(() => {
+      this.pagination = {
+        ...this.pagination,
+        page: Math.max(1, Math.min(page, this.pageCount)),
+      };
+    });
 
     return this._runFetch(this.lastArgs as TArgs, options?.refresh ?? false);
   }

@@ -1,4 +1,5 @@
 import {
+  type ColumnDef,
   getCoreRowModel,
   getExpandedRowModel,
   getFacetedRowModel,
@@ -70,7 +71,7 @@ export const useTableInstance = <TData,>(
   const checkboxSize = size === "lg" ? "md" : "sm";
 
   const effectiveColumns = useMemo(() => {
-    const cols: any[] = [];
+    const cols: ColumnDef<TData>[] = [];
 
     if (hasExpandable || selMode.enabled) {
       cols.push(
