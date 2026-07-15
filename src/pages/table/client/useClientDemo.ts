@@ -1,5 +1,4 @@
 import type {
-  ColumnFiltersState,
   OnChangeFn,
   RowSelectionState,
   SortingState,
@@ -7,7 +6,13 @@ import type {
 import { useCallback, useMemo, useState } from "react";
 
 import { getClientOrders } from "../table.mock";
-import type { Order } from "../table.types";
+import type { Order, OrderStatus } from "../table.types";
+
+/** Типизированная карта фильтров колонок — ключи соответствуют accessorKey колонок. */
+interface OrderFilters {
+  customer?: string;
+  status?: OrderStatus[];
+}
 
 export interface ClientDemoViewModel {
   orders: Order[];
@@ -17,8 +22,8 @@ export interface ClientDemoViewModel {
   onSortingChange: OnChangeFn<SortingState>;
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
-  columnFilters: ColumnFiltersState;
-  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
+  columnFilters: OrderFilters;
+  onColumnFiltersChange: OnChangeFn<OrderFilters>;
   selectedOrders: Order[];
   onSelectedRowsChange: (rows: Order[]) => void;
 }
@@ -29,7 +34,7 @@ export const useClientDemo = (): ClientDemoViewModel => {
     { id: "amount", desc: true },
   ]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = useState<OrderFilters>({});
   const [selectedOrders, setSelectedOrders] = useState<Order[]>([]);
 
   const onSearchChange = useCallback((value: string) => setSearch(value), []);
@@ -42,7 +47,7 @@ export const useClientDemo = (): ClientDemoViewModel => {
     [],
   );
 
-  const onColumnFiltersChange = useCallback<OnChangeFn<ColumnFiltersState>>(
+  const onColumnFiltersChange = useCallback<OnChangeFn<OrderFilters>>(
     updater =>
       setColumnFilters(prev =>
         typeof updater === "function" ? updater(prev) : updater,

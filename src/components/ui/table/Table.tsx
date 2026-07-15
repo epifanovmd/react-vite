@@ -18,8 +18,8 @@ import type { TableProps } from "./Table.types";
 const PaginationSlot = createSlot<TablePaginationProps>("Pagination");
 const ColumnVisibilitySlot = createSlot<{}>("ColumnVisibility");
 
-const TableComponent = <TData,>(
-  props: PropsWithChildren<TableProps<TData>>,
+const TableComponent = <TData, TFilter = Record<string, unknown>>(
+  props: PropsWithChildren<TableProps<TData, TFilter>>,
 ) => {
   const {
     variant = "default",
@@ -45,7 +45,7 @@ const TableComponent = <TData,>(
   } = props;
 
   const { table, rows, totalColumns, hasFooter } =
-    useTableInstance<TData>(props);
+    useTableInstance<TData, TFilter>(props);
   const { pagination: paginationSlot, columnVisibility } = useSlotProps(
     Table,
     children,

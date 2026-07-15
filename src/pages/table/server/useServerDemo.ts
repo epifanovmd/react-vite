@@ -1,6 +1,5 @@
 import { type IHolderError, usePaged } from "@store/holders";
 import type {
-  ColumnFiltersState,
   OnChangeFn,
   RowSelectionState,
   SortingState,
@@ -14,6 +13,12 @@ import type {
   OrderSortField,
   OrderStatus,
 } from "../table.types";
+
+/** Типизированная карта фильтров колонок — ключи соответствуют accessorKey колонок. */
+interface OrderFilters {
+  customer?: string;
+  status?: OrderStatus[];
+}
 
 const DEFAULT_PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -38,19 +43,12 @@ const toServerSort = (
 };
 
 const toServerFilters = (
-  columnFilters: ColumnFiltersState,
+  filters: OrderFilters,
 ): Pick<OrderQuery, "customer" | "statuses"> => {
-  const byId = Object.fromEntries(columnFilters.map(f => [f.id, f.value]));
-  const customer =
-    typeof byId.customer === "string" && byId.customer.trim()
-      ? byId.customer.trim()
-      : undefined;
-  const statusesValue = byId.status as OrderStatus[] | undefined;
-
   return {
-    customer,
+    customer: filters.customer?.trim() || undefined,
     statuses:
-      statusesValue && statusesValue.length > 0 ? statusesValue : undefined,
+      filters.status && filters.status.length > 0 ? filters.status : undefined,
   };
 };
 
@@ -77,8 +75,8 @@ export interface ServerDemoViewModel {
   onSortingChange: OnChangeFn<SortingState>;
   rowSelection: RowSelectionState;
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
-  columnFilters: ColumnFiltersState;
-  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
+  columnFilters: OrderFilters;
+  onColumnFiltersChange: OnChangeFn<OrderFilters>;
   onSelectedRowsChange: (rows: Order[]) => void;
   selectedOrders: Order[];
   clearSelection: () => void;
@@ -94,7 +92,7 @@ export const useServerDemo = (): ServerDemoViewModel => {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = useState<OrderFilters>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [selectedOrders, setSelectedOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
@@ -148,22 +146,6 @@ export const useServerDemo = (): ServerDemoViewModel => {
   const refresh = useCallback(() => {
     reload({ refresh: true });
   }, [reload]);
-
-  const onRowSelectionChange = useCallback<OnChangeFn<RowSelectionState>>(
-    updater =>
-      setRowSelection(prev =>
-        typeof updater === "function" ? updater(prev) : updater,
-      ),
-    [],
-  );
-
-  const onColumnFiltersChange = useCallback<OnChangeFn<ColumnFiltersState>>(
-    updater =>
-      setColumnFilters(prev =>
-        typeof updater === "function" ? updater(prev) : updater,
-      ),
-    [],
-  );
 
   const onSelectedRowsChange = useCallback(
     (rows: Order[]) => setSelectedOrders(rows),
@@ -222,9 +204,9 @@ export const useServerDemo = (): ServerDemoViewModel => {
     sorting,
     onSortingChange: setSorting,
     rowSelection,
-    onRowSelectionChange,
+    onRowSelectionChange: setRowSelection,
     columnFilters,
-    onColumnFiltersChange,
+    onColumnFiltersChange: setColumnFilters,
     onSelectedRowsChange,
     selectedOrders,
     clearSelection,

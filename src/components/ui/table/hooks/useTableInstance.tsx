@@ -17,8 +17,8 @@ import type { PagConfig,SelMode } from "../utils";
 import { hasFacetedFilter, resolvePagination, resolveSelectionMode } from "../utils";
 import { useTableState } from "./useTableState";
 
-export const useTableInstance = <TData,>(
-  props: TableProps<TData>,
+export const useTableInstance = <TData, TFilter = Record<string, unknown>>(
+  props: TableProps<TData, TFilter>,
 ): TableInstanceResult<TData> => {
   const {
     data,
@@ -48,7 +48,7 @@ export const useTableInstance = <TData,>(
     onExpandedChange,
   } = props;
 
-  const state = useTableState({
+  const state = useTableState<TFilter>({
     sortingState,
     onSortingChange,
     rowSelection,

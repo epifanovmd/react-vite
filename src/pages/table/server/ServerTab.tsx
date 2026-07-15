@@ -48,6 +48,9 @@ export const ServerTab: FC<ServerTabProps> = observer(
       [onSearchInputChange],
     );
 
+    console.log("vm.columnFilters", vm.columnFilters);
+    // console.log("vm.rowSelection", vm.rowSelection);
+
     return (
       <Card
         className="flex flex-1 flex-col overflow-hidden"

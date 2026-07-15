@@ -1,6 +1,5 @@
 import type {
   ColumnDef,
-  ColumnFiltersState,
   ExpandedState,
   OnChangeFn,
   PaginationState,
@@ -11,28 +10,28 @@ import type {
 } from "@tanstack/react-table";
 import type * as React from "react";
 
-export interface ColumnFilterOption {
-  value: string;
+export interface ColumnFilterOption<T = string> {
+  value: T;
   label: React.ReactNode;
 }
 
-export type ColumnFilterConfig =
+export type ColumnFilterConfig<T = string> =
   | { type: "text"; placeholder?: string; faceted?: boolean }
   | {
       type: "select";
-      options?: ColumnFilterOption[];
-      fetchOptions?: (query: string) => Promise<ColumnFilterOption[]>;
+      options?: ColumnFilterOption<T>[];
+      fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
       placeholder?: string;
     }
   | {
       type: "multiselect";
-      options?: ColumnFilterOption[];
-      fetchOptions?: (query: string) => Promise<ColumnFilterOption[]>;
+      options?: ColumnFilterOption<T>[];
+      fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
     };
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
-    filter?: ColumnFilterConfig;
+    filter?: ColumnFilterConfig<TValue>;
   }
 }
 
@@ -44,7 +43,7 @@ export interface PaginationOptions {
 
 export type SelectionMode = boolean | "single" | "multi";
 
-export interface TableProps<TData> {
+export interface TableProps<TData, TFilter = Record<string, unknown>> {
   data: TData[];
   columns: ColumnDef<TData>[];
 
@@ -68,8 +67,8 @@ export interface TableProps<TData> {
   globalFilter?: string;
   onGlobalFilterChange?: OnChangeFn<string>;
 
-  columnFilters?: ColumnFiltersState;
-  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
+  columnFilters?: Partial<TFilter>;
+  onColumnFiltersChange?: OnChangeFn<Partial<TFilter>>;
   manualFiltering?: boolean;
 
   selection?: SelectionMode;

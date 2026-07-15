@@ -25,7 +25,7 @@ export const TableHeadFilter = <TData,>({
   column,
 }: TableHeadFilterProps<TData>) => {
   const [open, setOpen] = useState(false);
-  const config = column.columnDef.meta?.filter;
+  const config = column.columnDef.meta?.filter as ColumnFilterConfig | undefined;
 
   if (!config) return null;
 
@@ -180,6 +180,9 @@ const TextControl = <TData,>({
   const [value, setValue] = useState(
     () => (column.getFilterValue() as string | undefined) ?? "",
   );
+  const columnRef = useRef(column);
+
+  columnRef.current = column;
   const isFirstRun = useRef(true);
 
   useEffect(() => {
@@ -192,11 +195,14 @@ const TextControl = <TData,>({
     const timer = setTimeout(() => {
       const next = value.trim();
 
-      column.setFilterValue(next.length ? next : undefined);
+      columnRef.current.setFilterValue(
+        next.length ? next : undefined,
+      );
     }, TEXT_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [value, column]);
+     
+  }, [value]);
 
   return (
     <Input

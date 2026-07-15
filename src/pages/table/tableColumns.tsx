@@ -19,7 +19,7 @@ const STATUS_META: Record<
   refunded: { label: "Возврат", variant: "info" },
 };
 
-const STATUS_FILTER_OPTIONS: ColumnFilterOption[] = (
+const STATUS_FILTER_OPTIONS: ColumnFilterOption<OrderStatus>[] = (
   Object.keys(STATUS_META) as OrderStatus[]
 ).map(status => ({ value: status, label: STATUS_META[status].label }));
 
