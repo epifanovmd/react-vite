@@ -1,13 +1,16 @@
 import {
   Badge,
   Button,
-  type ColumnDef,
   type ColumnFilterOption,
+  createColumnHelper,
 } from "@components/ui";
 import { Eye } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { Invoice, Order, OrderStatus } from "./table.types";
+
+const orderHelper = createColumnHelper<Order>();
+const invoiceHelper = createColumnHelper<Invoice>();
 
 const STATUS_META: Record<
   OrderStatus,
@@ -62,24 +65,21 @@ export interface OrderColumnsOptions {
   onView: (order: Order) => void;
 }
 
-export const createOrderColumns = ({
-  onView,
-}: OrderColumnsOptions): ColumnDef<Order>[] => [
-  {
-    accessorKey: "id",
+export const createOrderColumns = ({ onView }: OrderColumnsOptions) => [
+  orderHelper.accessor("id", {
     header: "ID",
     enableSorting: false,
     cell: ({ getValue }) => (
       <span className="font-mono text-xs text-muted-foreground">
-        {getValue<string>()}
+        {getValue()}
       </span>
     ),
-  },
-  {
-    accessorKey: "customer",
+  }),
+  orderHelper.accessor("customer", {
     header: "Клиент",
     filterFn: "includesString",
     meta: { filter: { type: "text", placeholder: "Поиск по клиенту…" } },
+    sortingFn: "auto",
     cell: ({ row }) => (
       <div className="flex flex-col">
         <span className="font-medium">{row.original.customer}</span>
@@ -88,24 +88,21 @@ export const createOrderColumns = ({
         </span>
       </div>
     ),
-  },
-  {
-    accessorKey: "status",
+  }),
+  orderHelper.accessor("status", {
     header: "Статус",
     size: 130,
     enableSorting: false,
     filterFn: "arrIncludesSome",
     meta: { filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS } },
-    cell: ({ getValue }) => <StatusBadge status={getValue<OrderStatus>()} />,
-  },
-  {
-    accessorKey: "items",
+    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
+  }),
+  orderHelper.accessor("items", {
     header: () => <RightAlign>Позиций</RightAlign>,
     size: 110,
-    cell: ({ getValue }) => <RightAlign>{getValue<number>()}</RightAlign>,
-  },
-  {
-    accessorKey: "amount",
+    cell: ({ getValue }) => <RightAlign>{getValue()}</RightAlign>,
+  }),
+  orderHelper.accessor("amount", {
     header: () => <RightAlign>Сумма</RightAlign>,
     size: 130,
     cell: ({ row }) => (
@@ -122,18 +119,17 @@ export const createOrderColumns = ({
 
       return <RightAlign>Σ {formatCurrency(total)}</RightAlign>;
     },
-  },
-  {
-    accessorKey: "createdAt",
+  }),
+  orderHelper.accessor("createdAt", {
     header: "Создан",
     size: 130,
     cell: ({ getValue }) => (
       <span className="tabular-nums text-muted-foreground">
-        {formatDate(getValue<string>())}
+        {formatDate(getValue())}
       </span>
     ),
-  },
-  {
+  }),
+  orderHelper.display({
     id: "actions",
     header: "",
     size: 64,
@@ -155,22 +151,20 @@ export const createOrderColumns = ({
         </Button>
       </div>
     ),
-  },
+  }),
 ];
 
-export const createClientOrderColumns = (): ColumnDef<Order>[] => [
-  {
-    accessorKey: "id",
+export const createClientOrderColumns = () => [
+  orderHelper.accessor("id", {
     header: "ID",
     enableSorting: true,
     cell: ({ getValue }) => (
       <span className="font-mono text-xs text-muted-foreground">
-        {getValue<string>()}
+        {getValue()}
       </span>
     ),
-  },
-  {
-    accessorKey: "customer",
+  }),
+  orderHelper.accessor("customer", {
     header: "Клиент",
     filterFn: "includesString",
     meta: { filter: { type: "text", placeholder: "Поиск…" } },
@@ -183,24 +177,21 @@ export const createClientOrderColumns = (): ColumnDef<Order>[] => [
         </span>
       </div>
     ),
-  },
-  {
-    accessorKey: "status",
+  }),
+  orderHelper.accessor("status", {
     header: "Статус",
     size: 130,
     enableSorting: true,
     filterFn: "arrIncludesSome",
     meta: { filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS } },
-    cell: ({ getValue }) => <StatusBadge status={getValue<OrderStatus>()} />,
-  },
-  {
-    accessorKey: "items",
+    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
+  }),
+  orderHelper.accessor("items", {
     header: "Позиций",
     size: 110,
-    cell: ({ getValue }) => <RightAlign>{getValue<number>()}</RightAlign>,
-  },
-  {
-    accessorKey: "amount",
+    cell: ({ getValue }) => <RightAlign>{getValue()}</RightAlign>,
+  }),
+  orderHelper.accessor("amount", {
     header: "Сумма",
     size: 130,
     cell: ({ row }) => (
@@ -210,65 +201,55 @@ export const createClientOrderColumns = (): ColumnDef<Order>[] => [
         </span>
       </RightAlign>
     ),
-  },
-  {
-    accessorKey: "createdAt",
+  }),
+  orderHelper.accessor("createdAt", {
     header: "Создан",
     size: 130,
     cell: ({ getValue }) => (
       <span className="tabular-nums text-muted-foreground">
-        {formatDate(getValue<string>())}
+        {formatDate(getValue())}
       </span>
     ),
-  },
+  }),
 ];
 
-export const createInvoiceColumns = (): ColumnDef<Invoice>[] => [
-  {
-    accessorKey: "id",
+export const createInvoiceColumns = () => [
+  invoiceHelper.accessor("id", {
     header: "Счёт",
     enableSorting: true,
     size: 120,
     cell: ({ getValue }) => (
       <span className="font-mono text-xs text-muted-foreground">
-        {getValue<string>()}
+        {getValue()}
       </span>
     ),
-  },
-  {
-    accessorKey: "customer",
+  }),
+  invoiceHelper.accessor("customer", {
     header: "Клиент",
     enableSorting: true,
-    cell: ({ getValue }) => (
-      <span className="font-medium">{getValue<string>()}</span>
-    ),
-  },
-  {
-    accessorKey: "date",
+    cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
+  }),
+  invoiceHelper.accessor("date", {
     header: "Дата",
     size: 130,
     cell: ({ getValue }) => (
       <span className="tabular-nums text-muted-foreground">
-        {formatDate(getValue<string>())}
+        {formatDate(getValue())}
       </span>
     ),
-  },
-  {
-    accessorKey: "total",
+  }),
+  invoiceHelper.accessor("total", {
     header: "Сумма",
     size: 130,
     cell: ({ getValue }) => (
       <RightAlign>
-        <span className="font-medium">
-          {formatCurrency(getValue<number>())}
-        </span>
+        <span className="font-medium">{formatCurrency(getValue())}</span>
       </RightAlign>
     ),
-  },
-  {
-    accessorKey: "status",
+  }),
+  invoiceHelper.accessor("status", {
     header: "Статус",
     size: 130,
-    cell: ({ getValue }) => <StatusBadge status={getValue<OrderStatus>()} />,
-  },
+    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
+  }),
 ];
