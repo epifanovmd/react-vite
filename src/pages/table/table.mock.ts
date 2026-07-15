@@ -1,7 +1,8 @@
-import type {
+import {
   IApiResponse,
   IOffsetParams,
   IPagedResponse,
+  PagedFetchFn,
 } from "@store/holders";
 
 import type {
@@ -114,17 +115,19 @@ const sortOrders = (
 const delay = (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
-export const fetchOrders = async (
-  { offset, limit }: IOffsetParams,
-  { search, sortBy, sortDir, customer, statuses }: OrderQuery,
+export const fetchOrders: PagedFetchFn<Order, OrderQuery> = async (
+  { offset, limit },
+  args,
 ): Promise<IApiResponse<IPagedResponse<Order>>> => {
+  const { search, sortBy, sortDir, customer, statuses } = args || {};
+
   await delay(NETWORK_DELAY_MS);
 
-  const q = search.toLowerCase();
+  const q = search?.toLowerCase();
   const customerQ = customer?.trim().toLowerCase() ?? "";
 
   const filtered = ORDERS.filter(order => {
-    if (q && !matchesSearch(order, search)) return false;
+    if (q && search && !matchesSearch(order, search)) return false;
     if (customerQ && !order.customer.toLowerCase().includes(customerQ))
       return false;
     if (statuses && statuses.length > 0 && !statuses.includes(order.status))
@@ -149,11 +152,7 @@ export const fetchOrders = async (
 
 const CLIENT_ORDERS: Order[] = generateOrders(500);
 
-export const getClientOrders = (
-  search: string,
-  sortBy: string,
-  sortDesc: boolean,
-): Order[] => {
+export const getClientOrders = (search: string): Order[] => {
   let result = CLIENT_ORDERS;
 
   if (search) {
@@ -166,20 +165,6 @@ export const getClientOrders = (
         order.email.toLowerCase().includes(q) ||
         order.status.toLowerCase().includes(q),
     );
-  }
-
-  if (sortBy) {
-    const dir = sortDesc ? -1 : 1;
-
-    result = [...result].sort((a, b) => {
-      const av = (a as any)[sortBy];
-      const bv = (b as any)[sortBy];
-
-      if (typeof av === "number" && typeof bv === "number")
-        return (av - bv) * dir;
-
-      return String(av).localeCompare(String(bv)) * dir;
-    });
   }
 
   return result;

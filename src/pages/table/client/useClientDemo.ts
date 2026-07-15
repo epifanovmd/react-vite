@@ -39,33 +39,14 @@ export const useClientDemo = (): ClientDemoViewModel => {
 
   const onSearchChange = useCallback((value: string) => setSearch(value), []);
 
-  const onRowSelectionChange = useCallback<OnChangeFn<RowSelectionState>>(
-    updater =>
-      setRowSelection(prev =>
-        typeof updater === "function" ? updater(prev) : updater,
-      ),
-    [],
-  );
-
-  const onColumnFiltersChange = useCallback<OnChangeFn<OrderFilters>>(
-    updater =>
-      setColumnFilters(prev =>
-        typeof updater === "function" ? updater(prev) : updater,
-      ),
-    [],
-  );
-
   const onSelectedRowsChange = useCallback(
     (rows: Order[]) => setSelectedOrders(rows),
     [],
   );
 
   const orders = useMemo(() => {
-    const sortBy = sorting[0]?.id ?? "";
-    const sortDesc = sorting[0]?.desc ?? false;
-
-    return getClientOrders(search, sortBy, sortDesc);
-  }, [search, sorting]);
+    return getClientOrders(search);
+  }, [search]);
 
   return {
     orders,
@@ -74,9 +55,9 @@ export const useClientDemo = (): ClientDemoViewModel => {
     sorting,
     onSortingChange: setSorting,
     rowSelection,
-    onRowSelectionChange,
+    onRowSelectionChange: setRowSelection,
     columnFilters,
-    onColumnFiltersChange,
+    onColumnFiltersChange: setColumnFilters,
     selectedOrders,
     onSelectedRowsChange,
   };

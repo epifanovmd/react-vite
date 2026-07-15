@@ -15,3 +15,4 @@ export type { TableProps } from "./Table.types";
 export type { TableInstanceResult } from "./Table.types";
 export * from "./utils";
 export type { ColumnDef } from "@tanstack/react-table";
+export { createColumnHelper } from "@tanstack/react-table";

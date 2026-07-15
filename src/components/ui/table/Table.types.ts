@@ -45,7 +45,7 @@ export type SelectionMode = boolean | "single" | "multi";
 
 export interface TableProps<TData, TFilter = Record<string, unknown>> {
   data: TData[];
-  columns: ColumnDef<TData>[];
+  columns: ColumnDef<TData, any>[];
 
   variant?: "default" | "striped" | "bordered";
   size?: "sm" | "md" | "lg";
