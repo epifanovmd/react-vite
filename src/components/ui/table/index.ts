@@ -1,3 +1,4 @@
+export * from "./columns";
 export * from "./components";
 export { useTableInstance } from "./hooks";
 export { useTableState } from "./hooks";
@@ -12,4 +13,5 @@ export type {
 } from "./Table.types";
 export type { TableProps } from "./Table.types";
 export type { TableInstanceResult } from "./Table.types";
+export * from "./utils";
 export type { ColumnDef } from "@tanstack/react-table";

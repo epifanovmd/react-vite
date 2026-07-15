@@ -1,5 +1,5 @@
 import { type Row } from "@tanstack/react-table";
-import { Fragment } from "react";
+import { Fragment, MouseEvent, ReactNode } from "react";
 
 import { Empty } from "../../empty";
 import { cn } from "../../foundation";
@@ -12,14 +12,11 @@ interface TableBodySectionProps<TData> {
   totalColumns: number;
   loading?: boolean;
   refreshing?: boolean;
-  empty?: React.ReactNode;
-  onRowClick?: (row: TData, e: React.MouseEvent<HTMLTableRowElement>) => void;
-  onRowDoubleClick?: (
-    row: TData,
-    e: React.MouseEvent<HTMLTableRowElement>,
-  ) => void;
+  empty?: ReactNode;
+  onRowClick?: (row: TData, e: MouseEvent<HTMLTableRowElement>) => void;
+  onRowDoubleClick?: (row: TData, e: MouseEvent<HTMLTableRowElement>) => void;
   rowClassName?: string | ((row: TData) => string);
-  renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
+  renderSubComponent?: (props: { row: Row<TData> }) => ReactNode;
   className?: string;
   resizable?: boolean;
 }

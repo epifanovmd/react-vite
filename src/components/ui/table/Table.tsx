@@ -1,21 +1,25 @@
+import { PropsWithChildren } from "react";
+
 import { createSlot, useSlotProps } from "../../slots";
 import { cn } from "../foundation";
-import { TableBodySection } from "./components/TableBodySection";
-import { TableColumnVisibility } from "./components/TableColumnVisibility";
-import { TableContext } from "./components/TableContext";
-import { TableFooterSection } from "./components/TableFooterSection";
-import { TableHeaderSection } from "./components/TableHeaderSection";
-import { TableRoot } from "./components/TablePrimitive";
-import { useTableInstance } from "./hooks/useTableInstance";
-import type { TablePaginationProps } from "./pagination/TablePagination";
-import { TablePagination } from "./pagination/TablePagination";
+import {
+  TableBodySection,
+  TableColumnVisibility,
+  TableContext,
+  TableFooterSection,
+  TableHeaderSection,
+  TableRoot,
+} from "./components";
+import { useTableInstance } from "./hooks";
+import type { TablePaginationProps } from "./pagination";
+import { TablePagination } from "./pagination";
 import type { TableProps } from "./Table.types";
 
 const PaginationSlot = createSlot<TablePaginationProps>("Pagination");
 const ColumnVisibilitySlot = createSlot<{}>("ColumnVisibility");
 
 const TableComponent = <TData,>(
-  props: React.PropsWithChildren<TableProps<TData>>,
+  props: PropsWithChildren<TableProps<TData>>,
 ) => {
   const {
     variant = "default",

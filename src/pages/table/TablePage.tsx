@@ -131,4 +131,3 @@ const TablePage: FC = observer(() => {
 });
 
 export { TablePage };
-

@@ -1,5 +1,5 @@
 import { flexRender, type Row } from "@tanstack/react-table";
-import { MouseEvent } from "react";
+import { memo, MouseEvent, useCallback } from "react";
 
 import { cn } from "../../foundation";
 import { TableCell, TableRow } from "./TablePrimitive";
@@ -27,13 +27,21 @@ const TableDataRowInner = <TData = unknown,>({
   const resolvedClassName =
     typeof className === "function" ? className(row.original) : className;
 
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLTableRowElement>) => onRowClick?.(row.original, e),
+    [onRowClick, row.original],
+  );
+
+  const handleDoubleClick = useCallback(
+    (e: MouseEvent<HTMLTableRowElement>) => onRowDoubleClick?.(row.original, e),
+    [onRowDoubleClick, row.original],
+  );
+
   return (
     <TableRow
       selected={isSelected}
-      onClick={onRowClick ? e => onRowClick(row.original, e) : undefined}
-      onDoubleClick={
-        onRowDoubleClick ? e => onRowDoubleClick(row.original, e) : undefined
-      }
+      onClick={onRowClick ? handleClick : undefined}
+      onDoubleClick={onRowDoubleClick ? handleDoubleClick : undefined}
       className={cn(onRowClick && "cursor-pointer", resolvedClassName)}
     >
       {row.getVisibleCells().map(cell => {
@@ -58,4 +66,4 @@ const TableDataRowInner = <TData = unknown,>({
   );
 };
 
-export const TableDataRow = TableDataRowInner;
+export const TableDataRow = memo(TableDataRowInner) as typeof TableDataRowInner;
