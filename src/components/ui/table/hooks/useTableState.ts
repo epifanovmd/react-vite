@@ -1,10 +1,12 @@
 import {
   type ColumnFiltersState,
+  type ExpandedState,
   type OnChangeFn,
+  type PaginationState,
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
-import * as React from "react";
+import { useState } from "react";
 
 interface UseTableStateOptions {
   sortingState?: SortingState;
@@ -13,6 +15,10 @@ interface UseTableStateOptions {
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   columnFilters?: ColumnFiltersState;
   onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
+  paginationState?: PaginationState;
+  onPaginationChange?: OnChangeFn<PaginationState>;
+  expandedState?: ExpandedState;
+  onExpandedChange?: OnChangeFn<ExpandedState>;
 }
 
 export interface TableState {
@@ -22,6 +28,10 @@ export interface TableState {
   onRowSelectionChange: OnChangeFn<RowSelectionState>;
   columnFilters: ColumnFiltersState;
   onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
+  pagination: PaginationState;
+  onPaginationChange: OnChangeFn<PaginationState>;
+  expanded: ExpandedState;
+  onExpandedChange: OnChangeFn<ExpandedState>;
 }
 
 export const useTableState = ({
@@ -31,16 +41,20 @@ export const useTableState = ({
   onRowSelectionChange,
   columnFilters,
   onColumnFiltersChange,
+  paginationState,
+  onPaginationChange,
+  expandedState,
+  onExpandedChange,
 }: UseTableStateOptions): TableState => {
-  const [internalSorting, setInternalSorting] = React.useState<SortingState>(
-    [],
-  );
-
+  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
   const [internalRowSelection, setInternalRowSelection] =
-    React.useState<RowSelectionState>({});
-
+    useState<RowSelectionState>({});
   const [internalColumnFilters, setInternalColumnFilters] =
-    React.useState<ColumnFiltersState>([]);
+    useState<ColumnFiltersState>([]);
+  const [internalPagination, setInternalPagination] = useState<PaginationState>(
+    { pageIndex: 0, pageSize: 10 },
+  );
+  const [internalExpanded, setInternalExpanded] = useState<ExpandedState>({});
 
   return {
     sorting: sortingState ?? internalSorting,
@@ -48,7 +62,10 @@ export const useTableState = ({
     rowSelection: rowSelection ?? internalRowSelection,
     onRowSelectionChange: onRowSelectionChange ?? setInternalRowSelection,
     columnFilters: columnFilters ?? internalColumnFilters,
-    onColumnFiltersChange:
-      onColumnFiltersChange ?? setInternalColumnFilters,
+    onColumnFiltersChange: onColumnFiltersChange ?? setInternalColumnFilters,
+    pagination: paginationState ?? internalPagination,
+    onPaginationChange: onPaginationChange ?? setInternalPagination,
+    expanded: expandedState ?? internalExpanded,
+    onExpandedChange: onExpandedChange ?? setInternalExpanded,
   };
 };

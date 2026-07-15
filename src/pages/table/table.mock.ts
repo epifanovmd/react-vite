@@ -5,23 +5,14 @@ import type {
 } from "@store/holders";
 
 import type {
+  Invoice,
+  InvoiceLineItem,
   Order,
   OrderQuery,
   OrderSortDir,
   OrderSortField,
   OrderStatus,
 } from "./table.types";
-
-/**
- * Mock «сервера» заказов.
- *
- * Эмулирует серверную пагинацию, полнотекстовый поиск и сортировку с
- * искусственной задержкой — чтобы реально прокачать loading/refreshing
- * состояния PagedHolder. Контракт функции совпадает с настоящим
- * orval-клиентом: достаточно заменить тело на `api.getOrders(...)` и
- * таблица продолжит работать без изменений (Dependency Inversion —
- * страница зависит от абстракции `PagedFetchFn`, а не от источника).
- */
 
 const FIRST_NAMES = [
   "Alex",
@@ -35,7 +26,6 @@ const FIRST_NAMES = [
   "Maxim",
   "Sara",
 ] as const;
-
 const LAST_NAMES = [
   "Doe",
   "Smith",
@@ -48,16 +38,11 @@ const LAST_NAMES = [
   "Petrov",
   "Hansen",
 ] as const;
-
 const STATUSES: OrderStatus[] = ["paid", "pending", "failed", "refunded"];
-
 const CURRENCY = "USD";
-
 const NETWORK_DELAY_MS = 450;
-
 const TOTAL_ORDERS = 137;
 
-/** Детерминированный ГПСЧ (LCG) — воспроизводимые данные между запусками. */
 const createSeededRandom = (seed: number) => {
   let state = seed >>> 0;
 
@@ -74,17 +59,13 @@ const pick = <T>(rand: () => number, arr: readonly T[]): T =>
 const generateOrders = (count: number): Order[] => {
   const rand = createSeededRandom(1337);
 
-  const orders: Order[] = [];
-
-  for (let i = 0; i < count; i++) {
+  return Array.from({ length: count }, (_, i) => {
     const first = pick(rand, FIRST_NAMES);
-
     const last = pick(rand, LAST_NAMES);
-
     const createdMs =
       Date.UTC(2024, 0, 1) + i * 86_400_000 + (i % 7) * 3_600_000;
 
-    orders.push({
+    return {
       id: `ORD-${String(i + 1).padStart(4, "0")}`,
       customer: `${first} ${last}`,
       email: `${first}.${last}@example.com`.toLowerCase(),
@@ -93,18 +74,14 @@ const generateOrders = (count: number): Order[] => {
       currency: CURRENCY,
       items: Math.floor(rand() * 12) + 1,
       createdAt: new Date(createdMs).toISOString(),
-    });
-  }
-
-  return orders;
+    };
+  });
 };
 
-/** Неизменяемый «датасет сервера». */
 const ORDERS: Order[] = generateOrders(TOTAL_ORDERS);
 
 const matchesSearch = (order: Order, search: string): boolean => {
   if (!search) return true;
-
   const q = search.toLowerCase();
 
   return (
@@ -121,34 +98,22 @@ const sortOrders = (
   sortDir?: OrderSortDir,
 ): Order[] => {
   if (!sortBy) return orders;
-
   const dir = sortDir === "desc" ? -1 : 1;
 
-  const copy = [...orders];
-
-  copy.sort((a, b) => {
+  return [...orders].sort((a, b) => {
     const av = a[sortBy];
-
     const bv = b[sortBy];
 
-    if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+    if (typeof av === "number" && typeof bv === "number")
+      return (av - bv) * dir;
 
     return String(av).localeCompare(String(bv)) * dir;
   });
-
-  return copy;
 };
 
 const delay = (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Серверная функция загрузки страницы заказов.
- *
- * Реализует контракт `PagedFetchFn<Order, OrderQuery>`: принимает
- * offset/limit и параметры запроса, возвращает срез страницы и
- * общее количество после применения фильтра.
- */
 export const fetchOrders = async (
   { offset, limit }: IOffsetParams,
   { search, sortBy, sortDir, customer, statuses }: OrderQuery,
@@ -156,17 +121,12 @@ export const fetchOrders = async (
   await delay(NETWORK_DELAY_MS);
 
   const q = search.toLowerCase();
-
   const customerQ = customer?.trim().toLowerCase() ?? "";
 
   const filtered = ORDERS.filter(order => {
     if (q && !matchesSearch(order, search)) return false;
-
-    // Пер-колоночный фильтр по клиенту.
     if (customerQ && !order.customer.toLowerCase().includes(customerQ))
       return false;
-
-    // Пер-колоночный фильтр по статусам (multiselect).
     if (statuses && statuses.length > 0 && !statuses.includes(order.status))
       return false;
 
@@ -174,7 +134,6 @@ export const fetchOrders = async (
   });
 
   const sorted = sortOrders(filtered, sortBy, sortDir);
-
   const page = sorted.slice(offset, offset + limit);
 
   return {
@@ -186,4 +145,109 @@ export const fetchOrders = async (
       limit,
     },
   };
+};
+
+const CLIENT_ORDERS: Order[] = generateOrders(500);
+
+export const getClientOrders = (
+  search: string,
+  sortBy: string,
+  sortDesc: boolean,
+): Order[] => {
+  let result = CLIENT_ORDERS;
+
+  if (search) {
+    const q = search.toLowerCase();
+
+    result = result.filter(
+      order =>
+        order.id.toLowerCase().includes(q) ||
+        order.customer.toLowerCase().includes(q) ||
+        order.email.toLowerCase().includes(q) ||
+        order.status.toLowerCase().includes(q),
+    );
+  }
+
+  if (sortBy) {
+    const dir = sortDesc ? -1 : 1;
+
+    result = [...result].sort((a, b) => {
+      const av = (a as any)[sortBy];
+      const bv = (b as any)[sortBy];
+
+      if (typeof av === "number" && typeof bv === "number")
+        return (av - bv) * dir;
+
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+  }
+
+  return result;
+};
+
+const PRODUCTS = [
+  "Wireless Mouse",
+  "Mechanical Keyboard",
+  "USB-C Hub",
+  `27" Monitor`,
+  "Webcam HD",
+  "Noise Cancelling Headphones",
+  "Laptop Stand",
+  "Desk Lamp",
+  "Ergonomic Chair",
+  "Cable Management Kit",
+] as const;
+
+const generateLineItems = (
+  rand: () => number,
+  count: number,
+): InvoiceLineItem[] => {
+  const items: InvoiceLineItem[] = [];
+  const usedProducts = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    let product = pick(rand, PRODUCTS);
+
+    while (usedProducts.has(product)) product = pick(rand, PRODUCTS);
+    usedProducts.add(product);
+    items.push({
+      product,
+      quantity: Math.floor(rand() * 5) + 1,
+      unitPrice: Math.floor(rand() * 20000) + 500,
+    });
+  }
+
+  return items;
+};
+
+const INVOICE_CUSTOMERS = [
+  "Acme Corp",
+  "Globex Inc",
+  "Initech",
+  "Hooli",
+  "Stark Industries",
+  "Wayne Enterprises",
+  "Cyberdyne Systems",
+  "Umbrella Corp",
+] as const;
+
+export const generateInvoices = (count: number): Invoice[] => {
+  const rand = createSeededRandom(42);
+
+  return Array.from({ length: count }, (_, i) => {
+    const items = generateLineItems(rand, Math.floor(rand() * 5) + 1);
+    const total = items.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0,
+    );
+
+    return {
+      id: `INV-${String(i + 1).padStart(4, "0")}`,
+      customer: pick(rand, INVOICE_CUSTOMERS),
+      date: new Date(Date.UTC(2025, 0, 1) + i * 172_800_000).toISOString(),
+      total,
+      status: pick(rand, STATUSES),
+      items,
+    };
+  });
 };

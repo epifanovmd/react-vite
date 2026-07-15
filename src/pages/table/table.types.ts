@@ -57,3 +57,22 @@ export interface OrderQuery {
   /** Пер-колоночный фильтр: разрешённые статусы (multiselect). */
   statuses?: OrderStatus[];
 }
+
+// ─── Expandable demo (invoices → line items) ────────────────────────────────
+
+/** Позиция в счёте (sub-row). */
+export interface InvoiceLineItem {
+  product: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+/** Счёт с вложенными позициями — для демо expandable-строк. */
+export interface Invoice {
+  id: string;
+  customer: string;
+  date: string;
+  total: number;
+  status: OrderStatus;
+  items: InvoiceLineItem[];
+}

@@ -1,7 +1,9 @@
 import type {
   ColumnDef,
   ColumnFiltersState,
+  ExpandedState,
   OnChangeFn,
+  PaginationState,
   Row,
   RowSelectionState,
   SortingState,
@@ -9,29 +11,13 @@ import type {
 } from "@tanstack/react-table";
 import type * as React from "react";
 
-// ─── Per-column filters ──────────────────────────────────────────────────────
-
-/** Опция для select/multiselect фильтра колонки. */
 export interface ColumnFilterOption {
   value: string;
-
   label: React.ReactNode;
 }
 
-/**
- * Конфиг фильтра колонки. Задаётся в `columnDef.meta.filter`.
- * Тип определяет UI в поповере хидера:
- * - `text` — инпут (с дебаунсом перед `column.setFilterValue`)
- * - `select` — одиночный выбор (clearable)
- * - `multiselect` — множественный выбор
- *
- * Для client-режима (без `manualFiltering`) на колонке стоит также задать
- * `filterFn` (`"includesString"` / `"equals"` / `"arrIncludesSome"`).
- * Для server-режима (`manualFiltering`) `filterFn` не нужен — фильтрацию
- * делает сервер по `columnFilters`, которые родитель пробрасывает в запрос.
- */
 export type ColumnFilterConfig =
-  | { type: "text"; placeholder?: string }
+  | { type: "text"; placeholder?: string; faceted?: boolean }
   | { type: "select"; options: ColumnFilterOption[]; placeholder?: string }
   | { type: "multiselect"; options: ColumnFilterOption[] };
 
@@ -41,6 +27,13 @@ declare module "@tanstack/react-table" {
   }
 }
 
+export interface PaginationOptions {
+  pageSize?: number;
+  pageIndex?: number;
+  pageCount?: number;
+}
+
+export type SelectionMode = boolean | "single" | "multi";
 
 export interface TableProps<TData> {
   data: TData[];
@@ -52,34 +45,49 @@ export interface TableProps<TData> {
   className?: string;
   containerClassName?: string;
 
-  // Sorting
+  tableClassName?: string;
+  headerClassName?: string;
+  bodyClassName?: string;
+  footerClassName?: string;
+  rowClassName?: string | ((row: TData) => string);
+
   sorting?: boolean;
   sortingState?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
   manualSorting?: boolean;
 
-  // Global filter
   globalFilter?: string;
   onGlobalFilterChange?: OnChangeFn<string>;
 
-  // Per-column filters
   columnFilters?: ColumnFiltersState;
   onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
   manualFiltering?: boolean;
 
-  // Row selection
-  selection?: boolean;
+  selection?: SelectionMode;
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   onSelectedRowsChange?: (rows: TData[]) => void;
 
-  // State
+  pagination?: boolean | PaginationOptions;
+  paginationState?: PaginationState;
+  onPaginationChange?: OnChangeFn<PaginationState>;
+
+  resizable?: boolean;
+
+  getSubRows?: (row: TData) => TData[] | undefined;
+  renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
+  expandedState?: ExpandedState;
+  onExpandedChange?: OnChangeFn<ExpandedState>;
+
   loading?: boolean;
   refreshing?: boolean;
   empty?: React.ReactNode;
 
-  // Row
   onRowClick?: (
+    row: TData,
+    event: React.MouseEvent<HTMLTableRowElement>,
+  ) => void;
+  onRowDoubleClick?: (
     row: TData,
     event: React.MouseEvent<HTMLTableRowElement>,
   ) => void;

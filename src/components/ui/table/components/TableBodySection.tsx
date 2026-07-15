@@ -1,7 +1,8 @@
 import { type Row } from "@tanstack/react-table";
-import * as React from "react";
+import { Fragment } from "react";
 
 import { Empty } from "../../empty";
+import { cn } from "../../foundation";
 import { Spinner } from "../../spinner";
 import { TableDataRow } from "./TableDataRow";
 import { TableBody } from "./TablePrimitive";
@@ -13,6 +14,14 @@ interface TableBodySectionProps<TData> {
   refreshing?: boolean;
   empty?: React.ReactNode;
   onRowClick?: (row: TData, e: React.MouseEvent<HTMLTableRowElement>) => void;
+  onRowDoubleClick?: (
+    row: TData,
+    e: React.MouseEvent<HTMLTableRowElement>,
+  ) => void;
+  rowClassName?: string | ((row: TData) => string);
+  renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
+  className?: string;
+  resizable?: boolean;
 }
 
 export const TableBodySection = <TData,>({
@@ -22,10 +31,15 @@ export const TableBodySection = <TData,>({
   refreshing,
   empty,
   onRowClick,
+  onRowDoubleClick,
+  rowClassName,
+  renderSubComponent,
+  className,
+  resizable,
 }: TableBodySectionProps<TData>) => {
   if (loading) {
     return (
-      <TableBody>
+      <TableBody className={className}>
         <tr>
           <td colSpan={totalColumns} className="h-24">
             <div className="flex items-center justify-center">
@@ -39,7 +53,7 @@ export const TableBodySection = <TData,>({
 
   if (rows.length === 0) {
     return (
-      <TableBody>
+      <TableBody className={className}>
         <tr>
           <td colSpan={totalColumns}>
             {empty ?? <Empty size="sm" title="No data" icon="inbox" />}
@@ -51,19 +65,32 @@ export const TableBodySection = <TData,>({
 
   return (
     <TableBody
-      className={
+      className={cn(
         refreshing
           ? "opacity-50 pointer-events-none transition-opacity duration-150"
-          : "transition-opacity duration-150"
-      }
+          : "transition-opacity duration-150",
+        className,
+      )}
     >
       {rows.map(row => (
-        <TableDataRow
-          key={row.id}
-          row={row}
-          isSelected={row.getIsSelected()}
-          onRowClick={onRowClick}
-        />
+        <Fragment key={row.id}>
+          <TableDataRow
+            row={row}
+            isSelected={row.getIsSelected()}
+            onRowClick={onRowClick}
+            onRowDoubleClick={onRowDoubleClick}
+            className={rowClassName}
+            resizable={resizable}
+          />
+
+          {row.getIsExpanded() && renderSubComponent && (
+            <tr>
+              <td colSpan={totalColumns} className="p-0">
+                {renderSubComponent({ row })}
+              </td>
+            </tr>
+          )}
+        </Fragment>
       ))}
     </TableBody>
   );

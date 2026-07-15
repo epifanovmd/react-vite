@@ -1,16 +1,51 @@
 import {
   type ColumnDef,
   getCoreRowModel,
+  getExpandedRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import * as React from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { Checkbox } from "../../checkbox";
-import { type TableProps } from "../Table.types";
-import { type TableInstanceResult } from "../Table.types";
+import {
+  type PaginationOptions,
+  type SelectionMode,
+  type TableInstanceResult,
+  type TableProps,
+} from "../Table.types";
 import { useTableState } from "./useTableState";
+
+const resolveSelectionMode = (selection: SelectionMode | undefined) => {
+  if (!selection) return { enabled: false, multi: false };
+  if (selection === "single") return { enabled: true, multi: false };
+
+  return { enabled: true, multi: true };
+};
+
+const resolvePagination = (
+  pagination: boolean | PaginationOptions | undefined,
+) => {
+  if (!pagination)
+    return { enabled: false, manual: false, pageSize: 10, pageIndex: 0 };
+
+  if (pagination === true) {
+    return { enabled: true, manual: false, pageSize: 10, pageIndex: 0 };
+  }
+
+  return {
+    enabled: true,
+    manual: "pageCount" in pagination && pagination.pageCount != null,
+    pageSize: pagination.pageSize ?? 10,
+    pageIndex: pagination.pageIndex ?? 0,
+    pageCount: pagination.pageCount,
+  };
+};
 
 export const useTableInstance = <TData,>(
   props: TableProps<TData>,
@@ -33,6 +68,14 @@ export const useTableInstance = <TData,>(
     columnFilters,
     onColumnFiltersChange,
     manualFiltering,
+    pagination,
+    paginationState,
+    onPaginationChange,
+    resizable,
+    getSubRows,
+    renderSubComponent,
+    expandedState,
+    onExpandedChange,
   } = props;
 
   const state = useTableState({
@@ -42,32 +85,71 @@ export const useTableInstance = <TData,>(
     onRowSelectionChange,
     columnFilters,
     onColumnFiltersChange,
+    paginationState,
+    onPaginationChange,
+    expandedState,
+    onExpandedChange,
   });
 
-  // Фильтрация по колонкам включена, если родитель передал controlled-стейт
-  // или колбэк (охватывает и server-, и client-режим).
   const columnFilteringEnabled =
     columnFilters !== undefined || onColumnFiltersChange !== undefined;
-
-  // Общий флаг: применяется ли хоть какая-то фильтрация на клиенте.
   const clientFilteringEnabled =
     !manualFiltering && (globalFilter !== undefined || columnFilteringEnabled);
 
+  const selMode = resolveSelectionMode(selection);
+  const pag = resolvePagination(pagination);
+  const hasExpandable = !!(getSubRows || renderSubComponent);
   const checkboxSize = size === "lg" ? "md" : "sm";
 
-  const selectionColumn = React.useMemo<ColumnDef<TData, unknown>>(
+  const expandColumn = useMemo<ColumnDef<TData, unknown>>(
+    () => ({
+      id: "__expand__",
+      size: 40,
+      header: () => null,
+      cell: ({ row }) => {
+        if (!row.getCanExpand()) return null;
+
+        return (
+          <button
+            type="button"
+            className="inline-flex h-6 w-6 items-center justify-center rounded hover:bg-accent transition-colors cursor-pointer"
+            onClick={e => {
+              e.stopPropagation();
+              row.toggleExpanded();
+            }}
+            aria-label={row.getIsExpanded() ? "Collapse" : "Expand"}
+          >
+            {row.getIsExpanded() ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+        );
+      },
+      enableSorting: false,
+      enableGlobalFilter: false,
+      enableColumnFilter: false,
+      enableHiding: false,
+    }),
+    [],
+  );
+
+  const selectionColumn = useMemo<ColumnDef<TData, unknown>>(
     () => ({
       id: "__selection__",
       size: 32,
-      header: ({ table }) => (
-        <Checkbox
-          size={checkboxSize}
-          checked={table.getIsAllPageRowsSelected()}
-          indeterminate={table.getIsSomePageRowsSelected()}
-          onCheckedChange={v => table.toggleAllPageRowsSelected(!!v)}
-          aria-label="Select all"
-        />
-      ),
+      header: selMode.multi
+        ? ({ table }) => (
+            <Checkbox
+              size={checkboxSize}
+              checked={table.getIsAllPageRowsSelected()}
+              indeterminate={table.getIsSomePageRowsSelected()}
+              onCheckedChange={v => table.toggleAllPageRowsSelected(!!v)}
+              aria-label="Select all"
+            />
+          )
+        : undefined,
       cell: ({ row }) => (
         <Checkbox
           size={checkboxSize}
@@ -81,56 +163,96 @@ export const useTableInstance = <TData,>(
       enableSorting: false,
       enableGlobalFilter: false,
       enableColumnFilter: false,
+      enableHiding: false,
     }),
-    [checkboxSize],
+    [checkboxSize, selMode.multi],
   );
 
-  const effectiveColumns = React.useMemo(
-    () => (selection ? [selectionColumn, ...columns] : columns),
-    [selection, selectionColumn, columns],
+  const effectiveColumns = useMemo(() => {
+    const cols: ColumnDef<TData, any>[] = [];
+
+    if (hasExpandable) cols.push(expandColumn);
+    if (selMode.enabled) cols.push(selectionColumn);
+    cols.push(...columns);
+
+    return cols;
+  }, [hasExpandable, expandColumn, selMode.enabled, selectionColumn, columns]);
+
+  const hasFaceted = useMemo(
+    () =>
+      columns.some(
+        col =>
+          col.meta?.filter?.type === "text" &&
+          (col.meta.filter as { faceted?: boolean }).faceted,
+      ),
+    [columns],
   );
 
   const table = useReactTable<TData>({
     data,
     columns: effectiveColumns,
     getRowId,
+    getSubRows,
     state: {
       ...(sorting && { sorting: state.sorting }),
       ...(globalFilter !== undefined && { globalFilter }),
-      ...(selection && { rowSelection: state.rowSelection }),
+      ...(selMode.enabled && { rowSelection: state.rowSelection }),
       ...(columnFilteringEnabled && { columnFilters: state.columnFilters }),
+      ...(pag.enabled && { pagination: state.pagination }),
+      ...(hasExpandable && { expanded: state.expanded }),
     },
-    enableRowSelection: selection,
-    onRowSelectionChange: selection ? state.onRowSelectionChange : undefined,
+    enableRowSelection: selMode.enabled,
+    enableMultiRowSelection: selMode.multi,
+    onRowSelectionChange: selMode.enabled
+      ? state.onRowSelectionChange
+      : undefined,
     onSortingChange: sorting ? state.onSortingChange : undefined,
     onGlobalFilterChange,
     onColumnFiltersChange: columnFilteringEnabled
       ? state.onColumnFiltersChange
       : undefined,
+    onPaginationChange: pag.enabled ? state.onPaginationChange : undefined,
+    onExpandedChange: hasExpandable ? state.onExpandedChange : undefined,
     getCoreRowModel: getCoreRowModel(),
-    // В manual-режиме сортировку/фильтрацию делает сервер — не подключаем
-    // клиентские row-модели, чтобы не дублировать поверх серверного результата.
     getSortedRowModel:
       sorting && !manualSorting ? getSortedRowModel() : undefined,
     getFilteredRowModel: clientFilteringEnabled
       ? getFilteredRowModel()
       : undefined,
+    getPaginationRowModel:
+      pag.enabled && !pag.manual ? getPaginationRowModel() : undefined,
+    getExpandedRowModel: hasExpandable ? getExpandedRowModel() : undefined,
+    getRowCanExpand: renderSubComponent && !getSubRows ? () => true : undefined,
     manualSorting,
     manualFiltering,
+    manualPagination: pag.manual,
+    ...(pag.manual && pag.pageCount != null
+      ? { pageCount: pag.pageCount }
+      : {}),
+    enableColumnResizing: !!resizable,
+    columnResizeMode: "onChange",
+    ...(hasFaceted && !manualFiltering
+      ? {
+          getFacetedRowModel: getFacetedRowModel(),
+          getFacetedUniqueValues: getFacetedUniqueValues(),
+        }
+      : {}),
   });
 
-  const onSelectedRowsChangeRef = React.useRef(onSelectedRowsChange);
+  const onSelectedRowsChangeRef = useRef(onSelectedRowsChange);
 
   onSelectedRowsChangeRef.current = onSelectedRowsChange;
 
-  React.useEffect(() => {
-    if (!onSelectedRowsChangeRef.current || !selection) return;
+  useEffect(() => {
+    if (!onSelectedRowsChangeRef.current || !selMode.enabled) return;
     onSelectedRowsChangeRef.current(
       table.getSelectedRowModel().rows.map(r => r.original),
     );
-  }, [state.rowSelection, selection, table]);
+  }, [state.rowSelection, selMode.enabled, table]);
 
-  const rows = table.getRowModel().rows;
+  const rows = pag.enabled
+    ? table.getRowModel().rows
+    : table.getCoreRowModel().rows;
   const totalColumns = table.getVisibleLeafColumns().length;
   const hasFooter = table
     .getFooterGroups()

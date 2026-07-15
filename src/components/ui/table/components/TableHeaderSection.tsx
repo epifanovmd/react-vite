@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { cn } from "../../foundation";
 import { type TanstackTable } from "../Table.types";
 import { TableHeadCell } from "./TableHeadCell";
@@ -9,24 +7,34 @@ interface TableHeaderSectionProps<TData> {
   table: TanstackTable<TData>;
   sorting?: boolean;
   stickyHeader?: boolean;
+  resizable?: boolean;
+  className?: string;
 }
 
 export const TableHeaderSection = <TData,>({
   table,
   sorting,
   stickyHeader,
+  resizable,
+  className,
 }: TableHeaderSectionProps<TData>) => {
   return (
     <TableHeader
       className={cn(
         stickyHeader &&
           "sticky top-0 z-20 bg-card shadow-[0_1px_0_0_hsl(var(--border))]",
+        className,
       )}
     >
       {table.getHeaderGroups().map(headerGroup => (
         <TableRow key={headerGroup.id} className="hover:bg-transparent">
           {headerGroup.headers.map(header => (
-            <TableHeadCell key={header.id} header={header} sorting={sorting} />
+            <TableHeadCell
+              key={header.id}
+              header={header}
+              sorting={sorting}
+              resizable={resizable}
+            />
           ))}
         </TableRow>
       ))}

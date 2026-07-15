@@ -29,18 +29,15 @@ export const tableHeadVariants = cva(
   },
 );
 
-export const tableCellVariants = cva(
-  "align-middle",
-  {
-    variants: {
-      size: {
-        sm: "px-3 py-2 text-xs",
-        md: "px-4 py-3 text-sm",
-        lg: "px-5 py-4 text-sm",
-      },
-    },
-    defaultVariants: {
-      size: "md",
+export const tableCellVariants = cva("align-middle", {
+  variants: {
+    size: {
+      sm: "px-3 py-2 text-xs",
+      md: "px-4 py-3 text-sm",
+      lg: "px-5 py-4 text-sm",
     },
   },
-);
+  defaultVariants: {
+    size: "md",
+  },
+});

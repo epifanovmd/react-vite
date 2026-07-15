@@ -4,11 +4,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { TableHeadFilter } from "./TableHeadFilter";
 import { TableHead } from "./TablePrimitive";
 
-interface SortIconProps {
-  direction: "asc" | "desc" | false;
-}
-
-const SortIcon = ({ direction }: SortIconProps) => {
+const SortIcon = ({ direction }: { direction: "asc" | "desc" | false }) => {
   if (direction === "asc") return <ArrowUp className="h-3.5 w-3.5 shrink-0" />;
   if (direction === "desc")
     return <ArrowDown className="h-3.5 w-3.5 shrink-0" />;
@@ -19,11 +15,13 @@ const SortIcon = ({ direction }: SortIconProps) => {
 interface TableHeadCellProps<TData = unknown> {
   header: Header<TData, unknown>;
   sorting?: boolean;
+  resizable?: boolean;
 }
 
 export const TableHeadCell = <TData = unknown,>({
   header,
   sorting,
+  resizable,
 }: TableHeadCellProps<TData>) => {
   if (header.isPlaceholder) {
     return <TableHead colSpan={header.colSpan} />;
@@ -34,9 +32,6 @@ export const TableHeadCell = <TData = unknown,>({
     header.getContext(),
   );
   const canSort = sorting && header.column.getCanSort();
-
-  // Колонка фильтруется, только если задан meta.filter — не опираемся на
-  // column.getCanFilter() (TanStack по умолчанию разрешает фильтр всем колонкам).
   const canFilter = !!header.column.columnDef.meta?.filter;
 
   const inner = canSort ? (
@@ -52,22 +47,35 @@ export const TableHeadCell = <TData = unknown,>({
     content
   );
 
-  // Триггер фильтра — сиблинг sort-кнопки (вложенные <button> невалидны).
-  const colWidth = header.column.columnDef.size;
+  const colWidth = resizable ? header.getSize() : header.column.columnDef.size;
+  const widthStyle =
+    colWidth != null
+      ? { width: colWidth, minWidth: colWidth, maxWidth: colWidth }
+      : undefined;
 
   return (
     <TableHead
       colSpan={header.colSpan}
-      style={colWidth != null ? { width: colWidth, minWidth: colWidth, maxWidth: colWidth } : undefined}
+      style={{ ...widthStyle, position: "relative" }}
     >
-      {canFilter ? (
-        <div className="flex items-center gap-1">
-          {inner}
+      <div className="flex items-center gap-1">
+        {canFilter ? (
+          <>
+            {inner}
+            <TableHeadFilter column={header.column} />
+          </>
+        ) : (
+          inner
+        )}
+      </div>
 
-          <TableHeadFilter column={header.column} />
-        </div>
-      ) : (
-        inner
+      {resizable && header.column.getCanResize() && (
+        <div
+          className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-transparent hover:bg-primary/50 active:bg-primary transition-colors"
+          onMouseDown={header.getResizeHandler()}
+          onTouchStart={header.getResizeHandler()}
+          onClick={e => e.stopPropagation()}
+        />
       )}
     </TableHead>
   );

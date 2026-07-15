@@ -1,5 +1,5 @@
 import { flexRender, type Row } from "@tanstack/react-table";
-import * as React from "react";
+import { MouseEvent } from "react";
 
 import { cn } from "../../foundation";
 import { TableCell, TableRow } from "./TablePrimitive";
@@ -7,30 +7,39 @@ import { TableCell, TableRow } from "./TablePrimitive";
 interface TableDataRowProps<TData = unknown> {
   row: Row<TData>;
   isSelected: boolean;
-  onRowClick?: (
+  onRowClick?: (original: TData, e: MouseEvent<HTMLTableRowElement>) => void;
+  onRowDoubleClick?: (
     original: TData,
-    e: React.MouseEvent<HTMLTableRowElement>,
+    e: MouseEvent<HTMLTableRowElement>,
   ) => void;
+  className?: string | ((row: TData) => string);
+  resizable?: boolean;
 }
 
 const TableDataRowInner = <TData = unknown,>({
   row,
   isSelected,
   onRowClick,
+  onRowDoubleClick,
+  className,
+  resizable,
 }: TableDataRowProps<TData>) => {
-  const handleClick = React.useCallback(
-    (e: React.MouseEvent<HTMLTableRowElement>) => onRowClick?.(row.original, e),
-    [onRowClick, row.original],
-  );
+  const resolvedClassName =
+    typeof className === "function" ? className(row.original) : className;
 
   return (
     <TableRow
       selected={isSelected}
-      onClick={onRowClick ? handleClick : undefined}
-      className={cn(onRowClick && "cursor-pointer")}
+      onClick={onRowClick ? e => onRowClick(row.original, e) : undefined}
+      onDoubleClick={
+        onRowDoubleClick ? e => onRowDoubleClick(row.original, e) : undefined
+      }
+      className={cn(onRowClick && "cursor-pointer", resolvedClassName)}
     >
       {row.getVisibleCells().map(cell => {
-        const colWidth = cell.column.columnDef.size;
+        const colWidth = resizable
+          ? cell.column.getSize()
+          : cell.column.columnDef.size;
 
         return (
           <TableCell
@@ -49,6 +58,4 @@ const TableDataRowInner = <TData = unknown,>({
   );
 };
 
-export const TableDataRow = React.memo(
-  TableDataRowInner,
-) as typeof TableDataRowInner;
+export const TableDataRow = TableDataRowInner;

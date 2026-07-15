@@ -199,6 +199,8 @@ export type {
   ColumnDef,
   ColumnFilterConfig,
   ColumnFilterOption,
+  PaginationOptions,
+  SelectionMode,
   TablePaginationProps,
   TableProps,
 } from "./table";

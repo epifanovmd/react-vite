@@ -1,1 +1,1 @@
-export { default as TablePage } from "./TablePage";
+export { TablePage } from "./TablePage";

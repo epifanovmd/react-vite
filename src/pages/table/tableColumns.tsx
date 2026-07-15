@@ -7,18 +7,7 @@ import {
 import { Eye } from "lucide-react";
 import type { ReactNode } from "react";
 
-import type { Order, OrderStatus } from "./table.types";
-
-/* eslint-disable react-refresh/only-export-components */
-
-/**
- * Определения колонок таблицы заказов.
- *
- * Чистый презентационный слой: зависит только от доменного типа `Order` и
- * UI-кита. Колонки строятся фабрикой, чтобы инжектить колбэк просмотра
- * строки (Dependency Inversion) — вместо того, чтобы тянуть view-model
- * внутрь ячеек.
- */
+import type { Invoice, Order, OrderStatus } from "./table.types";
 
 const STATUS_META: Record<
   OrderStatus,
@@ -30,7 +19,6 @@ const STATUS_META: Record<
   refunded: { label: "Возврат", variant: "info" },
 };
 
-/** Опции фильтра по статусу (multiselect в хидере колонки). */
 const STATUS_FILTER_OPTIONS: ColumnFilterOption[] = (
   Object.keys(STATUS_META) as OrderStatus[]
 ).map(status => ({ value: status, label: STATUS_META[status].label }));
@@ -39,24 +27,20 @@ const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
-
 const DATE_FORMATTER = new Intl.DateTimeFormat("ru-RU", {
   day: "2-digit",
   month: "short",
   year: "numeric",
 });
 
-/** Форматирует сумму из центов в валютную строку. */
 export const formatCurrency = (cents: number, currency = "USD"): string => {
   if (currency === "USD") return CURRENCY_FORMATTER.format(cents / 100);
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(cents / 100);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(
+    cents / 100,
+  );
 };
 
-/** Форматирует ISO-дату в человекочитаемый вид. */
 export const formatDate = (iso: string): string =>
   DATE_FORMATTER.format(new Date(iso));
 
@@ -75,14 +59,9 @@ const RightAlign = ({ children }: { children: ReactNode }) => (
 );
 
 export interface OrderColumnsOptions {
-  /** Колбэк открытия деталей строки (drawer). */
   onView: (order: Order) => void;
 }
 
-/**
- * Создаёт массив колонок. Фабрика, а не статичный массив, чтобы пробросить
- * `onView` без протечки view-model в презентационный слой.
- */
 export const createOrderColumns = ({
   onView,
 }: OrderColumnsOptions): ColumnDef<Order>[] => [
@@ -116,9 +95,7 @@ export const createOrderColumns = ({
     size: 130,
     enableSorting: false,
     filterFn: "arrIncludesSome",
-    meta: {
-      filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS },
-    },
+    meta: { filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS } },
     cell: ({ getValue }) => <StatusBadge status={getValue<OrderStatus>()} />,
   },
   {
@@ -178,5 +155,120 @@ export const createOrderColumns = ({
         </Button>
       </div>
     ),
+  },
+];
+
+export const createClientOrderColumns = (): ColumnDef<Order>[] => [
+  {
+    accessorKey: "id",
+    header: "ID",
+    enableSorting: true,
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {getValue<string>()}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "customer",
+    header: "Клиент",
+    filterFn: "includesString",
+    meta: { filter: { type: "text", placeholder: "Поиск…" } },
+    size: 200,
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span className="font-medium">{row.original.customer}</span>
+        <span className="text-xs text-muted-foreground">
+          {row.original.email}
+        </span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Статус",
+    size: 130,
+    enableSorting: true,
+    filterFn: "arrIncludesSome",
+    meta: { filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS } },
+    cell: ({ getValue }) => <StatusBadge status={getValue<OrderStatus>()} />,
+  },
+  {
+    accessorKey: "items",
+    header: "Позиций",
+    size: 110,
+    cell: ({ getValue }) => <RightAlign>{getValue<number>()}</RightAlign>,
+  },
+  {
+    accessorKey: "amount",
+    header: "Сумма",
+    size: 130,
+    cell: ({ row }) => (
+      <RightAlign>
+        <span className="font-medium">
+          {formatCurrency(row.original.amount, row.original.currency)}
+        </span>
+      </RightAlign>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Создан",
+    size: 130,
+    cell: ({ getValue }) => (
+      <span className="tabular-nums text-muted-foreground">
+        {formatDate(getValue<string>())}
+      </span>
+    ),
+  },
+];
+
+export const createInvoiceColumns = (): ColumnDef<Invoice>[] => [
+  {
+    accessorKey: "id",
+    header: "Счёт",
+    enableSorting: true,
+    size: 120,
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {getValue<string>()}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "customer",
+    header: "Клиент",
+    enableSorting: true,
+    cell: ({ getValue }) => (
+      <span className="font-medium">{getValue<string>()}</span>
+    ),
+  },
+  {
+    accessorKey: "date",
+    header: "Дата",
+    size: 130,
+    cell: ({ getValue }) => (
+      <span className="tabular-nums text-muted-foreground">
+        {formatDate(getValue<string>())}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "total",
+    header: "Сумма",
+    size: 130,
+    cell: ({ getValue }) => (
+      <RightAlign>
+        <span className="font-medium">
+          {formatCurrency(getValue<number>())}
+        </span>
+      </RightAlign>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Статус",
+    size: 130,
+    cell: ({ getValue }) => <StatusBadge status={getValue<OrderStatus>()} />,
   },
 ];
