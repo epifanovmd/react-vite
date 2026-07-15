@@ -67,7 +67,7 @@ const TableComponent = <TData,>(
           containerClassName,
         )}
       >
-        <TableRoot className={cn("h-full", tableClassName ?? className)}>
+        <TableRoot className={cn(tableClassName ?? className)}>
           <TableHeaderSection
             table={table}
             sorting={sorting}

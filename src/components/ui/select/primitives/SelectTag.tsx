@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../../foundation/cn";
+import { cn } from "../../foundation";
 
 export interface SelectTagProps {
   label: React.ReactNode;
@@ -19,7 +19,7 @@ export const SelectTag = ({
   <span
     className={cn(
       "inline-flex items-center gap-0.5 rounded-sm bg-accent text-accent-foreground",
-      "px-1.5 py-0.5 text-xs font-medium max-w-[150px]",
+      "px-1.5 py-0.5 text-xs font-medium max-w-36",
       disabled && "opacity-50",
       className,
     )}
@@ -37,7 +37,7 @@ export const SelectTag = ({
           e.stopPropagation();
           onRemove();
         }}
-        className="shrink-0 opacity-60 hover:opacity-100 transition-opacity ml-0.5"
+        className="shrink-0 opacity-60 hover:opacity-100 transition-opacity ml-0.5 cursor-pointer"
       >
         <X className="h-3 w-3" />
       </button>

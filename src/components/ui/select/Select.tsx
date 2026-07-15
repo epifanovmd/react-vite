@@ -2,6 +2,7 @@ import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as React from "react";
 import { ComponentPropsWithRef } from "react";
 
+import { cn } from "../foundation";
 import { Spinner } from "../spinner";
 import {
   useKeyboardNav,
@@ -63,12 +64,10 @@ const SelectInner = <V extends SelectValue = string>(
   const multi = props.multi === true;
   const clearable = props.clearable === true;
   const tagsDisplay = !multi || props.tagsDisplay !== false;
-  const labelInValue = (props as any).labelInValue === true;
+  const labelInValue = props.labelInValue === true;
   const maxTagCount = (props as any).maxTagCount as number | undefined;
 
-  const rawOnChange = (props as any).onChange as
-    | ((v: any) => void)
-    | undefined;
+  const rawOnChange = props.onChange as ((v: unknown) => void) | undefined;
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const triggerRef = React.useRef<HTMLDivElement>(null);
@@ -97,8 +96,7 @@ const SelectInner = <V extends SelectValue = string>(
     getLabel: getLabel as (v: V) => string,
   });
 
-  const resolvedValue =
-    labelInValue ? normalizedValue : (props as any).value;
+  const resolvedValue = labelInValue ? normalizedValue : (props as any).value;
   const resolvedOnChange = labelInValue ? wrappedOnChange : rawOnChange;
 
   // ── Selection logic ──────────────────────────────────────────────────
@@ -281,7 +279,7 @@ const SelectInner = <V extends SelectValue = string>(
           size={size}
           variant={variant}
           valid={valid}
-          className={className}
+          className={cn(className, multi && tagsDisplay && "h-auto")}
           loading={loading}
           showClear={showClear}
           onClear={handleClearWrapper}

@@ -18,8 +18,17 @@ export interface ColumnFilterOption {
 
 export type ColumnFilterConfig =
   | { type: "text"; placeholder?: string; faceted?: boolean }
-  | { type: "select"; options: ColumnFilterOption[]; placeholder?: string }
-  | { type: "multiselect"; options: ColumnFilterOption[] };
+  | {
+      type: "select";
+      options?: ColumnFilterOption[];
+      fetchOptions?: (query: string) => Promise<ColumnFilterOption[]>;
+      placeholder?: string;
+    }
+  | {
+      type: "multiselect";
+      options?: ColumnFilterOption[];
+      fetchOptions?: (query: string) => Promise<ColumnFilterOption[]>;
+    };
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
