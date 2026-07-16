@@ -8,7 +8,7 @@ import { Select } from "../../select";
 import { useAsyncOptions, useStaticOptions } from "../../select/strategies";
 import type { ColumnFilterConfig, ColumnFilterOption } from "../Table.types";
 
-const TEXT_DEBOUNCE_MS = 200;
+const TEXT_DEBOUNCE_MS = 400;
 
 interface TableHeadFilterProps<TData> {
   column: Column<TData, unknown>;
@@ -25,7 +25,8 @@ export const TableHeadFilter = <TData,>({
   column,
 }: TableHeadFilterProps<TData>) => {
   const [open, setOpen] = useState(false);
-  const config = column.columnDef.meta?.filter as ColumnFilterConfig | undefined;
+  const config = column.columnDef.meta?.filter as
+    ColumnFilterConfig | undefined;
 
   if (!config) return null;
 
@@ -195,13 +196,10 @@ const TextControl = <TData,>({
     const timer = setTimeout(() => {
       const next = value.trim();
 
-      columnRef.current.setFilterValue(
-        next.length ? next : undefined,
-      );
+      columnRef.current.setFilterValue(next.length ? next : undefined);
     }, TEXT_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-     
   }, [value]);
 
   return (
