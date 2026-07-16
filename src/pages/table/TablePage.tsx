@@ -4,12 +4,11 @@ import { observer } from "mobx-react-lite";
 import { type FC, useState } from "react";
 
 import { ClientTab } from "./client";
-import { ExpandableTab } from "./expandable";
 import { ServerTab } from "./server";
 
 type Density = "sm" | "md" | "lg";
 type Variant = NonNullable<TableProps<any>["variant"]>;
-type TabId = "server" | "client" | "expandable";
+type TabId = "server" | "client";
 
 const DENSITY_OPTIONS = [
   { label: "S", value: "sm" },
@@ -26,7 +25,6 @@ const VARIANT_OPTIONS = [
 const TABS = [
   { label: "Server-side", value: "server" },
   { label: "Client-side", value: "client" },
-  { label: "Expandable", value: "expandable" },
 ];
 
 const TablePage: FC = observer(() => {
@@ -38,17 +36,6 @@ const TablePage: FC = observer(() => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 md:p-6 max-h-full h-full">
-      <div className="shrink-0 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Table — демо возможностей
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Таблица-обёртка над @tanstack/react-table с пагинацией, сортировкой,
-          фильтрацией, выбором строк, expandable-строками, ресайзом колонок и
-          управлением видимостью.
-        </p>
-      </div>
-
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         <Segmented
           size="sm"
@@ -87,7 +74,7 @@ const TablePage: FC = observer(() => {
             Sticky
           </Button>
 
-          {(tab === "client" || tab === "expandable") && (
+          {tab === "client" && (
             <Button
               variant={resizeOn ? "secondary" : "outline"}
               size="sm"
@@ -112,14 +99,6 @@ const TablePage: FC = observer(() => {
       )}
       {tab === "client" && (
         <ClientTab
-          density={density}
-          variant={variant}
-          sticky={sticky}
-          resizable={resizeOn}
-        />
-      )}
-      {tab === "expandable" && (
-        <ExpandableTab
           density={density}
           variant={variant}
           sticky={sticky}

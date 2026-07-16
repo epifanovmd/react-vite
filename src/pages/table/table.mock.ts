@@ -1,13 +1,6 @@
-import {
-  IApiResponse,
-  IOffsetParams,
-  IPagedResponse,
-  PagedFetchFn,
-} from "@store/holders";
+import { IApiResponse, IPagedResponse, PagedFetchFn } from "@store/holders";
 
 import type {
-  Invoice,
-  InvoiceLineItem,
   Order,
   OrderQuery,
   OrderSortDir,
@@ -168,71 +161,4 @@ export const getClientOrders = (search: string): Order[] => {
   }
 
   return result;
-};
-
-const PRODUCTS = [
-  "Wireless Mouse",
-  "Mechanical Keyboard",
-  "USB-C Hub",
-  `27" Monitor`,
-  "Webcam HD",
-  "Noise Cancelling Headphones",
-  "Laptop Stand",
-  "Desk Lamp",
-  "Ergonomic Chair",
-  "Cable Management Kit",
-] as const;
-
-const generateLineItems = (
-  rand: () => number,
-  count: number,
-): InvoiceLineItem[] => {
-  const items: InvoiceLineItem[] = [];
-  const usedProducts = new Set<string>();
-
-  for (let i = 0; i < count; i++) {
-    let product = pick(rand, PRODUCTS);
-
-    while (usedProducts.has(product)) product = pick(rand, PRODUCTS);
-    usedProducts.add(product);
-    items.push({
-      product,
-      quantity: Math.floor(rand() * 5) + 1,
-      unitPrice: Math.floor(rand() * 20000) + 500,
-    });
-  }
-
-  return items;
-};
-
-const INVOICE_CUSTOMERS = [
-  "Acme Corp",
-  "Globex Inc",
-  "Initech",
-  "Hooli",
-  "Stark Industries",
-  "Wayne Enterprises",
-  "Cyberdyne Systems",
-  "Umbrella Corp",
-] as const;
-
-export const generateInvoices = (count: number): Invoice[] => {
-  const rand = createSeededRandom(42);
-
-  return Array.from({ length: count }, (_, i) => {
-    const items = generateLineItems(rand, Math.floor(rand() * 5) + 1);
-    const total = items.reduce(
-      (sum, item) => sum + item.quantity * item.unitPrice,
-      0,
-    );
-
-    return {
-      id: `INV-${String(i + 1).padStart(4, "0")}`,
-      customer: pick(rand, INVOICE_CUSTOMERS),
-      date: new Date(Date.UTC(2025, 0, 1) + i * 172_800_000).toISOString(),
-      total,
-      status: pick(rand, STATUSES),
-      items,
-    };
-  });
 };

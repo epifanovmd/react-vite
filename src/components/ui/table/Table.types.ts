@@ -1,14 +1,12 @@
 import type {
   ColumnDef,
-  ExpandedState,
-  OnChangeFn,
-  PaginationState,
   Row,
-  RowSelectionState,
-  SortingState,
   Table as TanstackTable,
+  TableOptions,
 } from "@tanstack/react-table";
 import type * as React from "react";
+
+import type { TableFeatureResult } from "./hooks/features";
 
 export interface ColumnFilterOption<T = string> {
   value: T;
@@ -35,17 +33,12 @@ declare module "@tanstack/react-table" {
   }
 }
 
-export interface PaginationOptions {
-  pageSize?: number;
-  pageIndex?: number;
-  pageCount?: number;
-}
-
 export type SelectionMode = boolean | "single" | "multi";
 
-export interface TableProps<TData, TFilter = Record<string, unknown>> {
+export interface TableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, any>[];
+  features?: TableFeatureResult<any, any>[];
 
   variant?: "default" | "striped" | "bordered";
   size?: "sm" | "md" | "lg";
@@ -59,33 +52,7 @@ export interface TableProps<TData, TFilter = Record<string, unknown>> {
   footerClassName?: string;
   rowClassName?: string | ((row: TData) => string);
 
-  sorting?: boolean;
-  sortingState?: SortingState;
-  onSortingChange?: OnChangeFn<SortingState>;
-  manualSorting?: boolean;
-
-  globalFilter?: string;
-  onGlobalFilterChange?: OnChangeFn<string>;
-
-  columnFilters?: Partial<TFilter>;
-  onColumnFiltersChange?: OnChangeFn<Partial<TFilter>>;
-  manualFiltering?: boolean;
-
-  selection?: SelectionMode;
-  rowSelection?: RowSelectionState;
-  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
-  onSelectedRowsChange?: (rows: TData[]) => void;
-
-  pagination?: boolean | PaginationOptions;
-  paginationState?: PaginationState;
-  onPaginationChange?: OnChangeFn<PaginationState>;
-
-  resizable?: boolean;
-
-  getSubRows?: (row: TData) => TData[] | undefined;
-  renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
-  expandedState?: ExpandedState;
-  onExpandedChange?: OnChangeFn<ExpandedState>;
+  showColumnVisibility?: boolean;
 
   loading?: boolean;
   refreshing?: boolean;
@@ -100,6 +67,8 @@ export interface TableProps<TData, TFilter = Record<string, unknown>> {
     event: React.MouseEvent<HTMLTableRowElement>,
   ) => void;
   getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
+
+  tableOptions?: Partial<TableOptions<TData>>;
 }
 
 export interface TableInstanceResult<TData = unknown> {
@@ -107,6 +76,15 @@ export interface TableInstanceResult<TData = unknown> {
   rows: Row<TData>[];
   totalColumns: number;
   hasFooter: boolean;
+  sortingEnabled: boolean;
+  filteringEnabled: boolean;
+  paginationEnabled: boolean;
+  resizingEnabled: boolean;
+  pinningEnabled: boolean;
+  groupingEnabled: boolean;
+  expandingEnabled: boolean;
+  renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
+  pageSizeOptions?: number[];
 }
 
 export type { TanstackTable };

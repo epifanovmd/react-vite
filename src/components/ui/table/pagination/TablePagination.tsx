@@ -1,69 +1,22 @@
-import { useCallback, useMemo } from "react";
+import { RowData, Table } from "@tanstack/react-table";
+import { useMemo } from "react";
 
 import { Pagination } from "../../pagination";
 import { Select } from "../../select";
 
-interface TableLike {
-  getPageCount(): number;
-  setPageIndex(index: number): void;
-  setPageSize(size: number): void;
-  getState(): { pagination: { pageIndex: number; pageSize: number } };
-}
-
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
-export interface TablePaginationProps {
-  table?: TableLike;
-  totalPages?: number;
-  currentPage?: number;
-  pageSize?: number;
+export interface TablePaginationProps<TData extends RowData> {
+  table: Table<TData>;
   pageSizeOptions?: number[];
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
 }
 
-export const TablePagination = ({
+export const TablePagination = <TData extends RowData>({
   table,
-  totalPages: manualTotalPages,
-  currentPage: manualCurrentPage = 1,
-  pageSize: manualPageSize,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
-  onPageChange: manualOnPageChange,
-  onPageSizeChange: manualOnPageSizeChange,
-}: TablePaginationProps) => {
-  const autoWired = !!table;
-
-  const totalPages = autoWired ? table.getPageCount() : (manualTotalPages ?? 1);
-  const pageIndex = autoWired
-    ? table.getState().pagination.pageIndex
-    : manualCurrentPage - 1;
-  const pageSize = autoWired
-    ? table.getState().pagination.pageSize
-    : (manualPageSize ?? pageSizeOptions[0] ?? 10);
-
-  const onPageChange = useCallback(
-    (page: number) => {
-      if (autoWired) {
-        table.setPageIndex(page - 1);
-      } else {
-        manualOnPageChange?.(page);
-      }
-    },
-    [autoWired, table, manualOnPageChange],
-  );
-
-  const onPageSizeChange = useCallback(
-    (size: number) => {
-      if (autoWired) {
-        table.setPageSize(size);
-      } else {
-        manualOnPageSizeChange?.(size);
-      }
-    },
-    [autoWired, table, manualOnPageSizeChange],
-  );
-
-  const showSizeSelector = !!onPageSizeChange && pageSize !== undefined;
+}: TablePaginationProps<TData>) => {
+  const totalPages = table.getPageCount();
+  const { pagination } = table.getState();
 
   const options = useMemo(
     () =>
@@ -74,25 +27,23 @@ export const TablePagination = ({
   return (
     <div className="flex items-center justify-between p-4">
       <p className="text-xs text-muted-foreground">
-        {`Страница ${pageIndex + 1} из ${totalPages}`}
+        {`Страница ${pagination.pageIndex + 1} из ${totalPages}`}
       </p>
 
       <div className="flex items-center gap-3">
         <Pagination
-          currentPage={pageIndex + 1}
+          currentPage={pagination.pageIndex + 1}
           totalPages={totalPages}
-          onPageChange={onPageChange}
+          onPageChange={page => table.setPageIndex(page - 1)}
           size="sm"
         />
-        {showSizeSelector && (
-          <Select
-            options={options}
-            value={String(pageSize)}
-            onChange={(v: string) => onPageSizeChange(Number(v))}
-            size="sm"
-            dropdownWidth={"auto"}
-          />
-        )}
+        <Select
+          options={options}
+          value={String(pagination.pageSize)}
+          onChange={(v: string) => table.setPageSize(Number(v))}
+          size="sm"
+          dropdownWidth={"auto"}
+        />
       </div>
     </div>
   );

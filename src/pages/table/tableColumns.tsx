@@ -7,10 +7,9 @@ import {
 import { Eye } from "lucide-react";
 import type { ReactNode } from "react";
 
-import type { Invoice, Order, OrderStatus } from "./table.types";
+import type { Order, OrderStatus } from "./table.types";
 
 const orderHelper = createColumnHelper<Order>();
-const invoiceHelper = createColumnHelper<Invoice>();
 
 const STATUS_META: Record<
   OrderStatus,
@@ -210,46 +209,5 @@ export const createClientOrderColumns = () => [
         {formatDate(getValue())}
       </span>
     ),
-  }),
-];
-
-export const createInvoiceColumns = () => [
-  invoiceHelper.accessor("id", {
-    header: "Счёт",
-    enableSorting: true,
-    size: 120,
-    cell: ({ getValue }) => (
-      <span className="font-mono text-xs text-muted-foreground">
-        {getValue()}
-      </span>
-    ),
-  }),
-  invoiceHelper.accessor("customer", {
-    header: "Клиент",
-    enableSorting: true,
-    cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
-  }),
-  invoiceHelper.accessor("date", {
-    header: "Дата",
-    size: 130,
-    cell: ({ getValue }) => (
-      <span className="tabular-nums text-muted-foreground">
-        {formatDate(getValue())}
-      </span>
-    ),
-  }),
-  invoiceHelper.accessor("total", {
-    header: "Сумма",
-    size: 130,
-    cell: ({ getValue }) => (
-      <RightAlign>
-        <span className="font-medium">{formatCurrency(getValue())}</span>
-      </RightAlign>
-    ),
-  }),
-  invoiceHelper.accessor("status", {
-    header: "Статус",
-    size: 130,
-    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
   }),
 ];

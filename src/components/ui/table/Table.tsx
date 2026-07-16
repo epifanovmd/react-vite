@@ -1,6 +1,3 @@
-import { PropsWithChildren } from "react";
-
-import { createSlot, useSlotProps } from "../../slots";
 import { cn } from "../foundation";
 import {
   TableBodySection,
@@ -11,17 +8,14 @@ import {
   TableRoot,
 } from "./components";
 import { useTableInstance } from "./hooks";
-import type { TablePaginationProps } from "./pagination";
 import { TablePagination } from "./pagination";
 import type { TableProps } from "./Table.types";
 
-const PaginationSlot = createSlot<TablePaginationProps>("Pagination");
-const ColumnVisibilitySlot = createSlot<{}>("ColumnVisibility");
-
-const TableComponent = <TData, TFilter = Record<string, unknown>>(
-  props: PropsWithChildren<TableProps<TData, TFilter>>,
-) => {
+const TableComponent = <TData,>(props: TableProps<TData>) => {
   const {
+    data,
+    columns,
+    features,
     variant = "default",
     size = "md",
     stickyHeader,
@@ -32,32 +26,43 @@ const TableComponent = <TData, TFilter = Record<string, unknown>>(
     bodyClassName,
     footerClassName,
     rowClassName,
-    sorting,
+    showColumnVisibility,
     loading,
     refreshing,
     empty,
     onRowClick,
     onRowDoubleClick,
-    renderSubComponent,
-    resizable,
-    pagination,
-    children,
+    getRowId,
+    tableOptions,
   } = props;
 
-  const { table, rows, totalColumns, hasFooter } =
-    useTableInstance<TData, TFilter>(props);
-  const { pagination: paginationSlot, columnVisibility } = useSlotProps(
-    Table,
-    children,
-  );
-
-  const isPaginationEnabled = !!pagination;
+  const {
+    table,
+    rows,
+    totalColumns,
+    hasFooter,
+    sortingEnabled,
+    filteringEnabled,
+    paginationEnabled,
+    resizingEnabled,
+    pinningEnabled,
+    groupingEnabled,
+    renderSubComponent,
+    pageSizeOptions,
+  } = useTableInstance<TData>({
+    data,
+    columns,
+    features,
+    size,
+    getRowId,
+    tableOptions,
+  });
 
   return (
     <TableContext.Provider value={{ size, variant }}>
-      {columnVisibility && (
+      {showColumnVisibility && (
         <div className="flex items-center justify-end px-3 py-1.5">
-          <TableColumnVisibility table={table} />
+          <TableColumnVisibility table={table} pinningEnabled={pinningEnabled} />
         </div>
       )}
 
@@ -70,9 +75,11 @@ const TableComponent = <TData, TFilter = Record<string, unknown>>(
         <TableRoot className={cn(tableClassName ?? className)}>
           <TableHeaderSection
             table={table}
-            sorting={sorting}
+            sorting={sortingEnabled}
+            filtering={filteringEnabled}
+            grouping={groupingEnabled}
             stickyHeader={stickyHeader}
-            resizable={resizable}
+            resizable={resizingEnabled}
             className={headerClassName}
           />
           <TableBodySection
@@ -86,7 +93,7 @@ const TableComponent = <TData, TFilter = Record<string, unknown>>(
             rowClassName={rowClassName}
             renderSubComponent={renderSubComponent}
             className={bodyClassName}
-            resizable={resizable}
+            resizable={resizingEnabled}
           />
           {hasFooter && (
             <TableFooterSection table={table} className={footerClassName} />
@@ -94,11 +101,8 @@ const TableComponent = <TData, TFilter = Record<string, unknown>>(
         </TableRoot>
       </div>
 
-      {paginationSlot && (
-        <TablePagination
-          table={isPaginationEnabled ? table : undefined}
-          {...paginationSlot}
-        />
+      {paginationEnabled && (
+        <TablePagination table={table} pageSizeOptions={pageSizeOptions} />
       )}
     </TableContext.Provider>
   );
@@ -106,7 +110,4 @@ const TableComponent = <TData, TFilter = Record<string, unknown>>(
 
 TableComponent.displayName = "Table";
 
-export const Table = Object.assign(TableComponent, {
-  Pagination: PaginationSlot,
-  ColumnVisibility: ColumnVisibilitySlot,
-});
+export const Table = TableComponent;

@@ -1,6 +1,14 @@
-import { type IHolderError, usePaged } from "@store/holders";
+import {
+  useColumnFiltersFeature,
+  useGlobalFilterFeature,
+  usePaginationFeature,
+  useRowSelectionFeature,
+  useSortingFeature,
+} from "@components/ui";
+import { usePaged } from "@store/holders";
 import type {
   OnChangeFn,
+  PaginationState,
   RowSelectionState,
   SortingState,
 } from "@tanstack/react-table";
@@ -22,6 +30,7 @@ interface OrderFilters {
 
 const DEFAULT_PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
 const SORTABLE_FIELDS: readonly OrderSortField[] = [
   "customer",
   "amount",
@@ -52,49 +61,14 @@ const toServerFilters = (
   };
 };
 
-export interface ServerDemoViewModel {
-  orders: Order[];
-  isLoading: boolean;
-  isRefreshing: boolean;
-  isBusy: boolean;
-  isError: boolean;
-  error: IHolderError | null;
-  totalCount: number;
-  pageCount: number;
-  currentPage: number;
-  pageSize: number;
-  goToPage: (page: number) => void;
-  setPageSize: (size: number) => void;
-  reload: () => void;
-  searchInput: string;
-  search: string;
-  onSearchInputChange: (value: string) => void;
-  onClearSearch: () => void;
-  onGlobalFilterChange: OnChangeFn<string>;
-  sorting: SortingState;
-  onSortingChange: OnChangeFn<SortingState>;
-  rowSelection: RowSelectionState;
-  onRowSelectionChange: OnChangeFn<RowSelectionState>;
-  columnFilters: OrderFilters;
-  onColumnFiltersChange: OnChangeFn<OrderFilters>;
-  onSelectedRowsChange: (rows: Order[]) => void;
-  selectedOrders: Order[];
-  clearSelection: () => void;
-  removeSelected: () => void;
-  activeOrder: Order | null;
-  onRowClick: (order: Order) => void;
-  openDetails: (order: Order) => void;
-  closeDetails: () => void;
-  getRowId: (order: Order) => string;
-}
+export type ServerDemoViewModel = ReturnType<typeof useServerDemo>;
 
-export const useServerDemo = (): ServerDemoViewModel => {
+export const useServerDemo = () => {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<OrderFilters>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [selectedOrders, setSelectedOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
   useEffect(() => {
@@ -127,7 +101,6 @@ export const useServerDemo = (): ServerDemoViewModel => {
     goToPage,
     setPageSize,
     reload,
-    removeItem,
   } = usePaged<Order, OrderQuery>({
     queryFn: fetchOrders,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -135,52 +108,83 @@ export const useServerDemo = (): ServerDemoViewModel => {
     watch: [query],
   });
 
-  const handlePageSizeChange = useCallback(
-    (size: number) => {
-      setPageSize(size);
-      reload();
+  const onPaginationChange = useCallback(
+    (v: PaginationState) => {
+      const { pageIndex, pageSize } = v as PaginationState;
+
+      if (pagination.pageSize !== pageSize) {
+        setPageSize(pageSize);
+      }
+      goToPage(pageIndex + 1).then();
     },
-    [setPageSize, reload],
+    [goToPage, pagination.pageSize, setPageSize],
   );
 
   const refresh = useCallback(() => {
     reload({ refresh: true });
   }, [reload]);
 
-  const onSelectedRowsChange = useCallback(
-    (rows: Order[]) => setSelectedOrders(rows),
-    [],
-  );
-  const clearSelection = useCallback(() => {
-    setRowSelection({});
-    setSelectedOrders([]);
-  }, []);
-  const removeSelected = useCallback(() => {
-    if (selectedOrders.length === 0) return;
-    const ids = new Set(selectedOrders.map(order => order.id));
-
-    removeItem(order => ids.has(order.id));
-    setRowSelection({});
-    setSelectedOrders([]);
-  }, [selectedOrders, removeItem]);
-
   const onSearchInputChange = useCallback(
     (value: string) => setSearchInput(value),
     [],
   );
   const onClearSearch = useCallback(() => setSearchInput(""), []);
-  const onGlobalFilterChange = useCallback<OnChangeFn<string>>(
-    updater =>
-      setSearchInput(
-        typeof updater === "function" ? updater(debouncedSearch) : updater,
-      ),
-    [debouncedSearch],
+
+  const onGlobalFilterChange: OnChangeFn<string> = useCallback(
+    value => setSearchInput(value as string),
+    [],
   );
 
   const onRowClick = useCallback((order: Order) => setActiveOrder(order), []);
   const openDetails = useCallback((order: Order) => setActiveOrder(order), []);
   const closeDetails = useCallback(() => setActiveOrder(null), []);
   const getRowId = useCallback((order: Order) => order.id, []);
+
+  const sortingFeature = useSortingFeature<Order>({
+    manualSorting: true,
+    sortingState: sorting,
+    onSortingChange: setSorting,
+  });
+  const columnFiltersFeature = useColumnFiltersFeature<Order, OrderFilters>({
+    manualFiltering: true,
+    columnFilters,
+    onColumnFiltersChange: setColumnFilters,
+  });
+  const globalFilterFeature = useGlobalFilterFeature<Order>({
+    manualFiltering: true,
+    globalFilter: debouncedSearch,
+    onGlobalFilterChange,
+  });
+  const selectionFeature = useRowSelectionFeature<Order>({
+    selection: true,
+    rowSelection,
+    onRowSelectionChange: setRowSelection,
+  });
+  const paginationFeature = usePaginationFeature<Order>({
+    manualPagination: true,
+    pageSize: pagination.pageSize,
+    pageCount,
+    pageIndex: pagination.page - 1,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    onPaginationChange,
+  });
+
+  const features = useMemo(
+    () => [
+      sortingFeature,
+      columnFiltersFeature,
+      globalFilterFeature,
+      selectionFeature,
+      paginationFeature,
+    ],
+    [
+      sortingFeature,
+      columnFiltersFeature,
+      globalFilterFeature,
+      selectionFeature,
+      paginationFeature,
+    ],
+  );
 
   return {
     orders,
@@ -189,28 +193,12 @@ export const useServerDemo = (): ServerDemoViewModel => {
     isBusy,
     isError,
     error,
-    totalCount: pagination.totalCount,
-    pageCount,
-    currentPage: pagination.page,
-    pageSize: pagination.pageSize,
-    goToPage,
-    setPageSize: handlePageSizeChange,
+    features,
     reload: refresh,
     searchInput,
     search: debouncedSearch,
     onSearchInputChange,
     onClearSearch,
-    onGlobalFilterChange,
-    sorting,
-    onSortingChange: setSorting,
-    rowSelection,
-    onRowSelectionChange: setRowSelection,
-    columnFilters,
-    onColumnFiltersChange: setColumnFilters,
-    onSelectedRowsChange,
-    selectedOrders,
-    clearSelection,
-    removeSelected,
     activeOrder,
     onRowClick,
     openDetails,

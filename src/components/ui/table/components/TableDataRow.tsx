@@ -2,6 +2,7 @@ import { flexRender, type Row } from "@tanstack/react-table";
 import { memo, MouseEvent, useCallback } from "react";
 
 import { cn } from "../../foundation";
+import { getPinningStyle } from "../utils";
 import { TableCell, TableRow } from "./TablePrimitive";
 
 interface TableDataRowProps<TData = unknown> {
@@ -48,17 +49,37 @@ const TableDataRowInner = <TData = unknown,>({
         const colWidth = resizable
           ? cell.column.getSize()
           : cell.column.columnDef.size;
+        const { style: pinStyle, className: pinClassName } = getPinningStyle(
+          cell.column,
+        );
 
         return (
           <TableCell
             key={cell.id}
-            style={
-              colWidth != null
+            className={pinClassName}
+            style={{
+              ...(colWidth != null
                 ? { width: colWidth, minWidth: colWidth, maxWidth: colWidth }
-                : undefined
-            }
+                : undefined),
+              ...pinStyle,
+            }}
           >
-            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            {cell.getIsPlaceholder() ? null : cell.getIsGrouped() ? (
+              <span className="inline-flex items-center gap-1.5">
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                <span className="text-xs text-muted-foreground">
+                  ({row.subRows.length})
+                </span>
+              </span>
+            ) : cell.getIsAggregated() ? (
+              flexRender(
+                cell.column.columnDef.aggregatedCell ??
+                  cell.column.columnDef.cell,
+                cell.getContext(),
+              )
+            ) : (
+              flexRender(cell.column.columnDef.cell, cell.getContext())
+            )}
           </TableCell>
         );
       })}

@@ -1,6 +1,8 @@
 import { flexRender, type Header } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Group, Ungroup } from "lucide-react";
 
+import { cn } from "../../foundation";
+import { getPinningStyle } from "../utils";
 import { TableHeadFilter } from "./TableHeadFilter";
 import { TableHead } from "./TablePrimitive";
 
@@ -15,12 +17,16 @@ const SortIcon = ({ direction }: { direction: "asc" | "desc" | false }) => {
 interface TableHeadCellProps<TData = unknown> {
   header: Header<TData, unknown>;
   sorting?: boolean;
+  filtering?: boolean;
+  grouping?: boolean;
   resizable?: boolean;
 }
 
 export const TableHeadCell = <TData = unknown,>({
   header,
   sorting,
+  filtering,
+  grouping,
   resizable,
 }: TableHeadCellProps<TData>) => {
   if (header.isPlaceholder) {
@@ -32,7 +38,11 @@ export const TableHeadCell = <TData = unknown,>({
     header.getContext(),
   );
   const canSort = sorting && header.column.getCanSort();
-  const canFilter = !!header.column.columnDef.meta?.filter;
+  const canGroup = grouping && header.column.getCanGroup();
+  const canFilter = filtering && !!header.column.columnDef.meta?.filter;
+  const { style: pinStyle, className: pinClassName } = getPinningStyle(
+    header.column,
+  );
 
   const inner = canSort ? (
     <button
@@ -56,7 +66,8 @@ export const TableHeadCell = <TData = unknown,>({
   return (
     <TableHead
       colSpan={header.colSpan}
-      style={{ ...widthStyle, position: "relative" }}
+      className={pinClassName}
+      style={{ ...widthStyle, ...pinStyle, position: "relative" }}
     >
       <div className="flex items-center gap-1">
         {canFilter ? (
@@ -66,6 +77,31 @@ export const TableHeadCell = <TData = unknown,>({
           </>
         ) : (
           inner
+        )}
+
+        {canGroup && (
+          <button
+            type="button"
+            aria-label={
+              header.column.getIsGrouped()
+                ? "Разгруппировать по колонке"
+                : "Группировать по колонке"
+            }
+            className={cn(
+              "inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+              header.column.getIsGrouped() && "text-primary",
+            )}
+            onClick={e => {
+              e.stopPropagation();
+              header.column.getToggleGroupingHandler()();
+            }}
+          >
+            {header.column.getIsGrouped() ? (
+              <Ungroup className="h-3.5 w-3.5" />
+            ) : (
+              <Group className="h-3.5 w-3.5" />
+            )}
+          </button>
         )}
       </div>
 

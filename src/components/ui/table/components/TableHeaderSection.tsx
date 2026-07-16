@@ -6,6 +6,8 @@ import { TableHeader, TableRow } from "./TablePrimitive";
 interface TableHeaderSectionProps<TData> {
   table: TanstackTable<TData>;
   sorting?: boolean;
+  filtering?: boolean;
+  grouping?: boolean;
   stickyHeader?: boolean;
   resizable?: boolean;
   className?: string;
@@ -14,6 +16,8 @@ interface TableHeaderSectionProps<TData> {
 export const TableHeaderSection = <TData,>({
   table,
   sorting,
+  filtering,
+  grouping,
   stickyHeader,
   resizable,
   className,
@@ -33,6 +37,8 @@ export const TableHeaderSection = <TData,>({
               key={header.id}
               header={header}
               sorting={sorting}
+              filtering={filtering}
+              grouping={grouping}
               resizable={resizable}
             />
           ))}

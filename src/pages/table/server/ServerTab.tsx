@@ -1,8 +1,6 @@
 import {
-  Badge,
   Button,
   Card,
-  CardContent,
   Drawer,
   DrawerContent,
   DrawerDescription,
@@ -13,7 +11,7 @@ import {
   Input,
   Table,
 } from "@components/ui";
-import { RefreshCw, Search, Trash2 } from "lucide-react";
+import { RefreshCw, Search } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type ChangeEvent, type FC, useCallback, useMemo } from "react";
 
@@ -25,8 +23,6 @@ import {
 } from "../tableColumns";
 import { useServerDemo } from "./useServerDemo";
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50];
-
 export interface ServerTabProps {
   density: "sm" | "md" | "lg";
   variant: "default" | "striped" | "bordered";
@@ -37,7 +33,6 @@ export const ServerTab: FC<ServerTabProps> = observer(
   ({ density, variant, sticky }) => {
     const vm = useServerDemo();
     const { openDetails, onSearchInputChange } = vm;
-
     const columns = useMemo(
       () => createOrderColumns({ onView: openDetails }),
       [openDetails],
@@ -48,19 +43,9 @@ export const ServerTab: FC<ServerTabProps> = observer(
       [onSearchInputChange],
     );
 
-    console.log("vm.columnFilters", vm.columnFilters);
-    // console.log("vm.rowSelection", vm.rowSelection);
-
     return (
       <Card
         className="flex flex-1 flex-col overflow-hidden"
-        title={<span className="text-base">Таблица заказов</span>}
-        description={
-          <span className="text-xs">
-            Серверная пагинация (usePaged), ручная сортировка, фильтры колонок,
-            sticky header, выбор строк, Drawer детализации.
-          </span>
-        }
         contentClassName="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6 pt-0"
       >
         <div className="flex flex-wrap items-center gap-2">
@@ -86,44 +71,22 @@ export const ServerTab: FC<ServerTabProps> = observer(
               Обновить
             </Button>
           </div>
-        </div>
 
-        {vm.selectedOrders.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-            <Badge variant="primary">Выбрано: {vm.selectedOrders.length}</Badge>
-            <span className="truncate text-xs text-muted-foreground">
-              {vm.selectedOrders.map(o => o.id).join(", ")}
-            </span>
-            <div className="ml-auto flex items-center gap-2">
+          {vm.isError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+              Не удалось загрузить заказы:{" "}
+              {vm.error?.message ?? "неизвестная ошибка"}
               <Button
-                variant="destructive"
+                variant="outline"
                 size="sm"
-                onClick={vm.removeSelected}
-                leftIcon={<Trash2 className="h-4 w-4" />}
+                className="ml-3"
+                onClick={() => vm.reload()}
               >
-                Удалить
-              </Button>
-              <Button variant="ghost" size="sm" onClick={vm.clearSelection}>
-                Сбросить
+                Повторить
               </Button>
             </div>
-          </div>
-        )}
-
-        {vm.isError && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
-            Не удалось загрузить заказы:{" "}
-            {vm.error?.message ?? "неизвестная ошибка"}
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-3"
-              onClick={() => vm.reload()}
-            >
-              Повторить
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
 
         <Table
           data={vm.orders}
@@ -131,19 +94,7 @@ export const ServerTab: FC<ServerTabProps> = observer(
           size={density}
           variant={variant}
           stickyHeader={sticky}
-          sorting
-          sortingState={vm.sorting}
-          onSortingChange={vm.onSortingChange}
-          manualSorting
-          manualFiltering
-          columnFilters={vm.columnFilters}
-          onColumnFiltersChange={vm.onColumnFiltersChange}
-          globalFilter={vm.search}
-          onGlobalFilterChange={vm.onGlobalFilterChange}
-          selection
-          rowSelection={vm.rowSelection}
-          onRowSelectionChange={vm.onRowSelectionChange}
-          onSelectedRowsChange={vm.onSelectedRowsChange}
+          features={vm.features}
           onRowClick={vm.onRowClick}
           getRowId={vm.getRowId}
           loading={vm.isLoading}
@@ -164,17 +115,8 @@ export const ServerTab: FC<ServerTabProps> = observer(
               }
             />
           }
-        >
-          <Table.ColumnVisibility />
-          <Table.Pagination
-            totalPages={vm.pageCount}
-            currentPage={vm.currentPage}
-            pageSize={vm.pageSize}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-            onPageChange={vm.goToPage}
-            onPageSizeChange={vm.setPageSize}
-          />
-        </Table>
+          showColumnVisibility
+        />
 
         <Drawer
           open={!!vm.activeOrder}

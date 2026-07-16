@@ -1,64 +1,67 @@
-import type {
-  OnChangeFn,
-  RowSelectionState,
-  SortingState,
-} from "@tanstack/react-table";
+import {
+  useColumnFiltersFeature,
+  useColumnSizingFeature,
+  usePaginationFeature,
+  useRowSelectionFeature,
+  useSortingFeature,
+} from "@components/ui";
 import { useCallback, useMemo, useState } from "react";
 
 import { getClientOrders } from "../table.mock";
 import type { Order, OrderStatus } from "../table.types";
 
-/** Типизированная карта фильтров колонок — ключи соответствуют accessorKey колонок. */
 interface OrderFilters {
   customer?: string;
   status?: OrderStatus[];
 }
 
-export interface ClientDemoViewModel {
-  orders: Order[];
-  search: string;
-  onSearchChange: (value: string) => void;
-  sorting: SortingState;
-  onSortingChange: OnChangeFn<SortingState>;
-  rowSelection: RowSelectionState;
-  onRowSelectionChange: OnChangeFn<RowSelectionState>;
-  columnFilters: OrderFilters;
-  onColumnFiltersChange: OnChangeFn<OrderFilters>;
-  selectedOrders: Order[];
-  onSelectedRowsChange: (rows: Order[]) => void;
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
+
+export interface UseClientDemoOptions {
+  resizable: boolean;
 }
 
-export const useClientDemo = (): ClientDemoViewModel => {
-  const [search, setSearch] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "amount", desc: true },
-  ]);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [columnFilters, setColumnFilters] = useState<OrderFilters>({});
-  const [selectedOrders, setSelectedOrders] = useState<Order[]>([]);
+export type ClientDemoViewModel = ReturnType<typeof useClientDemo>;
 
+export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
+  const [search, setSearch] = useState("");
   const onSearchChange = useCallback((value: string) => setSearch(value), []);
 
-  const onSelectedRowsChange = useCallback(
-    (rows: Order[]) => setSelectedOrders(rows),
+  const orders = useMemo(() => getClientOrders(search), [search]);
+
+  const getRowId = useCallback((order: Order) => order.id, []);
+  const rowClassName = useCallback(
+    (order: Order) =>
+      order.status === "failed"
+        ? "bg-destructive/5 [&_td]:border-destructive/20"
+        : order.status === "paid"
+          ? "bg-success/5"
+          : "",
     [],
   );
 
-  const orders = useMemo(() => {
-    return getClientOrders(search);
-  }, [search]);
+  const sorting = useSortingFeature<Order>({
+    defaultSorting: [{ id: "amount", desc: true }],
+  });
+  const selection = useRowSelectionFeature<Order>({ selection: "multi" });
+  const columnFilters = useColumnFiltersFeature<Order, OrderFilters>();
+  const sizing = useColumnSizingFeature<Order>({ enabled: resizable });
+  const pagination = usePaginationFeature<Order>({
+    pageSize: 10,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+  });
+
+  const features = useMemo(
+    () => [sorting, selection, columnFilters, sizing, pagination],
+    [sorting, selection, columnFilters, sizing, pagination],
+  );
 
   return {
     orders,
     search,
     onSearchChange,
-    sorting,
-    onSortingChange: setSorting,
-    rowSelection,
-    onRowSelectionChange: setRowSelection,
-    columnFilters,
-    onColumnFiltersChange: setColumnFilters,
-    selectedOrders,
-    onSelectedRowsChange,
+    getRowId,
+    rowClassName,
+    features,
   };
 };

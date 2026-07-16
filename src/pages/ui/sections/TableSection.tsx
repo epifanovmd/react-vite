@@ -7,8 +7,10 @@ import {
   CardTitle,
   type ColumnDef,
   Table,
+  useRowSelectionFeature,
+  useSortingFeature,
 } from "@components/ui";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 type Transaction = {
   id: string;
@@ -120,46 +122,57 @@ const tableColumns: ColumnDef<Transaction>[] = [
   { accessorKey: "date", header: "Date" },
 ];
 
-export const TableSection: FC = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-base">Table</CardTitle>
-      <CardDescription className="text-xs">
-        TanStack Table — сортировка, выбор строк, пагинация
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      <div>
-        <p className="text-xs text-muted-foreground mb-2">
-          Default + sorting + selection + pagination
-        </p>
-        <Table
-          data={tableData}
-          columns={tableColumns}
-          size="sm"
-          sorting
-          selection
-          onRowClick={row => console.log("clicked", row)}
-        />
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground mb-2">Striped variant</p>
-        <Table
-          data={tableData}
-          columns={tableColumns}
-          size="sm"
-          variant="striped"
-          sorting
-        />
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground mb-2">Loading state</p>
-        <Table data={[]} columns={tableColumns} size="sm" loading />
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground mb-2">Empty state</p>
-        <Table data={[]} columns={tableColumns} size="sm" />
-      </div>
-    </CardContent>
-  </Card>
-);
+export const TableSection: FC = () => {
+  const sorting = useSortingFeature<Transaction>();
+  const selection = useRowSelectionFeature<Transaction>();
+  const defaultFeatures = useMemo(
+    () => [sorting, selection],
+    [sorting, selection],
+  );
+
+  const stripedSorting = useSortingFeature<Transaction>();
+  const stripedFeatures = useMemo(() => [stripedSorting], [stripedSorting]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Table</CardTitle>
+        <CardDescription className="text-xs">
+          TanStack Table — сортировка, выбор строк, пагинация
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">
+            Default + sorting + selection + pagination
+          </p>
+          <Table
+            data={tableData}
+            columns={tableColumns}
+            size="sm"
+            features={defaultFeatures}
+            onRowClick={row => console.log("clicked", row)}
+          />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Striped variant</p>
+          <Table
+            data={tableData}
+            columns={tableColumns}
+            size="sm"
+            variant="striped"
+            features={stripedFeatures}
+          />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Loading state</p>
+          <Table data={[]} columns={tableColumns} size="sm" loading />
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Empty state</p>
+          <Table data={[]} columns={tableColumns} size="sm" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

@@ -1,164 +1,123 @@
 import {
-  type ColumnDef,
   getCoreRowModel,
-  getExpandedRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 
-import { buildRowActionsColumn } from "../columns";
+import { buildExpandColumn, buildRowActionsColumn } from "../columns";
 import type { TableInstanceResult, TableProps } from "../Table.types";
-import type { PagConfig,SelMode } from "../utils";
-import { hasFacetedFilter, resolvePagination, resolveSelectionMode } from "../utils";
-import { useTableState } from "./useTableState";
+import { hasFacetedFilter } from "../utils";
+import {
+  type ExpandingFeatureMeta,
+  mergeTableFeatures,
+  type PaginationFeatureMeta,
+  type RowSelectionFeatureMeta,
+} from "./features";
 
-export const useTableInstance = <TData, TFilter = Record<string, unknown>>(
-  props: TableProps<TData, TFilter>,
+export type UseTableInstanceOptions<TData> = Pick<
+  TableProps<TData>,
+  "data" | "columns" | "features" | "size" | "getRowId" | "tableOptions"
+>;
+
+export const useTableInstance = <TData,>(
+  props: UseTableInstanceOptions<TData>,
 ): TableInstanceResult<TData> => {
-  const {
-    data,
-    columns,
-    size,
-    getRowId,
-    sorting,
-    sortingState,
-    onSortingChange,
-    manualSorting,
-    globalFilter,
-    onGlobalFilterChange,
-    selection,
-    rowSelection,
-    onRowSelectionChange,
-    onSelectedRowsChange,
-    columnFilters,
-    onColumnFiltersChange,
-    manualFiltering,
-    pagination,
-    paginationState,
-    onPaginationChange,
-    resizable,
-    getSubRows,
-    renderSubComponent,
-    expandedState,
-    onExpandedChange,
-  } = props;
+  const { data, columns, features = [], size, getRowId, tableOptions } = props;
 
-  const state = useTableState<TFilter>({
-    sortingState,
-    onSortingChange,
-    rowSelection,
-    onRowSelectionChange,
-    columnFilters,
-    onColumnFiltersChange,
-    paginationState,
-    onPaginationChange,
-    expandedState,
-    onExpandedChange,
-  });
+  const merged = useMemo(() => mergeTableFeatures(features), [features]);
 
-  const selMode = resolveSelectionMode(selection);
-  const pag = resolvePagination(pagination);
-  const enableColumnFilters =
-    columnFilters !== undefined || onColumnFiltersChange !== undefined;
-  const enableClientFilter =
-    !manualFiltering && (globalFilter !== undefined || enableColumnFilters);
-  const hasExpandable = !!(getSubRows || renderSubComponent);
+  const selectionFeature = merged.byKind.get("rowSelection");
+  const selectionEnabled = !!selectionFeature?.options.onRowSelectionChange;
+  const multiSelect = !!(
+    selectionFeature?.meta as RowSelectionFeatureMeta | undefined
+  )?.multi;
+
+  const expandingFeature = merged.byKind.get("expanding");
+  const expandingEnabled = !!expandingFeature?.options.getExpandedRowModel;
+
+  const sizingFeature = merged.byKind.get("columnSizing");
+  const resizingEnabled = !!sizingFeature?.options.onColumnSizingChange;
+
+  const pinningFeature = merged.byKind.get("columnPinning");
+  const pinningEnabled = !!pinningFeature?.options.onColumnPinningChange;
+
+  const sortingFeature = merged.byKind.get("sorting");
+  const sortingEnabled = !!sortingFeature?.options.onSortingChange;
+
+  const columnFiltersFeature = merged.byKind.get("columnFilters");
+  const globalFilterFeature = merged.byKind.get("globalFilter");
+  const filteringEnabled =
+    !!columnFiltersFeature?.options.onColumnFiltersChange ||
+    !!globalFilterFeature?.options.onGlobalFilterChange;
+
+  const groupingEnabled = !!merged.options.getGroupedRowModel;
+
+  const paginationFeature = merged.byKind.get("pagination");
+  const paginationEnabled = !!paginationFeature?.options.onPaginationChange;
+  const paginationMeta = paginationFeature?.meta as
+    PaginationFeatureMeta | undefined;
+  const renderSubComponent = (
+    expandingFeature?.meta as ExpandingFeatureMeta<TData> | undefined
+  )?.renderSubComponent;
+
   const checkboxSize = size === "lg" ? "md" : "sm";
 
   const effectiveColumns = useMemo(() => {
-    const cols: ColumnDef<TData>[] = [];
+    const cols = [...columns];
 
-    if (hasExpandable || selMode.enabled) {
-      cols.push(
+    if (expandingEnabled) cols.unshift(buildExpandColumn<TData>());
+    if (selectionEnabled) {
+      cols.unshift(
         buildRowActionsColumn<TData>({
           checkboxSize,
-          selectionEnabled: selMode.enabled,
-          multiSelect: selMode.multi,
+          selectionEnabled,
+          multiSelect,
         }),
       );
     }
-    cols.push(...columns);
 
     return cols;
-  }, [hasExpandable, selMode, checkboxSize, columns]);
+  }, [columns, expandingEnabled, selectionEnabled, multiSelect, checkboxSize]);
+
+  const { state: extraState, ...restTableOptions } = tableOptions ?? {};
 
   const table = useReactTable<TData>({
     data,
     columns: effectiveColumns,
     getRowId,
-    getSubRows,
-
-    state: {
-      ...(sorting && { sorting: state.sorting }),
-      ...(globalFilter !== undefined && { globalFilter }),
-      ...(selMode.enabled && { rowSelection: state.rowSelection }),
-      ...(enableColumnFilters && { columnFilters: state.columnFilters }),
-      ...(pag.enabled && { pagination: state.pagination }),
-      ...(hasExpandable && { expanded: state.expanded }),
-    },
-
-    enableRowSelection: selMode.enabled,
-    enableMultiRowSelection: selMode.multi,
-    enableColumnResizing: !!resizable,
-    columnResizeMode: "onChange",
-
-    onRowSelectionChange: selMode.enabled
-      ? state.onRowSelectionChange
-      : undefined,
-    onSortingChange: sorting ? state.onSortingChange : undefined,
-    onGlobalFilterChange,
-    onColumnFiltersChange: enableColumnFilters
-      ? state.onColumnFiltersChange
-      : undefined,
-    onPaginationChange: pag.enabled ? state.onPaginationChange : undefined,
-    onExpandedChange: hasExpandable ? state.onExpandedChange : undefined,
-
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel:
-      sorting && !manualSorting ? getSortedRowModel() : undefined,
-    getFilteredRowModel: enableClientFilter ? getFilteredRowModel() : undefined,
-    getPaginationRowModel:
-      pag.enabled && !pag.manual ? getPaginationRowModel() : undefined,
-    getExpandedRowModel: hasExpandable ? getExpandedRowModel() : undefined,
-    getRowCanExpand: renderSubComponent && !getSubRows ? () => true : undefined,
-    ...(hasFacetedFilter(columns) && !manualFiltering
+    ...(filteringEnabled && hasFacetedFilter(columns)
       ? {
           getFacetedRowModel: getFacetedRowModel(),
           getFacetedUniqueValues: getFacetedUniqueValues(),
         }
       : {}),
-
-    manualSorting,
-    manualFiltering,
-    manualPagination: pag.manual,
-    ...(pag.manual && pag.pageCount != null
-      ? { pageCount: pag.pageCount }
-      : {}),
+    ...merged.options,
+    state: { ...merged.state, ...extraState },
+    ...restTableOptions,
   });
 
-  const onSelectedRowsChangeRef = useRef(onSelectedRowsChange);
-
-  onSelectedRowsChangeRef.current = onSelectedRowsChange;
-
-  useEffect(() => {
-    if (!onSelectedRowsChangeRef.current || !selMode.enabled) return;
-    onSelectedRowsChangeRef.current(
-      table.getSelectedRowModel().rows.map(r => r.original),
-    );
-  }, [state.rowSelection, selMode.enabled, table]);
-
-  const rows = pag.enabled
-    ? table.getRowModel().rows
-    : table.getCoreRowModel().rows;
+  const rows = table.getRowModel().rows;
   const totalColumns = table.getVisibleLeafColumns().length;
   const hasFooter = table
     .getFooterGroups()
     .some(fg => fg.headers.some(h => h.column.columnDef.footer));
 
-  return { table, rows, totalColumns, hasFooter };
+  return {
+    table,
+    rows,
+    totalColumns,
+    hasFooter,
+    sortingEnabled,
+    filteringEnabled,
+    paginationEnabled,
+    resizingEnabled,
+    pinningEnabled,
+    groupingEnabled,
+    expandingEnabled,
+    renderSubComponent,
+    pageSizeOptions: paginationMeta?.pageSizeOptions,
+  };
 };
