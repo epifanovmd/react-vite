@@ -1,13 +1,17 @@
 import {
   Badge,
-  Button,
   type ColumnFilterOption,
   createColumnHelper,
+  type TableFiltersConfig,
 } from "@components/ui";
-import { Eye } from "lucide-react";
 import type { ReactNode } from "react";
 
-import type { Order, OrderStatus } from "./table.types";
+import type { Order, OrderQuery, OrderStatus } from "./table.types";
+
+export interface ClientOrderFilters {
+  customer?: string;
+  status?: OrderStatus[];
+}
 
 const orderHelper = createColumnHelper<Order>();
 
@@ -21,9 +25,34 @@ const STATUS_META: Record<
   refunded: { label: "Возврат", variant: "info" },
 };
 
-const STATUS_FILTER_OPTIONS: ColumnFilterOption<OrderStatus>[] = (
+export const STATUS_FILTER_OPTIONS: ColumnFilterOption<OrderStatus>[] = (
   Object.keys(STATUS_META) as OrderStatus[]
 ).map(status => ({ value: status, label: STATUS_META[status].label }));
+
+export const orderFilterFields: TableFiltersConfig<Order, OrderQuery> = {
+  customer: {
+    queryKey: "customer",
+    type: "text",
+    placeholder: "Поиск по клиенту…",
+  },
+  status: {
+    queryKey: "statuses",
+    type: "multiselect",
+    options: STATUS_FILTER_OPTIONS,
+  },
+};
+
+export const clientOrderFilterFields: TableFiltersConfig<
+  Order,
+  ClientOrderFilters
+> = {
+  customer: { queryKey: "customer", type: "text", placeholder: "Поиск…" },
+  status: {
+    queryKey: "status",
+    type: "multiselect",
+    options: STATUS_FILTER_OPTIONS,
+  },
+};
 
 const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -60,11 +89,7 @@ const RightAlign = ({ children }: { children: ReactNode }) => (
   <div className="text-right tabular-nums">{children}</div>
 );
 
-export interface OrderColumnsOptions {
-  onView: (order: Order) => void;
-}
-
-export const createOrderColumns = ({ onView }: OrderColumnsOptions) => [
+export const createOrderColumns = () => [
   orderHelper.accessor("id", {
     header: "ID",
     enableSorting: false,
@@ -76,8 +101,7 @@ export const createOrderColumns = ({ onView }: OrderColumnsOptions) => [
   }),
   orderHelper.accessor("customer", {
     header: "Клиент",
-    filterFn: "includesString",
-    meta: { filter: { type: "text", placeholder: "Поиск по клиенту…" } },
+    filterFn: "arrIncludes",
     sortingFn: "auto",
     cell: ({ row }) => (
       <div className="flex flex-col">
@@ -93,7 +117,6 @@ export const createOrderColumns = ({ onView }: OrderColumnsOptions) => [
     size: 130,
     enableSorting: false,
     filterFn: "arrIncludesSome",
-    meta: { filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS } },
     cell: ({ getValue }) => <StatusBadge status={getValue()} />,
   }),
   orderHelper.accessor("items", {
@@ -128,29 +151,6 @@ export const createOrderColumns = ({ onView }: OrderColumnsOptions) => [
       </span>
     ),
   }),
-  orderHelper.display({
-    id: "actions",
-    header: "",
-    size: 64,
-    enableSorting: false,
-    enableGlobalFilter: false,
-    cell: ({ row }) => (
-      <div className="flex justify-end">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          aria-label={`Просмотр заказа ${row.original.id}`}
-          onClick={e => {
-            e.stopPropagation();
-            onView(row.original);
-          }}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-  }),
 ];
 
 export const createClientOrderColumns = () => [
@@ -166,7 +166,6 @@ export const createClientOrderColumns = () => [
   orderHelper.accessor("customer", {
     header: "Клиент",
     filterFn: "includesString",
-    meta: { filter: { type: "text", placeholder: "Поиск…" } },
     size: 200,
     cell: ({ row }) => (
       <div className="flex flex-col">
@@ -182,7 +181,6 @@ export const createClientOrderColumns = () => [
     size: 130,
     enableSorting: true,
     filterFn: "arrIncludesSome",
-    meta: { filter: { type: "multiselect", options: STATUS_FILTER_OPTIONS } },
     cell: ({ getValue }) => <StatusBadge status={getValue()} />,
   }),
   orderHelper.accessor("items", {

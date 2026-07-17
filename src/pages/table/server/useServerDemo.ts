@@ -15,18 +15,12 @@ import type {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchOrders } from "../table.mock";
-import type {
-  Order,
-  OrderQuery,
-  OrderSortField,
-  OrderStatus,
-} from "../table.types";
-
-/** Типизированная карта фильтров колонок — ключи соответствуют accessorKey колонок. */
-interface OrderFilters {
-  customer?: string;
-  status?: OrderStatus[];
-}
+import type { Order, OrderQuery, OrderSortField } from "../table.types";
+import {
+  createOrderColumns,
+  orderFilterFields,
+  STATUS_FILTER_OPTIONS,
+} from "../tableColumns";
 
 const DEFAULT_PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -51,15 +45,12 @@ const toServerSort = (
   return { sortBy, sortDir: first.desc ? "desc" : "asc" };
 };
 
-const toServerFilters = (
-  filters: OrderFilters,
-): Pick<OrderQuery, "customer" | "statuses"> => {
-  return {
-    customer: filters.customer?.trim() || undefined,
-    statuses:
-      filters.status && filters.status.length > 0 ? filters.status : undefined,
-  };
-};
+const normalizeFilters = (
+  filters: Partial<OrderQuery>,
+): Pick<OrderQuery, "customer" | "statuses"> => ({
+  customer: filters.customer?.trim() || undefined,
+  statuses: filters.statuses?.length ? filters.statuses : undefined,
+});
 
 export type ServerDemoViewModel = ReturnType<typeof useServerDemo>;
 
@@ -67,9 +58,11 @@ export const useServerDemo = () => {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<OrderFilters>({});
+  const [columnFilters, setColumnFilters] = useState<Partial<OrderQuery>>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+
+  console.log("columnFilters", columnFilters);
 
   useEffect(() => {
     const timer = setTimeout(
@@ -84,7 +77,7 @@ export const useServerDemo = () => {
     () => ({
       search: debouncedSearch,
       ...toServerSort(sorting),
-      ...toServerFilters(columnFilters),
+      ...normalizeFilters(columnFilters),
     }),
     [debouncedSearch, sorting, columnFilters],
   );
@@ -136,19 +129,37 @@ export const useServerDemo = () => {
   );
 
   const onRowClick = useCallback((order: Order) => setActiveOrder(order), []);
-  const openDetails = useCallback((order: Order) => setActiveOrder(order), []);
   const closeDetails = useCallback(() => setActiveOrder(null), []);
   const getRowId = useCallback((order: Order) => order.id, []);
+
+  const baseColumns = useMemo(() => createOrderColumns(), []);
 
   const sortingFeature = useSortingFeature<Order>({
     manualSorting: true,
     sortingState: sorting,
     onSortingChange: setSorting,
   });
-  const columnFiltersFeature = useColumnFiltersFeature<Order, OrderFilters>({
+  const { columns, feature: columnFiltersFeature } = useColumnFiltersFeature({
     manualFiltering: true,
+    columns: baseColumns,
+    // filters: orderFilterFields,
+    filters: {
+      customer: {
+        queryKey: "customer",
+        type: "text",
+        placeholder: "Поиск по клиенту…",
+      },
+      status: {
+        queryKey: "statuses",
+        type: "multiselect",
+        options: STATUS_FILTER_OPTIONS,
+      },
+    },
     columnFilters,
     onColumnFiltersChange: setColumnFilters,
+    defaultColumnFilters: {
+      // statuses: ["pending"],
+    },
   });
   const globalFilterFeature = useGlobalFilterFeature<Order>({
     manualFiltering: true,
@@ -188,6 +199,7 @@ export const useServerDemo = () => {
 
   return {
     orders,
+    columns,
     isLoading,
     isRefreshing,
     isBusy,
@@ -201,7 +213,6 @@ export const useServerDemo = () => {
     onClearSearch,
     activeOrder,
     onRowClick,
-    openDetails,
     closeDetails,
     getRowId,
   };

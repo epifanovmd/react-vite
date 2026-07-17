@@ -3,8 +3,16 @@ export { mergeTableFeatures } from "./mergeTableFeatures";
 export type { ControllableStateOptions } from "./shared/useControllableState";
 export { useControllableState } from "./shared/useControllableState";
 export type { TableFeatureKind, TableFeatureResult } from "./types";
-export type { ColumnFiltersFeatureOptions } from "./useColumnFiltersFeature";
-export { useColumnFiltersFeature } from "./useColumnFiltersFeature";
+export type {
+  ColumnFiltersFeatureOptions,
+  ColumnFiltersFeatureResult,
+  TableFilterFieldConfig,
+  TableFiltersConfig,
+} from "./useColumnFiltersFeature";
+export {
+  getColumnDefId,
+  useColumnFiltersFeature,
+} from "./useColumnFiltersFeature";
 export type { ColumnOrderFeatureOptions } from "./useColumnOrderFeature";
 export { useColumnOrderFeature } from "./useColumnOrderFeature";
 export type { ColumnPinningFeatureOptions } from "./useColumnPinningFeature";

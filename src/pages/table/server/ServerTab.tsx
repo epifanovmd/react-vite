@@ -13,14 +13,10 @@ import {
 } from "@components/ui";
 import { RefreshCw, Search } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { type ChangeEvent, type FC, useCallback, useMemo } from "react";
+import { type ChangeEvent, type FC, useCallback } from "react";
 
 import type { Order } from "../table.types";
-import {
-  createOrderColumns,
-  formatCurrency,
-  formatDate,
-} from "../tableColumns";
+import { formatCurrency, formatDate } from "../tableColumns";
 import { useServerDemo } from "./useServerDemo";
 
 export interface ServerTabProps {
@@ -32,11 +28,7 @@ export interface ServerTabProps {
 export const ServerTab: FC<ServerTabProps> = observer(
   ({ density, variant, sticky }) => {
     const vm = useServerDemo();
-    const { openDetails, onSearchInputChange } = vm;
-    const columns = useMemo(
-      () => createOrderColumns({ onView: openDetails }),
-      [openDetails],
-    );
+    const { onSearchInputChange } = vm;
 
     const handleSearchChange = useCallback(
       (e: ChangeEvent<HTMLInputElement>) => onSearchInputChange(e.target.value),
@@ -90,7 +82,7 @@ export const ServerTab: FC<ServerTabProps> = observer(
 
         <Table
           data={vm.orders}
-          columns={columns}
+          columns={vm.columns}
           size={density}
           variant={variant}
           stickyHeader={sticky}

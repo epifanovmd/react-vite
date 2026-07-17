@@ -8,12 +8,12 @@ import {
 import { useCallback, useMemo, useState } from "react";
 
 import { getClientOrders } from "../table.mock";
-import type { Order, OrderStatus } from "../table.types";
-
-interface OrderFilters {
-  customer?: string;
-  status?: OrderStatus[];
-}
+import type { Order } from "../table.types";
+import {
+  clientOrderFilterFields,
+  type ClientOrderFilters,
+  createClientOrderColumns,
+} from "../tableColumns";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -28,6 +28,7 @@ export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
   const onSearchChange = useCallback((value: string) => setSearch(value), []);
 
   const orders = useMemo(() => getClientOrders(search), [search]);
+  const baseColumns = useMemo(() => createClientOrderColumns(), []);
 
   const getRowId = useCallback((order: Order) => order.id, []);
   const rowClassName = useCallback(
@@ -44,7 +45,13 @@ export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
     defaultSorting: [{ id: "amount", desc: true }],
   });
   const selection = useRowSelectionFeature<Order>({ selection: "multi" });
-  const columnFilters = useColumnFiltersFeature<Order, OrderFilters>();
+  const { columns, feature: columnFilters } = useColumnFiltersFeature<
+    Order,
+    ClientOrderFilters
+  >({
+    columns: baseColumns,
+    filters: clientOrderFilterFields,
+  });
   const sizing = useColumnSizingFeature<Order>({ enabled: resizable });
   const pagination = usePaginationFeature<Order>({
     pageSize: 10,
@@ -58,6 +65,7 @@ export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
 
   return {
     orders,
+    columns,
     search,
     onSearchChange,
     getRowId,

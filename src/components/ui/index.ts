@@ -200,6 +200,7 @@ export type {
   ColumnFilterConfig,
   ColumnFilterOption,
   ColumnFiltersFeatureOptions,
+  ColumnFiltersFeatureResult,
   ColumnOrderFeatureOptions,
   ColumnPinningFeatureOptions,
   ColumnSizingFeatureOptions,
@@ -216,6 +217,8 @@ export type {
   SortingFeatureOptions,
   TableFeatureKind,
   TableFeatureResult,
+  TableFilterFieldConfig,
+  TableFiltersConfig,
   TableInstanceResult,
   TablePaginationProps,
   TableProps,
@@ -223,6 +226,7 @@ export type {
 } from "./table";
 export {
   createColumnHelper,
+  getColumnDefId,
   mergeTableFeatures,
   Table,
   TableBody,

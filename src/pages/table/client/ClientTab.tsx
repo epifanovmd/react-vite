@@ -1,9 +1,8 @@
 import { Card, Input, Table } from "@components/ui";
 import { Search } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { type ChangeEvent, type FC, useCallback, useMemo } from "react";
+import { type ChangeEvent, type FC, useCallback } from "react";
 
-import { createClientOrderColumns } from "../tableColumns";
 import { useClientDemo } from "./useClientDemo";
 
 export interface ClientTabProps {
@@ -17,7 +16,6 @@ export const ClientTab: FC<ClientTabProps> = observer(
   ({ density, variant, sticky, resizable }) => {
     const vm = useClientDemo({ resizable });
     const { onSearchChange } = vm;
-    const columns = useMemo(() => createClientOrderColumns(), []);
 
     const handleSearchChange = useCallback(
       (e: ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value),
@@ -44,7 +42,7 @@ export const ClientTab: FC<ClientTabProps> = observer(
 
         <Table
           data={vm.orders}
-          columns={columns}
+          columns={vm.columns}
           size={density}
           variant={variant}
           stickyHeader={sticky}

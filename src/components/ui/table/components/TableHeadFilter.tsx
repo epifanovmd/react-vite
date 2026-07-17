@@ -6,7 +6,11 @@ import { Input } from "../../input";
 import { Popover, PopoverContent, PopoverTrigger } from "../../popover";
 import { Select } from "../../select";
 import { useAsyncOptions, useStaticOptions } from "../../select/strategies";
-import type { ColumnFilterConfig, ColumnFilterOption } from "../Table.types";
+import type {
+  ColumnFilterConfig,
+  ColumnFilterOption,
+  LabeledValue,
+} from "../Table.types";
 
 const TEXT_DEBOUNCE_MS = 400;
 
@@ -80,11 +84,18 @@ const FilterControl = <TData,>({
         column={column}
         options={config.options}
         placeholder={config.placeholder}
+        labelInValue={config.labelInValue}
       />
     );
   }
 
-  return <MultiSelectFilter column={column} options={config.options} />;
+  return (
+    <MultiSelectFilter
+      column={column}
+      options={config.options}
+      labelInValue={config.labelInValue}
+    />
+  );
 };
 
 interface SelectFilterProps<TData> {
@@ -92,6 +103,7 @@ interface SelectFilterProps<TData> {
   options?: ColumnFilterOption[];
   fetchOptions?: (query: string) => Promise<ColumnFilterOption[]>;
   placeholder?: string;
+  labelInValue?: boolean;
 }
 
 const SelectFilter = <TData,>({
@@ -99,6 +111,7 @@ const SelectFilter = <TData,>({
   options,
   fetchOptions,
   placeholder,
+  labelInValue,
 }: SelectFilterProps<TData>) => {
   const searchable = useStaticOptions(options ?? [], { search: !fetchOptions });
   const asyncSearchable = useAsyncOptions({
@@ -117,6 +130,22 @@ const SelectFilter = <TData,>({
 
   const props = fetchOptions ? asyncSearchable : searchable;
 
+  if (labelInValue) {
+    return (
+      <Select<string>
+        {...props}
+        clearable
+        labelInValue
+        size="sm"
+        placeholder={placeholder ?? "Все"}
+        value={
+          (column.getFilterValue() as LabeledValue | null | undefined) ?? null
+        }
+        onChange={(v: LabeledValue | null) => column.setFilterValue(v)}
+      />
+    );
+  }
+
   return (
     <Select
       {...props}
@@ -133,12 +162,14 @@ interface MultiSelectFilterProps<TData> {
   column: Column<TData, unknown>;
   options?: ColumnFilterOption[];
   fetchOptions?: (query: string) => Promise<ColumnFilterOption[]>;
+  labelInValue?: boolean;
 }
 
 const MultiSelectFilter = <TData,>({
   column,
   options,
   fetchOptions,
+  labelInValue,
 }: MultiSelectFilterProps<TData>) => {
   const searchable = useStaticOptions(options ?? [], { search: !fetchOptions });
   const asyncSearchable = useAsyncOptions({
@@ -157,10 +188,26 @@ const MultiSelectFilter = <TData,>({
 
   const props = fetchOptions ? asyncSearchable : searchable;
 
+  if (labelInValue) {
+    return (
+      <Select
+        {...props}
+        multi
+        clearable
+        labelInValue
+        size="sm"
+        placeholder="Все"
+        value={(column.getFilterValue() as LabeledValue[] | undefined) ?? []}
+        onChange={(v: LabeledValue[]) => column.setFilterValue(v)}
+      />
+    );
+  }
+
   return (
     <Select
       {...props}
       multi
+      clearable
       size="sm"
       placeholder="Все"
       value={(column.getFilterValue() as string[] | undefined) ?? []}

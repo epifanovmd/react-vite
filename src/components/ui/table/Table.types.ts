@@ -6,7 +6,8 @@ import type {
 } from "@tanstack/react-table";
 import type * as React from "react";
 
-import type { TableFeatureResult } from "./hooks/features";
+import type { LabeledValue } from "../select";
+import type { TableFeatureResult } from "./hooks";
 
 export interface ColumnFilterOption<T = string> {
   value: T;
@@ -14,18 +15,24 @@ export interface ColumnFilterOption<T = string> {
 }
 
 export type ColumnFilterConfig<T = string> =
-  | { type: "text"; placeholder?: string; faceted?: boolean }
+  | { type: "text"; placeholder?: string; faceted?: boolean; queryKey?: string }
   | {
       type: "select";
       options?: ColumnFilterOption<T>[];
       fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
       placeholder?: string;
+      queryKey?: string;
+      labelInValue?: boolean;
     }
   | {
       type: "multiselect";
       options?: ColumnFilterOption<T>[];
       fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
+      queryKey?: string;
+      labelInValue?: boolean;
     };
+
+export type { LabeledValue };
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
