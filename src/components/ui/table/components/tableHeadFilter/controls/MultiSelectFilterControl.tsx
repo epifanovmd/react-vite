@@ -1,6 +1,11 @@
+import { useMemo } from "react";
+
 import type { LabeledValue } from "../../../../select";
 import { Select } from "../../../../select";
-import { useAsyncOptions, useStaticOptions } from "../../../../select/strategies";
+import {
+  useAsyncOptions,
+  useStaticOptions,
+} from "../../../../select/strategies";
 import type { ColumnFilterOption } from "./ColumnFilterOption";
 import type { FilterControlProps } from "./FilterControlProps";
 
@@ -10,13 +15,31 @@ export interface MultiSelectFilterConfig<T = string> {
   fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
   queryKey?: string;
   labelInValue?: boolean;
+  faceted?: boolean;
 }
 
 export const MultiSelectFilterControl = <TData,>({
   config,
   column,
 }: FilterControlProps<MultiSelectFilterConfig, TData>) => {
-  const { options, fetchOptions, labelInValue } = config;
+  const { fetchOptions, labelInValue, faceted } = config;
+
+  const uniqueValues = faceted ? column.getFacetedUniqueValues() : undefined;
+  const options = useMemo(() => {
+    if (!faceted || !config.options) return config.options;
+
+    return config.options.map(option => ({
+      ...option,
+      label: (
+        <span className={"flex gap-1"}>
+          {option.label}
+          <span className="text-muted-foreground">
+            ({uniqueValues?.get(option.value) ?? 0})
+          </span>
+        </span>
+      ),
+    }));
+  }, [config.options, faceted, uniqueValues]);
 
   const searchable = useStaticOptions(options ?? [], { search: !fetchOptions });
   const asyncSearchable = useAsyncOptions({

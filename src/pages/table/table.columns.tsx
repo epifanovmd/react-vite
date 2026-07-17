@@ -47,7 +47,11 @@ export const formatCurrency = (cents: number, currency = "USD"): string => {
 export const formatDate = (iso: string): string =>
   DATE_FORMATTER.format(new Date(iso));
 
-const dateRangeFilterFn: FilterFn<Order> = (row, columnId, filterValue: DateRange) => {
+const dateRangeFilterFn: FilterFn<Order> = (
+  row,
+  columnId,
+  filterValue: DateRange,
+) => {
   if (!filterValue?.from && !filterValue?.to) return true;
 
   const date = new Date(row.getValue<string>(columnId));
@@ -65,8 +69,7 @@ const dateRangeFilterFn: FilterFn<Order> = (row, columnId, filterValue: DateRang
   return true;
 };
 
-dateRangeFilterFn.autoRemove = (value: DateRange) =>
-  !value?.from && !value?.to;
+dateRangeFilterFn.autoRemove = (value: DateRange) => !value?.from && !value?.to;
 
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
   const meta = STATUS_META[status];
@@ -115,6 +118,7 @@ export const clientOrderFilterFields: TableFiltersConfig<
     queryKey: "status",
     type: "multiselect",
     options: STATUS_FILTER_OPTIONS,
+    faceted: true,
   },
   createdAt: {
     queryKey: "createdAt",
