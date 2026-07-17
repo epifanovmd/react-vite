@@ -15,8 +15,8 @@ import { RefreshCw, Search } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type ChangeEvent, type FC, useCallback } from "react";
 
+import { formatCurrency, formatDate } from "../table.columns";
 import type { Order } from "../table.types";
-import { formatCurrency, formatDate } from "../tableColumns";
 import { useServerDemo } from "./useServerDemo";
 
 export interface ServerTabProps {

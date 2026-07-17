@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { type ChangeEvent, type FC, useCallback } from "react";
 
+import type { Order } from "../table.types";
 import { useClientDemo } from "./useClientDemo";
 
 export interface ClientTabProps {
@@ -20,6 +21,16 @@ export const ClientTab: FC<ClientTabProps> = observer(
     const handleSearchChange = useCallback(
       (e: ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value),
       [onSearchChange],
+    );
+
+    const rowClassName = useCallback(
+      (order: Order) =>
+        order.status === "failed"
+          ? "bg-destructive/5 [&_td]:border-destructive/20"
+          : order.status === "paid"
+            ? "bg-success/5"
+            : "",
+      [],
     );
 
     return (
@@ -47,7 +58,7 @@ export const ClientTab: FC<ClientTabProps> = observer(
           variant={variant}
           stickyHeader={sticky}
           features={vm.features}
-          rowClassName={vm.rowClassName}
+          rowClassName={rowClassName}
           getRowId={vm.getRowId}
           showColumnVisibility
         />

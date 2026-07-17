@@ -14,13 +14,9 @@ import type {
 } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { createOrderColumns, orderFilterFields } from "../table.columns";
 import { fetchOrders } from "../table.mock";
 import type { Order, OrderQuery, OrderSortField } from "../table.types";
-import {
-  createOrderColumns,
-  orderFilterFields,
-  STATUS_FILTER_OPTIONS,
-} from "../tableColumns";
 
 const DEFAULT_PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 300;
@@ -61,8 +57,6 @@ export const useServerDemo = () => {
   const [columnFilters, setColumnFilters] = useState<Partial<OrderQuery>>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
-
-  console.log("columnFilters", columnFilters);
 
   useEffect(() => {
     const timer = setTimeout(
@@ -132,7 +126,10 @@ export const useServerDemo = () => {
   const closeDetails = useCallback(() => setActiveOrder(null), []);
   const getRowId = useCallback((order: Order) => order.id, []);
 
-  const baseColumns = useMemo(() => createOrderColumns(), []);
+  const baseColumns = useMemo(
+    () => createOrderColumns({ enableSorting: false }),
+    [],
+  );
 
   const sortingFeature = useSortingFeature<Order>({
     manualSorting: true,
@@ -142,24 +139,9 @@ export const useServerDemo = () => {
   const { columns, feature: columnFiltersFeature } = useColumnFiltersFeature({
     manualFiltering: true,
     columns: baseColumns,
-    // filters: orderFilterFields,
-    filters: {
-      customer: {
-        queryKey: "customer",
-        type: "text",
-        placeholder: "Поиск по клиенту…",
-      },
-      status: {
-        queryKey: "statuses",
-        type: "multiselect",
-        options: STATUS_FILTER_OPTIONS,
-      },
-    },
+    filters: orderFilterFields,
     columnFilters,
     onColumnFiltersChange: setColumnFilters,
-    defaultColumnFilters: {
-      // statuses: ["pending"],
-    },
   });
   const globalFilterFeature = useGlobalFilterFeature<Order>({
     manualFiltering: true,

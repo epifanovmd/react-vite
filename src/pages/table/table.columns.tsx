@@ -8,11 +8,6 @@ import type { ReactNode } from "react";
 
 import type { Order, OrderQuery, OrderStatus } from "./table.types";
 
-export interface ClientOrderFilters {
-  customer?: string;
-  status?: OrderStatus[];
-}
-
 const orderHelper = createColumnHelper<Order>();
 
 const STATUS_META: Record<
@@ -25,34 +20,9 @@ const STATUS_META: Record<
   refunded: { label: "Возврат", variant: "info" },
 };
 
-export const STATUS_FILTER_OPTIONS: ColumnFilterOption<OrderStatus>[] = (
+const STATUS_FILTER_OPTIONS: ColumnFilterOption<OrderStatus>[] = (
   Object.keys(STATUS_META) as OrderStatus[]
 ).map(status => ({ value: status, label: STATUS_META[status].label }));
-
-export const orderFilterFields: TableFiltersConfig<Order, OrderQuery> = {
-  customer: {
-    queryKey: "customer",
-    type: "text",
-    placeholder: "Поиск по клиенту…",
-  },
-  status: {
-    queryKey: "statuses",
-    type: "multiselect",
-    options: STATUS_FILTER_OPTIONS,
-  },
-};
-
-export const clientOrderFilterFields: TableFiltersConfig<
-  Order,
-  ClientOrderFilters
-> = {
-  customer: { queryKey: "customer", type: "text", placeholder: "Поиск…" },
-  status: {
-    queryKey: "status",
-    type: "multiselect",
-    options: STATUS_FILTER_OPTIONS,
-  },
-};
 
 const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -89,10 +59,48 @@ const RightAlign = ({ children }: { children: ReactNode }) => (
   <div className="text-right tabular-nums">{children}</div>
 );
 
-export const createOrderColumns = () => [
+export interface ClientOrderFilters {
+  customer?: string;
+  status?: OrderStatus[];
+}
+
+export const orderFilterFields: TableFiltersConfig<Order, OrderQuery> = {
+  customer: {
+    queryKey: "customer",
+    type: "text",
+    placeholder: "Поиск по клиенту…",
+  },
+  status: {
+    queryKey: "statuses",
+    type: "multiselect",
+    options: STATUS_FILTER_OPTIONS,
+  },
+};
+
+export const clientOrderFilterFields: TableFiltersConfig<
+  Order,
+  ClientOrderFilters
+> = {
+  customer: { queryKey: "customer", type: "text", placeholder: "Поиск…" },
+  status: {
+    queryKey: "status",
+    type: "multiselect",
+    options: STATUS_FILTER_OPTIONS,
+  },
+};
+
+export interface CreateOrderColumnsOptions {
+  /** Whether `id`/`status` can be sorted — false when only a whitelisted
+   * set of fields is sortable server-side. */
+  enableSorting?: boolean;
+}
+
+export const createOrderColumns = ({
+  enableSorting = true,
+}: CreateOrderColumnsOptions = {}) => [
   orderHelper.accessor("id", {
     header: "ID",
-    enableSorting: false,
+    enableSorting,
     cell: ({ getValue }) => (
       <span className="font-mono text-xs text-muted-foreground">
         {getValue()}
@@ -101,7 +109,8 @@ export const createOrderColumns = () => [
   }),
   orderHelper.accessor("customer", {
     header: "Клиент",
-    filterFn: "arrIncludes",
+    size: 200,
+    filterFn: "includesString",
     sortingFn: "auto",
     cell: ({ row }) => (
       <div className="flex flex-col">
@@ -115,7 +124,7 @@ export const createOrderColumns = () => [
   orderHelper.accessor("status", {
     header: "Статус",
     size: 130,
-    enableSorting: false,
+    enableSorting,
     filterFn: "arrIncludesSome",
     cell: ({ getValue }) => <StatusBadge status={getValue()} />,
   }),
@@ -141,63 +150,6 @@ export const createOrderColumns = () => [
 
       return <RightAlign>Σ {formatCurrency(total)}</RightAlign>;
     },
-  }),
-  orderHelper.accessor("createdAt", {
-    header: "Создан",
-    size: 130,
-    cell: ({ getValue }) => (
-      <span className="tabular-nums text-muted-foreground">
-        {formatDate(getValue())}
-      </span>
-    ),
-  }),
-];
-
-export const createClientOrderColumns = () => [
-  orderHelper.accessor("id", {
-    header: "ID",
-    enableSorting: true,
-    cell: ({ getValue }) => (
-      <span className="font-mono text-xs text-muted-foreground">
-        {getValue()}
-      </span>
-    ),
-  }),
-  orderHelper.accessor("customer", {
-    header: "Клиент",
-    filterFn: "includesString",
-    size: 200,
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.original.customer}</span>
-        <span className="text-xs text-muted-foreground">
-          {row.original.email}
-        </span>
-      </div>
-    ),
-  }),
-  orderHelper.accessor("status", {
-    header: "Статус",
-    size: 130,
-    enableSorting: true,
-    filterFn: "arrIncludesSome",
-    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
-  }),
-  orderHelper.accessor("items", {
-    header: "Позиций",
-    size: 110,
-    cell: ({ getValue }) => <RightAlign>{getValue()}</RightAlign>,
-  }),
-  orderHelper.accessor("amount", {
-    header: "Сумма",
-    size: 130,
-    cell: ({ row }) => (
-      <RightAlign>
-        <span className="font-medium">
-          {formatCurrency(row.original.amount, row.original.currency)}
-        </span>
-      </RightAlign>
-    ),
   }),
   orderHelper.accessor("createdAt", {
     header: "Создан",

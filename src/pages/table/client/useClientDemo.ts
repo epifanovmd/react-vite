@@ -7,13 +7,13 @@ import {
 } from "@components/ui";
 import { useCallback, useMemo, useState } from "react";
 
-import { getClientOrders } from "../table.mock";
-import type { Order } from "../table.types";
 import {
   clientOrderFilterFields,
   type ClientOrderFilters,
-  createClientOrderColumns,
-} from "../tableColumns";
+  createOrderColumns,
+} from "../table.columns";
+import { getClientOrders } from "../table.mock";
+import type { Order } from "../table.types";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -28,18 +28,9 @@ export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
   const onSearchChange = useCallback((value: string) => setSearch(value), []);
 
   const orders = useMemo(() => getClientOrders(search), [search]);
-  const baseColumns = useMemo(() => createClientOrderColumns(), []);
+  const baseColumns = useMemo(() => createOrderColumns(), []);
 
   const getRowId = useCallback((order: Order) => order.id, []);
-  const rowClassName = useCallback(
-    (order: Order) =>
-      order.status === "failed"
-        ? "bg-destructive/5 [&_td]:border-destructive/20"
-        : order.status === "paid"
-          ? "bg-success/5"
-          : "",
-    [],
-  );
 
   const sorting = useSortingFeature<Order>({
     defaultSorting: [{ id: "amount", desc: true }],
@@ -69,7 +60,6 @@ export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
     search,
     onSearchChange,
     getRowId,
-    rowClassName,
     features,
   };
 };
