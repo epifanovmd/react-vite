@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Group, Ungroup } from "lucide-react";
 
 import { cn } from "../../foundation";
 import { getPinningStyle } from "../utils";
-import { TableHeadFilter } from "./TableHeadFilter";
+import { TableHeadFilter } from "./tableHeadFilter";
 import { TableHead } from "./TablePrimitive";
 
 const SortIcon = ({ direction }: { direction: "asc" | "desc" | false }) => {

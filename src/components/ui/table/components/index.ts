@@ -6,7 +6,7 @@ export { TableDataRow } from "./TableDataRow";
 export { TableFooterSection } from "./TableFooterSection";
 export { TableHeadCell } from "./TableHeadCell";
 export { TableHeaderSection } from "./TableHeaderSection";
-export { TableHeadFilter } from "./TableHeadFilter";
+export { TableHeadFilter } from "./tableHeadFilter";
 export {
   TableBody,
   TableCell,

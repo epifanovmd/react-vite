@@ -7,32 +7,13 @@ import type {
 import type * as React from "react";
 
 import type { LabeledValue } from "../select";
+import type {
+  ColumnFilterConfig,
+  ColumnFilterOption,
+} from "./components/tableHeadFilter";
 import type { TableFeatureResult } from "./hooks";
 
-export interface ColumnFilterOption<T = string> {
-  value: T;
-  label: React.ReactNode;
-}
-
-export type ColumnFilterConfig<T = string> =
-  | { type: "text"; placeholder?: string; faceted?: boolean; queryKey?: string }
-  | {
-      type: "select";
-      options?: ColumnFilterOption<T>[];
-      fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
-      placeholder?: string;
-      queryKey?: string;
-      labelInValue?: boolean;
-    }
-  | {
-      type: "multiselect";
-      options?: ColumnFilterOption<T>[];
-      fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
-      queryKey?: string;
-      labelInValue?: boolean;
-    };
-
-export type { LabeledValue };
+export type { ColumnFilterConfig, ColumnFilterOption, LabeledValue };
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
