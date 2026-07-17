@@ -43,9 +43,13 @@ const toServerSort = (
 
 const normalizeFilters = (
   filters: Partial<OrderQuery>,
-): Pick<OrderQuery, "customer" | "statuses"> => ({
+): Pick<OrderQuery, "customer" | "statuses" | "createdAt"> => ({
   customer: filters.customer?.trim() || undefined,
   statuses: filters.statuses?.length ? filters.statuses : undefined,
+  createdAt:
+    filters.createdAt?.from || filters.createdAt?.to
+      ? filters.createdAt
+      : undefined,
 });
 
 export type ServerDemoViewModel = ReturnType<typeof useServerDemo>;

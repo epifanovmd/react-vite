@@ -1,3 +1,5 @@
+import type { DateRange } from "@components/ui";
+
 export type OrderStatus = "paid" | "pending" | "failed" | "refunded";
 
 export interface Order {
@@ -21,4 +23,5 @@ export interface OrderQuery {
   sortDir?: OrderSortDir;
   customer?: string;
   statuses?: OrderStatus[];
+  createdAt?: DateRange;
 }

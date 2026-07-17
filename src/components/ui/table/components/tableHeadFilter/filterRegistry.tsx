@@ -1,6 +1,10 @@
 import type { ComponentType } from "react";
 
 import type { ColumnFilterOption } from "./controls/ColumnFilterOption";
+import type { DateFilterConfig } from "./controls/DateFilterControl";
+import { DateFilterControl } from "./controls/DateFilterControl";
+import type { DateRangeFilterConfig } from "./controls/DateRangeFilterControl";
+import { DateRangeFilterControl } from "./controls/DateRangeFilterControl";
 import type { FilterControlProps } from "./controls/FilterControlProps";
 import type { MultiSelectFilterConfig } from "./controls/MultiSelectFilterControl";
 import { MultiSelectFilterControl } from "./controls/MultiSelectFilterControl";
@@ -14,7 +18,9 @@ export type { ColumnFilterOption };
 export type ColumnFilterConfig<T = string> =
   | TextFilterConfig
   | SelectFilterConfig<T>
-  | MultiSelectFilterConfig<T>;
+  | MultiSelectFilterConfig<T>
+  | DateFilterConfig
+  | DateRangeFilterConfig;
 
 /**
  * To add a new filter type: create `controls/<Name>FilterControl.tsx`
@@ -28,4 +34,6 @@ export const FILTER_CONTROLS: Record<
   text: TextFilterControl,
   select: SelectFilterControl,
   multiselect: MultiSelectFilterControl,
+  date: DateFilterControl,
+  daterange: DateRangeFilterControl,
 };

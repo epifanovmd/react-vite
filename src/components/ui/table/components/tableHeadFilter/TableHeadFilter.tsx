@@ -47,7 +47,7 @@ export const TableHeadFilter = <TData,>({
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="start" className="w-56 p-3">
+      <PopoverContent align="start" className="w-auto min-w-56 max-w-xs p-3">
         <Control config={config} column={column} />
       </PopoverContent>
     </Popover>

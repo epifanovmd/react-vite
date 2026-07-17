@@ -6,7 +6,7 @@ import { Input } from "../../../../input";
 import { FacetedFilterControl } from "./FacetedFilterControl";
 import type { FilterControlProps } from "./FilterControlProps";
 
-const TEXT_DEBOUNCE_MS = 400;
+const TEXT_DEBOUNCE_MS = 300;
 
 export interface TextFilterConfig {
   type: "text";

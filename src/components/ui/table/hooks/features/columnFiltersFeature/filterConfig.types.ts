@@ -1,3 +1,4 @@
+import type { DateRange } from "../../../../date-picker";
 import type { ColumnFilterConfig, LabeledValue } from "../../../Table.types";
 
 type UnwrapArray<T> = T extends (infer U)[] ? U : T;
@@ -10,6 +11,14 @@ type FilterFieldValue<TQuery, K extends keyof TQuery> = UnwrapLabeledValue<
 
 type IsArrayField<TQuery, K extends keyof TQuery> =
   NonNullable<TQuery[K]> extends readonly unknown[] ? true : false;
+
+type IsDateField<TQuery, K extends keyof TQuery> =
+  NonNullable<TQuery[K]> extends Date ? true : false;
+
+// Checked only once `IsDateField` is ruled out: `DateRange`'s fields are all
+// optional, so a plain `Date` would otherwise structurally match it too.
+type IsDateRangeField<TQuery, K extends keyof TQuery> =
+  NonNullable<TQuery[K]> extends DateRange ? true : false;
 
 type IsLabeledField<TQuery, K extends keyof TQuery> =
   UnwrapArray<NonNullable<TQuery[K]>> extends LabeledValue<any> ? true : false;
@@ -34,6 +43,10 @@ type MultiSelectConfig<T> = Omit<
   "labelInValue"
 >;
 
+type DateConfig = Extract<ColumnFilterConfig, { type: "date" }>;
+
+type DateRangeConfig = Extract<ColumnFilterConfig, { type: "daterange" }>;
+
 type ScalarFilterConfig<T, Labeled extends boolean> = Labeled extends true
   ? SelectConfig<T> & { labelInValue: true }
   : TextConfig | (SelectConfig<T> & { labelInValue?: false });
@@ -44,18 +57,27 @@ type ArrayFilterConfig<T, Labeled extends boolean> = MultiSelectConfig<T> &
 type AnyFilterConfig<T> =
   | TextConfig
   | (SelectConfig<T> & { labelInValue?: boolean })
-  | (MultiSelectConfig<T> & { labelInValue?: boolean });
+  | (MultiSelectConfig<T> & { labelInValue?: boolean })
+  | DateConfig
+  | DateRangeConfig;
 
 type QueryFilterConfig<TQuery, K extends keyof TQuery & string> = {
   queryKey: K;
 } & (IsUnknownField<TQuery, K> extends true
   ? AnyFilterConfig<FilterFieldValue<TQuery, K>>
-  : IsArrayField<TQuery, K> extends true
-    ? ArrayFilterConfig<FilterFieldValue<TQuery, K>, IsLabeledField<TQuery, K>>
-    : ScalarFilterConfig<
-        FilterFieldValue<TQuery, K>,
-        IsLabeledField<TQuery, K>
-      >);
+  : IsDateField<TQuery, K> extends true
+    ? DateConfig
+    : IsDateRangeField<TQuery, K> extends true
+      ? DateRangeConfig
+      : IsArrayField<TQuery, K> extends true
+        ? ArrayFilterConfig<
+            FilterFieldValue<TQuery, K>,
+            IsLabeledField<TQuery, K>
+          >
+        : ScalarFilterConfig<
+            FilterFieldValue<TQuery, K>,
+            IsLabeledField<TQuery, K>
+          >);
 
 export type TableFilterFieldConfig<TQuery> = {
   [K in keyof TQuery & string]: QueryFilterConfig<TQuery, K>;

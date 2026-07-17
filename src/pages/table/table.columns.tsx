@@ -2,8 +2,10 @@ import {
   Badge,
   type ColumnFilterOption,
   createColumnHelper,
+  type DateRange,
   type TableFiltersConfig,
 } from "@components/ui";
+import type { FilterFn } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 
 import type { Order, OrderQuery, OrderStatus } from "./table.types";
@@ -45,6 +47,27 @@ export const formatCurrency = (cents: number, currency = "USD"): string => {
 export const formatDate = (iso: string): string =>
   DATE_FORMATTER.format(new Date(iso));
 
+const dateRangeFilterFn: FilterFn<Order> = (row, columnId, filterValue: DateRange) => {
+  if (!filterValue?.from && !filterValue?.to) return true;
+
+  const date = new Date(row.getValue<string>(columnId));
+
+  if (filterValue.from && date < filterValue.from) return false;
+
+  if (filterValue.to) {
+    const endOfDay = new Date(filterValue.to);
+
+    endOfDay.setHours(23, 59, 59, 999);
+
+    if (date > endOfDay) return false;
+  }
+
+  return true;
+};
+
+dateRangeFilterFn.autoRemove = (value: DateRange) =>
+  !value?.from && !value?.to;
+
 const StatusBadge = ({ status }: { status: OrderStatus }) => {
   const meta = STATUS_META[status];
 
@@ -62,6 +85,7 @@ const RightAlign = ({ children }: { children: ReactNode }) => (
 export interface ClientOrderFilters {
   customer?: string;
   status?: OrderStatus[];
+  createdAt?: DateRange;
 }
 
 export const orderFilterFields: TableFiltersConfig<Order, OrderQuery> = {
@@ -75,6 +99,11 @@ export const orderFilterFields: TableFiltersConfig<Order, OrderQuery> = {
     type: "multiselect",
     options: STATUS_FILTER_OPTIONS,
   },
+  createdAt: {
+    queryKey: "createdAt",
+    type: "daterange",
+    placeholder: "Период создания",
+  },
 };
 
 export const clientOrderFilterFields: TableFiltersConfig<
@@ -86,6 +115,11 @@ export const clientOrderFilterFields: TableFiltersConfig<
     queryKey: "status",
     type: "multiselect",
     options: STATUS_FILTER_OPTIONS,
+  },
+  createdAt: {
+    queryKey: "createdAt",
+    type: "daterange",
+    placeholder: "Период создания",
   },
 };
 
@@ -154,6 +188,7 @@ export const createOrderColumns = ({
   orderHelper.accessor("createdAt", {
     header: "Создан",
     size: 130,
+    filterFn: dateRangeFilterFn,
     cell: ({ getValue }) => (
       <span className="tabular-nums text-muted-foreground">
         {formatDate(getValue())}

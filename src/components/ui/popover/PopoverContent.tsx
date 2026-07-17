@@ -14,7 +14,15 @@ export const PopoverContent = React.forwardRef<
   PopoverContentProps
 >(
   (
-    { className, align = "center", sideOffset = 6, variant, size, ...props },
+    {
+      className,
+      align = "center",
+      sideOffset = 6,
+      collisionPadding = 8,
+      variant,
+      size,
+      ...props
+    },
     ref,
   ) => (
     <PopoverPrimitive.Portal>
@@ -22,6 +30,7 @@ export const PopoverContent = React.forwardRef<
         ref={ref}
         align={align}
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         className={cn(popoverContentVariants({ variant, size }), className)}
         {...props}
       />

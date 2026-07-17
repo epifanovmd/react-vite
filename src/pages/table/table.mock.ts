@@ -112,7 +112,8 @@ export const fetchOrders: PagedFetchFn<Order, OrderQuery> = async (
   { offset, limit },
   args,
 ): Promise<IApiResponse<IPagedResponse<Order>>> => {
-  const { search, sortBy, sortDir, customer, statuses } = args || {};
+  const { search, sortBy, sortDir, customer, statuses, createdAt } =
+    args || {};
 
   await delay(NETWORK_DELAY_MS);
 
@@ -125,6 +126,20 @@ export const fetchOrders: PagedFetchFn<Order, OrderQuery> = async (
       return false;
     if (statuses && statuses.length > 0 && !statuses.includes(order.status))
       return false;
+
+    if (createdAt?.from || createdAt?.to) {
+      const createdDate = new Date(order.createdAt);
+
+      if (createdAt.from && createdDate < createdAt.from) return false;
+
+      if (createdAt.to) {
+        const endOfDay = new Date(createdAt.to);
+
+        endOfDay.setHours(23, 59, 59, 999);
+
+        if (createdDate > endOfDay) return false;
+      }
+    }
 
     return true;
   });
