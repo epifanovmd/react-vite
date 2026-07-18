@@ -257,8 +257,6 @@ export type {
   TabsTriggerProps,
 } from "./tabs";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
-export type { TagProps } from "./tag";
-export { Tag, tagVariants } from "./tag";
 export type { TextareaProps } from "./textarea";
 export { Textarea, textareaVariants } from "./textarea";
 export { ThemeToggle } from "./theme-toggle";

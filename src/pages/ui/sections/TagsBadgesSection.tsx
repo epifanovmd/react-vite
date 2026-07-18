@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
   Chips,
-  Tag,
 } from "@components/ui";
 import { type FC, type ReactNode } from "react";
 
@@ -19,33 +18,10 @@ export const TagsBadgesSection: FC = () => (
     <CardHeader>
       <CardTitle className="text-base">Tags & Badges</CardTitle>
       <CardDescription className="text-xs">
-        Tag, Badge и Chips — общая палитра вариантов
+        Badge и Chips — общая палитра вариантов
       </CardDescription>
     </CardHeader>
     <CardContent className="flex flex-col gap-4">
-      <div>
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Tag — метка с вариантами
-        </p>
-        <Row>
-          <Tag>Default</Tag>
-          <Tag variant="primary">Primary</Tag>
-          <Tag variant="secondary">Secondary</Tag>
-          <Tag variant="success">Success</Tag>
-          <Tag variant="warning">Warning</Tag>
-          <Tag variant="destructive">Destructive</Tag>
-          <Tag variant="danger">Danger</Tag>
-          <Tag variant="info">Info</Tag>
-          <Tag variant="gray">Gray</Tag>
-          <Tag variant="outline">Outline</Tag>
-          <Tag variant="muted">Muted</Tag>
-          <Tag variant="primary" onRemove={() => {}}>Removable</Tag>
-          <Tag variant="success" leftIcon={<span>✓</span>}>Icon</Tag>
-        </Row>
-      </div>
-
-      <hr className="border-border" />
-
       <div>
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           Badge — счётчик / индикатор (без remove)

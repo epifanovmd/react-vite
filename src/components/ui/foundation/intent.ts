@@ -2,7 +2,7 @@
  * Semantic intent → token-class maps. Single source of truth for how each
  * meaning looks, so adding a new intent or restyling one touches one place.
  *
- * SOLID — filled background (Button, Tag, Chips).
+ * SOLID — filled background (Button, Chips).
  * SOFT  — tinted background (Badge, StatCard).
  *
  * Components compose these and append their own extras (hover, shadow, border).
