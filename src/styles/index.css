@@ -108,6 +108,19 @@
         scrollbar-color: var(--muted) transparent;
     }
 
+    /**
+    * Without this, any `h-full` chain breaks for routes that aren't nested
+    * under a `h-dvh` layout (e.g. AppLayout) — percentage heights need every
+    * ancestor up to here to have a definite height, otherwise they resolve
+    * to `auto` and the whole "fill viewport, scroll inside" chain collapses
+    * back to page-level scrolling.
+    */
+    html,
+    body,
+    #root {
+        height: 100dvh;
+    }
+
     body {
         @apply bg-background text-foreground;
         font-feature-settings: "rlig" 1, "calt" 1;

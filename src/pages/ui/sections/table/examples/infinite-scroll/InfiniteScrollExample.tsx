@@ -13,13 +13,7 @@ export const InfiniteScrollExample: FC = () => {
       title="Бесконечная прокрутка"
       description={`usePaginationFeature с onLoadMore — подгружено ${loadedCount} из ${total} строк.`}
     >
-      <Table
-        data={data}
-        columns={columns}
-        size="sm"
-        features={features}
-        containerClassName="max-h-72"
-      />
+      <Table data={data} columns={columns} size="sm" features={features} />
     </ExampleCard>
   );
 };

@@ -17,8 +17,11 @@ export const UIPage: FC = () => (
       />
     }
   >
-    <Tabs defaultValue={UI_SECTIONS[0].value}>
-      <TabsList variant="underline">
+    <Tabs
+      defaultValue={UI_SECTIONS[0].value}
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <TabsList variant="underline" className="shrink-0">
         {UI_SECTIONS.map(section => (
           <TabsTrigger
             key={section.value}
@@ -31,7 +34,11 @@ export const UIPage: FC = () => (
       </TabsList>
 
       {UI_SECTIONS.map(({ value, Component }) => (
-        <TabsContent key={value} value={value} className="pt-4">
+        <TabsContent
+          key={value}
+          value={value}
+          className="flex min-h-0 flex-1 flex-col pt-4"
+        >
           <Component />
         </TabsContent>
       ))}
