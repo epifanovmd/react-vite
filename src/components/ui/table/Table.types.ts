@@ -31,6 +31,7 @@ export interface TableProps<TData> {
   variant?: "default" | "striped" | "bordered";
   size?: "sm" | "md" | "lg";
   stickyHeader?: boolean;
+  stickyFooter?: boolean;
   className?: string;
   containerClassName?: string;
 

@@ -21,6 +21,7 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
     variant = "default",
     size = "md",
     stickyHeader,
+    stickyFooter,
     className,
     containerClassName,
     tableClassName,
@@ -110,7 +111,11 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
             infiniteScrollRootMargin={infiniteScrollRootMargin}
           />
           {hasFooter && (
-            <TableFooterSection table={table} className={footerClassName} />
+            <TableFooterSection
+              table={table}
+              stickyFooter={stickyFooter}
+              className={footerClassName}
+            />
           )}
         </TableRoot>
       </div>

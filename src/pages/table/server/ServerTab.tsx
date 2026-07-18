@@ -42,7 +42,7 @@ export const ServerTab: FC<ServerTabProps> = observer(
       >
         <div className="flex flex-wrap items-center gap-2">
           <Input
-            className="max-w-xs"
+            className="max-w-md"
             placeholder="Поиск по клиенту, email, id, статусу…"
             value={vm.searchInput}
             onChange={handleSearchChange}
@@ -86,6 +86,7 @@ export const ServerTab: FC<ServerTabProps> = observer(
           size={density}
           variant={variant}
           stickyHeader={sticky}
+          stickyFooter={sticky}
           features={vm.features}
           onRowClick={vm.onRowClick}
           getRowId={vm.getRowId}

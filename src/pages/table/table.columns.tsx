@@ -6,7 +6,6 @@ import {
   type TableFiltersConfig,
 } from "@components/ui";
 import type { FilterFn } from "@tanstack/react-table";
-import type { ReactNode } from "react";
 
 import type { Order, OrderQuery, OrderStatus } from "./table.types";
 
@@ -70,20 +69,6 @@ const dateRangeFilterFn: FilterFn<Order> = (
 };
 
 dateRangeFilterFn.autoRemove = (value: DateRange) => !value?.from && !value?.to;
-
-const StatusBadge = ({ status }: { status: OrderStatus }) => {
-  const meta = STATUS_META[status];
-
-  return (
-    <Badge variant={meta.variant} dot>
-      {meta.label}
-    </Badge>
-  );
-};
-
-const RightAlign = ({ children }: { children: ReactNode }) => (
-  <div className="text-right tabular-nums">{children}</div>
-);
 
 export interface ClientOrderFilters {
   customer?: string;
@@ -164,29 +149,41 @@ export const createOrderColumns = ({
     size: 130,
     enableSorting,
     filterFn: "arrIncludesSome",
-    cell: ({ getValue }) => <StatusBadge status={getValue()} />,
+    cell: ({ getValue }) => {
+      const meta = STATUS_META[getValue()];
+
+      return (
+        <Badge variant={meta.variant} dot>
+          {meta.label}
+        </Badge>
+      );
+    },
   }),
   orderHelper.accessor("items", {
-    header: () => <RightAlign>Позиций</RightAlign>,
+    header: () => <div className="text-right tabular-nums">Позиций</div>,
     size: 110,
-    cell: ({ getValue }) => <RightAlign>{getValue()}</RightAlign>,
+    cell: ({ getValue }) => (
+      <div className="text-right tabular-nums">{getValue()}</div>
+    ),
   }),
   orderHelper.accessor("amount", {
-    header: () => <RightAlign>Сумма</RightAlign>,
+    header: () => <div className="text-right tabular-nums">Сумма</div>,
     size: 130,
     cell: ({ row }) => (
-      <RightAlign>
+      <div className="text-right tabular-nums">
         <span className="font-medium">
           {formatCurrency(row.original.amount, row.original.currency)}
         </span>
-      </RightAlign>
+      </div>
     ),
     footer: ({ table }) => {
       const total = table
         .getRowModel()
         .rows.reduce((sum, row) => sum + row.original.amount, 0);
 
-      return <RightAlign>Σ {formatCurrency(total)}</RightAlign>;
+      return (
+        <div className="text-right tabular-nums">Σ {formatCurrency(total)}</div>
+      );
     },
   }),
   orderHelper.accessor("createdAt", {

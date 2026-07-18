@@ -15,6 +15,7 @@ import {
 import { getClientOrders } from "../table.mock";
 import type { Order } from "../table.types";
 
+const PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 export interface UseClientDemoOptions {
@@ -45,7 +46,7 @@ export const useClientDemo = ({ resizable }: UseClientDemoOptions) => {
   });
   const sizing = useColumnSizingFeature<Order>({ enabled: resizable });
   const pagination = usePaginationFeature<Order>({
-    pageSize: 10,
+    pageSize: PAGE_SIZE,
     pageSizeOptions: PAGE_SIZE_OPTIONS,
   });
 

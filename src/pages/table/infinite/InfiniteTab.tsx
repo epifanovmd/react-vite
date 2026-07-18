@@ -28,7 +28,7 @@ export const InfiniteTab: FC<InfiniteTabProps> = observer(
       >
         <div className="flex flex-wrap items-center gap-2">
           <Input
-            className="max-w-xs"
+            className="max-w-md"
             placeholder="Поиск по клиенту, email, id, статусу…"
             value={vm.searchInput}
             onChange={handleSearchChange}
@@ -71,6 +71,7 @@ export const InfiniteTab: FC<InfiniteTabProps> = observer(
           size={density}
           variant={variant}
           stickyHeader={sticky}
+          stickyFooter={sticky}
           features={vm.features}
           getRowId={vm.getRowId}
           loading={vm.isLoading}

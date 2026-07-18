@@ -6,15 +6,23 @@ import { TableFooter, TableHead, TableRow } from "./TablePrimitive";
 
 interface TableFooterSectionProps<TData> {
   table: TanstackTable<TData>;
+  stickyFooter?: boolean;
   className?: string;
 }
 
 export const TableFooterSection = <TData,>({
   table,
+  stickyFooter,
   className,
 }: TableFooterSectionProps<TData>) => {
   return (
-    <TableFooter className={cn(className)}>
+    <TableFooter
+      className={cn(
+        stickyFooter &&
+          "sticky bottom-0 z-20 bg-card shadow-[0_-1px_0_0_hsl(var(--border))]",
+        className,
+      )}
+    >
       {table.getFooterGroups().map(footerGroup => (
         <TableRow key={footerGroup.id}>
           {footerGroup.headers.map(header => (
