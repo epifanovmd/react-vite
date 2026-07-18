@@ -1,9 +1,10 @@
 import { type Row } from "@tanstack/react-table";
-import { Fragment, MouseEvent, ReactNode } from "react";
+import { Fragment, MouseEvent, ReactNode, RefObject } from "react";
 
 import { Empty } from "../../empty";
 import { cn } from "../../foundation";
 import { Spinner } from "../../spinner";
+import { useInfiniteScrollSentinel } from "../hooks/useInfiniteScrollSentinel";
 import { TableDataRow } from "./TableDataRow";
 import { TableBody } from "./TablePrimitive";
 
@@ -19,6 +20,11 @@ interface TableBodySectionProps<TData> {
   renderSubComponent?: (props: { row: Row<TData> }) => ReactNode;
   className?: string;
   resizable?: boolean;
+  scrollContainerRef?: RefObject<HTMLElement | null>;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onLoadMore?: () => void;
+  infiniteScrollRootMargin?: string;
 }
 
 export const TableBodySection = <TData,>({
@@ -33,7 +39,20 @@ export const TableBodySection = <TData,>({
   renderSubComponent,
   className,
   resizable,
+  scrollContainerRef,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  onLoadMore = () => {},
+  infiniteScrollRootMargin,
 }: TableBodySectionProps<TData>) => {
+  const sentinelRef = useInfiniteScrollSentinel({
+    containerRef: scrollContainerRef ?? { current: null },
+    hasNextPage,
+    isFetchingNextPage,
+    onLoadMore,
+    rootMargin: infiniteScrollRootMargin,
+  });
+
   if (loading) {
     return (
       <TableBody className={className}>
@@ -89,6 +108,18 @@ export const TableBodySection = <TData,>({
           )}
         </Fragment>
       ))}
+
+      {hasNextPage && (
+        <tr ref={sentinelRef}>
+          <td colSpan={totalColumns} className="h-10 p-0">
+            {isFetchingNextPage && (
+              <div className="flex items-center justify-center py-2">
+                <Spinner size="sm" variant="muted" />
+              </div>
+            )}
+          </td>
+        </tr>
+      )}
     </TableBody>
   );
 };

@@ -119,5 +119,9 @@ export const useTableInstance = <TData,>(
     expandingEnabled,
     renderSubComponent,
     pageSizeOptions: paginationMeta?.pageSizeOptions,
+    hasNextPage: paginationMeta?.hasNextPage ?? false,
+    isFetchingNextPage: paginationMeta?.isFetchingNextPage ?? false,
+    onLoadMore: paginationMeta?.onLoadMore ?? (() => {}),
+    infiniteScrollRootMargin: paginationMeta?.rootMargin,
   };
 };

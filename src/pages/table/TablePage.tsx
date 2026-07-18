@@ -4,11 +4,12 @@ import { observer } from "mobx-react-lite";
 import { type FC, useState } from "react";
 
 import { ClientTab } from "./client";
+import { InfiniteTab } from "./infinite";
 import { ServerTab } from "./server";
 
 type Density = "sm" | "md" | "lg";
 type Variant = NonNullable<TableProps<any>["variant"]>;
-type TabId = "server" | "client";
+type TabId = "server" | "client" | "infinite";
 
 const DENSITY_OPTIONS = [
   { label: "S", value: "sm" },
@@ -25,6 +26,7 @@ const VARIANT_OPTIONS = [
 const TABS = [
   { label: "Server-side", value: "server" },
   { label: "Client-side", value: "client" },
+  { label: "Infinite scroll", value: "infinite" },
 ];
 
 const TablePage: FC = observer(() => {
@@ -104,6 +106,9 @@ const TablePage: FC = observer(() => {
           sticky={sticky}
           resizable={resizeOn}
         />
+      )}
+      {tab === "infinite" && (
+        <InfiniteTab density={density} variant={variant} sticky={sticky} />
       )}
     </div>
   );

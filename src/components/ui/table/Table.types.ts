@@ -73,6 +73,10 @@ export interface TableInstanceResult<TData = unknown> {
   expandingEnabled: boolean;
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
   pageSizeOptions?: number[];
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+  infiniteScrollRootMargin?: string;
 }
 
 export type { TanstackTable };

@@ -210,6 +210,7 @@ export type {
   GlobalFilterFeatureOptions,
   GroupingFeatureOptions,
   PaginationFeatureMeta,
+  PaginationFeatureMode,
   PaginationFeatureOptions,
   RowSelectionFeatureMeta,
   RowSelectionFeatureOptions,

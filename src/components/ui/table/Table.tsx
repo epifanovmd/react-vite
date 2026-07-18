@@ -1,3 +1,5 @@
+import { useRef } from "react";
+
 import { cn } from "../foundation";
 import {
   TableBodySection,
@@ -49,6 +51,10 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
     groupingEnabled,
     renderSubComponent,
     pageSizeOptions,
+    hasNextPage,
+    isFetchingNextPage,
+    onLoadMore,
+    infiniteScrollRootMargin,
   } = useTableInstance<TData>({
     data,
     columns,
@@ -57,6 +63,8 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
     getRowId,
     tableOptions,
   });
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   return (
     <TableContext.Provider value={{ size, variant }}>
@@ -67,6 +75,7 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
       )}
 
       <div
+        ref={containerRef}
         className={cn(
           "flex-1 overflow-auto rounded-lg border",
           containerClassName,
@@ -94,6 +103,11 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
             renderSubComponent={renderSubComponent}
             className={bodyClassName}
             resizable={resizingEnabled}
+            scrollContainerRef={containerRef}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={onLoadMore}
+            infiniteScrollRootMargin={infiniteScrollRootMargin}
           />
           {hasFooter && (
             <TableFooterSection table={table} className={footerClassName} />

@@ -29,6 +29,7 @@ export type { GroupingFeatureOptions } from "./useGroupingFeature";
 export { useGroupingFeature } from "./useGroupingFeature";
 export type {
   PaginationFeatureMeta,
+  PaginationFeatureMode,
   PaginationFeatureOptions,
 } from "./usePaginationFeature";
 export { usePaginationFeature } from "./usePaginationFeature";

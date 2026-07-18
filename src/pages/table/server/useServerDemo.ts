@@ -18,7 +18,7 @@ import { createOrderColumns, orderFilterFields } from "../table.columns";
 import { fetchOrders } from "../table.mock";
 import type { Order, OrderQuery, OrderSortField } from "../table.types";
 
-const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 const SORTABLE_FIELDS: readonly OrderSortField[] = [
