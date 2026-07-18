@@ -29,6 +29,10 @@
     "check-packages-updates": "yarn outdated"
   },
   "dependencies": {
+    "@dnd-kit/abstract": "^0.5.0",
+    "@dnd-kit/dom": "^0.5.0",
+    "@dnd-kit/helpers": "^0.5.0",
+    "@dnd-kit/react": "^0.5.0",
     "@hookform/resolvers": "^5.0.1",
     "@mantine/hooks": "^9.4.1",
     "@mdx-js/rollup": "^3.1.0",

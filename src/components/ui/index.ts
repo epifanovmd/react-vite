@@ -103,6 +103,41 @@ export type { InfoFieldProps } from "./info-field";
 export { InfoField } from "./info-field";
 export type { InputProps } from "./input";
 export { Input, inputVariants } from "./input";
+export type {
+  KanbanCanDropCard,
+  KanbanCanDropContext,
+  KanbanCardData,
+  KanbanCardDropEvent,
+  KanbanCardItemProps,
+  KanbanCardRenderMeta,
+  KanbanColumnData,
+  KanbanColumnHeaderCellProps,
+  KanbanColumnHeaderProps,
+  KanbanColumnProps,
+  KanbanItems,
+  KanbanProps,
+  KanbanWorkflow,
+  UseKanbanBoardOptions,
+  UseKanbanBoardResult,
+  UseKanbanCardOptions,
+  UseKanbanCardResult,
+  UseKanbanColumnOptions,
+  UseKanbanColumnResult,
+} from "./kanban";
+export {
+  Kanban,
+  kanbanBoardVariants,
+  KanbanCardItem,
+  kanbanCardVariants,
+  KanbanColumn,
+  KanbanColumnEmpty,
+  KanbanColumnHeader,
+  KanbanColumnHeaderCell,
+  kanbanColumnVariants,
+  useKanbanBoard,
+  useKanbanCard,
+  useKanbanColumn,
+} from "./kanban";
 export type { ModalContentProps, ModalOptions } from "./modal";
 export {
   Modal,

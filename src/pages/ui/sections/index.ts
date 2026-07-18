@@ -8,6 +8,7 @@ import { ControlsSection } from "./ControlsSection";
 import { DatePickersSection } from "./DatePickersSection";
 import { EmptySection } from "./EmptySection";
 import { InputsSection } from "./InputsSection";
+import { KanbanSection } from "./KanbanSection";
 import { ModalsSection } from "./ModalsSection";
 import { NotificationsSection } from "./NotificationsSection";
 import { PaginationSection } from "./PaginationSection";
@@ -46,6 +47,7 @@ export const UI_SECTIONS: UISection[] = [
   { value: "pagination", label: "Пагинация", Component: PaginationSection },
   { value: "date", label: "Даты", Component: DatePickersSection },
   { value: "table", label: "Таблица", Component: TableSection },
+  { value: "kanban", label: "Kanban", Component: KanbanSection },
   { value: "modals", label: "Модалки и Drawer", Component: ModalsSection },
   { value: "tooltip", label: "Тултипы", Component: TooltipSection },
   { value: "popover", label: "Popover", Component: PopoverSection },
