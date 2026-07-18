@@ -4,7 +4,7 @@ import {
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/useControllableState";
+import { useControllableState } from "./shared";
 import type { TableFeatureResult } from "./types";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -17,7 +17,7 @@ export interface PaginationFeatureMeta {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
-  rootMargin: string;
+  rootMargin?: string;
 }
 
 export interface PaginationFeatureOptions {
@@ -53,7 +53,7 @@ export const usePaginationFeature = <TData>(
     hasNextPage = false,
     isFetchingNextPage = false,
     onLoadMore,
-    rootMargin = "200px",
+    rootMargin,
   } = options;
 
   const infiniteScroll = enabled && !!onLoadMore;
