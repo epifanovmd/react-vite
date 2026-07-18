@@ -1,8 +1,7 @@
-import { useWheelHorizontalScroll } from "@hooks/useWheelHorizontalScroll";
+import { useSmoothHorizontalScroll } from "@hooks/useSmoothHorizontalScroll";
 import { useMergedRef } from "@mantine/hooks";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@utils/cn";
-import { scrollIntoViewCenter } from "@utils/scrollIntoViewCenter";
 import { type VariantProps } from "class-variance-authority";
 import { motion } from "motion/react";
 import * as React from "react";
@@ -28,6 +27,8 @@ const TabsList = React.forwardRef<
     [children],
   );
 
+  const { scrollToCenter } = useSmoothHorizontalScroll(listRef);
+
   const updateIndicator = React.useCallback(() => {
     const list = listRef.current;
 
@@ -48,8 +49,8 @@ const TabsList = React.forwardRef<
     setLeft(prev => (prev === newLeft ? prev : newLeft));
     setWidth(prev => (prev === newWidth ? prev : newWidth));
 
-    scrollIntoViewCenter(active);
-  }, []);
+    scrollToCenter(active);
+  }, [scrollToCenter]);
 
   React.useEffect(() => {
     const list = listRef.current;
@@ -68,8 +69,6 @@ const TabsList = React.forwardRef<
 
     return () => observer.disconnect();
   }, [updateIndicator]);
-
-  useWheelHorizontalScroll(listRef);
 
   const mergedRef = useMergedRef(listRef, ref);
 
