@@ -7,7 +7,6 @@ export interface UseInfiniteScrollSentinelOptions {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
-  rowCount: number;
   rootMargin?: string;
 }
 
@@ -16,7 +15,6 @@ export const useInfiniteScrollSentinel = ({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
-  rowCount,
   rootMargin,
 }: UseInfiniteScrollSentinelOptions): RefObject<HTMLTableRowElement | null> => {
   const sentinelRef = useRef<HTMLTableRowElement>(null);
@@ -25,7 +23,6 @@ export const useInfiniteScrollSentinel = ({
     containerRef,
     enabled: hasNextPage && rootMargin === undefined,
     isFetchingNextPage,
-    rowCount,
   });
 
   const effectiveRootMargin = rootMargin ?? adaptiveRootMargin;

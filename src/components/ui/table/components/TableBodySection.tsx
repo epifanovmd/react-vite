@@ -50,7 +50,6 @@ export const TableBodySection = <TData,>({
     hasNextPage,
     isFetchingNextPage,
     onLoadMore,
-    rowCount: rows.length,
     rootMargin: infiniteScrollRootMargin,
   });
 
