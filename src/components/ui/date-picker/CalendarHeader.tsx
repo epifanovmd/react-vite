@@ -1,7 +1,7 @@
+import { cn } from "@utils/cn";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import type { ViewMode } from "./types";
 
 interface CalendarHeaderProps {

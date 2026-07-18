@@ -1,7 +1,7 @@
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import { CardContent } from "./CardContent";
 import { CardDescription } from "./CardDescription";
 import { CardFooter } from "./CardFooter";

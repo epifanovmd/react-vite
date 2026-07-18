@@ -1,8 +1,8 @@
 import { type Row } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 import { Fragment, MouseEvent, ReactNode, RefObject } from "react";
 
 import { Empty } from "../../empty";
-import { cn } from "../../foundation";
 import { Spinner } from "../../spinner";
 import { useInfiniteScrollSentinel } from "../hooks/useInfiniteScrollSentinel";
 import { TableDataRow } from "./TableDataRow";

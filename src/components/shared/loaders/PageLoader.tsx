@@ -1,6 +1,7 @@
+import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { cn, Spinner } from "../../ui";
+import { Spinner } from "../../ui";
 
 export interface PageLoaderProps extends React.HTMLAttributes<HTMLDivElement> {
   label?: string;

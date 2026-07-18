@@ -1,7 +1,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { cn } from "@utils/cn";
 import * as React from "react";
-
-import { cn } from "../foundation/cn";
 
 export const ModalDescription = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Description>,

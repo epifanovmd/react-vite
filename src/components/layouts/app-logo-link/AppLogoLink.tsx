@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import { cn } from "@utils/cn";
 import { ShieldCheck } from "lucide-react";
 import { ComponentProps, FC } from "react";
-
-import { cn } from "../../ui";
 
 interface AppLogoLinkProps extends ComponentProps<typeof Link> {
   size?: "sm" | "md";

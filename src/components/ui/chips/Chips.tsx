@@ -1,8 +1,8 @@
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import { chipsVariants } from "./chipsVariants";
 
 export interface ChipsProps

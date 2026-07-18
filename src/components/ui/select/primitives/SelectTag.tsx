@@ -1,7 +1,6 @@
+import { cn } from "@utils/cn";
 import { X } from "lucide-react";
 import * as React from "react";
-
-import { cn } from "../../foundation";
 
 export interface SelectTagProps {
   label: React.ReactNode;

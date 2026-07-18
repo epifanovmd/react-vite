@@ -1,3 +1,4 @@
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import {
   ChevronLeft,
@@ -8,7 +9,6 @@ import {
 import * as React from "react";
 
 import { Button } from "../button";
-import { cn } from "../foundation/cn";
 import { usePagination } from "./hooks";
 import { PaginationButton } from "./PaginationButton";
 import { PaginationEllipsis } from "./PaginationEllipsis";

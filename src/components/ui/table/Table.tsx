@@ -1,6 +1,6 @@
+import { cn } from "@utils/cn";
 import { useRef } from "react";
 
-import { cn } from "../foundation";
 import {
   TableBodySection,
   TableColumnVisibility,

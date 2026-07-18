@@ -1,6 +1,6 @@
 import { flexRender } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 
-import { cn } from "../../foundation";
 import { type TanstackTable } from "../Table.types";
 import { TableFooter, TableHead, TableRow } from "./TablePrimitive";
 

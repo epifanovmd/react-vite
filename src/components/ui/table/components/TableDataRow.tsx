@@ -1,7 +1,7 @@
 import { flexRender, type Row } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 import { memo, MouseEvent, useCallback } from "react";
 
-import { cn } from "../../foundation";
 import { getPinningStyle } from "../utils";
 import { TableCell, TableRow } from "./TablePrimitive";
 

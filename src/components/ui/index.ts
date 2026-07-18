@@ -91,7 +91,6 @@ export {
   SwitchFormField,
   TextareaFormField,
 } from "./form";
-export { cn } from "./foundation/cn";
 export type { FieldVariantProps } from "./foundation/fieldVariants";
 export { fieldVariants } from "./foundation/fieldVariants";
 export type { AsyncIconButtonProps, IconButtonProps } from "./icon-button";

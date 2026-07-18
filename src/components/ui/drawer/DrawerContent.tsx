@@ -1,7 +1,7 @@
+import { cn } from "@utils/cn";
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
-import { cn } from "../foundation/cn";
 import { DrawerOverlay } from "./DrawerOverlay";
 
 export const DrawerContent = React.forwardRef<

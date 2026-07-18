@@ -1,7 +1,6 @@
 import type { Column } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 import type { CSSProperties } from "react";
-
-import { cn } from "../../foundation";
 
 export interface PinningStyleResult {
   style?: CSSProperties;

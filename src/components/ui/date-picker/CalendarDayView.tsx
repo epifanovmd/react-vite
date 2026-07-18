@@ -1,6 +1,6 @@
+import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import { DAYS_OF_WEEK } from "./constants";
 import { getDaysInMonth, getFirstDayOfMonth } from "./utils";
 

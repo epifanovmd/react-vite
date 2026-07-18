@@ -1,6 +1,6 @@
+import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import { type AvatarProps } from "./Avatar";
 import { avatarVariants } from "./avatarVariants";
 

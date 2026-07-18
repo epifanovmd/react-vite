@@ -1,6 +1,5 @@
+import { cn } from "@utils/cn";
 import { FC, ReactNode } from "react";
-
-import { cn } from "../foundation/cn";
 
 export interface InfoFieldProps {
   label: string;

@@ -1,10 +1,10 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import * as React from "react";
 
 import { Button, type ButtonProps } from "../button";
-import { cn } from "../foundation/cn";
 import { IconButton } from "../icon-button";
 import { ModalBody } from "./ModalBody";
 import { ModalDescription } from "./ModalDescription";

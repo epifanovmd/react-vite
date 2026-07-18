@@ -34,6 +34,7 @@ export default defineConfig({
       "@lib": path.resolve(projectRootDir, "src/lib"),
       "@api": path.resolve(projectRootDir, "src/api"),
       "@utils": path.resolve(projectRootDir, "src/utils"),
+      "@hooks": path.resolve(projectRootDir, "src/hooks"),
       "@di": path.resolve(projectRootDir, "src/di"),
       "@components": path.resolve(projectRootDir, "src/components"),
       "@models": path.resolve(projectRootDir, "src/models"),

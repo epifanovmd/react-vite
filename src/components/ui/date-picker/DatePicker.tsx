@@ -1,10 +1,10 @@
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import { format, isValid, parseISO } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { useMemo } from "react";
 
-import { cn } from "../foundation/cn";
 import { Popover, type PopoverContentProps } from "../popover";
 import { Calendar, type CalendarProps } from "./Calendar";
 import { DatePickerTrigger } from "./DatePickerTrigger";

@@ -1,7 +1,7 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { cn } from "../../foundation/cn";
 import { selectContentClasses } from "../selectVariants";
 import type {
   DropdownAlign,

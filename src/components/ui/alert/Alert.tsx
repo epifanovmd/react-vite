@@ -1,3 +1,4 @@
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import {
   AlertCircle,
@@ -8,7 +9,6 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import {
   ALERT_ICON_COLORS,
   type AlertVariant,

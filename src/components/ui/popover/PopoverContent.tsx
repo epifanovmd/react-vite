@@ -1,8 +1,8 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import { popoverContentVariants } from "./popoverVariants";
 
 export interface PopoverContentProps

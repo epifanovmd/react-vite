@@ -1,8 +1,8 @@
+import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
 import { Database, Inbox, Package, PackageSearch, Search } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
 import { emptyIconVariants, emptyVariants } from "./emptyVariants";
 
 export interface EmptyProps

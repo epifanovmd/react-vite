@@ -1,7 +1,6 @@
+import { cn } from "@utils/cn";
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
-
-import { cn } from "../foundation/cn";
 
 export const DrawerTitle = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitive.Title>,

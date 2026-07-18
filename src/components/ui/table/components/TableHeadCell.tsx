@@ -1,7 +1,7 @@
 import { flexRender, type Header } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 import { ArrowDown, ArrowUp, ArrowUpDown, Group, Ungroup } from "lucide-react";
 
-import { cn } from "../../foundation";
 import { getPinningStyle } from "../utils";
 import { TableHeadFilter } from "./tableHeadFilter";
 import { TableHead } from "./TablePrimitive";

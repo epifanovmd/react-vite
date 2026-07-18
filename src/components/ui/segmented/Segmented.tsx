@@ -1,10 +1,10 @@
 import { useMergedRef } from "@mantine/hooks";
+import { cn } from "@utils/cn";
+import { scrollIntoViewCenter } from "@utils/scrollIntoViewCenter";
 import { type VariantProps } from "class-variance-authority";
 import { motion } from "motion/react";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
-import { scrollIntoViewCenter } from "../foundation/scrollIntoViewCenter";
 import {
   segmentedIndicatorVariants,
   segmentedItemVariants,

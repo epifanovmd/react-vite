@@ -1,6 +1,5 @@
+import { cn } from "@utils/cn";
 import { FC, ReactNode } from "react";
-
-import { cn } from "../../ui";
 
 export interface PageLayoutProps {
   header: ReactNode;

@@ -1,11 +1,12 @@
+import { useWheelHorizontalScroll } from "@hooks/useWheelHorizontalScroll";
 import { useMergedRef } from "@mantine/hooks";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { cn } from "@utils/cn";
+import { scrollIntoViewCenter } from "@utils/scrollIntoViewCenter";
 import { type VariantProps } from "class-variance-authority";
 import { motion } from "motion/react";
 import * as React from "react";
 
-import { cn } from "../foundation/cn";
-import { scrollIntoViewCenter } from "../foundation/scrollIntoViewCenter";
 import { TabsContext } from "./TabsContext";
 import { tabsListVariants, tabsMotionVariants } from "./tabsVariants";
 
@@ -67,6 +68,8 @@ const TabsList = React.forwardRef<
 
     return () => observer.disconnect();
   }, [updateIndicator]);
+
+  useWheelHorizontalScroll(listRef);
 
   const mergedRef = useMergedRef(listRef, ref);
 

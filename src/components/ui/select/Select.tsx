@@ -1,8 +1,8 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { cn } from "@utils/cn";
 import * as React from "react";
 import { ComponentPropsWithRef } from "react";
 
-import { cn } from "../foundation";
 import { Spinner } from "../spinner";
 import {
   useKeyboardNav,

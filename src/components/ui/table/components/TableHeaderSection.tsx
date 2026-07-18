@@ -1,4 +1,5 @@
-import { cn } from "../../foundation";
+import { cn } from "@utils/cn";
+
 import { type TanstackTable } from "../Table.types";
 import { TableHeadCell } from "./TableHeadCell";
 import { TableHeader, TableRow } from "./TablePrimitive";

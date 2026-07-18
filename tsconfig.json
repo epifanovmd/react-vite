@@ -40,6 +40,8 @@
       "@api/*": ["./src/api/*"],
       "@utils": ["./src/utils"],
       "@utils/*": ["./src/utils/*"],
+      "@hooks": ["./src/hooks"],
+      "@hooks/*": ["./src/hooks/*"],
       "@di": ["./src/di"],
       "@di/*": ["./src/di/*"],
       "@components": ["./src/components"],

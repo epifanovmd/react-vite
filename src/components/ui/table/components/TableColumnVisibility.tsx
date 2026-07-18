@@ -1,8 +1,8 @@
 import type { Table as TanstackTable } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 import { ArrowLeftToLine, ArrowRightToLine, Columns } from "lucide-react";
 
 import { Checkbox } from "../../checkbox";
-import { cn } from "../../foundation";
 import { IconButton } from "../../icon-button";
 import { Popover, PopoverContent, PopoverTrigger } from "../../popover";
 

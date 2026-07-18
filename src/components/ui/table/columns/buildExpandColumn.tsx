@@ -1,8 +1,7 @@
 import { type ColumnDef, type Row } from "@tanstack/react-table";
+import { cn } from "@utils/cn";
 import { ChevronRight } from "lucide-react";
 import type { MouseEvent } from "react";
-
-import { cn } from "../../foundation";
 
 export const buildExpandColumn = <TData,>(): ColumnDef<TData> => ({
   id: "__expand__",
