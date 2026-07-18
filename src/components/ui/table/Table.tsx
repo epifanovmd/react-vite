@@ -104,6 +104,7 @@ const TableComponent = <TData,>(props: TableProps<TData>) => {
             renderSubComponent={renderSubComponent}
             className={bodyClassName}
             resizable={resizingEnabled}
+            columnVisibility={table.getState().columnVisibility}
             scrollContainerRef={containerRef}
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}

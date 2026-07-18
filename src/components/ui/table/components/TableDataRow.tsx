@@ -1,4 +1,8 @@
-import { flexRender, type Row } from "@tanstack/react-table";
+import {
+  flexRender,
+  type Row,
+  type VisibilityState,
+} from "@tanstack/react-table";
 import { cn } from "@utils/cn";
 import { memo, MouseEvent, useCallback } from "react";
 
@@ -15,6 +19,7 @@ interface TableDataRowProps<TData = unknown> {
   ) => void;
   className?: string | ((row: TData) => string);
   resizable?: boolean;
+  columnVisibility?: VisibilityState;
 }
 
 const TableDataRowInner = <TData = unknown,>({

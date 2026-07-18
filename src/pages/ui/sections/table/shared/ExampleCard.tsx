@@ -13,7 +13,6 @@ export interface ExampleCardProps {
   children: ReactNode;
 }
 
-/** Consistent Card chrome shared by every Table example. */
 export const ExampleCard: FC<ExampleCardProps> = ({
   title,
   description,

@@ -1,4 +1,4 @@
-import { type Row } from "@tanstack/react-table";
+import { type Row, type VisibilityState } from "@tanstack/react-table";
 import { cn } from "@utils/cn";
 import { Fragment, MouseEvent, ReactNode, RefObject } from "react";
 
@@ -20,6 +20,7 @@ interface TableBodySectionProps<TData> {
   renderSubComponent?: (props: { row: Row<TData> }) => ReactNode;
   className?: string;
   resizable?: boolean;
+  columnVisibility?: VisibilityState;
   scrollContainerRef?: RefObject<HTMLElement | null>;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
@@ -39,6 +40,7 @@ export const TableBodySection = <TData,>({
   renderSubComponent,
   className,
   resizable,
+  columnVisibility,
   scrollContainerRef,
   hasNextPage = false,
   isFetchingNextPage = false,
@@ -97,6 +99,7 @@ export const TableBodySection = <TData,>({
             onRowDoubleClick={onRowDoubleClick}
             className={rowClassName}
             resizable={resizable}
+            columnVisibility={columnVisibility}
           />
 
           {row.getIsExpanded() && renderSubComponent && (

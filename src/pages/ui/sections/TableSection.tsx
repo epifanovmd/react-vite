@@ -4,7 +4,7 @@ import type { FC } from "react";
 import { TABLE_EXAMPLES } from "./table/examples";
 
 export const TableSection: FC = () => (
-  <Tabs defaultValue={TABLE_EXAMPLES[0]!.value}>
+  <Tabs defaultValue={TABLE_EXAMPLES[0].value}>
     <TabsList variant="underline" size="sm">
       {TABLE_EXAMPLES.map(example => (
         <TabsTrigger

@@ -1,11 +1,10 @@
 import {
   type FilterFnOption,
   getFilteredRowModel,
-  type OnChangeFn,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/useControllableState";
+import { useControllableState } from "./shared";
 import type { TableFeatureResult } from "./types";
 
 export interface GlobalFilterFeatureOptions {
@@ -42,7 +41,7 @@ export const useGlobalFilterFeature = <TData>(
       options: {
         enableGlobalFilter: enabled,
         onGlobalFilterChange: enabled ? setState : undefined,
-        globalFilterFn,
+        ...(globalFilterFn ? { globalFilterFn } : {}),
         getFilteredRowModel:
           enabled && !manualFiltering ? getFilteredRowModel() : undefined,
       },
