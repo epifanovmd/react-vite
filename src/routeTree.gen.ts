@@ -22,7 +22,6 @@ const AuthSignInLazyRouteImport = createFileRoute('/_auth/sign-in')()
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
-const AppTableLazyRouteImport = createFileRoute('/_app/table')()
 const AppProfileLazyRouteImport = createFileRoute('/_app/profile')()
 
 const UiLazyRoute = UiLazyRouteImport.update({
@@ -60,11 +59,6 @@ const AuthForgotPasswordLazyRoute = AuthForgotPasswordLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_auth/forgot-password.lazy').then((d) => d.Route),
 )
-const AppTableLazyRoute = AppTableLazyRouteImport.update({
-  id: '/table',
-  path: '/table',
-  getParentRoute: () => AppRoute,
-} as any).lazy(() => import('./routes/_app/table.lazy').then((d) => d.Route))
 const AppProfileLazyRoute = AppProfileLazyRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -83,7 +77,6 @@ export interface FileRoutesByFullPath {
   '/ui': typeof UiLazyRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/profile': typeof AppProfileLazyRoute
-  '/table': typeof AppTableLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/sign-in': typeof AuthSignInLazyRoute
   '/sign-up': typeof AuthSignUpLazyRoute
@@ -93,7 +86,6 @@ export interface FileRoutesByTo {
   '/ui': typeof UiLazyRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/profile': typeof AppProfileLazyRoute
-  '/table': typeof AppTableLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/sign-in': typeof AuthSignInLazyRoute
   '/sign-up': typeof AuthSignUpLazyRoute
@@ -105,7 +97,6 @@ export interface FileRoutesById {
   '/ui': typeof UiLazyRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_app/profile': typeof AppProfileLazyRoute
-  '/_app/table': typeof AppTableLazyRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/_auth/sign-in': typeof AuthSignInLazyRoute
   '/_auth/sign-up': typeof AuthSignUpLazyRoute
@@ -118,7 +109,6 @@ export interface FileRouteTypes {
     | '/ui'
     | '/reset-password'
     | '/profile'
-    | '/table'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
@@ -128,7 +118,6 @@ export interface FileRouteTypes {
     | '/ui'
     | '/reset-password'
     | '/profile'
-    | '/table'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
@@ -139,7 +128,6 @@ export interface FileRouteTypes {
     | '/ui'
     | '/_auth/reset-password'
     | '/_app/profile'
-    | '/_app/table'
     | '/_auth/forgot-password'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
@@ -203,13 +191,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordLazyRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_app/table': {
-      id: '/_app/table'
-      path: '/table'
-      fullPath: '/table'
-      preLoaderRoute: typeof AppTableLazyRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -229,13 +210,11 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppProfileLazyRoute: typeof AppProfileLazyRoute
-  AppTableLazyRoute: typeof AppTableLazyRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppProfileLazyRoute: AppProfileLazyRoute,
-  AppTableLazyRoute: AppTableLazyRoute,
   AppIndexRoute: AppIndexRoute,
 }
 

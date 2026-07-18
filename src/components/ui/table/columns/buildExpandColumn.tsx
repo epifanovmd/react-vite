@@ -17,8 +17,10 @@ export const buildExpandColumn = <TData,>(): ColumnDef<TData> => ({
     return (
       <button
         type="button"
-        aria-label={row.getIsExpanded() ? "Свернуть строку" : "Развернуть строку"}
-        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        aria-label={
+          row.getIsExpanded() ? "Свернуть строку" : "Развернуть строку"
+        }
+        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
         style={{ marginLeft: row.depth * 16 }}
         onClick={(e: MouseEvent) => {
           e.stopPropagation();
