@@ -8,10 +8,20 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
   dot?: boolean;
+  /** When `children` is a number greater than `max`, renders `${max}+` instead. */
+  max?: number;
 }
 
+const formatContent = (
+  children: React.ReactNode,
+  max?: number,
+): React.ReactNode =>
+  max != null && typeof children === "number" && children > max
+    ? `${max}+`
+    : children;
+
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ className, variant, dot, children, ...props }, ref) => {
+  ({ className, variant, dot, max, children, ...props }, ref) => {
     return (
       <div
         className={cn(badgeVariants({ variant, className }))}
@@ -21,7 +31,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         {dot && (
           <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80 flex-shrink-0" />
         )}
-        <span className="truncate min-w-0">{children}</span>
+        <span className="truncate min-w-0">{formatContent(children, max)}</span>
       </div>
     );
   },

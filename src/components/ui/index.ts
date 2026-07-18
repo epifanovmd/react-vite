@@ -2,8 +2,12 @@ export type { AlertProps } from "./alert";
 export { Alert, alertVariants } from "./alert";
 export type { AvatarGroupProps, AvatarProps } from "./avatar";
 export { Avatar, AvatarGroup, avatarVariants } from "./avatar";
-export type { BadgeProps } from "./badge";
-export { Badge, badgeVariants } from "./badge";
+export type {
+  BadgeAnchorPlacement,
+  BadgeAnchorProps,
+  BadgeProps,
+} from "./badge";
+export { Badge, BadgeAnchor, badgeVariants } from "./badge";
 export type { AsyncButtonProps, ButtonLinkProps, ButtonProps } from "./button";
 export { AsyncButton, Button, ButtonLink, buttonVariants } from "./button";
 export type { CardHeaderProps, CardProps } from "./card";
