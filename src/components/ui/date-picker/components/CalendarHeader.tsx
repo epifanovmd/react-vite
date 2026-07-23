@@ -2,7 +2,7 @@ import { cn } from "@utils/cn";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 
-import type { ViewMode } from "./types";
+import type { ViewMode } from "../types";
 
 interface CalendarHeaderProps {
   headerText: string;

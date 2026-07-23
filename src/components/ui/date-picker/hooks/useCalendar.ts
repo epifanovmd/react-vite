@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { MONTHS } from "../constants";
 import type { ViewMode } from "../types";
+import { MONTHS } from "../utils";
 
 export interface UseCalendarOptions {
   initialMonth?: number;

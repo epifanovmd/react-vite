@@ -1,20 +1,15 @@
 import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { DAYS_OF_WEEK } from "./constants";
-import { getDaysInMonth, getFirstDayOfMonth } from "./utils";
-
-export interface DayState {
-  wrapper?: string;
-
-  button?: string;
-}
+import type { DayState } from "../types";
+import { DAYS_OF_WEEK, getDaysInMonth, getFirstDayOfMonth } from "../utils";
 
 interface CalendarDayViewProps {
   currentMonth: number;
   currentYear: number;
   onDaySelect: (day: number) => void;
   getDayClassName: (day: number) => DayState | undefined;
+  isDayDisabled?: (day: number) => boolean;
 }
 
 export const CalendarDayView = React.memo(
@@ -23,6 +18,7 @@ export const CalendarDayView = React.memo(
     currentYear,
     onDaySelect,
     getDayClassName,
+    isDayDisabled,
   }: CalendarDayViewProps) => {
     const daysInMonth = getDaysInMonth(currentMonth, currentYear);
     const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
@@ -48,6 +44,7 @@ export const CalendarDayView = React.memo(
         <div className="grid grid-cols-7">
           {cells.map((day, i) => {
             const state = day !== null ? getDayClassName(day) : undefined;
+            const disabled = day !== null && !!isDayDisabled?.(day);
 
             return (
               <div
@@ -58,11 +55,14 @@ export const CalendarDayView = React.memo(
                 {day !== null && (
                   <button
                     type="button"
+                    disabled={disabled}
                     onClick={() => onDaySelect(day)}
                     className={cn(
                       "relative z-10 h-8 w-8 rounded-md text-sm transition-colors",
-                      "inline-flex items-center justify-center cursor-pointer",
-                      "hover:bg-accent hover:text-accent-foreground",
+                      "inline-flex items-center justify-center",
+                      disabled
+                        ? "cursor-not-allowed opacity-40"
+                        : "cursor-pointer hover:bg-accent hover:text-accent-foreground",
                       state?.button,
                     )}
                   >

@@ -89,6 +89,14 @@ export const DatePickersSection: FC = () => {
                 <Field label="clearable">
                   <DatePicker value={date} onChange={setDate} clearable placeholder="Выберите дату" />
                 </Field>
+                <Field label="disableDate (выходные)">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    disableDate={d => d.getDay() === 0 || d.getDay() === 6}
+                    placeholder="Только будни"
+                  />
+                </Field>
               </Row>
             </div>
           </div>

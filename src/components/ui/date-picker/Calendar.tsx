@@ -1,20 +1,23 @@
 import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { CalendarDayView } from "./CalendarDayView";
-import { CalendarHeader } from "./CalendarHeader";
-import { CalendarMonthView } from "./CalendarMonthView";
-import { CalendarYearView } from "./CalendarYearView";
-import { useCalendar } from "./hooks";
+import {
+  CalendarDayView,
+  CalendarHeader,
+  CalendarMonthView,
+  CalendarYearView,
+} from "./components";
+import { useCalendar, useCalendarDays } from "./hooks";
 
 export interface CalendarProps {
   selected?: Date;
   onSelect?: (date: Date | undefined) => void;
+  disableDate?: (date: Date) => boolean;
   className?: string;
 }
 
 export const Calendar = React.memo(
-  ({ selected, onSelect, className }: CalendarProps) => {
+  ({ selected, onSelect, disableDate, className }: CalendarProps) => {
     const {
       viewMode,
       currentMonth,
@@ -30,38 +33,14 @@ export const Calendar = React.memo(
       initialYear: selected?.getFullYear(),
     });
 
-    const handleDaySelect = React.useCallback(
-      (day: number) => {
-        onSelect?.(new Date(currentYear, currentMonth, day));
-      },
-      [currentYear, currentMonth, onSelect],
-    );
-
-    const today = new Date();
-
-    const getDayClassName = React.useCallback(
-      (day: number) => {
-        const isToday =
-          day === today.getDate() &&
-          currentMonth === today.getMonth() &&
-          currentYear === today.getFullYear();
-        const isSelected =
-          !!selected &&
-          day === selected.getDate() &&
-          currentMonth === selected.getMonth() &&
-          currentYear === selected.getFullYear();
-
-        return {
-          button: cn(
-            isToday && !isSelected && "bg-accent text-accent-foreground",
-            isSelected &&
-              "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-          ),
-        };
-      },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [currentMonth, currentYear, selected],
-    );
+    const { handleDaySelect, isDayDisabled, getDayClassName } =
+      useCalendarDays({
+        currentMonth,
+        currentYear,
+        selected,
+        onSelect,
+        disableDate,
+      });
 
     return (
       <div className={cn("w-[280px]", className)}>
@@ -78,6 +57,7 @@ export const Calendar = React.memo(
             currentYear={currentYear}
             onDaySelect={handleDaySelect}
             getDayClassName={getDayClassName}
+            isDayDisabled={isDayDisabled}
           />
         )}
         {viewMode === "month" && (

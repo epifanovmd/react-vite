@@ -1,14 +1,13 @@
 export type { CalendarProps } from "./Calendar";
 export { Calendar } from "./Calendar";
+export type { DatePickerTriggerProps } from "./components";
+export { DatePickerTrigger, datePickerTriggerVariants } from "./components";
 export type { DatePickerProps } from "./DatePicker";
 export { DatePicker } from "./DatePicker";
-export type { DatePickerTriggerProps } from "./DatePickerTrigger";
-export { DatePickerTrigger } from "./DatePickerTrigger";
-export { datePickerTriggerVariants } from "./datePickerVariants";
 export type { DateRangePickerProps } from "./DateRangePicker";
 export { DateRangePicker } from "./DateRangePicker";
 export type { UseCalendarOptions, UseCalendarResult } from "./hooks";
 export { useCalendar } from "./hooks";
 export type { RangeCalendarProps } from "./RangeCalendar";
 export { RangeCalendar } from "./RangeCalendar";
-export type { DateRange, ViewMode } from "./types";
+export type { DateRange, DayState, ViewMode } from "./types";

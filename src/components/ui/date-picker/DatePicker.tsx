@@ -1,15 +1,17 @@
 import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
-import { format, isValid, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
-import { useMemo } from "react";
 
 import { Popover, type PopoverContentProps } from "../popover";
 import { Calendar, type CalendarProps } from "./Calendar";
-import { DatePickerTrigger } from "./DatePickerTrigger";
-import { datePickerTriggerVariants } from "./datePickerVariants";
-import { TriggerClearButton } from "./TriggerClearButton";
+import {
+  DatePickerTrigger,
+  datePickerTriggerVariants,
+  TriggerClearButton,
+} from "./components";
+import { useDatePickerValue } from "./hooks";
 
 export interface DatePickerProps
   extends VariantProps<typeof datePickerTriggerVariants> {
@@ -20,6 +22,7 @@ export interface DatePickerProps
   className?: string;
   dateFormat?: string;
   clearable?: boolean;
+  disableDate?: (date: Date) => boolean;
   contentProps?: Partial<PopoverContentProps>;
   calendarProps?: Omit<CalendarProps, "selected" | "onSelect">;
 }
@@ -27,13 +30,14 @@ export interface DatePickerProps
 export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
   (
     {
-      value: _value,
+      value: rawValue,
       onChange,
       placeholder = "Выберите дату",
       disabled,
       className,
       dateFormat = "d MMMM yyyy",
       clearable = false,
+      disableDate,
       size,
       variant,
       contentProps,
@@ -41,13 +45,11 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
     },
     ref,
   ) => {
-    const value = useMemo(() => {
-      const value = typeof _value === "string" ? parseISO(_value) : _value;
-
-      return isValid(value) ? value : undefined;
-    }, [_value]);
-
-    const showClear = clearable && !!value && !disabled;
+    const { value, showClear } = useDatePickerValue({
+      value: rawValue,
+      clearable,
+      disabled,
+    });
 
     return (
       <Popover>
@@ -75,7 +77,12 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
           className="p-0"
           {...contentProps}
         >
-          <Calendar selected={value} onSelect={onChange} {...calendarProps} />
+          <Calendar
+            selected={value}
+            onSelect={onChange}
+            disableDate={disableDate}
+            {...calendarProps}
+          />
         </Popover.Content>
       </Popover>
     );

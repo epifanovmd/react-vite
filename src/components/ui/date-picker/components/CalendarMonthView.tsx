@@ -1,7 +1,7 @@
 import { cn } from "@utils/cn";
 import * as React from "react";
 
-import { MONTHS } from "./constants";
+import { MONTHS } from "../utils";
 
 interface CalendarMonthViewProps {
   currentMonth: number;

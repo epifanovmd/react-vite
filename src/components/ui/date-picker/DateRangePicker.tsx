@@ -1,14 +1,16 @@
 import { cn } from "@utils/cn";
 import { type VariantProps } from "class-variance-authority";
-import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 
 import { Popover, type PopoverContentProps } from "../popover";
-import { DatePickerTrigger } from "./DatePickerTrigger";
-import { datePickerTriggerVariants } from "./datePickerVariants";
+import {
+  DatePickerTrigger,
+  datePickerTriggerVariants,
+  TriggerClearButton,
+} from "./components";
+import { useDateRangePickerValue } from "./hooks";
 import { RangeCalendar, type RangeCalendarProps } from "./RangeCalendar";
-import { TriggerClearButton } from "./TriggerClearButton";
 import type { DateRange } from "./types";
 
 export interface DateRangePickerProps
@@ -20,6 +22,7 @@ export interface DateRangePickerProps
   className?: string;
   dateFormat?: string;
   clearable?: boolean;
+  disableDate?: (date: Date) => boolean;
   contentProps?: Partial<PopoverContentProps>;
   calendarProps?: Omit<RangeCalendarProps, "selected" | "onSelect">;
 }
@@ -37,6 +40,7 @@ export const DateRangePicker = React.forwardRef<
       className,
       dateFormat = "d MMM yyyy",
       clearable = false,
+      disableDate,
       size,
       variant,
       contentProps,
@@ -44,16 +48,12 @@ export const DateRangePicker = React.forwardRef<
     },
     ref,
   ) => {
-    const hasValue = !!value?.from;
-    const showClear = clearable && hasValue && !disabled;
-
-    const label = React.useMemo(() => {
-      if (!value?.from) return null;
-      if (value.to)
-        return `${format(value.from, dateFormat)} — ${format(value.to, dateFormat)}`;
-
-      return format(value.from, dateFormat);
-    }, [value, dateFormat]);
+    const { showClear, label } = useDateRangePickerValue({
+      value,
+      dateFormat,
+      clearable,
+      disabled,
+    });
 
     return (
       <Popover>
@@ -63,7 +63,7 @@ export const DateRangePicker = React.forwardRef<
             size={size}
             variant={variant}
             disabled={disabled}
-            className={cn(!hasValue && "text-muted-foreground", className)}
+            className={cn(!label && "text-muted-foreground", className)}
           >
             <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
             <span className="flex-1 truncate text-left">
@@ -83,6 +83,7 @@ export const DateRangePicker = React.forwardRef<
           <RangeCalendar
             selected={value}
             onSelect={onChange}
+            disableDate={disableDate}
             {...calendarProps}
           />
         </Popover.Content>
