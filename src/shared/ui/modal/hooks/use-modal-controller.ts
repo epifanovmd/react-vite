@@ -1,0 +1,131 @@
+import { useCallback, useMemo, useRef, useState } from "react";
+
+export interface ModalConfig {
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  suspends?: string[];
+}
+
+export interface ModalState {
+  open: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  onToggle: () => void;
+}
+
+export interface ModalController<Keys extends string> {
+  modals: Record<Keys, ModalState>;
+  open: (key: Keys) => void;
+  close: (key: Keys) => void;
+  toggle: (key: Keys) => void;
+  closeAll: () => void;
+  isOpen: (key: Keys) => boolean;
+}
+
+export const useModalController = <Keys extends string>(
+  config: Record<Keys, ModalConfig>,
+): ModalController<Keys> => {
+  const configRef = useRef(config);
+
+  configRef.current = config;
+
+  const keys = useMemo(() => Object.keys(config) as Keys[], [config]);
+
+  const [intent, setIntent] = useState<Record<Keys, boolean>>(() =>
+    keys.reduce(
+      (acc, key) => {
+        acc[key] = Boolean(config[key].defaultOpen);
+
+        return acc;
+      },
+      {} as Record<Keys, boolean>,
+    ),
+  );
+
+  const resolveIntent = useCallback(
+    (key: Keys): boolean => {
+      const cfg = configRef.current[key];
+
+      return cfg?.open !== undefined ? cfg.open : intent[key];
+    },
+    [intent],
+  );
+
+  const setIntentForKey = useCallback((key: Keys, value: boolean) => {
+    const cfg = configRef.current[key];
+
+    if (cfg?.open !== undefined) {
+      cfg.onOpenChange?.(value);
+
+      return;
+    }
+    setIntent(prev => (prev[key] === value ? prev : { ...prev, [key]: value }));
+  }, []);
+
+  const openModal = useCallback(
+    (key: Keys) => setIntentForKey(key, true),
+    [setIntentForKey],
+  );
+
+  const closeModal = useCallback(
+    (key: Keys) => setIntentForKey(key, false),
+    [setIntentForKey],
+  );
+
+  const toggleModal = useCallback(
+    (key: Keys) => {
+      if (resolveIntent(key)) {
+        closeModal(key);
+      } else {
+        openModal(key);
+      }
+    },
+    [resolveIntent, openModal, closeModal],
+  );
+
+  const closeAll = useCallback(() => {
+    keys.forEach(key => setIntentForKey(key, false));
+  }, [keys, setIntentForKey]);
+
+  const isOpen = useCallback(
+    (key: Keys): boolean => {
+      if (!resolveIntent(key)) return false;
+
+      return !keys.some(
+        other =>
+          other !== key &&
+          resolveIntent(other) &&
+          (configRef.current[other]?.suspends ?? []).includes(key),
+      );
+    },
+    [keys, resolveIntent],
+  );
+
+  const modals = useMemo(
+    () =>
+      keys.reduce(
+        (acc, key) => {
+          acc[key] = {
+            open: isOpen(key),
+            onOpen: () => openModal(key),
+            onClose: () => closeModal(key),
+            onToggle: () => toggleModal(key),
+          };
+
+          return acc;
+        },
+        {} as Record<Keys, ModalState>,
+      ),
+    [keys, openModal, closeModal, toggleModal, isOpen],
+  );
+
+  return {
+    modals,
+    open: openModal,
+    close: closeModal,
+    toggle: toggleModal,
+    closeAll,
+    isOpen,
+  };
+};

@@ -1,1 +1,1 @@
-export { ResetPassword } from "./ResetPassword";
+export { ResetPasswordPage } from "./ui/ResetPasswordPage";

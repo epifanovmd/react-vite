@@ -1,0 +1,16 @@
+import { cn } from "@shared/lib/utils/cn";
+import * as React from "react";
+import { Drawer as DrawerPrimitive } from "vaul";
+
+export const DrawerOverlay = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Overlay
+    ref={ref}
+    className={cn("fixed inset-0 z-50 transition-all duration-200", className)}
+    style={{ backgroundColor: "var(--overlay)" }}
+    {...props}
+  />
+));
+DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;

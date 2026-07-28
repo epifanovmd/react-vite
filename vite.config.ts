@@ -1,6 +1,6 @@
 import mdx from "@mdx-js/rollup";
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import dotenv from "dotenv";
 import path from "path";
@@ -18,12 +18,11 @@ const PORT = VITE_PORT ? Number(VITE_PORT) : 3000;
 
 export default defineConfig({
   plugins: [
-    TanStackRouterVite(),
-    react({
-      babel: {
-        configFile: true,
-      },
+    tanstackRouter({
+      routesDirectory: "./src/app/routes",
+      generatedRouteTree: "./src/app/routeTree.gen.ts",
     }),
+    react(),
     mdx(),
     cjsInterop({
       // List of CJS dependencies that require interop
@@ -33,21 +32,20 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@core": path.resolve(projectRootDir, "src/core"),
-      "@api": path.resolve(projectRootDir, "src/api"),
-      "@utils": path.resolve(projectRootDir, "src/utils"),
-      "@hooks": path.resolve(projectRootDir, "src/hooks"),
-      "@di": path.resolve(projectRootDir, "src/di"),
-      "@components": path.resolve(projectRootDir, "src/components"),
-      "@models": path.resolve(projectRootDir, "src/store/models"),
-      "@socket": path.resolve(projectRootDir, "src/socket"),
-      "@store": path.resolve(projectRootDir, "src/store"),
-      "@theme": path.resolve(projectRootDir, "src/theme"),
+      "@app": path.resolve(projectRootDir, "src/app"),
+      "@pages": path.resolve(projectRootDir, "src/pages"),
+      "@widgets": path.resolve(projectRootDir, "src/widgets"),
+      "@features": path.resolve(projectRootDir, "src/features"),
+      "@entities": path.resolve(projectRootDir, "src/entities"),
+      "@shared": path.resolve(projectRootDir, "src/shared"),
     },
   },
   server: {
     host: HOST,
     port: PORT,
+    watch: {
+      ignored: ["**/src/app/routeTree.gen.ts"],
+    },
     proxy: {
       "/api": {
         target: VITE_BASE_URL,
@@ -56,7 +54,7 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ["wireguard.epifanov-dev.ru"],
+    allowedHosts: [],
     host: HOST,
     port: PORT,
   },

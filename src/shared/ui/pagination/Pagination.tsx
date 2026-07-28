@@ -1,0 +1,120 @@
+import { cn } from "@shared/lib/utils/cn";
+import { type VariantProps } from "class-variance-authority";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import * as React from "react";
+
+import { Button } from "../button";
+import { usePagination } from "./hooks";
+import { paginationVariants } from "./pagination-variants";
+import { PaginationButton } from "./PaginationButton";
+import { PaginationEllipsis } from "./PaginationEllipsis";
+
+export interface PaginationProps
+  extends React.HTMLAttributes<HTMLElement>,
+    VariantProps<typeof paginationVariants> {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  showFirstLast?: boolean;
+  maxVisible?: number;
+}
+
+export const Pagination = React.memo(
+  React.forwardRef<HTMLElement, PaginationProps>(
+    (
+      {
+        className,
+        size,
+        currentPage,
+        totalPages,
+        onPageChange,
+        showFirstLast = false,
+        maxVisible,
+        ...props
+      },
+      ref,
+    ) => {
+      const { pages, hasPrev, hasNext } = usePagination({
+        currentPage,
+        totalPages,
+        maxVisible,
+      });
+      const btnSize = size === "sm" ? "sm" : size === "lg" ? "lg" : "md";
+
+      return (
+        <nav
+          ref={ref}
+          role="navigation"
+          aria-label="pagination"
+          className={cn(paginationVariants({ size, className }))}
+          {...props}
+        >
+          {showFirstLast && (
+            <Button
+              variant="outline"
+              size={btnSize}
+              onClick={() => onPageChange(1)}
+              disabled={!hasPrev}
+              aria-label="Go to first page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            size={btnSize}
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={!hasPrev}
+            aria-label="Go to previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          {pages.map((page, idx) =>
+            page === "ellipsis" ? (
+              <PaginationEllipsis key={`ellipsis-${idx}`} size={btnSize} />
+            ) : (
+              <PaginationButton
+                key={page}
+                page={page}
+                isActive={currentPage === page}
+                size={btnSize}
+                onClick={onPageChange}
+              />
+            ),
+          )}
+
+          <Button
+            variant="outline"
+            size={btnSize}
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={!hasNext}
+            aria-label="Go to next page"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+
+          {showFirstLast && (
+            <Button
+              variant="outline"
+              size={btnSize}
+              onClick={() => onPageChange(totalPages)}
+              disabled={!hasNext}
+              aria-label="Go to last page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          )}
+        </nav>
+      );
+    },
+  ),
+);
+
+Pagination.displayName = "Pagination";

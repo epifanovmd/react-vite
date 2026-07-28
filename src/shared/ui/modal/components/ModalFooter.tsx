@@ -1,0 +1,16 @@
+import { cn } from "@shared/lib/utils/cn";
+import * as React from "react";
+
+export const ModalFooter = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex flex-col-reverse p-6 pt-4 gap-2 sm:flex-row sm:justify-end sm:space-x-2 border-t border-border",
+      className,
+    )}
+    {...props}
+  />
+);
+ModalFooter.displayName = "ModalFooter";

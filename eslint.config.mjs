@@ -5,8 +5,58 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import tseslint from "typescript-eslint";
 
+import { boundariesConfig } from "./eslint.boundaries.mjs";
+import { namingConfig } from "./eslint.naming.mjs";
+
+/**
+ * Сегменты Shared — self-import запрещён внутри своего же сегмента.
+ * `lib` сюда сознательно не входит: в отличие от ui/api/config это не цельный
+ * модуль, а плоская россыпь независимых тем (di, models, utils, theme, socket,
+ * holders, ...) — им разрешено ссылаться друг на друга через алиас.
+ */
+const SHARED_SEGMENTS = ["ui", "api", "config"];
+
+/** Слайсы entities/features/widgets/pages — self-import запрещён внутри своего же слайса. */
+const SLICE_LAYERS = {
+  entities: ["auth", "user"],
+  features: ["sign-in", "sign-up", "forgot-password", "reset-password", "edit-profile"],
+  widgets: ["app-layout", "auth-layout"],
+  pages: ["sign-in", "sign-up", "forgot-password", "reset-password", "profile", "ui-kit-demo", "errors"],
+};
+
+const selfImportRestriction = (files, group, message) => ({
+  files,
+  rules: {
+    "no-restricted-imports": ["error", { patterns: [{ group, message }] }],
+  },
+});
+
+const sharedSelfImportRestrictions = SHARED_SEGMENTS.map(seg =>
+  selfImportRestriction(
+    [`src/shared/${seg}/**`],
+    [`@shared/${seg}/*`, `@shared/${seg}`],
+    `Внутри shared/${seg}/ используй относительные пути вместо @shared/${seg}/*`,
+  ),
+);
+
+const sliceSelfImportRestrictions = Object.entries(SLICE_LAYERS).flatMap(
+  ([layer, slices]) =>
+    slices.map(slice =>
+      selfImportRestriction(
+        [`src/${layer}/${slice}/**`],
+        [`@${layer}/${slice}/*`, `@${layer}/${slice}`],
+        `Внутри ${layer}/${slice}/ используй относительные пути вместо @${layer}/${slice}/*`,
+      ),
+    ),
+);
+
+const moduleSelfImportRestrictions = [
+  ...sharedSelfImportRestrictions,
+  ...sliceSelfImportRestrictions,
+];
+
 export default tseslint.config(
-  { ignores: ["dist", "src/api/api-gen/**"] },
+  { ignores: ["dist", "src/shared/api/gen/**", "src/app/routeTree.gen.ts"] },
   {
     extends: [eslint.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -21,7 +71,16 @@ export default tseslint.config(
       react,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // react-hooks: только базовые правила, без React Compiler
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": [
+        "error",
+        {
+          additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)",
+        },
+      ],
+
+      // react-refresh
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
@@ -51,15 +110,6 @@ export default tseslint.config(
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-unsafe-function-type": "off",
 
-      // react-hooks
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": [
-        "error",
-        {
-          additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)",
-        },
-      ],
-
       // Stylistic
       "no-redeclare": "off",
       "padding-line-between-statements": [
@@ -82,4 +132,7 @@ export default tseslint.config(
       ],
     },
   },
+  ...moduleSelfImportRestrictions,
+  boundariesConfig,
+  namingConfig,
 );
