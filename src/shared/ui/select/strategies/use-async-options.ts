@@ -76,6 +76,7 @@ export function useAsyncOptions<TData, V extends SelectValue>({
 
     return () => {
       ctrl.abort();
+      setLoading(false);
       mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,6 +104,8 @@ export function useAsyncOptions<TData, V extends SelectValue>({
     return () => {
       clearTimeout(timer);
       ctrl.abort();
+      // прерванный fetch пропускает setLoading(false) в finally
+      setLoading(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, query, debounce, loadOnce, minQueryLength, doFetch, fetchOnMount, ...deps]);

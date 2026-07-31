@@ -22,6 +22,9 @@ export const selectItemClasses = [
 
 export const selectItemHighlightedClasses = "bg-accent text-accent-foreground";
 
+export const selectSearchInputClasses =
+  "flex-1 min-w-0 bg-transparent outline-none text-inherit placeholder:text-muted-foreground cursor-text text-sm";
+
 export const selectTriggerVariants = cva(
   `${FIELD_BASE} items-center whitespace-nowrap gap-2 justify-between py-2`,
   {

@@ -1,3 +1,7 @@
+export type { OptionsListProps } from "./OptionsList";
+export { OptionsList } from "./OptionsList";
+export type { SelectDropdownProps } from "./SelectDropdown";
+export { SelectDropdown } from "./SelectDropdown";
 export { SelectEmpty } from "./SelectEmpty";
 export type { SelectListGroupProps } from "./SelectListGroup";
 export { SelectListGroup } from "./SelectListGroup";

@@ -1,3 +1,4 @@
+export { Autocomplete } from "./Autocomplete";
 export { GroupedSelect } from "./GroupedSelect";
 export type {
   UseKeyboardNavProps,
@@ -10,10 +11,20 @@ export type {
   UseLabelInValueBridgeResult,
 } from "./hooks/use-label-in-value-bridge";
 export { useLabelInValueBridge } from "./hooks/use-label-in-value-bridge";
-export type { UseSelectStateResult } from "./hooks/use-select-state";
-export { useSelectState } from "./hooks/use-select-state";
+export type {
+  UseSearchQueryOptions,
+  UseSearchQueryResult,
+} from "./hooks/use-search-query";
+export { useSearchQuery } from "./hooks/use-search-query";
+export type {
+  UseSelectEngineOptions,
+  UseSelectEngineResult,
+} from "./hooks/use-select-engine";
+export { useSelectEngine } from "./hooks/use-select-engine";
 export type { UseSelectValueResult } from "./hooks/use-select-value";
 export { useSelectValue } from "./hooks/use-select-value";
+export type { SelectDropdownProps } from "./primitives/SelectDropdown";
+export { SelectDropdown } from "./primitives/SelectDropdown";
 export { SelectEmpty } from "./primitives/SelectEmpty";
 export type { SelectListGroupProps } from "./primitives/SelectListGroup";
 export { SelectListGroup } from "./primitives/SelectListGroup";
@@ -43,6 +54,7 @@ export type { UseInfiniteOptionsConfig } from "./strategies/use-infinite-options
 export { useInfiniteOptions } from "./strategies/use-infinite-options";
 export type { UseStaticOptionsConfig } from "./strategies/use-static-options";
 export { useStaticOptions } from "./strategies/use-static-options";
+export type { AutocompleteProps } from "./types";
 export type { GroupedSelectProps, SelectProps } from "./types";
 export type {
   DropdownAlign,
@@ -57,6 +69,7 @@ export type {
   OptionRenderer,
   OptionRenderInfo,
   SelectDataProps,
+  SelectOnChange,
   SelectOption,
   SelectOptionGroup,
   SelectOptionsArray,

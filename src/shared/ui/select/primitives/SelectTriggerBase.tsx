@@ -12,6 +12,8 @@ export interface SelectTriggerBaseProps
   showClear?: boolean;
   onClear?: () => void;
   cursorText?: boolean;
+  hideIcon?: boolean;
+  hideChevron?: boolean;
 }
 
 export const SelectTriggerBase = React.forwardRef<
@@ -28,6 +30,8 @@ export const SelectTriggerBase = React.forwardRef<
       showClear,
       onClear,
       cursorText,
+      hideIcon,
+      hideChevron,
       children,
       ...props
     },
@@ -43,11 +47,14 @@ export const SelectTriggerBase = React.forwardRef<
       {...props}
     >
       {children}
-      <SelectTriggerIcon
-        loading={loading}
-        showClear={showClear}
-        onClear={onClear}
-      />
+      {!hideIcon && (
+        <SelectTriggerIcon
+          loading={loading}
+          showClear={showClear}
+          onClear={onClear}
+          hideChevron={hideChevron}
+        />
+      )}
     </div>
   ),
 );

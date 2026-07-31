@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { SelectOnChange } from "../types";
+import { SelectOnChange, SelectValue } from "../types";
 
-export interface UseSelectValueOptions<V> {
+export interface UseSelectValueOptions<V extends SelectValue> {
   multi: boolean;
   value: V | V[] | null | undefined;
-  onChange: SelectOnChange | undefined;
+  onChange: SelectOnChange<V> | undefined;
   close: () => void;
 }
 
-export interface UseSelectValueResult<V> {
+export interface UseSelectValueResult<V extends SelectValue> {
   selectedValues: V[];
   isSelected: (v: V) => boolean;
   hasValue: boolean;
@@ -18,7 +18,7 @@ export interface UseSelectValueResult<V> {
   handleRemoveTag: (v: V) => void;
 }
 
-export function useSelectValue<V>({
+export function useSelectValue<V extends SelectValue>({
   multi,
   value,
   onChange,

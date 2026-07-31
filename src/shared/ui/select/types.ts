@@ -1,4 +1,5 @@
 import { VariantProps } from "class-variance-authority";
+import type { FactoryOpts } from "imask";
 import * as React from "react";
 
 import { selectTriggerVariants } from "./select-variants";
@@ -12,16 +13,15 @@ export interface SelectOption<V extends SelectValue = string> {
 }
 
 export type SelectOnChange<V extends SelectValue = string> =
-  | ((v: V) => void)
-  | ((v: V | null) => void)
-  | ((v: V[]) => void);
+  ((v: V) => void) | ((v: V | null) => void) | ((v: V[]) => void);
 
 export interface SelectOptionGroup<V extends SelectValue = string> {
   group: string;
   options: SelectOption<V>[];
 }
 
-export type SelectOptionsArray<V extends SelectValue = string> = SelectOption<V>[];
+export type SelectOptionsArray<V extends SelectValue = string> =
+  SelectOption<V>[];
 
 export type SelectOptionsFetcher<TData = unknown> = (
   query: string,
@@ -81,8 +81,7 @@ export interface ISelectRef {
 export type DropdownSide = "top" | "right" | "bottom" | "left";
 export type DropdownAlign = "start" | "center" | "end";
 export type DropdownCollisionPadding =
-  | number
-  | Partial<Record<DropdownSide, number>>;
+  number | Partial<Record<DropdownSide, number>>;
 export type DropdownWidth = "trigger" | "auto" | number;
 export type DropdownMaxWidth = "trigger" | number;
 
@@ -100,8 +99,9 @@ export interface DropdownPlacementProps {
 
 // ─── Appearance ───────────────────────────────────────────────────────────
 
-export interface SelectTriggerAppearance
-  extends VariantProps<typeof selectTriggerVariants> {
+export interface SelectTriggerAppearance extends VariantProps<
+  typeof selectTriggerVariants
+> {
   placeholder?: string;
   className?: string;
   valid?: boolean;
@@ -115,9 +115,7 @@ export interface RenderOptionsContext<V extends SelectValue = string> {
 }
 
 interface SelectBaseProps<V extends SelectValue = string>
-  extends SelectTriggerAppearance,
-    SelectDataProps<V>,
-    DropdownPlacementProps {
+  extends SelectTriggerAppearance, SelectDataProps<V>, DropdownPlacementProps {
   disabled?: boolean;
   empty?: React.ReactNode;
   renderOptions?: (ctx: RenderOptionsContext<V>) => React.ReactNode;
@@ -217,3 +215,18 @@ export type GroupedSelectProps<V extends SelectValue = string> = Omit<
 > & {
   groups?: SelectOptionGroup<V>[];
 };
+
+// ─── Autocomplete ───────────────────────────────────────────────────────────
+
+export interface AutocompleteProps<V extends string = string>
+  extends SelectBaseProps<V> {
+  /** Конфигурация маски imask (если не указана — свободный текст) */
+  mask?: FactoryOpts;
+  /** Текст инпута. Выбор опции подставляет `option.value`,
+   *  `label` — только отображение в списке. */
+  value?: string;
+  /** Вызывается при вводе текста и при выборе опции */
+  onChange?: (value: string) => void;
+  /** Кнопка очистки в инпуте (по умолчанию включена) */
+  clearable?: boolean;
+}

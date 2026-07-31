@@ -1,69 +1,96 @@
 import * as React from "react";
 
+import { useFlatOptions } from "./hooks";
 import { SelectListGroup, SelectListItem } from "./primitives";
 import { Select } from "./Select";
 import {
   type GroupedSelectProps,
+  type ISelectRef,
+  type OptionRenderer,
+  type RenderOptionsContext,
   type SelectOption,
+  type SelectOptionGroup,
   type SelectProps,
   type SelectValue,
 } from "./types";
 
 export { GroupedSelectProps };
 
-export function GroupedSelect<V extends SelectValue = string>(
+/**
+ * Строит renderOptions-колбэк для сгруппированных опций.
+ */
+function createGroupedRenderOptions<V extends SelectValue>({
+  groups,
+  flatOptions,
+  optionRender,
+}: {
+  groups: SelectOptionGroup<V>[];
+  flatOptions: SelectOption<V>[];
+  optionRender?: OptionRenderer<V>;
+}): (ctx: RenderOptionsContext<V>) => React.ReactNode {
+  // Строим карту значение → индекс для O(1) вместо indexOf
+  const indexByValue = new Map<V, number>();
+
+  flatOptions.forEach((opt, i) => indexByValue.set(opt.value, i));
+
+  return ({ focusedIndex, setFocusedIndex, isSelected, onSelect }) =>
+    groups.map(group => (
+      <SelectListGroup key={group.group} label={group.group}>
+        {group.options.map(opt => {
+          const flatIdx = indexByValue.get(opt.value) ?? -1;
+
+          return (
+            <SelectListItem
+              key={opt.value}
+              selected={isSelected(opt.value as V)}
+              focused={flatIdx === focusedIndex}
+              disabled={opt.disabled}
+              onSelect={() => onSelect(opt.value as V)}
+              onFocus={() => setFocusedIndex(flatIdx)}
+              onBlur={() => setFocusedIndex(-1)}
+            >
+              {optionRender
+                ? optionRender({
+                    option: opt as SelectOption<V>,
+                    index: flatIdx,
+                    selected: isSelected(opt.value as V),
+                    focused: flatIdx === focusedIndex,
+                    disabled: !!opt.disabled,
+                  })
+                : opt.label}
+            </SelectListItem>
+          );
+        })}
+      </SelectListGroup>
+    ));
+}
+
+const GroupedSelectInner = <V extends SelectValue = string>(
   props: GroupedSelectProps<V>,
-): React.ReactElement {
+  ref: React.ForwardedRef<ISelectRef>,
+) => {
   const { groups = [], optionRender, ...rest } = props;
 
-  const flatOptions = React.useMemo<SelectOption<V>[]>(
-    () => groups.flatMap(g => g.options as SelectOption<V>[]),
-    [groups],
-  );
+  const flatOptions = useFlatOptions({ groups });
 
   return (
     <Select<V>
+      ref={ref}
       {...({
         ...rest,
         options: flatOptions,
-        renderOptions: ({
-          focusedIndex,
-          setFocusedIndex,
-          isSelected,
-          onSelect,
-        }) =>
-          groups.map(group => (
-            <SelectListGroup key={group.group} label={group.group}>
-              {group.options.map(opt => {
-                const flatIdx = flatOptions.indexOf(opt as SelectOption<V>);
-
-                return (
-                  <SelectListItem
-                    key={opt.value}
-                    selected={isSelected(opt.value as V)}
-                    focused={flatIdx === focusedIndex}
-                    disabled={opt.disabled}
-                    onSelect={() => onSelect(opt.value as V)}
-                    onFocus={() => setFocusedIndex(flatIdx)}
-                    onBlur={() => setFocusedIndex(-1)}
-                  >
-                    {optionRender
-                      ? optionRender({
-                          option: opt as SelectOption<V>,
-                          index: flatIdx,
-                          selected: isSelected(opt.value as V),
-                          focused: flatIdx === focusedIndex,
-                          disabled: !!opt.disabled,
-                        })
-                      : opt.label}
-                  </SelectListItem>
-                );
-              })}
-            </SelectListGroup>
-          )),
+        renderOptions: createGroupedRenderOptions({
+          groups,
+          flatOptions,
+          optionRender,
+        }),
       } as SelectProps<V>)}
     />
   );
-}
+};
 
-GroupedSelect.displayName = "GroupedSelect";
+export const GroupedSelect = React.forwardRef(GroupedSelectInner) as <
+  V extends SelectValue = string,
+>(
+  props: GroupedSelectProps<V> & { ref?: React.Ref<ISelectRef> },
+) => React.ReactElement;

@@ -7,12 +7,15 @@ export interface SelectTriggerIconProps {
   loading?: boolean;
   showClear?: boolean;
   onClear?: () => void;
+  /** Не показывать шеврон, когда нет loading/clear. */
+  hideChevron?: boolean;
 }
 
 export const SelectTriggerIcon = ({
   loading,
   showClear,
   onClear,
+  hideChevron,
 }: SelectTriggerIconProps) => {
   if (loading) {
     return <Spinner size="sm" className="h-4 w-4 opacity-50 shrink-0" />;
@@ -37,6 +40,8 @@ export const SelectTriggerIcon = ({
       </span>
     );
   }
+
+  if (hideChevron) return null;
 
   return <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />;
 };

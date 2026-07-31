@@ -232,6 +232,7 @@ export { Radio, RadioGroup, radioVariants } from "./radio";
 export type { SegmentedOption, SegmentedProps } from "./segmented";
 export { Segmented, segmentedVariants } from "./segmented";
 export type {
+  AutocompleteProps,
   DropdownAlign,
   DropdownCollisionPadding,
   DropdownMaxWidth,
@@ -261,12 +262,16 @@ export type {
   UseKeyboardNavResult,
   UseLabelInValueBridgeOptions,
   UseLabelInValueBridgeResult,
-  UseSelectStateResult,
+  UseSearchQueryResult,
+  UseSelectEngineOptions,
+  UseSelectEngineResult,
   UseStaticOptionsConfig,
 } from "./select";
 export {
+  Autocomplete,
   GroupedSelect,
   Select,
+  SelectDropdown,
   SelectEmpty,
   SelectListGroup,
   SelectListItem,
@@ -284,7 +289,8 @@ export {
   useKeyboardNav,
   useLabelCache,
   useLabelInValueBridge,
-  useSelectState,
+  useSearchQuery,
+  useSelectEngine,
   useStaticOptions,
 } from "./select";
 export type { SeparatorProps } from "./separator";
