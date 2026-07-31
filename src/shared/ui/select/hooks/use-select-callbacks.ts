@@ -21,7 +21,7 @@ export interface UseSelectCallbacksResult<V extends SelectValue> {
 /**
  * Оборачивает selection-операции вызовами `onSelect`/`onDeselect`.
  */
-export function useSelectCallbacks<V extends SelectValue>({
+export const useSelectCallbacks = <V extends SelectValue>({
   options,
   selectedValues,
   handleSelect,
@@ -29,7 +29,7 @@ export function useSelectCallbacks<V extends SelectValue>({
   handleRemoveTag,
   onSelect,
   onDeselect,
-}: UseSelectCallbacksOptions<V>): UseSelectCallbacksResult<V> {
+}: UseSelectCallbacksOptions<V>): UseSelectCallbacksResult<V> => {
   const optionsRef = React.useRef(options);
 
   optionsRef.current = options;
@@ -74,4 +74,4 @@ export function useSelectCallbacks<V extends SelectValue>({
   );
 
   return { handleSelectWrapper, handleClearWrapper, handleRemoveTagWrapper };
-}
+};

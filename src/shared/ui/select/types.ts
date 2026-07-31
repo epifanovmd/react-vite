@@ -126,6 +126,13 @@ interface SelectBaseProps<V extends SelectValue = string>
   onBlur?: (e: React.FocusEvent<HTMLElement>) => void;
   /** Скрывать выпадашку, пока нет опций (open флаг всё равно меняется). */
   hideEmpty?: boolean;
+  /** Закрывать дропдаун при очистке значения
+   *  (по умолчанию: Select — true, Autocomplete — false). */
+  closeOnClear?: boolean;
+  /** Закрывать открытый дропдаун повторным кликом по триггеру
+   *  (по умолчанию: Select — true без поиска и false с поиском,
+   *  Autocomplete — false). */
+  closeOnTriggerClick?: boolean;
 }
 
 // ─── Value modes (discriminated union) ────────────────────────────────────

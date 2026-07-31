@@ -45,6 +45,8 @@ const SelectInner = <V extends SelectValue = string>(
     renderOptions,
     optionRender,
     hideEmpty,
+    closeOnClear,
+    closeOnTriggerClick,
     onSelect,
     onDeselect,
     onFocus,
@@ -92,6 +94,7 @@ const SelectInner = <V extends SelectValue = string>(
     onDeselect,
     onOpenChange,
     onScrollEnd,
+    closeOnClear,
     searchable: search,
     onSearchReset: () => setQuery(""),
   });
@@ -110,7 +113,8 @@ const SelectInner = <V extends SelectValue = string>(
       open={engine.open}
       onOpenChange={engine.handleOpen}
       disabled={disabled}
-      hidden={hideEmpty && options.length === 0 && !loading}
+      hidden={hideEmpty && options.length === 0}
+      closeOnTriggerClick={closeOnTriggerClick ?? !search}
       onInteractOutside={engine.onInteractOutside}
       {...placement}
       trigger={

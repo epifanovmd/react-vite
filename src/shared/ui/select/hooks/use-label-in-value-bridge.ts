@@ -23,14 +23,14 @@ export interface UseLabelInValueBridgeResult<V extends SelectValue> {
  * - `wrappedOnChange`: на вход получает голое `V`, находит label в options/кэше,
  *   возвращает `LabeledValue<V>` в оригинальный `onChange`.
  */
-export function useLabelInValueBridge<V extends SelectValue>({
+export const useLabelInValueBridge = <V extends SelectValue>({
   value,
   onChange,
   multi,
   labelInValue,
   options,
   getLabel,
-}: UseLabelInValueBridgeOptions<V>): UseLabelInValueBridgeResult<V> {
+}: UseLabelInValueBridgeOptions<V>): UseLabelInValueBridgeResult<V> => {
   const optionsRef = React.useRef(options);
 
   optionsRef.current = options;
@@ -95,4 +95,4 @@ export function useLabelInValueBridge<V extends SelectValue>({
   );
 
   return { normalizedValue, wrappedOnChange };
-}
+};

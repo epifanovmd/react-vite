@@ -28,14 +28,14 @@ export interface UseDependentOptionsConfig<TData, V extends SelectValue> {
  * Автоматически перезагружает список при изменении `dependsOn`.
  * Пока грузятся новые данные — показывает `placeholderOptions` (если передан).
  */
-export function useDependentOptions<TData, V extends SelectValue>({
+export const useDependentOptions = <TData, V extends SelectValue>({
   dependsOn,
   fetch,
   getOption,
   search,
   filterOption,
   placeholderOptions,
-}: UseDependentOptionsConfig<TData, V>): SelectDataProps<V> {
+}: UseDependentOptionsConfig<TData, V>): SelectDataProps<V> => {
   const [data, setData] = React.useState<TData[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [query, setQuery] = React.useState("");
@@ -95,4 +95,4 @@ export function useDependentOptions<TData, V extends SelectValue>({
     searchValue: query,
     onSearch: setQuery,
   };
-}
+};

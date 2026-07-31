@@ -20,7 +20,7 @@ export interface SelectTriggerContentProps<V> {
   maxTagCount?: number;
 }
 
-export function SelectTriggerContent<V>({
+const SelectTriggerContentInner = <V,>({
   multi,
   tagsDisplay,
   search,
@@ -34,7 +34,7 @@ export function SelectTriggerContent<V>({
   searchInputProps,
   onRemoveTag,
   maxTagCount,
-}: SelectTriggerContentProps<V>): React.ReactElement {
+}: SelectTriggerContentProps<V>): React.ReactElement => {
   if (multi) {
     const vals = selectedValues;
 
@@ -143,4 +143,11 @@ export function SelectTriggerContent<V>({
       {hasValue ? String(getLabel(selectedValues[0])) : placeholder}
     </span>
   );
-}
+};
+
+const MemoSelectTriggerContent = React.memo(SelectTriggerContentInner);
+
+MemoSelectTriggerContent.displayName = "SelectTriggerContent";
+
+export const SelectTriggerContent =
+  MemoSelectTriggerContent as typeof SelectTriggerContentInner;

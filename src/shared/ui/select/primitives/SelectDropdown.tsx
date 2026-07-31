@@ -10,6 +10,7 @@ export interface SelectDropdownProps extends DropdownPlacementProps {
   disabled?: boolean;
   /** Не рендерить контент дропдауна. */
   hidden?: boolean;
+  closeOnTriggerClick?: boolean;
   onInteractOutside?: (e: Event) => void;
   /** Триггер — любой элемент, принимающий ref и пропсы (asChild). */
   trigger: React.ReactNode;
@@ -22,18 +23,29 @@ export const SelectDropdown = ({
   onOpenChange,
   disabled,
   hidden,
+  closeOnTriggerClick = true,
   onInteractOutside,
   trigger,
   children,
   ...placement
 }: SelectDropdownProps) => (
   <PopoverPrimitive.Root open={open} onOpenChange={onOpenChange}>
-    <PopoverPrimitive.Trigger asChild disabled={disabled}>
+    <PopoverPrimitive.Trigger
+      asChild
+      disabled={disabled}
+      onClick={e => {
+        // preventDefault отменяет встроенный toggle Radix-триггера
+        if (!closeOnTriggerClick && open) e.preventDefault();
+      }}
+    >
       {trigger}
     </PopoverPrimitive.Trigger>
 
     {hidden ? null : (
-      <SelectPopoverContent onInteractOutside={onInteractOutside} {...placement}>
+      <SelectPopoverContent
+        onInteractOutside={onInteractOutside}
+        {...placement}
+      >
         {children}
       </SelectPopoverContent>
     )}

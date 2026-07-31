@@ -7,6 +7,8 @@ export interface UseSelectValueOptions<V extends SelectValue> {
   value: V | V[] | null | undefined;
   onChange: SelectOnChange<V> | undefined;
   close: () => void;
+  /** Закрывать дропдаун при очистке значения (по умолчанию true). */
+  closeOnClear?: boolean;
 }
 
 export interface UseSelectValueResult<V extends SelectValue> {
@@ -18,12 +20,13 @@ export interface UseSelectValueResult<V extends SelectValue> {
   handleRemoveTag: (v: V) => void;
 }
 
-export function useSelectValue<V extends SelectValue>({
+export const useSelectValue = <V extends SelectValue>({
   multi,
   value,
   onChange,
   close,
-}: UseSelectValueOptions<V>): UseSelectValueResult<V> {
+  closeOnClear = true,
+}: UseSelectValueOptions<V>): UseSelectValueResult<V> => {
   const selectedValues = React.useMemo<V[]>(
     () =>
       multi
@@ -62,8 +65,8 @@ export function useSelectValue<V extends SelectValue>({
     } else {
       (onChange as (v: V | null) => void)?.(null);
     }
-    close();
-  }, [multi, onChange, close]);
+    if (closeOnClear) close();
+  }, [multi, onChange, close, closeOnClear]);
 
   const handleRemoveTag = React.useCallback(
     (v: V) => {
@@ -87,4 +90,4 @@ export function useSelectValue<V extends SelectValue>({
     handleClear,
     handleRemoveTag,
   };
-}
+};

@@ -13,7 +13,7 @@ export interface UseAsyncOptionsConfig<TData, V extends SelectValue> {
   minQueryLength?: number;
 }
 
-export function useAsyncOptions<TData, V extends SelectValue>({
+export const useAsyncOptions = <TData, V extends SelectValue>({
   fetch,
   getOption,
   debounce = 300,
@@ -22,7 +22,7 @@ export function useAsyncOptions<TData, V extends SelectValue>({
   refetchInterval,
   fetchOnMount = false,
   minQueryLength = 0,
-}: UseAsyncOptionsConfig<TData, V>): SelectDataProps<V> {
+}: UseAsyncOptionsConfig<TData, V>): SelectDataProps<V> => {
   const [options, setOptions] = React.useState<SelectOption<V>[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -131,4 +131,4 @@ export function useAsyncOptions<TData, V extends SelectValue>({
     onSearch: setQuery,
     onOpenChange: setOpen,
   };
-}
+};

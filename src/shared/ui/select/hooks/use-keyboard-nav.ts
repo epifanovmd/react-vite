@@ -13,11 +13,11 @@ export interface UseKeyboardNavResult {
   listRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function useKeyboardNav({
+export const useKeyboardNav = ({
   count,
   onSelect,
   onClose,
-}: UseKeyboardNavProps): UseKeyboardNavResult {
+}: UseKeyboardNavProps): UseKeyboardNavResult => {
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const listRef = React.useRef<HTMLDivElement>(null);
 
@@ -71,4 +71,4 @@ export function useKeyboardNav({
   }, [count]);
 
   return { focusedIndex, setFocusedIndex, handleKeyDown, listRef };
-}
+};

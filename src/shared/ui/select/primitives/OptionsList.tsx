@@ -32,7 +32,7 @@ export interface OptionsListProps<V extends SelectValue> {
  * Рендерит скроллируемый список опций с состояниями:
  * loading, empty, items, loadingMore.
  */
-export function OptionsList<V extends SelectValue>({
+const OptionsListInner = <V extends SelectValue>({
   loading,
   loadingMore,
   options,
@@ -46,7 +46,7 @@ export function OptionsList<V extends SelectValue>({
   onSelect,
   listRef,
   onScroll,
-}: OptionsListProps<V>): React.ReactElement {
+}: OptionsListProps<V>): React.ReactElement => {
   return (
     <div
       ref={listRef}
@@ -98,4 +98,10 @@ export function OptionsList<V extends SelectValue>({
       )}
     </div>
   );
-}
+};
+
+const MemoOptionsList = React.memo(OptionsListInner);
+
+MemoOptionsList.displayName = "OptionsList";
+
+export const OptionsList = MemoOptionsList as typeof OptionsListInner;

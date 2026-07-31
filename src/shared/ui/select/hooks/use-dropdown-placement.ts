@@ -3,9 +3,9 @@ import * as React from "react";
 import type { DropdownPlacementProps } from "../types";
 
 /** Выбирает из пропсов набор позиционирования для `SelectDropdown`. */
-export function useDropdownPlacement(
+export const useDropdownPlacement = (
   props: DropdownPlacementProps,
-): DropdownPlacementProps {
+): DropdownPlacementProps => {
   const {
     dropdownSide,
     dropdownAlign,
@@ -42,4 +42,4 @@ export function useDropdownPlacement(
       dropdownContainer,
     ],
   );
-}
+};

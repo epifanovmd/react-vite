@@ -9,11 +9,10 @@ export interface UseFlatOptionsOptions<V extends SelectValue> {
 /**
  * Разворачивает сгруппированные опции в плоский массив.
  */
-export function useFlatOptions<V extends SelectValue>({
+export const useFlatOptions = <V extends SelectValue>({
   groups,
-}: UseFlatOptionsOptions<V>): SelectOption<V>[] {
-  return React.useMemo<SelectOption<V>[]>(
+}: UseFlatOptionsOptions<V>): SelectOption<V>[] =>
+  React.useMemo<SelectOption<V>[]>(
     () => groups.flatMap(g => g.options as SelectOption<V>[]),
     [groups],
   );
-}

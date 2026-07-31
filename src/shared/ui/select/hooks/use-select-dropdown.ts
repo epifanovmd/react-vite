@@ -15,11 +15,11 @@ export interface UseSelectDropdownResult {
  * Поведение дропдауна: защита от закрытия по клику на триггер в режиме
  * поиска и обнаружение скролла до конца списка (infinite scroll).
  */
-export function useSelectDropdown({
+export const useSelectDropdown = ({
   search,
   inputRef,
   onScrollEnd,
-}: UseSelectDropdownOptions): UseSelectDropdownResult {
+}: UseSelectDropdownOptions): UseSelectDropdownResult => {
   const onInteractOutside = React.useCallback(
     (e: Event) => {
       if (!search) return;
@@ -47,4 +47,4 @@ export function useSelectDropdown({
   );
 
   return { onInteractOutside, handleScroll };
-}
+};

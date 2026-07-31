@@ -19,7 +19,7 @@ export { GroupedSelectProps };
 /**
  * Строит renderOptions-колбэк для сгруппированных опций.
  */
-function createGroupedRenderOptions<V extends SelectValue>({
+const createGroupedRenderOptions = <V extends SelectValue>({
   groups,
   flatOptions,
   optionRender,
@@ -27,7 +27,7 @@ function createGroupedRenderOptions<V extends SelectValue>({
   groups: SelectOptionGroup<V>[];
   flatOptions: SelectOption<V>[];
   optionRender?: OptionRenderer<V>;
-}): (ctx: RenderOptionsContext<V>) => React.ReactNode {
+}): ((ctx: RenderOptionsContext<V>) => React.ReactNode) => {
   // Строим карту значение → индекс для O(1) вместо indexOf
   const indexByValue = new Map<V, number>();
 
@@ -63,7 +63,7 @@ function createGroupedRenderOptions<V extends SelectValue>({
         })}
       </SelectListGroup>
     ));
-}
+};
 
 const GroupedSelectInner = <V extends SelectValue = string>(
   props: GroupedSelectProps<V>,
@@ -73,17 +73,18 @@ const GroupedSelectInner = <V extends SelectValue = string>(
 
   const flatOptions = useFlatOptions({ groups });
 
+  const renderOptions = React.useMemo(
+    () => createGroupedRenderOptions({ groups, flatOptions, optionRender }),
+    [groups, flatOptions, optionRender],
+  );
+
   return (
     <Select<V>
       ref={ref}
       {...({
         ...rest,
         options: flatOptions,
-        renderOptions: createGroupedRenderOptions({
-          groups,
-          flatOptions,
-          optionRender,
-        }),
+        renderOptions,
       } as SelectProps<V>)}
     />
   );

@@ -14,14 +14,14 @@ export interface UseSelectRefOptions {
 /**
  * Предоставляет императивный ref-API: focus, blur, scrollTo, nativeElement.
  */
-export function useSelectRef({
+export const useSelectRef = ({
   ref,
   search,
   handleOpen,
   inputRef,
   triggerRef,
   listRef,
-}: UseSelectRefOptions): void {
+}: UseSelectRefOptions): void => {
   React.useImperativeHandle(
     ref,
     () => ({
@@ -48,4 +48,4 @@ export function useSelectRef({
     }),
     [search, handleOpen, inputRef, triggerRef, listRef],
   );
-}
+};

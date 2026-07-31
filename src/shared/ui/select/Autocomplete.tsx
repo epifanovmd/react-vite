@@ -29,6 +29,8 @@ const AutocompleteInner = <V extends string = string>(
     optionRender,
     renderOptions,
     hideEmpty = true,
+    closeOnClear = false,
+    closeOnTriggerClick = false,
     onSelect,
     onDeselect,
     onFocus,
@@ -68,13 +70,14 @@ const AutocompleteInner = <V extends string = string>(
     onDeselect,
     onOpenChange,
     onScrollEnd,
+    closeOnClear,
     searchable: true,
   });
 
   const handleInputChange = (info: MaskedInputChangeInfo<FactoryOpts>) => {
     onSearch?.(info.value);
     onChange?.(info.unmaskedValue);
-    if (!engine.open) engine.handleOpen(true);
+    // if (!engine.open) engine.handleOpen(true);
   };
 
   const {
@@ -104,7 +107,8 @@ const AutocompleteInner = <V extends string = string>(
       open={engine.open}
       onOpenChange={engine.handleOpen}
       disabled={disabled}
-      hidden={hideEmpty && options.length === 0 && !loading}
+      hidden={hideEmpty && options.length === 0}
+      closeOnTriggerClick={closeOnTriggerClick}
       onInteractOutside={engine.onInteractOutside}
       {...placement}
       trigger={
@@ -134,10 +138,6 @@ const AutocompleteInner = <V extends string = string>(
             aria-expanded={engine.open}
             aria-autocomplete="list"
             onKeyDown={engine.handleKeyDown}
-            onPointerDown={e => {
-              // не даём Popover.Trigger закрыть открытый дропдаун
-              if (engine.open) e.stopPropagation();
-            }}
           />
         </SelectTriggerBase>
       }

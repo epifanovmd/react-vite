@@ -14,13 +14,13 @@ export interface UseInfiniteOptionsConfig<TData, V extends SelectValue> {
   minQueryLength?: number;
 }
 
-export function useInfiniteOptions<TData, V extends SelectValue>({
+export const useInfiniteOptions = <TData, V extends SelectValue>({
   fetchPage,
   getOption,
   pageSize = 20,
   debounce = 300,
   minQueryLength = 0,
-}: UseInfiniteOptionsConfig<TData, V>): SelectDataProps<V> {
+}: UseInfiniteOptionsConfig<TData, V>): SelectDataProps<V> => {
   const [options, setOptions] = React.useState<SelectOption<V>[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
@@ -99,4 +99,4 @@ export function useInfiniteOptions<TData, V extends SelectValue>({
     onScrollEnd,
     onOpenChange: setOpen,
   };
-}
+};

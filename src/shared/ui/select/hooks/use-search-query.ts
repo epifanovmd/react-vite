@@ -11,10 +11,10 @@ export interface UseSearchQueryResult {
 }
 
 /** Состояние поисковой строки; при переданном `searchValue` — controlled. */
-export function useSearchQuery({
+export const useSearchQuery = ({
   searchValue,
   onSearch,
-}: UseSearchQueryOptions): UseSearchQueryResult {
+}: UseSearchQueryOptions): UseSearchQueryResult => {
   const [internalQuery, setInternalQuery] = React.useState("");
 
   const isControlled = searchValue !== undefined;
@@ -29,4 +29,4 @@ export function useSearchQuery({
   );
 
   return { query, setQuery };
-}
+};

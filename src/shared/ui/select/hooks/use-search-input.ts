@@ -17,12 +17,12 @@ export interface UseSearchInputResult {
 /**
  * Конструирует пропсы для поискового `<input>` внутри триггера.
  */
-export function useSearchInput({
+export const useSearchInput = ({
   inputRef,
   open,
   setQuery,
   handleKeyDown,
-}: UseSearchInputOptions): UseSearchInputResult {
+}: UseSearchInputOptions): UseSearchInputResult => {
   const searchInputProps: ComponentPropsWithRef<"input"> = React.useMemo(
     () => ({
       ref: inputRef,
@@ -39,4 +39,4 @@ export function useSearchInput({
   );
 
   return { searchInputProps };
-}
+};

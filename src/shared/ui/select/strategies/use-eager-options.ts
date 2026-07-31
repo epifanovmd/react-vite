@@ -16,13 +16,13 @@ export interface UseEagerOptionsConfig<TData, V extends SelectValue> {
   filterOption?: boolean | FilterOptionPredicate<V>;
 }
 
-export function useEagerOptions<TData, V extends SelectValue>({
+export const useEagerOptions = <TData, V extends SelectValue>({
   fetch,
   getOption,
   search,
   fetchKey,
   filterOption,
-}: UseEagerOptionsConfig<TData, V>): SelectDataProps<V> {
+}: UseEagerOptionsConfig<TData, V>): SelectDataProps<V> => {
   const [data, setData] = React.useState<TData[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [query, setQuery] = React.useState("");
@@ -79,4 +79,4 @@ export function useEagerOptions<TData, V extends SelectValue>({
     searchValue: query,
     onSearch: setQuery,
   };
-}
+};

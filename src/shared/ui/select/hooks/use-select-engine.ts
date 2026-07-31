@@ -23,6 +23,8 @@ export interface UseSelectEngineOptions<V extends SelectValue> {
   /** Вызывается при любой смене open, включая программное закрытие. */
   onOpenChange?: (open: boolean) => void;
   onScrollEnd?: () => void;
+  /** Закрывать дропдаун при очистке значения (по умолчанию true). */
+  closeOnClear?: boolean;
   /** Триггер содержит текстовый инпут: автофокус при открытии,
    *  защита от закрытия по клику внутрь триггера. */
   searchable?: boolean;
@@ -56,7 +58,7 @@ export interface UseSelectEngineResult<V extends SelectValue> {
  * клавиатурная навигация, ref-API и поведение дропдауна. Варианты
  * (Select, Autocomplete, ...) подключают к нему своё представление.
  */
-export function useSelectEngine<V extends SelectValue>({
+export const useSelectEngine = <V extends SelectValue>({
   ref,
   options,
   multi = false,
@@ -66,9 +68,10 @@ export function useSelectEngine<V extends SelectValue>({
   onDeselect,
   onOpenChange,
   onScrollEnd,
+  closeOnClear,
   searchable = false,
   onSearchReset,
-}: UseSelectEngineOptions<V>): UseSelectEngineResult<V> {
+}: UseSelectEngineOptions<V>): UseSelectEngineResult<V> => {
   const [open, setOpen] = React.useState(false);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -108,7 +111,7 @@ export function useSelectEngine<V extends SelectValue>({
     handleSelect,
     handleClear,
     handleRemoveTag,
-  } = useSelectValue<V>({ multi, value, onChange, close });
+  } = useSelectValue<V>({ multi, value, onChange, close, closeOnClear });
 
   const { handleSelectWrapper, handleClearWrapper, handleRemoveTagWrapper } =
     useSelectCallbacks<V>({
@@ -174,4 +177,4 @@ export function useSelectEngine<V extends SelectValue>({
     onInteractOutside,
     handleScroll,
   };
-}
+};

@@ -16,13 +16,13 @@ export interface UseControlledOptionsConfig<TData, V extends SelectValue> {
   filterOption?: boolean | FilterOptionPredicate<V>;
 }
 
-export function useControlledOptions<TData, V extends SelectValue>({
+export const useControlledOptions = <TData, V extends SelectValue>({
   data,
   getOption,
   loading,
   search,
   filterOption,
-}: UseControlledOptionsConfig<TData, V>): SelectDataProps<V> {
+}: UseControlledOptionsConfig<TData, V>): SelectDataProps<V> => {
   const [query, setQuery] = React.useState("");
 
   const all = React.useMemo(
@@ -49,4 +49,4 @@ export function useControlledOptions<TData, V extends SelectValue>({
     searchValue: query,
     onSearch: setQuery,
   };
-}
+};
