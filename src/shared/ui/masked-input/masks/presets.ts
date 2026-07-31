@@ -1,7 +1,7 @@
 import type { FactoryOpts } from "imask";
 import { MaskedRange } from "imask";
 
-export const phoneMask: FactoryOpts = { mask: "+7 (000) 000-00-00" };
+export const phoneMask: FactoryOpts = { mask: "+{7} (000) 000-00-00" };
 
 export const internationalPhoneMask: FactoryOpts = { mask: "+000000000000000" };
 

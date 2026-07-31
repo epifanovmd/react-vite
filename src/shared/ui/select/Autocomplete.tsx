@@ -80,6 +80,7 @@ const AutocompleteInner = <V extends string = string>(
   const {
     ref: maskRef,
     value: displayValue,
+    unmaskedValue,
     setValue,
   } = useMaskedInput<FactoryOpts>({
     mask,
@@ -90,8 +91,8 @@ const AutocompleteInner = <V extends string = string>(
   setValueRef.current = setValue;
 
   const isOptionSelected = React.useCallback(
-    (v: V) => displayValue !== "" && String(v) === displayValue,
-    [displayValue],
+    (v: V) => unmaskedValue !== "" && String(v) === unmaskedValue,
+    [unmaskedValue],
   );
 
   const mergedInputRef = useMergedRef(engine.inputRef, maskRef);
