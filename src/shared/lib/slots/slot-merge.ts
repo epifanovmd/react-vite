@@ -1,3 +1,4 @@
+import { cn } from "../utils/cn";
 import type { AnyProps } from "./slot-meta";
 
 const composeHandlers = (
@@ -29,8 +30,9 @@ export const mergeSlotProps = {
   },
 
   /**
-   * Инъекция дописывается к props потребителя: `style` склеивается, `on*`
-   * вызываются оба (сначала потребительский), остальное затирается.
+   * Инъекция дописывается к props потребителя: `className` объединяется через
+   * `cn`, `style` сливается объектом, `on*` вызываются оба (сначала
+   * потребительский), остальное затирается.
    */
   compose(props: AnyProps, inject: AnyProps): AnyProps {
     const merged: AnyProps = { ...props };
@@ -46,8 +48,10 @@ export const mergeSlotProps = {
 
       if (prev === undefined || prev === null) {
         merged[key] = next;
+      } else if (key === "className") {
+        merged[key] = cn(prev as string, next as string);
       } else if (key === "style") {
-        merged[key] = [prev, next];
+        merged[key] = { ...(prev as object), ...(next as object) };
       } else if (isHandler(key, prev, next)) {
         merged[key] = composeHandlers(prev, next);
       } else {

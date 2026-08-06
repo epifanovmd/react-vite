@@ -14,7 +14,7 @@ once; children are resolved in a single `O(children)` pass. Names and
 - `slot-handle.ts` — slot handles and the prop fold that renders a slot.
 - `slot-merge.ts` — merge policies (`compose` by default, `replace`).
 - `slot-meta.ts` — symbols, prepared entry shape, owner matching.
-- `slot-validate.ts` — assertions, called only under `__DEV__`.
+- `slot-validate.ts` — assertions, called only in dev (`import.meta.env.DEV`).
 - `resolve-children.ts` / `resolve-object.ts` — JSX and object strategies.
 - `create-compound.ts` — composition root.
 

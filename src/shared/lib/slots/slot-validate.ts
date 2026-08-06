@@ -1,7 +1,7 @@
 import type { ResolvedSlots, SlotSchema } from "./slot.types";
 import type { ResolveContext, SlotEntry, SlotMeta } from "./slot-meta";
 
-/** Все проверки вызываются только под `__DEV__` — в prod их нет в рантайме. */
+/** Все проверки вызываются только в dev-режиме — в prod их нет в рантайме. */
 
 export const assertOwnSlot = (
   { ownerName }: ResolveContext,
