@@ -70,8 +70,8 @@ export const namingConfig = {
         "src/**/": "KEBAB_CASE",
       },
       {
-        // _app / _auth — pathless layout routes TanStack Router, не наша конвенция.
-        ignoreWords: ["_app", "_auth"],
+        // _app / _auth — pathless layout routes; __tests__ — test-runner convention.
+        ignoreWords: ["_app", "_auth", "__tests__"],
       },
     ],
   },
