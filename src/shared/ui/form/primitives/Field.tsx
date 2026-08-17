@@ -98,7 +98,8 @@ export const Field = React.forwardRef<
             className={cn(
               "group/floating relative",
               "[&_[data-slot=input]]:h-14 [&_[data-slot=input]]:pt-6 [&_[data-slot=input]]:pb-1.5",
-              "[&_[data-slot=input]]:placeholder:opacity-0 focus-within:[&_[data-slot=input]]:placeholder:opacity-100",
+              "[&_[data-slot=input]]:placeholder:opacity-0 [&_[data-slot=input]]:placeholder:transition-opacity [&_[data-slot=input]]:placeholder:duration-200",
+              "focus-within:[&_[data-slot=input]]:placeholder:opacity-100",
               "[&:has([data-size=sm])_[data-slot=input]]:h-12 [&:has([data-size=sm])_[data-slot=input]]:pt-5 [&:has([data-size=sm])_[data-slot=input]]:pb-1",
               "[&:has([data-size=lg])_[data-slot=input]]:h-16 [&:has([data-size=lg])_[data-slot=input]]:pt-7 [&:has([data-size=lg])_[data-slot=input]]:pb-2",
               "[&_[data-slot=input-left-icon]]:top-[62%] [&_[data-slot=input-actions]]:top-[62%]",

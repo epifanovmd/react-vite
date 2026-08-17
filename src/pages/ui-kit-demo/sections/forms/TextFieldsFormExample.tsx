@@ -42,6 +42,7 @@ export const TextFieldsFormExample = () => {
             name="name"
             label="Имя"
             labelPlacement="floating"
+            placeholder="Введите имя"
             clearable
             required
           />

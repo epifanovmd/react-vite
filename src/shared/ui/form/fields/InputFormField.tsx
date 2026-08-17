@@ -18,7 +18,12 @@ export type InputFormFieldProps<
  * String input connected to RHF.
  *
  * @example
- * <InputFormField<TForm> name="email" label="Email" type="email" />
+ * <InputFormField<TForm>
+ *   name="email"
+ *   label="Email"
+ *   labelPlacement="floating"
+ *   placeholder="name@example.com"
+ * />
  */
 export function InputFormField<
   TFormData extends FieldValues,
