@@ -30,6 +30,7 @@ export function FormField<
   name,
   control,
   label,
+  labelPlacement,
   hint,
   description,
   required,
@@ -43,6 +44,7 @@ export function FormField<
       render={({ field, fieldState }) => (
         <Field
           label={label}
+          labelPlacement={labelPlacement}
           hint={hint}
           description={description}
           error={fieldState.error?.message}

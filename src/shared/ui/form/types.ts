@@ -9,6 +9,7 @@ import type {
 
 export interface FieldProps {
   label?: React.ReactNode;
+  labelPlacement?: "outside" | "floating";
   hint?: React.ReactNode;
   description?: React.ReactNode;
   error?: string;

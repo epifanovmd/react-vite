@@ -5,6 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Field as FormField,
   Input,
   phoneMask,
   useAsyncOptions,
@@ -164,6 +165,36 @@ export const InputsSection: FC = () => {
             <Field label="Loading">
               <Input placeholder="Loading..." loading />
             </Field>
+          </Row>
+        </div>
+
+        <div>
+          <GroupTitle>Floating label</GroupTitle>
+          <Row>
+            <FormField
+              htmlFor="floating-email"
+              label="Email"
+              labelPlacement="floating"
+            >
+              <Input id="floating-email" type="email" />
+            </FormField>
+            <FormField
+              description="Label остаётся сверху после заполнения"
+              htmlFor="floating-name"
+              label="Имя"
+              labelPlacement="floating"
+              required
+            >
+              <Input id="floating-name" defaultValue="Андрей" />
+            </FormField>
+            <FormField
+              error="Поле заполнено неверно"
+              htmlFor="floating-error"
+              label="Телефон"
+              labelPlacement="floating"
+            >
+              <Input id="floating-error" variant="error" />
+            </FormField>
           </Row>
         </div>
 

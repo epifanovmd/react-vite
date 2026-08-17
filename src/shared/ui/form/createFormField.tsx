@@ -32,6 +32,7 @@ export function createFormField<TComponentProps extends object>(
     name,
     control,
     label,
+    labelPlacement,
     hint,
     description,
     required,
@@ -48,6 +49,7 @@ export function createFormField<TComponentProps extends object>(
         name={name}
         control={control}
         label={label}
+        labelPlacement={labelPlacement}
         hint={hint}
         description={description}
         required={required}

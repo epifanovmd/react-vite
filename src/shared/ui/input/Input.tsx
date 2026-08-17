@@ -91,6 +91,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         className={cn("relative flex w-full", className)}
+        data-has-value={hasValue}
+        data-size={size ?? "md"}
         data-slot="input-root"
       >
         {leftIcon && (
