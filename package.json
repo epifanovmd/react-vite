@@ -26,10 +26,14 @@
     "test": "vitest run",
     "test:dev": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint:fix": "eslint --fix \"**/*{.ts,.tsx}\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"**/*.{ts,tsx}\"",
+    "lint:fix": "eslint --fix \"**/*.{ts,tsx}\"",
     "generate:orval": "orval --config ./orval.config.ts",
     "prettier:fix": "prettier --parser typescript --write src/**/*.{ts,tsx}",
-    "check-packages-updates": "yarn outdated"
+    "check-packages-updates": "yarn outdated",
+    "prepare": "husky",
+    "precommit": "lint-staged && tsc --noEmit && vitest run"
   },
   "dependencies": {
     "@dnd-kit/abstract": "^0.5.0",
@@ -80,18 +84,18 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@simplewebauthn/types": "^12.0.0",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.0",
-    "@vitest/coverage-v8": "4.1.10",
-    "@eslint/js": "^10.0.1",
-    "@simplewebauthn/types": "^12.0.0",
     "@types/lodash": "^4.17.16",
     "@types/node": "^26.1.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.2",
     "@types/react-test-renderer": "^19.1.0",
     "@types/shortid": "^2.2.0",
+    "@vitest/coverage-v8": "4.1.10",
     "eslint": "^10.7.0",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-boundaries": "^7.1.0",
@@ -100,7 +104,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "eslint-plugin-simple-import-sort": "^14.0.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.0.0",
+    "lint-staged": "^17.3.0",
     "orval": "^8.19.0",
     "prettier": "^3.5.3",
     "react-test-renderer": "^19.1.0",
@@ -112,17 +118,12 @@
   "resolutions": {
     "vitest/vite": "8.1.5"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix \"src/**/*{.ts,.tsx}\"",
-      "prettier --parser typescript --write src/**/*.{ts,tsx}",
-      "git add"
-    ]
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,mjs,cjs,json,css,md,html,yml,yaml}": "prettier --write"
   },
   "browserslist": [
     ">0.2%",
