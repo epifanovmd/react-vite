@@ -1,6 +1,6 @@
 import { EditProfileModal } from "@features/edit-profile";
-import { Button, InfoFieldProps, PageHeader, PageLayout, PageLoader } from "@shared/ui";
-import { MailCheck } from "lucide-react";
+import { RequestEmailVerificationButton } from "@features/request-email-verification";
+import { InfoFieldProps, PageHeader, PageLayout, PageLoader } from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
@@ -12,15 +12,7 @@ const header = (
 );
 
 export const ProfilePage: FC = observer(() => {
-  const {
-    model,
-    profile,
-    isEditOpen,
-    openEdit,
-    closeEdit,
-    isVerifyingEmail,
-    handleVerifyEmail,
-  } = useProfileVM();
+  const { model, profile, isEditOpen, openEdit, closeEdit } = useProfileVM();
 
   if (!model) {
     return (
@@ -40,15 +32,7 @@ export const ProfilePage: FC = observer(() => {
       value: model.email,
       action:
         model.email && !model.emailVerified ? (
-          <Button
-            size="sm"
-            variant="outline"
-            loading={isVerifyingEmail}
-            leftIcon={<MailCheck size={14} />}
-            onClick={handleVerifyEmail}
-          >
-            Подтвердить
-          </Button>
+          <RequestEmailVerificationButton />
         ) : undefined,
     },
     { label: "Телефон", value: model.phone },

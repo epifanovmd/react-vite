@@ -1,15 +1,13 @@
 import { IAuthStore } from "@entities/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isEmail, isPhone } from "@shared/lib/utils";
-import { useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 
 import { signUpFormValidationSchema, TSignUpForm } from "./validation";
 
-export const useSignUpVM = () => {
+export const useSignUpVM = (onSuccess: () => void) => {
   const authStore = IAuthStore.useInstance();
-  const navigate = useNavigate();
 
   const form = useForm<TSignUpForm>({
     defaultValues: {},
@@ -38,10 +36,10 @@ export const useSignUpVM = () => {
       }
 
       if (authStore.isAuthenticated) {
-        navigate({ to: "/" });
+        onSuccess();
       }
     })();
-  }, [form, navigate, authStore]);
+  }, [form, onSuccess, authStore]);
 
   return {
     form,

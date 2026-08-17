@@ -1,59 +1,12 @@
-import {
-  Badge,
-  type ColumnFilterOption,
-  createColumnHelper,
-  type DateRange,
-} from "@shared/ui";
+import { createColumnHelper, type DateRange } from "@shared/ui";
 import type { FilterFn } from "@tanstack/react-table";
-import type { ReactNode } from "react";
 
-import type { Order, OrderStatus } from "./order.types";
+import type { Order } from "./order.types";
+import { formatCurrency, formatDate } from "./order-table.meta";
+import { RightAlign } from "./RightAlign";
+import { StatusBadge } from "./StatusBadge";
 
 const orderHelper = createColumnHelper<Order>();
-
-export const STATUS_META: Record<
-  OrderStatus,
-  { label: string; variant: "success" | "warning" | "destructive" | "info" }
-> = {
-  paid: { label: "Оплачен", variant: "success" },
-  pending: { label: "В ожидании", variant: "warning" },
-  failed: { label: "Ошибка", variant: "destructive" },
-  refunded: { label: "Возврат", variant: "info" },
-};
-
-export const STATUS_FILTER_OPTIONS: ColumnFilterOption<OrderStatus>[] = (
-  Object.keys(STATUS_META) as OrderStatus[]
-).map(status => ({ value: status, label: STATUS_META[status].label }));
-
-const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
-const DATE_FORMATTER = new Intl.DateTimeFormat("ru-RU", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-});
-
-export const formatCurrency = (cents: number): string =>
-  CURRENCY_FORMATTER.format(cents / 100);
-
-export const formatDate = (iso: string): string =>
-  DATE_FORMATTER.format(new Date(iso));
-
-export const StatusBadge = ({ status }: { status: OrderStatus }) => {
-  const meta = STATUS_META[status];
-
-  return (
-    <Badge variant={meta.variant} dot>
-      {meta.label}
-    </Badge>
-  );
-};
-
-const RightAlign = ({ children }: { children: ReactNode }) => (
-  <div className="text-right tabular-nums">{children}</div>
-);
 
 const dateRangeFilterFn: FilterFn<Order> = (
   row,

@@ -10,9 +10,9 @@ import { IBiometricStore } from "./biometric-types";
 export class BiometricStore implements IBiometricStore {
   public devicesHolder = new CollectionHolder<IBiometricDeviceDto>({
     onFetch: async () => {
-      const res = await this._api.getDevices();
+      const response = await this._api.getDevices();
 
-      return { data: res.data?.devices, error: res.error };
+      return { data: response.data?.devices, error: response.error };
     },
   });
 
@@ -29,13 +29,13 @@ export class BiometricStore implements IBiometricStore {
     deviceName: string;
     publicKey: string;
   }) {
-    const res = await this._api.registerBiometric(data);
+    const response = await this._api.registerBiometric(data);
 
-    if (res.data) {
+    if (response.data) {
       await this.loadDevices();
     }
 
-    return res;
+    return response;
   }
 
   async generateNonce(deviceId: string) {
@@ -47,12 +47,12 @@ export class BiometricStore implements IBiometricStore {
   }
 
   async deleteDevice(deviceId: string) {
-    const res = await this._api.deleteDevice(deviceId);
+    const response = await this._api.deleteDevice(deviceId);
 
-    if (!res.error) {
-      this.devicesHolder.removeItem(d => d.deviceId === deviceId);
+    if (!response.error) {
+      this.devicesHolder.removeItem(device => device.deviceId === deviceId);
     }
 
-    return res;
+    return response;
   }
 }

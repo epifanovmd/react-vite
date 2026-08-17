@@ -18,16 +18,45 @@ const SHARED_SEGMENTS = ["ui", "api", "config"];
 
 /** Слайсы entities/features/widgets/pages — self-import запрещён внутри своего же слайса. */
 const SLICE_LAYERS = {
-  entities: ["auth", "user"],
-  features: ["sign-in", "sign-up", "forgot-password", "reset-password", "edit-profile"],
+  entities: ["auth", "biometric", "user"],
+  features: [
+    "sign-in",
+    "sign-up",
+    "sign-out",
+    "forgot-password",
+    "reset-password",
+    "edit-profile",
+    "request-email-verification",
+  ],
   widgets: ["app-layout", "auth-layout"],
-  pages: ["sign-in", "sign-up", "forgot-password", "reset-password", "profile", "ui-kit-demo", "errors"],
+  pages: [
+    "sign-in",
+    "sign-up",
+    "forgot-password",
+    "reset-password",
+    "profile",
+    "ui-kit-demo",
+    "errors",
+  ],
+};
+
+const publicApiImportPattern = {
+  group: [
+    "@entities/*/*",
+    "@features/*/*",
+    "@widgets/*/*",
+    "@pages/*/*",
+  ],
+  message: "Импортируй слайс через его публичный API (корневой index.ts)",
 };
 
 const selfImportRestriction = (files, group, message) => ({
   files,
   rules: {
-    "no-restricted-imports": ["error", { patterns: [{ group, message }] }],
+    "no-restricted-imports": [
+      "error",
+      { patterns: [publicApiImportPattern, { group, message }] },
+    ],
   },
 });
 
@@ -71,6 +100,13 @@ export default tseslint.config(
       react,
     },
     rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [publicApiImportPattern],
+        },
+      ],
+
       // react-hooks: только базовые правила, без React Compiler
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": [

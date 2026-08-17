@@ -6,3 +6,4 @@ export { ISessionStore } from "./model/session-types";
 export { IUserRealtime, IUserStore } from "./model/types";
 export { UserModel } from "./model/user-model";
 export { UserAvatar } from "./ui/UserAvatar";
+export { userModule } from "./user.module";

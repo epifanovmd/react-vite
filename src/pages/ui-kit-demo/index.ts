@@ -1,1 +1,1 @@
-export * from "./UIPage";
+export { UIPage } from "./UIPage";

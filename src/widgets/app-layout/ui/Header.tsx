@@ -8,11 +8,7 @@ import { HeaderNavItem } from "./HeaderNavItem";
 import { MobileMenu } from "./MobileMenu";
 import { ProfileMenu } from "./ProfileMenu";
 
-interface HeaderProps {
-  onSignOut: () => void;
-}
-
-export const Header: FC<HeaderProps> = observer(({ onSignOut }) => {
+export const Header: FC = observer(() => {
   const {
     displayName,
     initials,
@@ -49,7 +45,6 @@ export const Header: FC<HeaderProps> = observer(({ onSignOut }) => {
             displayName={displayName}
             initials={initials}
             subtitle={subtitle}
-            onSignOut={onSignOut}
           />
         </div>
       </div>
@@ -61,7 +56,6 @@ export const Header: FC<HeaderProps> = observer(({ onSignOut }) => {
         displayName={displayName}
         initials={initials}
         subtitle={subtitle}
-        onSignOut={onSignOut}
       />
     </header>
   );

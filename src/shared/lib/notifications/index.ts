@@ -1,3 +1,4 @@
+export { notificationModule } from "./notification.module";
 export type {
   NotificationOptions,
   PromiseMessages,

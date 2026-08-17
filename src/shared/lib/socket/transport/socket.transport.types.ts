@@ -1,22 +1,12 @@
 import { createInjectDecorator, SupportInitialize } from "@shared/lib/di";
 import { Socket as SocketIO } from "socket.io-client";
 
-import {
-  SocketClientToServerEvents,
-  SocketServerToClientEvents,
-} from "../events";
-
-export type AppSocket = SocketIO<
-  SocketServerToClientEvents,
-  SocketClientToServerEvents
->;
+export type SocketEventHandler = (...args: any[]) => void;
+export type SocketEventsMap = Record<string, SocketEventHandler>;
+export type AppSocket = SocketIO<SocketEventsMap, SocketEventsMap>;
 
 export type SocketConnectionStatus =
-  | "idle"
-  | "connecting"
-  | "connected"
-  | "disconnected"
-  | "error";
+  "idle" | "connecting" | "connected" | "disconnected" | "error";
 
 export interface SocketTransportState {
   status: SocketConnectionStatus;
@@ -34,15 +24,12 @@ export interface ISocketTransport extends SupportInitialize {
   connect(): Promise<void>;
   disconnect(): void;
 
-  on<K extends keyof SocketServerToClientEvents>(
-    event: K,
-    handler: SocketServerToClientEvents[K],
+  on<TArgs extends any[]>(
+    event: string,
+    handler: (...args: TArgs) => void,
   ): () => void;
 
-  emit<K extends keyof SocketClientToServerEvents>(
-    event: K,
-    ...args: Parameters<SocketClientToServerEvents[K]>
-  ): void;
+  emit<TArgs extends any[]>(event: string, ...args: TArgs): void;
 
   onConnect(handler: () => void): () => void;
   onDisconnect(handler: (reason: string) => void): () => void;

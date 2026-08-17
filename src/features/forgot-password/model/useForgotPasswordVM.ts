@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useHotkeys } from "@mantine/hooks";
 import { IApiService } from "@shared/api";
-import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -12,17 +11,12 @@ import {
 
 export const useForgotPasswordVM = () => {
   const api = IApiService.useInstance();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
   const form = useForm<TForgotPasswordForm>({
     resolver: zodResolver(forgotPasswordFormValidationSchema),
   });
-
-  const onBack = useCallback(() => {
-    return navigate({ to: "/sign-in" });
-  }, [navigate]);
 
   const submit = form.handleSubmit(async data => {
     setLoading(true);
@@ -33,5 +27,5 @@ export const useForgotPasswordVM = () => {
 
   useHotkeys([["Enter", () => submit()]], []);
 
-  return { form, submit, onBack, loading, sent };
+  return { form, submit, loading, sent };
 };

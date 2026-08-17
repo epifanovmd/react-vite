@@ -1,5 +1,3 @@
-import { UserSocketClientEvents, UserSocketServerEvents } from "./user.events";
-
 export interface SocketAuthenticatedPayload {
   userId: string;
 }
@@ -17,12 +15,12 @@ export interface SocketPingPayload {
   ts: number;
 }
 
-export interface SocketServerToClientEvents extends UserSocketServerEvents {
+export interface SocketServerToClientEvents {
   authenticated: (data: SocketAuthenticatedPayload) => void;
   auth_error: (data: SocketAuthErrorPayload) => void;
   error: (data: SocketErrorPayload) => void;
 }
 
-export interface SocketClientToServerEvents extends UserSocketClientEvents {
+export interface SocketClientToServerEvents {
   ping: (data: SocketPingPayload) => void;
 }

@@ -1,8 +1,8 @@
 import { IAuthStore } from "@entities/auth";
 import { useHotkeys } from "@mantine/hooks";
 import { Alert, AsyncButton, AuthFormCard, InputFormField } from "@shared/ui";
-import { Link } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
+import { FC } from "react";
 import { FormProvider } from "react-hook-form";
 
 import { usePasskeyAuth } from "../model/usePasskeyAuth";
@@ -11,77 +11,95 @@ import { TSignInForm } from "../model/validation";
 import { PasskeyLogin } from "./PasskeyLogin";
 import { TwoFactorPrompt } from "./TwoFactorPrompt";
 
-export const SignInForm = observer(() => {
-  const auth = IAuthStore.useInstance();
-  const { form, handleLogin } = useSignInVM();
-  const passkey = usePasskeyAuth();
+interface SignInFormProps {
+  onSuccess: () => void;
+  onForgotPassword: () => void;
+  onSignUp: () => void;
+}
 
-  useHotkeys([["Enter", () => handleLogin()]], []);
+export const SignInForm: FC<SignInFormProps> = observer(
+  ({ onSuccess, onForgotPassword, onSignUp }) => {
+    const auth = IAuthStore.useInstance();
+    const { form, handleLogin } = useSignInVM(onSuccess);
+    const passkey = usePasskeyAuth(onSuccess);
 
-  const passkeyError = passkey.error ?? (auth.error || null);
+    useHotkeys([["Enter", () => handleLogin()]], []);
 
-  return (
-    <AuthFormCard
-      title="Вход"
-      subtitle="Введите данные для входа в панель управления"
-    >
-      {passkeyError && (
-        <Alert variant="error" className="mb-4">
-          {passkeyError}
-        </Alert>
-      )}
+    const passkeyError = passkey.error ?? (auth.error || null);
 
-      <FormProvider {...form}>
-        <div className="flex flex-col gap-4">
-          <InputFormField<TSignInForm>
-            name="login"
-            label="Email или телефон"
-            placeholder="email@example.com"
-          />
-          <InputFormField<TSignInForm>
-            name="password"
-            label="Пароль"
-            type="password"
-            placeholder="••••••••"
-          />
+    return (
+      <AuthFormCard
+        title="Вход"
+        subtitle="Введите данные для входа в панель управления"
+      >
+        {passkeyError && (
+          <Alert variant="error" className="mb-4">
+            {passkeyError}
+          </Alert>
+        )}
 
-          <div className="flex justify-end">
-            <Link
-              className="text-sm text-brand hover:underline"
-              to="/forgot-password"
-            >
-              Забыли пароль?
-            </Link>
-          </div>
-
-          {auth.isTwoFactorRequired ? (
-            <TwoFactorPrompt
-              hint={auth.twoFactorHint}
-              onVerify={() => auth.verify2FA(form.getValues("password"))}
+        <FormProvider {...form}>
+          <div className="flex flex-col gap-4">
+            <InputFormField<TSignInForm>
+              name="login"
+              label="Email или телефон"
+              placeholder="email@example.com"
             />
-          ) : (
-            <AsyncButton
-              type="button"
-              className="w-full"
-              loading={auth.isLoading}
-              onClick={handleLogin}
-            >
-              Войти
-            </AsyncButton>
-          )}
+            <InputFormField<TSignInForm>
+              name="password"
+              label="Пароль"
+              type="password"
+              placeholder="••••••••"
+            />
 
-          {!auth.isTwoFactorRequired && passkey.support && passkey.profileId && (
-            <PasskeyLogin loading={passkey.loading} onLogin={passkey.handleLogin} />
-          )}
-        </div>
-      </FormProvider>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="text-sm text-brand hover:underline"
+                onClick={onForgotPassword}
+              >
+                Забыли пароль?
+              </button>
+            </div>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Нет аккаунта?{" "}
-        <Link className="text-brand hover:underline" to="/sign-up">
-          Зарегистрироваться
-        </Link>
-      </p>
-    </AuthFormCard>
-  );
-});
+            {auth.isTwoFactorRequired ? (
+              <TwoFactorPrompt
+                hint={auth.twoFactorHint}
+                onVerify={() => auth.verify2FA(form.getValues("password"))}
+              />
+            ) : (
+              <AsyncButton
+                type="button"
+                className="w-full"
+                loading={auth.isLoading}
+                onClick={handleLogin}
+              >
+                Войти
+              </AsyncButton>
+            )}
+
+            {!auth.isTwoFactorRequired &&
+              passkey.support &&
+              passkey.profileId && (
+                <PasskeyLogin
+                  loading={passkey.loading}
+                  onLogin={passkey.handleLogin}
+                />
+              )}
+          </div>
+        </FormProvider>
+
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Нет аккаунта?{" "}
+          <button
+            type="button"
+            className="text-brand hover:underline"
+            onClick={onSignUp}
+          >
+            Зарегистрироваться
+          </button>
+        </p>
+      </AuthFormCard>
+    );
+  },
+);

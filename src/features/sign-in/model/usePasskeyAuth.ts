@@ -11,12 +11,11 @@ import {
   startRegistration,
 } from "@simplewebauthn/browser";
 import { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
-import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
 const PROFILE_ID_KEY = "app:profileId";
 
-export const usePasskeyAuth = () => {
+export const usePasskeyAuth = (onSuccess: () => void) => {
   const storage = IStorageService.useInstance();
   const [support, setSupport] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +26,6 @@ export const usePasskeyAuth = () => {
 
   const api = IApiService.useInstance();
   const { restore } = IAuthStore.useInstance();
-  const navigate = useNavigate();
 
   useEffect(() => {
     setSupport(browserSupportsWebAuthn());
@@ -157,7 +155,7 @@ export const usePasskeyAuth = () => {
 
       if (verifyRes.data?.tokens) {
         await restore(verifyRes.data.tokens);
-        navigate({ to: "/" }).then();
+        onSuccess();
 
         return { ok: true };
       }
@@ -176,7 +174,7 @@ export const usePasskeyAuth = () => {
     } finally {
       setLoading(false);
     }
-  }, [api, navigate, profileId, restore]);
+  }, [api, onSuccess, profileId, restore]);
 
   const removePasskey = useCallback(() => {
     storage.removeItem(PROFILE_ID_KEY);

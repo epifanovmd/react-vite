@@ -1,4 +1,4 @@
-import { ApiError } from "@shared/api";
+import { ApiError, ApiResponse } from "@shared/api";
 import {
   IBiometricDeviceDto,
   IDeleteBiometricResponseDto,
@@ -6,7 +6,6 @@ import {
   IRegisterBiometricResponseDto,
   IVerifyBiometricSignatureResponseDto,
 } from "@shared/api/gen/model";
-import { ApiResponse } from "@shared/api/http.types";
 import { createInjectDecorator } from "@shared/lib/di";
 import { CollectionHolder } from "@shared/lib/holders";
 
@@ -14,7 +13,6 @@ export const IBiometricStore = createInjectDecorator<IBiometricStore>();
 
 export interface IBiometricStore {
   readonly devicesHolder: CollectionHolder<IBiometricDeviceDto>;
-
   loadDevices(): Promise<void>;
   registerBiometric(data: {
     deviceId: string;

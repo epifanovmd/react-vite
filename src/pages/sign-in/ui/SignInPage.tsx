@@ -1,3 +1,12 @@
 import { SignInForm } from "@features/sign-in";
+import { FC } from "react";
 
-export const SignInPage = () => <SignInForm />;
+interface SignInPageProps {
+  onSuccess: () => void;
+  onForgotPassword: () => void;
+  onSignUp: () => void;
+}
+
+export const SignInPage: FC<SignInPageProps> = props => (
+  <SignInForm {...props} />
+);

@@ -1,7 +1,7 @@
 import type { FC } from "react";
 
-import { formatCurrency, formatDate } from "./createOrderColumns";
 import type { Order } from "./order.types";
+import { formatCurrency, formatDate } from "./order-table.meta";
 
 interface OrderDetailsProps {
   order: Order;
