@@ -3,6 +3,7 @@
 Messenger/admin panel built with React + Vite + MobX + Inversify.
 
 ##### Stack:
+
 - TypeScript
 - React 19
 - Vite 8
@@ -31,7 +32,11 @@ src/
     lib/      ←   DI, holders, socket, storage, theme, notifications, models, utils
 ```
 
-Подробнее про слои, правила зависимостей, DI и конвенции именования: [ARCHITECTURE.md](ARCHITECTURE.md)
+Подробнее про текущее устройство проекта: [ARCHITECTURE.md](ARCHITECTURE.md).
+Краткая памятка «что куда класть»: [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md).
+Правила написания кода: [CONVENTIONS.md](CONVENTIONS.md).
+Практика clean code и design principles: [CLEAN-CODE.md](CLEAN-CODE.md) и
+[DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md).
 
 ### Requirements
 
