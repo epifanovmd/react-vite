@@ -1,9 +1,8 @@
 import { IUserStore } from "@entities/user";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { INotificationService } from "@shared/lib/notifications";
+import { useZodForm } from "@shared/ui";
 import { parseISO } from "date-fns";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 
 import { profileFormValidationSchema, TProfileForm } from "./validation";
 
@@ -19,8 +18,7 @@ export const useEditProfileVM = ({
   const userStore = IUserStore.useInstance();
   const toast = INotificationService.useInstance();
 
-  const form = useForm<TProfileForm>({
-    resolver: zodResolver(profileFormValidationSchema),
+  const form = useZodForm(profileFormValidationSchema, {
     defaultValues: {},
   });
 
@@ -38,7 +36,7 @@ export const useEditProfileVM = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const submit = form.handleSubmit(async data => {
+  const submit = async (data: TProfileForm) => {
     const res = await userStore.updateProfile({
       firstName: data.firstName || undefined,
       lastName: data.lastName || undefined,
@@ -54,7 +52,7 @@ export const useEditProfileVM = ({
 
     toast.success("Профиль обновлён");
     onSuccess();
-  });
+  };
 
   return { form, submit };
 };

@@ -2,12 +2,12 @@ import {
   AsyncButton,
   Button,
   DatePickerFormField,
+  Form,
   InputFormField,
   Modal,
   ModalContent,
 } from "@shared/ui";
 import { FC } from "react";
-import { FormProvider } from "react-hook-form";
 
 import { useEditProfileVM } from "../model/useEditProfileVM";
 import { TProfileForm } from "../model/validation";
@@ -30,39 +30,48 @@ export const EditProfileModal: FC<EditProfileModalProps> = ({
             <Button type="button" variant="outline" onClick={onClose}>
               Отмена
             </Button>
-            <AsyncButton onClick={() => submit()}>Сохранить</AsyncButton>
+            <AsyncButton
+              type="submit"
+              form="edit-profile-form"
+              loading={form.formState.isSubmitting}
+            >
+              Сохранить
+            </AsyncButton>
           </>
         }
       >
-        <FormProvider {...form}>
-          <form onSubmit={submit} className="flex flex-col gap-4 py-1">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InputFormField<TProfileForm>
-                name="firstName"
-                label="Имя"
-                placeholder="Иван"
-              />
-              <InputFormField<TProfileForm>
-                name="lastName"
-                label="Фамилия"
-                placeholder="Иванов"
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <InputFormField<TProfileForm>
-                name="gender"
-                label="Пол"
-                placeholder="Мужской / Женский"
-              />
-              <DatePickerFormField<TProfileForm>
-                name="birthDate"
-                label="Дата рождения"
-                placeholder="Выберите дату"
-                clearable
-              />
-            </div>
-          </form>
-        </FormProvider>
+        <Form
+          id="edit-profile-form"
+          form={form}
+          onSubmit={submit}
+          className="flex flex-col gap-4 py-1"
+        >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <InputFormField<TProfileForm>
+              name="firstName"
+              label="Имя"
+              placeholder="Иван"
+            />
+            <InputFormField<TProfileForm>
+              name="lastName"
+              label="Фамилия"
+              placeholder="Иванов"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <InputFormField<TProfileForm>
+              name="gender"
+              label="Пол"
+              placeholder="Мужской / Женский"
+            />
+            <DatePickerFormField<TProfileForm>
+              name="birthDate"
+              label="Дата рождения"
+              placeholder="Выберите дату"
+              clearable
+            />
+          </div>
+        </Form>
       </ModalContent>
     </Modal>
   );

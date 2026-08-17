@@ -16,6 +16,8 @@ import { useDatePickerValue } from "./hooks";
 export interface DatePickerProps extends VariantProps<
   typeof datePickerTriggerVariants
 > {
+  id?: string;
+  name?: string;
   value?: Date | string;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
@@ -26,6 +28,12 @@ export interface DatePickerProps extends VariantProps<
   disableDate?: (date: Date) => boolean;
   contentProps?: Partial<PopoverContentProps>;
   calendarProps?: Omit<CalendarProps, "selected" | "onSelect">;
+  onBlur?: React.FocusEventHandler<HTMLButtonElement>;
+  onFocus?: React.FocusEventHandler<HTMLButtonElement>;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
+  "aria-labelledby"?: string;
+  "aria-required"?: boolean;
 }
 
 export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
@@ -43,6 +51,14 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       variant,
       contentProps,
       calendarProps,
+      id,
+      name,
+      onBlur,
+      onFocus,
+      "aria-describedby": ariaDescribedBy,
+      "aria-invalid": ariaInvalid,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-required": ariaRequired,
     },
     ref,
   ) => {
@@ -95,10 +111,18 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
         <Popover.Trigger asChild>
           <DatePickerTrigger
             ref={ref}
+            id={id}
+            name={name}
             size={size}
             variant={variant}
             disabled={disabled}
             className={cn(!value && "text-muted-foreground", className)}
+            onBlur={onBlur}
+            onFocus={onFocus}
+            aria-describedby={ariaDescribedBy}
+            aria-invalid={ariaInvalid}
+            aria-labelledby={ariaLabelledBy}
+            aria-required={ariaRequired}
           >
             <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
             <span className="flex-1 truncate text-left">{displayText}</span>

@@ -16,6 +16,8 @@ import type { DateRange } from "./types";
 export interface DateRangePickerProps extends VariantProps<
   typeof datePickerTriggerVariants
 > {
+  id?: string;
+  name?: string;
   value?: DateRange;
   onChange?: (range: DateRange | undefined) => void;
   placeholder?: string;
@@ -26,6 +28,12 @@ export interface DateRangePickerProps extends VariantProps<
   disableDate?: (date: Date) => boolean;
   contentProps?: Partial<PopoverContentProps>;
   calendarProps?: Omit<RangeCalendarProps, "selected" | "onSelect">;
+  onBlur?: React.FocusEventHandler<HTMLButtonElement>;
+  onFocus?: React.FocusEventHandler<HTMLButtonElement>;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
+  "aria-labelledby"?: string;
+  "aria-required"?: boolean;
 }
 
 export const DateRangePicker = React.forwardRef<
@@ -46,6 +54,14 @@ export const DateRangePicker = React.forwardRef<
       variant,
       contentProps,
       calendarProps,
+      id,
+      name,
+      onBlur,
+      onFocus,
+      "aria-describedby": ariaDescribedBy,
+      "aria-invalid": ariaInvalid,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-required": ariaRequired,
     },
     ref,
   ) => {
@@ -97,6 +113,8 @@ export const DateRangePicker = React.forwardRef<
         <Popover.Trigger asChild>
           <DatePickerTrigger
             ref={ref}
+            id={id}
+            name={name}
             size={size}
             variant={variant}
             disabled={disabled}
@@ -104,6 +122,12 @@ export const DateRangePicker = React.forwardRef<
               (!label || previewText) && "text-muted-foreground",
               className,
             )}
+            onBlur={onBlur}
+            onFocus={onFocus}
+            aria-describedby={ariaDescribedBy}
+            aria-invalid={ariaInvalid}
+            aria-labelledby={ariaLabelledBy}
+            aria-required={ariaRequired}
           >
             <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
             <span className="flex-1 truncate text-left">

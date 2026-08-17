@@ -1,6 +1,12 @@
-import { Alert, AuthFormCard, Button, InputFormField } from "@shared/ui";
+import {
+  Alert,
+  AuthFormCard,
+  Form,
+  FormRevalidate,
+  FormSubmit,
+  InputFormField,
+} from "@shared/ui";
 import { FC } from "react";
-import { FormProvider } from "react-hook-form";
 
 import { useResetPasswordVM } from "../model/useResetPasswordVM";
 import { TResetPasswordForm } from "../model/validation";
@@ -14,7 +20,7 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
   token,
   onSuccess,
 }) => {
-  const { form, submit, loading, error } = useResetPasswordVM({
+  const { form, submit, error } = useResetPasswordVM({
     token,
     onSuccess,
   });
@@ -27,30 +33,29 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
         </Alert>
       )}
 
-      <FormProvider {...form}>
-        <div className="flex flex-col gap-4">
-          <InputFormField<TResetPasswordForm>
-            name="password"
-            label="Новый пароль"
-            type="password"
-            placeholder="••••••••"
-          />
-          <InputFormField<TResetPasswordForm>
-            name="confirmPassword"
-            label="Подтвердите пароль"
-            type="password"
-            placeholder="••••••••"
-          />
-          <Button
-            type="button"
-            className="w-full"
-            loading={loading}
-            onClick={submit}
-          >
-            Установить пароль
-          </Button>
-        </div>
-      </FormProvider>
+      <Form form={form} onSubmit={submit} className="flex flex-col gap-4">
+        <FormRevalidate<
+          TResetPasswordForm,
+          readonly ["password"],
+          readonly ["confirmPassword"]
+        >
+          dependencies={["password"]}
+          targets={["confirmPassword"]}
+        />
+        <InputFormField<TResetPasswordForm>
+          name="password"
+          label="Новый пароль"
+          type="password"
+          placeholder="••••••••"
+        />
+        <InputFormField<TResetPasswordForm>
+          name="confirmPassword"
+          label="Подтвердите пароль"
+          type="password"
+          placeholder="••••••••"
+        />
+        <FormSubmit className="w-full">Установить пароль</FormSubmit>
+      </Form>
     </AuthFormCard>
   );
 };

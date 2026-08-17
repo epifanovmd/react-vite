@@ -51,6 +51,11 @@ const SelectInner = <V extends SelectValue = string>(
     onDeselect,
     onFocus,
     onBlur,
+    id,
+    "aria-describedby": ariaDescribedBy,
+    "aria-invalid": ariaInvalid,
+    "aria-labelledby": ariaLabelledBy,
+    "aria-required": ariaRequired,
   } = props;
 
   const placement = useDropdownPlacement(props);
@@ -120,6 +125,13 @@ const SelectInner = <V extends SelectValue = string>(
       trigger={
         <SelectTriggerBase
           ref={engine.triggerRef}
+          id={search ? undefined : id}
+          aria-describedby={search ? undefined : ariaDescribedBy}
+          aria-invalid={search ? undefined : ariaInvalid}
+          aria-labelledby={search ? undefined : ariaLabelledBy}
+          aria-required={search ? undefined : ariaRequired}
+          role={search ? undefined : "combobox"}
+          aria-expanded={search ? undefined : engine.open}
           size={size}
           variant={variant}
           valid={valid}
@@ -146,7 +158,16 @@ const SelectInner = <V extends SelectValue = string>(
             selectedValues={engine.selectedValues}
             hasValue={engine.hasValue}
             getLabel={getLabel}
-            searchInputProps={searchInputProps}
+            searchInputProps={{
+              ...searchInputProps,
+              id: search ? id : undefined,
+              "aria-describedby": search ? ariaDescribedBy : undefined,
+              "aria-invalid": search ? ariaInvalid : undefined,
+              "aria-labelledby": search ? ariaLabelledBy : undefined,
+              "aria-required": search ? ariaRequired : undefined,
+              role: search ? "combobox" : undefined,
+              "aria-expanded": search ? engine.open : undefined,
+            }}
             onRemoveTag={engine.removeTag}
             maxTagCount={maxTagCount}
           />

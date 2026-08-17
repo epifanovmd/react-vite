@@ -10,6 +10,8 @@ import { Calendar, type CalendarProps } from "./Calendar";
 import type { DatePickerTriggerVariantProps } from "./components";
 
 export interface MaskedDatePickerProps extends DatePickerTriggerVariantProps {
+  id?: string;
+  name?: string;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
@@ -21,6 +23,12 @@ export interface MaskedDatePickerProps extends DatePickerTriggerVariantProps {
   disableDate?: (date: Date) => boolean;
   contentProps?: Partial<PopoverContentProps>;
   calendarProps?: Omit<CalendarProps, "selected" | "onSelect">;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  onFocus?: React.FocusEventHandler<HTMLInputElement>;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
+  "aria-labelledby"?: string;
+  "aria-required"?: boolean;
 }
 
 export const MaskedDatePicker = React.forwardRef<
@@ -42,6 +50,14 @@ export const MaskedDatePicker = React.forwardRef<
       variant,
       contentProps,
       calendarProps,
+      id,
+      name,
+      onBlur,
+      onFocus,
+      "aria-describedby": ariaDescribedBy,
+      "aria-invalid": ariaInvalid,
+      "aria-labelledby": ariaLabelledBy,
+      "aria-required": ariaRequired,
     },
     ref,
   ) => {
@@ -87,9 +103,15 @@ export const MaskedDatePicker = React.forwardRef<
       setHoverDate(undefined);
     }, []);
 
-    const handleBlur = React.useCallback(() => {
-      if (!isComplete) setValue(displayValue);
-    }, [isComplete, setValue, displayValue]);
+    const handleBlur = React.useCallback<
+      React.FocusEventHandler<HTMLInputElement>
+    >(
+      event => {
+        if (!isComplete) setValue(displayValue);
+        onBlur?.(event);
+      },
+      [isComplete, setValue, displayValue, onBlur],
+    );
 
     const handleClear = React.useCallback(() => {
       clear();
@@ -107,6 +129,8 @@ export const MaskedDatePicker = React.forwardRef<
       <Popover open={open} onOpenChange={setOpen}>
         <Input
           ref={mergedRef}
+          id={id}
+          name={name}
           data-state={open ? "open" : "closed"}
           defaultValue={displayValue}
           hasValue={maskedValue.length > 0}
@@ -117,8 +141,15 @@ export const MaskedDatePicker = React.forwardRef<
           variant={variant}
           clearable={clearable}
           onClear={handleClear}
-          onFocus={() => openOnFocus && setOpen(true)}
+          onFocus={event => {
+            if (openOnFocus) setOpen(true);
+            onFocus?.(event);
+          }}
           onBlur={handleBlur}
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid}
+          aria-labelledby={ariaLabelledBy}
+          aria-required={ariaRequired}
           leftIcon={
             <Popover.Trigger asChild>
               <button

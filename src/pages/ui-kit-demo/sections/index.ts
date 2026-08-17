@@ -7,6 +7,7 @@ import { CardsSection } from "./CardsSection";
 import { ControlsSection } from "./ControlsSection";
 import { DatePickersSection } from "./DatePickersSection";
 import { EmptySection } from "./EmptySection";
+import { FormsSection } from "./FormsSection";
 import { InputsSection } from "./InputsSection";
 import { KanbanSection } from "./KanbanSection";
 import { MaskedInputsSection } from "./MaskedInputsSection";
@@ -32,6 +33,7 @@ export interface UISection {
 export const UI_SECTIONS: UISection[] = [
   { value: "buttons", label: "Кнопки", Component: ButtonsSection },
   { value: "inputs", label: "Поля ввода", Component: InputsSection },
+  { value: "forms", label: "Формы", Component: FormsSection },
   { value: "controls", label: "Переключатели", Component: ControlsSection },
   { value: "tags", label: "Теги и бейджи", Component: TagsBadgesSection },
   { value: "avatars", label: "Аватары", Component: AvatarsSection },

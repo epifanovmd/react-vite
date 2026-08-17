@@ -7,8 +7,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../tooltip";
-import type { FieldProps } from "./types";
+} from "../../tooltip";
+import type { FieldProps } from "../types";
 
 export type { FieldProps };
 
@@ -25,6 +25,9 @@ export const Field = React.forwardRef<
       error,
       required,
       htmlFor,
+      labelId,
+      descriptionId,
+      errorId,
       fieldClassName,
       className,
       children,
@@ -37,6 +40,7 @@ export const Field = React.forwardRef<
     const labelContent = label !== undefined && (
       <>
         <label
+          id={labelId}
           htmlFor={htmlFor}
           data-slot="field-label"
           className={cn(
@@ -127,15 +131,23 @@ export const Field = React.forwardRef<
           </>
         )}
 
-        {error ? (
-          <p role="alert" className="text-xs text-destructive leading-tight">
+        {error && (
+          <p
+            id={errorId}
+            role="alert"
+            className="text-xs text-destructive leading-tight"
+          >
             {error}
           </p>
-        ) : description !== undefined ? (
-          <p className="text-xs text-muted-foreground leading-tight">
+        )}
+        {description !== undefined && (
+          <p
+            id={descriptionId}
+            className="text-xs text-muted-foreground leading-tight"
+          >
             {description}
           </p>
-        ) : null}
+        )}
       </div>
     );
   },

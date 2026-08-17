@@ -1,7 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { IApiService } from "@shared/api";
+import { useZodForm } from "@shared/ui";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 
 import {
   resetPasswordFormValidationSchema,
@@ -18,27 +17,21 @@ export const useResetPasswordVM = ({
   onSuccess,
 }: UseResetPasswordVMOptions) => {
   const api = IApiService.useInstance();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const form = useForm<TResetPasswordForm>({
-    resolver: zodResolver(resetPasswordFormValidationSchema),
-  });
+  const form = useZodForm(resetPasswordFormValidationSchema);
 
-  const submit = form.handleSubmit(async data => {
-    setLoading(true);
+  const submit = async (data: TResetPasswordForm) => {
     setError(null);
 
     const res = await api.resetPassword({ token, password: data.password });
-
-    setLoading(false);
 
     if (res.error) {
       setError(res.error.message);
     } else {
       onSuccess();
     }
-  });
+  };
 
-  return { form, submit, loading, error };
+  return { form, submit, error };
 };

@@ -1,9 +1,13 @@
 import { IAuthStore } from "@entities/auth";
-import { useHotkeys } from "@mantine/hooks";
-import { Alert, AsyncButton, AuthFormCard, InputFormField } from "@shared/ui";
+import {
+  Alert,
+  AuthFormCard,
+  Form,
+  FormSubmit,
+  InputFormField,
+} from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
-import { FormProvider } from "react-hook-form";
 
 import { usePasskeyAuth } from "../model/usePasskeyAuth";
 import { useSignInVM } from "../model/useSignInVM";
@@ -23,8 +27,6 @@ export const SignInForm: FC<SignInFormProps> = observer(
     const { form, handleLogin } = useSignInVM(onSuccess);
     const passkey = usePasskeyAuth(onSuccess);
 
-    useHotkeys([["Enter", () => handleLogin()]], []);
-
     const passkeyError = passkey.error ?? (auth.error || null);
 
     return (
@@ -38,56 +40,53 @@ export const SignInForm: FC<SignInFormProps> = observer(
           </Alert>
         )}
 
-        <FormProvider {...form}>
-          <div className="flex flex-col gap-4">
-            <InputFormField<TSignInForm>
-              name="login"
-              label="Email или телефон"
-              placeholder="email@example.com"
-            />
-            <InputFormField<TSignInForm>
-              name="password"
-              label="Пароль"
-              type="password"
-              placeholder="••••••••"
-            />
+        <Form
+          form={form}
+          onSubmit={handleLogin}
+          className="flex flex-col gap-4"
+        >
+          <InputFormField<TSignInForm>
+            name="login"
+            label="Email или телефон"
+            placeholder="email@example.com"
+          />
+          <InputFormField<TSignInForm>
+            name="password"
+            label="Пароль"
+            type="password"
+            placeholder="••••••••"
+          />
 
-            <div className="flex justify-end">
-              <button
-                type="button"
-                className="text-sm text-brand hover:underline"
-                onClick={onForgotPassword}
-              >
-                Забыли пароль?
-              </button>
-            </div>
-
-            {auth.isTwoFactorRequired ? (
-              <TwoFactorPrompt
-                hint={auth.twoFactorHint}
-                onVerify={() => auth.verify2FA(form.getValues("password"))}
-              />
-            ) : (
-              <AsyncButton
-                type="button"
-                className="w-full"
-                loading={auth.isLoading}
-                onClick={handleLogin}
-              >
-                Войти
-              </AsyncButton>
-            )}
-
-            {!auth.isTwoFactorRequired &&
-              passkey.support &&
-              passkey.profileId && (
-                <PasskeyLogin
-                  loading={passkey.loading}
-                  onLogin={passkey.handleLogin}
-                />
-              )}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="text-sm text-brand hover:underline"
+              onClick={onForgotPassword}
+            >
+              Забыли пароль?
+            </button>
           </div>
-        </FormProvider>
+
+          {auth.isTwoFactorRequired ? (
+            <TwoFactorPrompt
+              hint={auth.twoFactorHint}
+              onVerify={() => auth.verify2FA(form.getValues("password"))}
+            />
+          ) : (
+            <FormSubmit className="w-full" loading={auth.isLoading}>
+              Войти
+            </FormSubmit>
+          )}
+
+          {!auth.isTwoFactorRequired &&
+            passkey.support &&
+            passkey.profileId && (
+              <PasskeyLogin
+                loading={passkey.loading}
+                onLogin={passkey.handleLogin}
+              />
+            )}
+        </Form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Нет аккаунта?{" "}

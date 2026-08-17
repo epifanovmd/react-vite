@@ -116,6 +116,11 @@ export interface RenderOptionsContext<V extends SelectValue = string> {
 
 interface SelectBaseProps<V extends SelectValue = string>
   extends SelectTriggerAppearance, SelectDataProps<V>, DropdownPlacementProps {
+  id?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
+  "aria-labelledby"?: string;
+  "aria-required"?: boolean;
   disabled?: boolean;
   empty?: React.ReactNode;
   renderOptions?: (ctx: RenderOptionsContext<V>) => React.ReactNode;
@@ -225,8 +230,9 @@ export type GroupedSelectProps<V extends SelectValue = string> = Omit<
 
 // ─── Autocomplete ───────────────────────────────────────────────────────────
 
-export interface AutocompleteProps<V extends string = string>
-  extends SelectBaseProps<V> {
+export interface AutocompleteProps<
+  V extends string = string,
+> extends SelectBaseProps<V> {
   /** Конфигурация маски imask (если не указана — свободный текст) */
   mask?: FactoryOpts;
   /** Текст инпута. Выбор опции подставляет `option.value`,

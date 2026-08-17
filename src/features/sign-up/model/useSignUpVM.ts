@@ -1,21 +1,19 @@
 import { IAuthStore } from "@entities/auth";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { isEmail, isPhone } from "@shared/lib/utils";
+import { useZodForm } from "@shared/ui";
 import { useCallback } from "react";
-import { useForm } from "react-hook-form";
 
 import { signUpFormValidationSchema, TSignUpForm } from "./validation";
 
 export const useSignUpVM = (onSuccess: () => void) => {
   const authStore = IAuthStore.useInstance();
 
-  const form = useForm<TSignUpForm>({
+  const form = useZodForm(signUpFormValidationSchema, {
     defaultValues: {},
-    resolver: zodResolver(signUpFormValidationSchema),
   });
 
-  const handleSignUp = useCallback(async () => {
-    return form.handleSubmit(async data => {
+  const handleSignUp = useCallback(
+    async (data: TSignUpForm) => {
       const email = isEmail(data.login) ? data.login : undefined;
       const phone = isPhone(data.login) ? data.login : undefined;
 
@@ -38,8 +36,9 @@ export const useSignUpVM = (onSuccess: () => void) => {
       if (authStore.isAuthenticated) {
         onSuccess();
       }
-    })();
-  }, [form, onSuccess, authStore]);
+    },
+    [onSuccess, authStore],
+  );
 
   return {
     form,

@@ -1,9 +1,13 @@
 import { IAuthStore } from "@entities/auth";
-import { useHotkeys } from "@mantine/hooks";
-import { AuthFormCard, Button, InputFormField } from "@shared/ui";
+import {
+  AuthFormCard,
+  Form,
+  FormRevalidate,
+  FormSubmit,
+  InputFormField,
+} from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
-import { FormProvider } from "react-hook-form";
 
 import { useSignUpVM } from "../model/useSignUpVM";
 import { TSignUpForm } from "../model/validation";
@@ -18,47 +22,50 @@ export const SignUpForm: FC<SignUpFormProps> = observer(
     const auth = IAuthStore.useInstance();
     const { form, handleSignUp } = useSignUpVM(onSuccess);
 
-    useHotkeys([["Enter", () => handleSignUp()]], []);
-
     return (
       <AuthFormCard
         title="Создать аккаунт"
         subtitle="Заполните данные для регистрации"
       >
-        <FormProvider {...form}>
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <InputFormField<TSignUpForm> name="firstName" label="Имя" />
-              <InputFormField<TSignUpForm> name="lastName" label="Фамилия" />
-            </div>
-            <InputFormField<TSignUpForm>
-              name="login"
-              label="Логин / Email"
-              type="email"
-              required
-            />
-            <InputFormField<TSignUpForm>
-              name="password"
-              label="Пароль"
-              type="password"
-              required
-            />
-            <InputFormField<TSignUpForm>
-              name="confirmPassword"
-              label="Подтверждение пароля"
-              type="password"
-              required
-            />
-            <Button
-              type="button"
-              loading={auth.isLoading}
-              className="w-full"
-              onClick={handleSignUp}
-            >
-              Создать аккаунт
-            </Button>
+        <Form
+          form={form}
+          onSubmit={handleSignUp}
+          className="flex flex-col gap-4"
+        >
+          <FormRevalidate<
+            TSignUpForm,
+            readonly ["password"],
+            readonly ["confirmPassword"]
+          >
+            dependencies={["password"]}
+            targets={["confirmPassword"]}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <InputFormField<TSignUpForm> name="firstName" label="Имя" />
+            <InputFormField<TSignUpForm> name="lastName" label="Фамилия" />
           </div>
-        </FormProvider>
+          <InputFormField<TSignUpForm>
+            name="login"
+            label="Логин / Email"
+            type="email"
+            required
+          />
+          <InputFormField<TSignUpForm>
+            name="password"
+            label="Пароль"
+            type="password"
+            required
+          />
+          <InputFormField<TSignUpForm>
+            name="confirmPassword"
+            label="Подтверждение пароля"
+            type="password"
+            required
+          />
+          <FormSubmit loading={auth.isLoading} className="w-full">
+            Создать аккаунт
+          </FormSubmit>
+        </Form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Уже есть аккаунт?{" "}

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import { Input } from "../../input";
+import { Input } from "../../../input";
 import { Field } from "../Field";
 
 describe("Field", () => {

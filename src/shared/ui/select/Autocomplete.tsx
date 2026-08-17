@@ -42,6 +42,11 @@ const AutocompleteInner = <V extends string = string>(
     variant,
     valid,
     className,
+    id,
+    "aria-describedby": ariaDescribedBy,
+    "aria-invalid": ariaInvalid,
+    "aria-labelledby": ariaLabelledBy,
+    "aria-required": ariaRequired,
   } = props;
 
   const placement = useDropdownPlacement(props);
@@ -130,6 +135,7 @@ const AutocompleteInner = <V extends string = string>(
         >
           <input
             ref={mergedInputRef}
+            id={id}
             className={selectSearchInputClasses}
             placeholder={placeholder}
             disabled={disabled}
@@ -137,6 +143,10 @@ const AutocompleteInner = <V extends string = string>(
             role="combobox"
             aria-expanded={engine.open}
             aria-autocomplete="list"
+            aria-describedby={ariaDescribedBy}
+            aria-invalid={ariaInvalid}
+            aria-labelledby={ariaLabelledBy}
+            aria-required={ariaRequired}
             onKeyDown={engine.handleKeyDown}
           />
         </SelectTriggerBase>

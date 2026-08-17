@@ -3,8 +3,10 @@ import type {
   Control,
   ControllerFieldState,
   ControllerRenderProps,
+  FieldPath,
   FieldValues,
-  Path,
+  UseControllerProps,
+  UseFormStateReturn,
 } from "react-hook-form";
 
 export interface FieldProps {
@@ -13,29 +15,61 @@ export interface FieldProps {
   hint?: React.ReactNode;
   description?: React.ReactNode;
   error?: string;
+  /** Visual and ARIA state only; validation remains owned by RHF/Zod rules. */
   required?: boolean;
   htmlFor?: string;
+  labelId?: string;
+  descriptionId?: string;
+  errorId?: string;
   fieldClassName?: string;
   children?: React.ReactNode;
 }
 
 export interface FormFieldBaseProps<
   TFormData extends FieldValues = FieldValues,
+  TName extends FieldPath<TFormData> = FieldPath<TFormData>,
 > {
-  name: Path<TFormData>;
-  control: Control<TFormData>;
+  name: TName;
+  control?: Control<TFormData>;
 }
 
-export type ControllerMapper<TComponentProps extends object> = (
-  field: ControllerRenderProps<FieldValues, string>,
-  fieldState: ControllerFieldState,
-  ownProps: Partial<TComponentProps>,
-) => Partial<TComponentProps>;
+export interface FormControlProps {
+  id: string;
+  name: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: true;
+  "aria-labelledby"?: string;
+  "aria-required"?: true;
+}
 
-export type CreatedFormFieldProps<
+export interface FormFieldRenderProps<
   TFormData extends FieldValues,
-  TComponentProps extends object,
-  TMappedProps extends Partial<TComponentProps>,
-> = FormFieldBaseProps<TFormData> &
-  Omit<FieldProps, "children" | "error" | "htmlFor"> &
-  Omit<TComponentProps, keyof TMappedProps>;
+  TName extends FieldPath<TFormData>,
+> {
+  field: ControllerRenderProps<TFormData, TName>;
+  fieldState: ControllerFieldState;
+  formState: UseFormStateReturn<TFormData>;
+  controlProps: FormControlProps;
+}
+
+export type FormControllerOptions<
+  TFormData extends FieldValues,
+  TName extends FieldPath<TFormData>,
+> = Pick<
+  UseControllerProps<TFormData, TName>,
+  "control" | "defaultValue" | "disabled" | "rules" | "shouldUnregister"
+>;
+
+export type FormFieldLayoutProps = Omit<
+  FieldProps,
+  "children" | "descriptionId" | "error" | "errorId" | "htmlFor"
+> & {
+  id?: string;
+};
+
+export type FormAdapterProps<
+  TFormData extends FieldValues,
+  TName extends FieldPath<TFormData>,
+> = FormFieldBaseProps<TFormData, TName> &
+  FormControllerOptions<TFormData, TName> &
+  FormFieldLayoutProps;

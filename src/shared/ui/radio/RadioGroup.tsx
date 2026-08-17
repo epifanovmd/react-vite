@@ -7,7 +7,10 @@ import {
   type RadioVariant,
 } from "./radio-group-context";
 
-export interface RadioGroupProps {
+export interface RadioGroupProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "defaultValue" | "onChange"
+> {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
@@ -17,7 +20,6 @@ export interface RadioGroupProps {
   disabled?: boolean;
   orientation?: "vertical" | "horizontal";
   className?: string;
-  children?: React.ReactNode;
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -31,6 +33,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   orientation = "vertical",
   className,
   children,
+  ...props
 }) => {
   const generatedName = React.useId();
   const isControlled = value !== undefined;
@@ -69,6 +72,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             : "flex-row flex-wrap gap-4",
           className,
         )}
+        {...props}
       >
         {children}
       </div>
