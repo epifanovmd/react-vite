@@ -1,9 +1,8 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@shared/lib/utils/cn";
 
 import {
-  FIELD_BASE,
-  FIELD_SIZE_VARIANTS,
-  FIELD_VARIANT_MAP,
+  type FieldVariantProps,
+  fieldVariants,
 } from "../foundation/field-variants";
 
 export const selectContentClasses = [
@@ -23,26 +22,35 @@ export const selectItemClasses = [
 export const selectItemHighlightedClasses = "bg-accent text-accent-foreground";
 
 export const selectSearchInputClasses =
-  "flex-1 min-w-0 bg-transparent outline-none text-inherit placeholder:text-muted-foreground cursor-text text-sm";
+  "flex-1 min-w-0 bg-transparent outline-none text-inherit placeholder:text-muted-foreground cursor-text";
 
-export const selectTriggerVariants = cva(
-  `${FIELD_BASE} items-center whitespace-nowrap gap-2 justify-between py-2`,
-  {
-    variants: {
-      size: FIELD_SIZE_VARIANTS,
-      variant: FIELD_VARIANT_MAP,
-      valid: {
-        true: "shadow-state-success focus-visible:shadow-focus-success",
-        false: "shadow-state-error focus-visible:shadow-focus-error",
-      },
-    },
-    defaultVariants: {
-      size: "md",
-      variant: "default",
-    },
-  },
-);
+const resolveValidationVariant = (
+  variant: FieldVariantProps["variant"],
+  valid: boolean | null | undefined,
+): FieldVariantProps["variant"] => {
+  if (valid == null) return variant;
 
-export type SelectTriggerVariantProps = VariantProps<
-  typeof selectTriggerVariants
->;
+  const isFilled = variant?.startsWith("filled");
+
+  if (valid) return isFilled ? "filled-success" : "success";
+
+  return isFilled ? "filled-error" : "error";
+};
+
+export const selectTriggerVariants = ({
+  size,
+  variant,
+  valid,
+}: SelectTriggerVariantProps = {}) =>
+  cn(
+    fieldVariants({
+      focusMode: "within",
+      size,
+      variant: resolveValidationVariant(variant, valid),
+    }),
+    "items-center justify-between gap-2 whitespace-nowrap",
+  );
+
+export interface SelectTriggerVariantProps extends FieldVariantProps {
+  valid?: boolean | null;
+}

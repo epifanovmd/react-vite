@@ -6,7 +6,8 @@ import { selectTriggerVariants } from "../select-variants";
 import { SelectTriggerIcon } from "./SelectTriggerIcon";
 
 export interface SelectTriggerBaseProps
-  extends VariantProps<typeof selectTriggerVariants>,
+  extends
+    VariantProps<typeof selectTriggerVariants>,
     Omit<React.HTMLAttributes<HTMLDivElement>, "size"> {
   loading?: boolean;
   showClear?: boolean;
@@ -33,30 +34,37 @@ export const SelectTriggerBase = React.forwardRef<
       hideIcon,
       hideChevron,
       children,
+      "aria-invalid": ariaInvalid,
       ...props
     },
     ref,
-  ) => (
-    <div
-      ref={ref}
-      className={cn(
-        selectTriggerVariants({ size, variant, valid }),
-        cursorText ? "cursor-text" : "cursor-pointer",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      {!hideIcon && (
-        <SelectTriggerIcon
-          loading={loading}
-          showClear={showClear}
-          onClear={onClear}
-          hideChevron={hideChevron}
-        />
-      )}
-    </div>
-  ),
+  ) => {
+    const isInvalid =
+      valid === false || variant === "error" || variant === "filled-error";
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          selectTriggerVariants({ size, variant, valid }),
+          cursorText ? "cursor-text" : "cursor-pointer",
+          className,
+        )}
+        aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
+        {...props}
+      >
+        {children}
+        {!hideIcon && (
+          <SelectTriggerIcon
+            loading={loading}
+            showClear={showClear}
+            onClear={onClear}
+            hideChevron={hideChevron}
+          />
+        )}
+      </div>
+    );
+  },
 );
 
 SelectTriggerBase.displayName = "SelectTriggerBase";

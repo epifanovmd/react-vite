@@ -1,6 +1,7 @@
 export { CONTROL_HEIGHT } from "./control-size";
 export {
   FIELD_BASE,
+  FIELD_FOCUS_MODE_VARIANTS,
   FIELD_SIZE_TYPO,
   FIELD_SIZE_VARIANTS,
   FIELD_VARIANT_MAP,

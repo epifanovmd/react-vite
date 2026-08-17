@@ -26,12 +26,19 @@ describe("SelectTriggerBase", () => {
 
   it("can hide the icon and uses pointer cursor by default", () => {
     render(
-      <SelectTriggerBase data-testid="trigger" hideIcon>
+      <SelectTriggerBase data-testid="trigger" hideIcon valid={false}>
         Content
       </SelectTriggerBase>,
     );
 
-    expect(screen.getByTestId("trigger")).toHaveClass("cursor-pointer");
+    expect(screen.getByTestId("trigger")).toHaveClass(
+      "cursor-pointer",
+      "focus-within:shadow-focus-error",
+    );
+    expect(screen.getByTestId("trigger")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
     expect(screen.queryByRole("button")).toBeNull();
   });
 });

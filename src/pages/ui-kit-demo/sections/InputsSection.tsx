@@ -104,13 +104,12 @@ export const InputsSection: FC = () => {
           <GroupTitle>Базовые</GroupTitle>
           <Row>
             <Field label="Default">
-              <Input placeholder="Default input" size="sm" />
+              <Input placeholder="Default input" />
             </Field>
             <Field label="С иконкой">
               <Input
                 placeholder="With left icon"
                 leftIcon={<Search className="h-4 w-4" />}
-                size="sm"
               />
             </Field>
             <Field label="Clearable">
@@ -118,7 +117,6 @@ export const InputsSection: FC = () => {
                 placeholder="Clearable input"
                 clearable
                 onClear={() => {}}
-                size="sm"
               />
             </Field>
           </Row>
@@ -129,21 +127,13 @@ export const InputsSection: FC = () => {
           <GroupTitle>Варианты</GroupTitle>
           <Row>
             <Field label="Filled">
-              <Input placeholder="Filled variant" variant="filled" size="sm" />
+              <Input placeholder="Filled variant" variant="filled" />
             </Field>
             <Field label="Filled error">
-              <Input
-                placeholder="Filled error"
-                variant="filled-error"
-                size="sm"
-              />
+              <Input placeholder="Filled error" variant="filled-error" />
             </Field>
             <Field label="Filled success">
-              <Input
-                placeholder="Filled success"
-                variant="filled-success"
-                size="sm"
-              />
+              <Input placeholder="Filled success" variant="filled-success" />
             </Field>
           </Row>
         </div>
@@ -153,13 +143,13 @@ export const InputsSection: FC = () => {
           <GroupTitle>Состояния</GroupTitle>
           <Row>
             <Field label="Error">
-              <Input placeholder="Error state" variant="error" size="sm" />
+              <Input placeholder="Error state" variant="error" />
             </Field>
             <Field label="Success">
-              <Input placeholder="Success state" variant="success" size="sm" />
+              <Input placeholder="Success state" variant="success" />
             </Field>
             <Field label="Disabled">
-              <Input placeholder="Disabled" disabled size="sm" />
+              <Input placeholder="Disabled" disabled />
             </Field>
           </Row>
         </div>
@@ -169,10 +159,10 @@ export const InputsSection: FC = () => {
           <GroupTitle>Особые</GroupTitle>
           <Row>
             <Field label="Password">
-              <Input type="password" placeholder="Password" size="sm" />
+              <Input type="password" placeholder="Password" />
             </Field>
             <Field label="Loading">
-              <Input placeholder="Loading..." loading size="sm" />
+              <Input placeholder="Loading..." loading />
             </Field>
           </Row>
         </div>
@@ -190,7 +180,6 @@ export const InputsSection: FC = () => {
                 value={autoCountry}
                 onChange={setAutoCountry}
                 placeholder="Начните вводить..."
-                size="sm"
               />
             </Field>
             <Field label="useStaticOptions + phoneMask">
@@ -201,7 +190,6 @@ export const InputsSection: FC = () => {
                 value={autoPhone}
                 onChange={setAutoPhone}
                 placeholder="+7 (___) ___-__-__"
-                size="sm"
               />
             </Field>
             <Field label="useAsyncOptions">
@@ -211,7 +199,6 @@ export const InputsSection: FC = () => {
                 value={asyncCountry}
                 onChange={setAsyncCountry}
                 placeholder="Серверный поиск..."
-                size="sm"
               />
             </Field>
           </Row>

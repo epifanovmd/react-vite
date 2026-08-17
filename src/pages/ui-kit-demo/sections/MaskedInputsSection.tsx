@@ -46,13 +46,7 @@ const Row = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-const Field = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="flex flex-col gap-1.5">
     <p className="text-[10px] text-muted-foreground">{label}</p>
     {children}
@@ -115,7 +109,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setPhone(info.value)}
                 leftIcon={<Phone className="h-4 w-4" />}
                 placeholder="+7 (___) ___-__-__"
-                size="sm"
               />
             </Field>
             <Field label="Номер карты (cardNumberMask)">
@@ -125,7 +118,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setCardNumber(info.value)}
                 leftIcon={<CreditCard className="h-4 w-4" />}
                 placeholder="0000 0000 0000 0000"
-                size="sm"
               />
             </Field>
             <Field label="Срок карты (cardExpiryMask)">
@@ -134,7 +126,6 @@ export const MaskedInputsSection: FC = () => {
                 value={cardExpiry}
                 onChange={info => setCardExpiry(info.value)}
                 placeholder="MM/YY"
-                size="sm"
               />
             </Field>
             <Field label="Время (timeMask)">
@@ -144,7 +135,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setTime(info.value)}
                 leftIcon={<Clock className="h-4 w-4" />}
                 placeholder="ЧЧ:ММ"
-                size="sm"
               />
             </Field>
             <Field label="Сумма (createCurrencyMask)">
@@ -155,7 +145,6 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Wallet className="h-4 w-4" />}
                 placeholder="0"
                 clearable
-                size="sm"
               />
             </Field>
             <Field label="Скидка (createPercentMask)">
@@ -165,7 +154,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setDiscount(info.value)}
                 leftIcon={<Percent className="h-4 w-4" />}
                 placeholder="0%"
-                size="sm"
               />
             </Field>
             <Field label="Код товара (createPatternMask)">
@@ -175,7 +163,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setProductCode(info.value)}
                 leftIcon={<Hash className="h-4 w-4" />}
                 placeholder="AA-0000"
-                size="sm"
               />
             </Field>
           </Row>
@@ -192,7 +179,6 @@ export const MaskedInputsSection: FC = () => {
                 value={snils}
                 onChange={info => setSnils(info.value)}
                 placeholder="000-000-000 00"
-                size="sm"
               />
             </Field>
             <Field label="Паспорт (passportMask)">
@@ -201,7 +187,6 @@ export const MaskedInputsSection: FC = () => {
                 value={passport}
                 onChange={info => setPassport(info.value)}
                 placeholder="0000 000000"
-                size="sm"
               />
             </Field>
             <Field label="ИНН (innMask)">
@@ -210,7 +195,6 @@ export const MaskedInputsSection: FC = () => {
                 value={inn}
                 onChange={info => setInn(info.value)}
                 placeholder="000000000000"
-                size="sm"
               />
             </Field>
             <Field label="Расчётный счёт (bankAccountMask)">
@@ -219,7 +203,6 @@ export const MaskedInputsSection: FC = () => {
                 value={bankAccount}
                 onChange={info => setBankAccount(info.value)}
                 placeholder="0000 0000 0000 0000 0000"
-                size="sm"
               />
             </Field>
             <Field label="БИК (bicMask)">
@@ -228,7 +211,6 @@ export const MaskedInputsSection: FC = () => {
                 value={bic}
                 onChange={info => setBic(info.value)}
                 placeholder="000000000"
-                size="sm"
               />
             </Field>
             <Field label="ОГРН (ogrnMask)">
@@ -237,7 +219,6 @@ export const MaskedInputsSection: FC = () => {
                 value={ogrn}
                 onChange={info => setOgrn(info.value)}
                 placeholder="0000000000000"
-                size="sm"
               />
             </Field>
             <Field label="Индекс (postalCodeMask)">
@@ -247,7 +228,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setPostalCode(info.value)}
                 leftIcon={<MapPin className="h-4 w-4" />}
                 placeholder="000000"
-                size="sm"
               />
             </Field>
             <Field label="Госномер авто (licensePlateMask)">
@@ -256,7 +236,6 @@ export const MaskedInputsSection: FC = () => {
                 value={licensePlate}
                 onChange={info => setLicensePlate(info.value)}
                 placeholder="А000АА 000"
-                size="sm"
               />
             </Field>
           </Row>
@@ -274,7 +253,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setIp(info.value)}
                 leftIcon={<Network className="h-4 w-4" />}
                 placeholder="000.000.000.000"
-                size="sm"
               />
             </Field>
             <Field label="MAC-адрес (macAddressMask)">
@@ -283,7 +261,6 @@ export const MaskedInputsSection: FC = () => {
                 value={mac}
                 onChange={info => setMac(info.value)}
                 placeholder="00:1A:2B:3C:4D:5E"
-                size="sm"
               />
             </Field>
             <Field label="HEX-цвет (hexColorMask)">
@@ -293,7 +270,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={info => setHexColor(info.value)}
                 leftIcon={<Palette className="h-4 w-4" />}
                 placeholder="#FFFFFF"
-                size="sm"
               />
             </Field>
           </Row>
@@ -310,7 +286,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={setMaskedDate}
                 clearable
                 openOnFocus
-                size="sm"
               />
             </Field>
             <Field label="MaskedDateRangePicker — период одной маской «от — до»">
@@ -319,7 +294,6 @@ export const MaskedInputsSection: FC = () => {
                 onChange={setDateRange}
                 clearable
                 openOnFocus
-                size="sm"
               />
             </Field>
           </Row>

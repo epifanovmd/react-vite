@@ -1,23 +1,19 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@shared/lib/utils/cn";
 
 import {
-  FIELD_BASE,
   FIELD_SIZE_TYPO,
-  FIELD_VARIANT_MAP,
+  type FieldVariantProps,
+  fieldVariants,
 } from "../foundation/field-variants";
 
-export const textareaVariants = cva(
-  `${FIELD_BASE} py-2 placeholder:text-muted-foreground`,
-  {
-    variants: {
-      size: FIELD_SIZE_TYPO,
-      variant: FIELD_VARIANT_MAP,
-    },
-    defaultVariants: {
-      size: "md",
-      variant: "default",
-    },
-  },
-);
+export const textareaVariants = ({
+  size,
+  variant,
+}: TextareaVariantProps = {}) =>
+  cn(
+    fieldVariants({ focusMode: "self", size: null, variant }),
+    FIELD_SIZE_TYPO[size ?? "md"],
+    "placeholder:text-muted-foreground",
+  );
 
-export type TextareaVariantProps = VariantProps<typeof textareaVariants>;
+export type TextareaVariantProps = FieldVariantProps;

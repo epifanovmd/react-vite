@@ -1,25 +1,17 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@shared/lib/utils/cn";
 
 import {
-  FIELD_BASE,
-  FIELD_SIZE_VARIANTS,
-  FIELD_VARIANT_MAP,
+  type FieldVariantProps,
+  fieldVariants,
 } from "../../foundation/field-variants";
 
-export const datePickerTriggerVariants = cva(
-  `${FIELD_BASE} items-center gap-2 cursor-pointer`,
-  {
-    variants: {
-      size: FIELD_SIZE_VARIANTS,
-      variant: FIELD_VARIANT_MAP,
-    },
-    defaultVariants: {
-      size: "md",
-      variant: "default",
-    },
-  },
-);
+export const datePickerTriggerVariants = ({
+  size,
+  variant,
+}: DatePickerTriggerVariantProps = {}) =>
+  cn(
+    fieldVariants({ focusMode: "open", size, variant }),
+    "cursor-pointer items-center gap-2",
+  );
 
-export type DatePickerTriggerVariantProps = VariantProps<
-  typeof datePickerTriggerVariants
->;
+export type DatePickerTriggerVariantProps = FieldVariantProps;

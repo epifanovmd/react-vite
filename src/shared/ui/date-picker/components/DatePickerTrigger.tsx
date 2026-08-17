@@ -12,13 +12,23 @@ export interface DatePickerTriggerProps
 export const DatePickerTrigger = React.forwardRef<
   HTMLButtonElement,
   DatePickerTriggerProps
->(({ className, size, variant, ...props }, ref) => (
-  <button
-    ref={ref}
-    type="button"
-    className={cn(datePickerTriggerVariants({ size, variant }), className)}
-    {...props}
-  />
-));
+>(
+  (
+    { className, size, variant, "aria-invalid": ariaInvalid, ...props },
+    ref,
+  ) => {
+    const isInvalid = variant === "error" || variant === "filled-error";
+
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(datePickerTriggerVariants({ size, variant }), className)}
+        aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
+        {...props}
+      />
+    );
+  },
+);
 
 DatePickerTrigger.displayName = "DatePickerTrigger";

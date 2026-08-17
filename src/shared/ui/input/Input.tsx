@@ -1,13 +1,11 @@
-import { useMergedRef } from "@mantine/hooks";
 import { cn } from "@shared/lib/utils/cn";
 import { type VariantProps } from "class-variance-authority";
-import { Eye, EyeOff, Loader2, X } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import * as React from "react";
 
+import { Spinner } from "../spinner";
 import { inputVariants } from "./input-variants";
-
-const toText = (v: React.InputHTMLAttributes<HTMLInputElement>["value"]) =>
-  v == null ? "" : String(v);
+import { useInput } from "./use-input";
 
 export interface InputProps
   extends
@@ -18,7 +16,15 @@ export interface InputProps
   clearable?: boolean;
   onClear?: () => void;
   loading?: boolean;
-  /** Переопределяет признак "есть значение" (для clear/password-toggle), когда значением управляет сторонний код, пишущий прямо в DOM в обход onChange (например MaskedInput/IMask) */
+  /** Класс корневого контейнера. Для самого input используется inputClassName. */
+  inputClassName?: string;
+  clearAriaLabel?: string;
+  showPasswordAriaLabel?: string;
+  hidePasswordAriaLabel?: string;
+  /**
+   * Переопределяет признак наличия значения для интеграций, которые изменяют
+   * DOM напрямую, не вызывая React onChange (например IMask).
+   */
   hasValue?: boolean;
 }
 
@@ -38,101 +44,134 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       defaultValue,
       onChange,
       hasValue: hasValueProp,
+      inputClassName,
+      clearAriaLabel = "Clear input",
+      showPasswordAriaLabel = "Show password",
+      hidePasswordAriaLabel = "Hide password",
+      disabled = false,
+      readOnly = false,
+      "aria-busy": ariaBusy,
+      "aria-invalid": ariaInvalid,
       ...props
     },
     ref,
   ) => {
-    const [showPassword, setShowPassword] = React.useState(false);
-    const isPassword = type === "password";
+    const {
+      hasValue,
+      inputRef,
+      inputType,
+      isPassword,
+      isPasswordVisible,
+      handleActionPointerDown,
+      handleChange,
+      handleClear,
+      handlePasswordToggle,
+    } = useInput({
+      defaultValue,
+      disabled,
+      forwardedRef: ref,
+      hasValue: hasValueProp,
+      onChange,
+      onClear,
+      readOnly,
+      type,
+      value,
+    });
+
+    const showClearButton =
+      clearable && hasValue && !loading && !disabled && !readOnly;
+    const showPasswordToggle = isPassword && hasValue && !loading && !disabled;
+    const showRightIcon =
+      !loading && !showClearButton && !showPasswordToggle && rightIcon;
+    const hasRightContent =
+      loading || showClearButton || showPasswordToggle || rightIcon;
     const isControlled = value !== undefined;
-
-    const innerRef = React.useRef<HTMLInputElement>(null);
-    const mergedRef = useMergedRef(ref, innerRef);
-
-    const [internalValue, setInternalValue] = React.useState(() =>
-      toText(value ?? defaultValue),
-    );
-    const currentValue = isControlled ? toText(value) : internalValue;
-
-    const handleChange = React.useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!isControlled) setInternalValue(e.target.value);
-        onChange?.(e);
-      },
-      [isControlled, onChange],
-    );
-
-    const handleClear = React.useCallback(() => {
-      const input = innerRef.current;
-
-      if (input) {
-        const setter = Object.getOwnPropertyDescriptor(
-          HTMLInputElement.prototype,
-          "value",
-        )?.set;
-
-        setter?.call(input, "");
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      onClear?.();
-    }, [onClear]);
-
-    const hasValue = hasValueProp ?? currentValue.length > 0;
-    const showClearButton = clearable && hasValue && !loading;
-    const showPasswordToggle = isPassword && hasValue;
+    const isInvalidVariant = variant === "error" || variant === "filled-error";
 
     return (
-      <div className={cn("flex w-full relative", className)}>
+      <div
+        className={cn("relative flex w-full", className)}
+        data-slot="input-root"
+      >
         {leftIcon && (
-          <div className="flex absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          <div
+            className="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-muted-foreground"
+            data-slot="input-left-icon"
+          >
             {leftIcon}
           </div>
         )}
         <input
-          type={isPassword && !showPassword ? "password" : "text"}
+          ref={inputRef}
+          type={inputType}
           className={cn(
             inputVariants({ size, variant }),
             leftIcon && "pl-10",
-            (rightIcon || showClearButton || showPasswordToggle || loading) &&
-              "pr-10",
+            hasRightContent && "pr-10",
+            inputClassName,
           )}
-          ref={mergedRef}
+          data-slot="input"
+          disabled={disabled}
+          readOnly={readOnly}
+          aria-busy={ariaBusy ?? (loading || undefined)}
+          aria-invalid={ariaInvalid ?? (isInvalidVariant || undefined)}
           {...(isControlled ? { value } : { defaultValue })}
           onChange={handleChange}
           {...props}
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {loading && (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          )}
-          {!loading && showPasswordToggle && (
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              tabIndex={-1}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          )}
-          {!loading && showClearButton && !isPassword && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              tabIndex={-1}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-          {!loading && rightIcon && !showClearButton && !showPasswordToggle && (
-            <div className="text-muted-foreground">{rightIcon}</div>
-          )}
-        </div>
+        {hasRightContent && (
+          <div
+            className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1"
+            data-slot="input-actions"
+          >
+            {loading && (
+              <Spinner size="sm" variant="muted" data-slot="input-loading" />
+            )}
+            {showPasswordToggle && (
+              <button
+                type="button"
+                aria-label={
+                  isPasswordVisible
+                    ? hidePasswordAriaLabel
+                    : showPasswordAriaLabel
+                }
+                aria-pressed={isPasswordVisible}
+                onPointerDown={handleActionPointerDown}
+                onClick={handlePasswordToggle}
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                tabIndex={-1}
+                data-slot="input-password-toggle"
+              >
+                {isPasswordVisible ? (
+                  <EyeOff aria-hidden className="h-4 w-4" />
+                ) : (
+                  <Eye aria-hidden className="h-4 w-4" />
+                )}
+              </button>
+            )}
+            {showClearButton && !isPassword && (
+              <button
+                type="button"
+                aria-label={clearAriaLabel}
+                onPointerDown={handleActionPointerDown}
+                onClick={handleClear}
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                tabIndex={-1}
+                data-slot="input-clear"
+              >
+                <X aria-hidden className="h-4 w-4" />
+              </button>
+            )}
+            {showRightIcon && (
+              <div
+                className="pointer-events-none text-muted-foreground"
+                data-slot="input-right-icon"
+              >
+                {rightIcon}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   },

@@ -41,7 +41,7 @@ const SelectTriggerContentInner = <V,>({
     if (tagsDisplay) {
       if (!search && vals.length === 0) {
         return (
-          <span className="flex-1 truncate text-sm text-muted-foreground">
+          <span className="flex-1 truncate text-muted-foreground">
             {placeholder}
           </span>
         );
@@ -51,8 +51,7 @@ const SelectTriggerContentInner = <V,>({
         maxTagCount != null && vals.length > maxTagCount
           ? vals.slice(0, maxTagCount)
           : vals;
-      const overflowCount =
-        maxTagCount != null ? vals.length - maxTagCount : 0;
+      const overflowCount = maxTagCount != null ? vals.length - maxTagCount : 0;
 
       return (
         <div className="flex flex-wrap gap-1 flex-1 min-w-0 overflow-hidden items-center py-0.5">
@@ -104,7 +103,7 @@ const SelectTriggerContentInner = <V,>({
     return (
       <span
         className={cn(
-          "flex-1 truncate text-sm",
+          "flex-1 truncate",
           !commaLabel && "text-muted-foreground",
         )}
       >
@@ -135,10 +134,7 @@ const SelectTriggerContentInner = <V,>({
 
   return (
     <span
-      className={cn(
-        "flex-1 truncate text-sm",
-        !hasValue && "text-muted-foreground",
-      )}
+      className={cn("flex-1 truncate", !hasValue && "text-muted-foreground")}
     >
       {hasValue ? String(getLabel(selectedValues[0])) : placeholder}
     </span>

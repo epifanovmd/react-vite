@@ -1,3 +1,4 @@
+import { fieldVariants } from "../../foundation/field-variants";
 import {
   selectContentClasses,
   selectItemClasses,
@@ -17,12 +18,15 @@ describe("select variants", () => {
   });
 
   it("builds default and validation trigger variants", () => {
-    expect(selectTriggerVariants()).toContain("items-center");
-    expect(selectTriggerVariants({ valid: true })).toContain(
-      "shadow-state-success",
+    expect(selectTriggerVariants()).toContain(
+      fieldVariants({ focusMode: "within" }),
     );
+    expect(selectTriggerVariants()).toContain("items-center");
+    expect(selectTriggerVariants({ size: "lg" })).toContain("text-base");
+    expect(selectSearchInputClasses).not.toContain("text-sm");
+    expect(selectTriggerVariants({ valid: true })).toContain("border-success");
     expect(selectTriggerVariants({ valid: false })).toContain(
-      "shadow-state-error",
+      "border-destructive",
     );
   });
 });

@@ -107,6 +107,7 @@ export const MaskedDatePicker = React.forwardRef<
       <Popover open={open} onOpenChange={setOpen}>
         <Input
           ref={mergedRef}
+          data-state={open ? "open" : "closed"}
           defaultValue={displayValue}
           hasValue={maskedValue.length > 0}
           placeholder={placeholderText}
