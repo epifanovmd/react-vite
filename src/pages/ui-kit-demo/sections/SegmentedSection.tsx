@@ -6,52 +6,119 @@ import {
   CardTitle,
   Segmented,
 } from "@shared/ui";
-import { Calendar, Grid, Home, List, Settings, User } from "lucide-react";
+import {
+  AlignLeft,
+  Calendar,
+  Grid,
+  Home,
+  List,
+  Settings,
+  User,
+} from "lucide-react";
 import { FC, useState } from "react";
 
+const periodOptions = [
+  { label: "Day", value: "day" },
+  { label: "Week", value: "week" },
+  { label: "Month", value: "month" },
+];
+
+const monthOptions = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+].map(month => ({ label: month, value: month.toLowerCase() }));
+
 export const SegmentedSection: FC = () => {
-  const [segmentedValue, setSegmentedValue] = useState("list");
-  const [segmentedNav, setSegmentedNav] = useState("home");
+  const [view, setView] = useState("list");
+  const [month, setMonth] = useState("aug");
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Segmented</CardTitle>
+          <CardTitle className="text-base">Варианты</CardTitle>
           <CardDescription className="text-xs">
-            Сегментированные кнопки
+            default, primary, secondary, outline
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-2">
-              Default variant
-            </p>
+            <p className="text-xs text-muted-foreground mb-2">Default</p>
+            <Segmented defaultValue="day" size="sm" options={periodOptions} />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Primary</p>
             <Segmented
-              value={segmentedValue}
-              onChange={setSegmentedValue}
+              defaultValue="week"
               size="sm"
-              options={[
-                {
-                  label: "List",
-                  value: "list",
-                  icon: <List className="h-3.5 w-3.5" />,
-                },
-                {
-                  label: "Grid",
-                  value: "grid",
-                  icon: <Grid className="h-3.5 w-3.5" />,
-                },
-              ]}
+              variant="primary"
+              options={periodOptions}
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-2">
-              Primary variant
-            </p>
+            <p className="text-xs text-muted-foreground mb-2">Secondary</p>
             <Segmented
-              value={segmentedNav}
-              onChange={setSegmentedNav}
+              defaultValue="month"
+              size="sm"
+              variant="secondary"
+              options={periodOptions}
+            />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Outline</p>
+            <Segmented
+              defaultValue="day"
+              size="sm"
+              variant="outline"
+              options={periodOptions}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Размеры</CardTitle>
+          <CardDescription className="text-xs">sm, md, lg</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Small</p>
+            <Segmented defaultValue="day" size="sm" options={periodOptions} />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Medium</p>
+            <Segmented defaultValue="day" size="md" options={periodOptions} />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Large</p>
+            <Segmented defaultValue="day" size="lg" options={periodOptions} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Иконки и состояния</CardTitle>
+          <CardDescription className="text-xs">
+            Опции с иконками, недоступные опции
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">With icons</p>
+            <Segmented
+              defaultValue="home"
               size="md"
               variant="primary"
               options={[
@@ -75,33 +142,25 @@ export const SegmentedSection: FC = () => {
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-2">
-              With disabled option
+              Disabled option
             </p>
             <Segmented
               defaultValue="day"
               size="sm"
               variant="secondary"
               options={[
-                { label: "Day", value: "day" },
-                { label: "Week", value: "week" },
-                { label: "Month", value: "month" },
+                ...periodOptions,
                 { label: "Year", value: "year", disabled: true },
               ]}
             />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-2">
-              Outline variant
-            </p>
+            <p className="text-xs text-muted-foreground mb-2">Disabled</p>
             <Segmented
-              defaultValue="option1"
+              defaultValue="week"
               size="sm"
-              variant="outline"
-              options={[
-                { label: "Option 1", value: "option1" },
-                { label: "Option 2", value: "option2" },
-                { label: "Option 3", value: "option3" },
-              ]}
+              disabled
+              options={periodOptions}
             />
           </div>
         </CardContent>
@@ -109,43 +168,52 @@ export const SegmentedSection: FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Segmented Block</CardTitle>
+          <CardTitle className="text-base">Управляемый режим</CardTitle>
           <CardDescription className="text-xs">
-            Полноразмерные варианты
+            Внешнее состояние и прокрутка при переполнении
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Segmented
-            defaultValue="all"
-            size="md"
-            options={[
-              { label: "All", value: "all" },
-              { label: "Active", value: "active" },
-              { label: "Inactive", value: "inactive" },
-            ]}
-          />
-          <Segmented
-            defaultValue="tab1"
-            size="sm"
-            variant="primary"
-            options={[
-              {
-                label: "Tab 1",
-                value: "tab1",
-                icon: <Calendar className="h-3.5 w-3.5" />,
-              },
-              {
-                label: "Tab 2",
-                value: "tab2",
-                icon: <User className="h-3.5 w-3.5" />,
-              },
-              {
-                label: "Tab 3",
-                value: "tab3",
-                icon: <Settings className="h-3.5 w-3.5" />,
-              },
-            ]}
-          />
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">
+              Controlled — выбрано: {view}
+            </p>
+            <Segmented
+              value={view}
+              onChange={setView}
+              size="sm"
+              options={[
+                {
+                  label: "List",
+                  value: "list",
+                  icon: <List className="h-3.5 w-3.5" />,
+                },
+                {
+                  label: "Grid",
+                  value: "grid",
+                  icon: <Grid className="h-3.5 w-3.5" />,
+                },
+                {
+                  label: "Compact",
+                  value: "compact",
+                  icon: <AlignLeft className="h-3.5 w-3.5" />,
+                },
+              ]}
+            />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">
+              <Calendar className="mr-1 inline h-3.5 w-3.5" />
+              Много опций — активная прокручивается в центр
+            </p>
+            <Segmented
+              value={month}
+              onChange={setMonth}
+              size="sm"
+              variant="outline"
+              options={monthOptions}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
