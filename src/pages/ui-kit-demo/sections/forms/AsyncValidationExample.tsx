@@ -1,12 +1,4 @@
-import {
-  applyServerErrors,
-  Button,
-  Card,
-  Form,
-  FormError,
-  FormSubmit,
-  useZodForm,
-} from "@shared/ui";
+import { Card, Form, FormSubmit, useZodForm } from "@shared/ui";
 import { useState } from "react";
 
 import { asyncFormSchema, type AsyncFormValues } from "./async-form-schema";
@@ -21,45 +13,17 @@ export const AsyncValidationExample = () => {
 
   return (
     <Card
-      title="Async и server validation"
-      description="Debounce, AbortController и нормализованные ошибки API"
+      title="Async validation"
+      description="Асинхронная проверка является частью Zod-схемы"
     >
       <Form
         form={form}
-        onSubmit={async values => {
-          await new Promise(resolve => window.setTimeout(resolve, 300));
-
-          if (values.username === "server") {
-            applyServerErrors(form.setError, [
-              { name: "username", message: "Сервер отклонил это имя" },
-              { name: "root", message: "Исправьте ошибки ответа API" },
-            ]);
-
-            return;
-          }
-
-          setResult(values);
-        }}
+        onSubmit={values => setResult(values)}
         className="min-w-0"
       >
         <FormExampleLayout submittedValues={result}>
-          <FormError />
           <AsyncUsernameField />
-          <div className="flex flex-wrap gap-2">
-            <FormSubmit>Проверить</FormSubmit>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                applyServerErrors(form.setError, [
-                  { name: "username", message: "Ошибка поля от API" },
-                  { name: "root", message: "Общая серверная ошибка" },
-                ])
-              }
-            >
-              Имитировать API errors
-            </Button>
-          </div>
+          <FormSubmit>Проверить</FormSubmit>
         </FormExampleLayout>
       </Form>
     </Card>

@@ -1,11 +1,5 @@
 import { IAuthStore } from "@entities/auth";
-import {
-  AuthFormCard,
-  Form,
-  FormRevalidate,
-  FormSubmit,
-  InputFormField,
-} from "@shared/ui";
+import { AuthFormCard, Form, FormSubmit, InputFormField } from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
@@ -32,14 +26,6 @@ export const SignUpForm: FC<SignUpFormProps> = observer(
           onSubmit={handleSignUp}
           className="flex flex-col gap-4"
         >
-          <FormRevalidate<
-            TSignUpForm,
-            readonly ["password"],
-            readonly ["confirmPassword"]
-          >
-            dependencies={["password"]}
-            targets={["confirmPassword"]}
-          />
           <div className="grid grid-cols-2 gap-3">
             <InputFormField<TSignUpForm> name="firstName" label="Имя" />
             <InputFormField<TSignUpForm> name="lastName" label="Фамилия" />
@@ -54,6 +40,7 @@ export const SignUpForm: FC<SignUpFormProps> = observer(
             name="password"
             label="Пароль"
             type="password"
+            rules={{ deps: "confirmPassword" }}
             required
           />
           <InputFormField<TSignUpForm>

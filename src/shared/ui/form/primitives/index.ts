@@ -6,8 +6,6 @@ export type { FormErrorProps } from "./FormError";
 export { FormError } from "./FormError";
 export type { FormFieldProps } from "./FormField";
 export { FormField } from "./FormField";
-export type { FormRevalidateProps } from "./FormRevalidate";
-export { FormRevalidate } from "./FormRevalidate";
 export type { FormSectionProps } from "./FormSection";
 export { FormSection } from "./FormSection";
 export type { FormSubmitProps } from "./FormSubmit";

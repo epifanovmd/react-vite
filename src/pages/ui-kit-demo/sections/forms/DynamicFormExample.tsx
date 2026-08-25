@@ -2,6 +2,7 @@ import { Card, Form, FormSubmit, useZodForm } from "@shared/ui";
 import { useState } from "react";
 
 import {
+  type DynamicFormResult,
   dynamicFormSchema,
   type DynamicFormValues,
 } from "./dynamic-form-schema";
@@ -9,21 +10,19 @@ import { DynamicFormFields } from "./DynamicFormFields";
 import { FormExampleLayout } from "./FormExampleLayout";
 
 export const DynamicFormExample = () => {
-  const [result, setResult] = useState<DynamicFormValues>();
+  const [result, setResult] = useState<DynamicFormResult>();
   const form = useZodForm(dynamicFormSchema, {
     defaultValues: {
-      customerType: "person",
-      country: "RU",
-      inn: "",
-      delivery: "pickup",
-      address: "",
+      hasInn: false,
+      needsDelivery: false,
     },
+    shouldUnregister: true,
   });
 
   return (
     <Card
       title="Динамическая обязательность"
-      description="Одна predicate используется UI и superRefine; скрытые значения имеют явную политику"
+      description="Структурные варианты формы через discriminated union и omit"
     >
       <Form
         form={form}

@@ -1,85 +1,44 @@
-import {
-  InputFormField,
-  SegmentedFormField,
-  SelectFormField,
-  useFieldCondition,
-  useRevalidateFields,
-} from "@shared/ui";
+import { InputFormField, SwitchFormField } from "@shared/ui";
+import { useFormContext, useWatch } from "react-hook-form";
 
-import { type DynamicFormValues, dynamicRules } from "./dynamic-form-schema";
+import type { DynamicFormValues } from "./dynamic-form-schema";
 
 export const DynamicFormFields = () => {
-  const inn = useFieldCondition<
-    DynamicFormValues,
-    "inn",
-    readonly ["customerType", "country"]
-  >({
-    name: "inn",
-    dependencies: ["customerType", "country"],
-    when: ([customerType, country]) =>
-      dynamicRules.innRequired(customerType, country),
-    hiddenValue: "clear",
-    clearValue: "",
-  });
-  const address = useFieldCondition<
-    DynamicFormValues,
-    "address",
-    readonly ["delivery"]
-  >({
-    name: "address",
-    dependencies: ["delivery"],
-    when: ([delivery]) => dynamicRules.addressRequired(delivery),
-    hiddenValue: "preserve",
-  });
-
-  useRevalidateFields<
-    DynamicFormValues,
-    readonly ["customerType", "country", "delivery"],
-    readonly ["inn", "address"]
-  >({
-    dependencies: ["customerType", "country", "delivery"],
-    targets: ["inn", "address"],
+  const { control } = useFormContext<DynamicFormValues>();
+  const [hasInn, needsDelivery] = useWatch({
+    control,
+    name: ["hasInn", "needsDelivery"],
+    exact: true,
   });
 
   return (
     <>
-      <SegmentedFormField<DynamicFormValues>
-        name="customerType"
-        label="Тип клиента"
-        options={[
-          { value: "person", label: "Физлицо" },
-          { value: "company", label: "Компания" },
-        ]}
+      <SwitchFormField<DynamicFormValues>
+        name="hasInn"
+        label="Указать ИНН"
+        description="Переключатель выбирает ветку discriminated union"
       />
-      <SelectFormField<DynamicFormValues>
-        name="country"
-        label="Страна"
-        options={[
-          { value: "RU", label: "Россия" },
-          { value: "KZ", label: "Казахстан" },
-        ]}
-      />
-      {inn.active && (
+      {hasInn && (
         <InputFormField<DynamicFormValues>
           name="inn"
           label="ИНН"
-          description="Появляется только для компании из России"
-          required={inn.required}
+          description="Поле существует и валидируется только в активной ветке"
+          required
+          shouldUnregister
         />
       )}
-      <SegmentedFormField<DynamicFormValues>
-        name="delivery"
-        label="Доставка"
-        options={[
-          { value: "pickup", label: "Самовывоз" },
-          { value: "courier", label: "Курьер" },
-        ]}
+
+      <SwitchFormField<DynamicFormValues>
+        name="needsDelivery"
+        label="Нужна доставка"
+        description="Независимая динамическая секция формы"
       />
-      {address.active && (
+      {needsDelivery && (
         <InputFormField<DynamicFormValues>
           name="address"
-          label="Адрес"
-          required={address.required}
+          label="Адрес доставки"
+          required
+          shouldUnregister
         />
       )}
     </>

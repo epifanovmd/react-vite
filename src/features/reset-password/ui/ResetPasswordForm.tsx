@@ -2,7 +2,6 @@ import {
   Alert,
   AuthFormCard,
   Form,
-  FormRevalidate,
   FormSubmit,
   InputFormField,
 } from "@shared/ui";
@@ -34,19 +33,12 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
       )}
 
       <Form form={form} onSubmit={submit} className="flex flex-col gap-4">
-        <FormRevalidate<
-          TResetPasswordForm,
-          readonly ["password"],
-          readonly ["confirmPassword"]
-        >
-          dependencies={["password"]}
-          targets={["confirmPassword"]}
-        />
         <InputFormField<TResetPasswordForm>
           name="password"
           label="Новый пароль"
           type="password"
           placeholder="••••••••"
+          rules={{ deps: "confirmPassword" }}
         />
         <InputFormField<TResetPasswordForm>
           name="confirmPassword"
