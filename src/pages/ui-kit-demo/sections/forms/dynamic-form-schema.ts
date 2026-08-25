@@ -1,35 +1,61 @@
+import { createBooleanDiscriminatedUnion } from "@shared/lib/validation";
 import { z } from "zod";
 
-const innSectionBaseSchema = z.object({
-  hasInn: z.boolean(),
+const customerSectionBaseSchema = z.object({
+  customerType: z.enum(["person", "company"]),
+  country: z.enum(["RU", "KZ"]),
   inn: z.string().regex(/^\d{10}$/, "ИНН должен состоять из 10 цифр"),
 });
 
 /**
- * Every discriminator value owns a complete structural form variant.
- * An inactive field is omitted from the branch, so it is neither validated
- * nor present in the parsed result.
+ * Ветка ИНН зависит от комбинации двух полей. Сначала выбирается тип клиента,
+ * затем для компании выбирается страна. ИНН существует только в комбинации
+ * customerType="company" и country="RU".
  */
-const innSectionSchema = z.discriminatedUnion("hasInn", [
-  innSectionBaseSchema.extend({ hasInn: z.literal(true) }),
-  innSectionBaseSchema.omit({ inn: true }).extend({ hasInn: z.literal(false) }),
+const personSchema = customerSectionBaseSchema
+  .omit({ inn: true })
+  .extend({ customerType: z.literal("person") });
+
+const russianCompanySchema = customerSectionBaseSchema.extend({
+  customerType: z.literal("company"),
+  country: z.literal("RU"),
+});
+
+const foreignCompanySchema = customerSectionBaseSchema
+  .omit({ inn: true })
+  .extend({
+    customerType: z.literal("company"),
+    country: z.literal("KZ"),
+  });
+
+const companySchema = z.discriminatedUnion("country", [
+  russianCompanySchema,
+  foreignCompanySchema,
 ]);
 
+const customerSectionSchema = z.discriminatedUnion("customerType", [
+  personSchema,
+  companySchema,
+]);
+
+export const isInnRequired = (
+  customerType: "person" | "company",
+  country: "RU" | "KZ",
+): boolean => customerType === "company" && country === "RU";
+
 const deliverySectionBaseSchema = z.object({
-  needsDelivery: z.boolean(),
   address: z.string().trim().min(1, "Укажите адрес доставки"),
 });
 
-const deliverySectionSchema = z.discriminatedUnion("needsDelivery", [
-  deliverySectionBaseSchema.extend({ needsDelivery: z.literal(true) }),
-  deliverySectionBaseSchema
-    .omit({ address: true })
-    .extend({ needsDelivery: z.literal(false) }),
-]);
+const deliverySectionSchema = createBooleanDiscriminatedUnion({
+  discriminator: "needsDelivery",
+  enabled: deliverySectionBaseSchema,
+  disabled: deliverySectionBaseSchema.omit({ address: true }),
+});
 
-/** Independent dynamic sections compose without enumerating every variant. */
+/** Независимые динамические секции объединяются без перебора комбинаций. */
 export const dynamicFormSchema = z.intersection(
-  innSectionSchema,
+  customerSectionSchema,
   deliverySectionSchema,
 );
 

@@ -13,7 +13,8 @@ export const DynamicFormExample = () => {
   const [result, setResult] = useState<DynamicFormResult>();
   const form = useZodForm(dynamicFormSchema, {
     defaultValues: {
-      hasInn: false,
+      customerType: "person",
+      country: "RU",
       needsDelivery: false,
     },
     shouldUnregister: true,
@@ -22,7 +23,7 @@ export const DynamicFormExample = () => {
   return (
     <Card
       title="Динамическая обязательность"
-      description="Структурные варианты формы через discriminated union и omit"
+      description="Вложенные discriminated union для комбинации нескольких полей"
     >
       <Form
         form={form}

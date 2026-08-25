@@ -31,7 +31,9 @@ export {
   TextareaFormField,
 } from "./fields";
 export { normalizeEmptyString } from "./model";
+export { useFormValue } from "./model";
 export { useFormFieldArray } from "./model";
+export { useIsFieldValidating } from "./model";
 export { useZodForm } from "./model";
 export type {
   FieldProps,

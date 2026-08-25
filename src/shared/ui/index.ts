@@ -134,6 +134,8 @@ export {
   SwitchFormField,
   TextareaFormField,
   useFormFieldArray,
+  useFormValue,
+  useIsFieldValidating,
   useZodForm,
 } from "./form";
 export type { FieldVariantProps } from "./foundation/field-variants";

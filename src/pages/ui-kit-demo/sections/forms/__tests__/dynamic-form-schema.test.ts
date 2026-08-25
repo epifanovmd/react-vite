@@ -5,7 +5,8 @@ import { dynamicFormSchema } from "../dynamic-form-schema";
 describe("dynamicFormSchema", () => {
   it("omits inactive fields from validation and parsed output", () => {
     const result = dynamicFormSchema.safeParse({
-      hasInn: false,
+      customerType: "person",
+      country: "RU",
       inn: "invalid stale value",
       needsDelivery: false,
       address: 42,
@@ -13,17 +14,23 @@ describe("dynamicFormSchema", () => {
 
     expect(result).toEqual({
       success: true,
-      data: { hasInn: false, needsDelivery: false },
+      data: {
+        customerType: "person",
+        country: "RU",
+        needsDelivery: false,
+      },
     });
   });
 
-  it("requires and validates a field in the active INN branch", () => {
+  it("requires INN only for the Russian company combination", () => {
     const missing = dynamicFormSchema.safeParse({
-      hasInn: true,
+      customerType: "company",
+      country: "RU",
       needsDelivery: false,
     });
     const invalid = dynamicFormSchema.safeParse({
-      hasInn: true,
+      customerType: "company",
+      country: "RU",
       inn: "123",
       needsDelivery: false,
     });
@@ -35,9 +42,28 @@ describe("dynamicFormSchema", () => {
     }
   });
 
+  it("omits INN for a foreign company", () => {
+    const result = dynamicFormSchema.safeParse({
+      customerType: "company",
+      country: "KZ",
+      inn: "invalid stale value",
+      needsDelivery: false,
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: {
+        customerType: "company",
+        country: "KZ",
+        needsDelivery: false,
+      },
+    });
+  });
+
   it("composes independent dynamic sections", () => {
     const result = dynamicFormSchema.safeParse({
-      hasInn: true,
+      customerType: "company",
+      country: "RU",
       inn: "1234567890",
       needsDelivery: true,
       address: "  Москва  ",
@@ -46,7 +72,8 @@ describe("dynamicFormSchema", () => {
     expect(result).toEqual({
       success: true,
       data: {
-        hasInn: true,
+        customerType: "company",
+        country: "RU",
         inn: "1234567890",
         needsDelivery: true,
         address: "Москва",
@@ -56,7 +83,8 @@ describe("dynamicFormSchema", () => {
 
   it("requires the address only in the delivery branch", () => {
     const result = dynamicFormSchema.safeParse({
-      hasInn: false,
+      customerType: "person",
+      country: "RU",
       needsDelivery: true,
       address: "",
     });

@@ -1,28 +1,46 @@
-import { InputFormField, SwitchFormField } from "@shared/ui";
-import { useFormContext, useWatch } from "react-hook-form";
+import {
+  InputFormField,
+  SegmentedFormField,
+  SelectFormField,
+  SwitchFormField,
+  useFormValue,
+} from "@shared/ui";
 
-import type { DynamicFormValues } from "./dynamic-form-schema";
+import { type DynamicFormValues, isInnRequired } from "./dynamic-form-schema";
 
 export const DynamicFormFields = () => {
-  const { control } = useFormContext<DynamicFormValues>();
-  const [hasInn, needsDelivery] = useWatch({
-    control,
-    name: ["hasInn", "needsDelivery"],
-    exact: true,
-  });
+  const customerType = useFormValue<DynamicFormValues, "customerType">(
+    "customerType",
+  );
+  const country = useFormValue<DynamicFormValues, "country">("country");
+  const needsDelivery = useFormValue<DynamicFormValues, "needsDelivery">(
+    "needsDelivery",
+  );
+  const showInn = isInnRequired(customerType, country);
 
   return (
     <>
-      <SwitchFormField<DynamicFormValues>
-        name="hasInn"
-        label="Указать ИНН"
-        description="Переключатель выбирает ветку discriminated union"
+      <SegmentedFormField<DynamicFormValues>
+        name="customerType"
+        label="Тип клиента"
+        options={[
+          { value: "person", label: "Физлицо" },
+          { value: "company", label: "Компания" },
+        ]}
       />
-      {hasInn && (
+      <SelectFormField<DynamicFormValues>
+        name="country"
+        label="Страна"
+        options={[
+          { value: "RU", label: "Россия" },
+          { value: "KZ", label: "Казахстан" },
+        ]}
+      />
+      {showInn && (
         <InputFormField<DynamicFormValues>
           name="inn"
           label="ИНН"
-          description="Поле существует и валидируется только в активной ветке"
+          description="Обязателен только для российской компании"
           required
           shouldUnregister
         />
