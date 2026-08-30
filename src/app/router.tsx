@@ -1,3 +1,4 @@
+/* eslint-disable check-file/filename-naming-convention -- инстанс-модуль, не компонент */
 import { Spinner } from "@shared/ui";
 import { createRouter } from "@tanstack/react-router";
 

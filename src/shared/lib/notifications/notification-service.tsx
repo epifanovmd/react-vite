@@ -1,3 +1,4 @@
+/* eslint-disable check-file/filename-naming-convention -- класс-сервис, не компонент */
 import { injectable } from "inversify";
 import React from "react";
 import { toast } from "react-hot-toast";

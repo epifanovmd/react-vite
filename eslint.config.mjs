@@ -8,82 +8,6 @@ import tseslint from "typescript-eslint";
 import { boundariesConfig } from "./eslint.boundaries.mjs";
 import { namingConfig } from "./eslint.naming.mjs";
 
-/**
- * Сегменты Shared — self-import запрещён внутри своего же сегмента.
- * `lib` сюда сознательно не входит: в отличие от ui/api/config это не цельный
- * модуль, а плоская россыпь независимых тем (di, models, utils, theme, socket,
- * holders, ...) — им разрешено ссылаться друг на друга через алиас.
- */
-const SHARED_SEGMENTS = ["ui", "api", "config"];
-
-/** Слайсы entities/features/widgets/pages — self-import запрещён внутри своего же слайса. */
-const SLICE_LAYERS = {
-  entities: ["auth", "biometric", "user"],
-  features: [
-    "sign-in",
-    "sign-up",
-    "sign-out",
-    "forgot-password",
-    "reset-password",
-    "edit-profile",
-    "request-email-verification",
-  ],
-  widgets: ["app-layout", "auth-layout"],
-  pages: [
-    "sign-in",
-    "sign-up",
-    "forgot-password",
-    "reset-password",
-    "profile",
-    "ui-kit-demo",
-    "errors",
-  ],
-};
-
-const publicApiImportPattern = {
-  group: [
-    "@entities/*/*",
-    "@features/*/*",
-    "@widgets/*/*",
-    "@pages/*/*",
-  ],
-  message: "Импортируй слайс через его публичный API (корневой index.ts)",
-};
-
-const selfImportRestriction = (files, group, message) => ({
-  files,
-  rules: {
-    "no-restricted-imports": [
-      "error",
-      { patterns: [publicApiImportPattern, { group, message }] },
-    ],
-  },
-});
-
-const sharedSelfImportRestrictions = SHARED_SEGMENTS.map(seg =>
-  selfImportRestriction(
-    [`src/shared/${seg}/**`],
-    [`@shared/${seg}/*`, `@shared/${seg}`],
-    `Внутри shared/${seg}/ используй относительные пути вместо @shared/${seg}/*`,
-  ),
-);
-
-const sliceSelfImportRestrictions = Object.entries(SLICE_LAYERS).flatMap(
-  ([layer, slices]) =>
-    slices.map(slice =>
-      selfImportRestriction(
-        [`src/${layer}/${slice}/**`],
-        [`@${layer}/${slice}/*`, `@${layer}/${slice}`],
-        `Внутри ${layer}/${slice}/ используй относительные пути вместо @${layer}/${slice}/*`,
-      ),
-    ),
-);
-
-const moduleSelfImportRestrictions = [
-  ...sharedSelfImportRestrictions,
-  ...sliceSelfImportRestrictions,
-];
-
 export default tseslint.config(
   { ignores: ["dist", "src/shared/api/gen/**", "src/app/routeTree.gen.ts"] },
   {
@@ -100,13 +24,6 @@ export default tseslint.config(
       react,
     },
     rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [publicApiImportPattern],
-        },
-      ],
-
       // react-hooks: только базовые правила, без React Compiler
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": [
@@ -168,7 +85,6 @@ export default tseslint.config(
       ],
     },
   },
-  ...moduleSelfImportRestrictions,
   boundariesConfig,
   namingConfig,
 );

@@ -138,7 +138,7 @@ FSD не задаёт направление зависимостей между
 
 ### Self-imports
 
-Внутри слайса/сегмента — только **относительные** пути. Публичный alias самого себя — запрещён (`no-restricted-imports`, [eslint.config.mjs](eslint.config.mjs)).
+Внутри слайса/сегмента — только **относительные** пути. Публичный alias самого себя — запрещён (`boundaries/dependencies`, [eslint.boundaries.mjs](eslint.boundaries.mjs)).
 
 ```ts
 // ✅ Правильно (внутри entities/auth/api/session-guard.ts)
@@ -151,9 +151,9 @@ import { IAuthStore } from "@entities/auth";
 import { IAuthStore } from "@entities/auth";
 ```
 
-Причина: `boundaries/dependencies` разрешает импорт своего же слайса (иначе файлы внутри него не смогли бы ссылаться друг на друга), но не различает alias/относительный путь — он матчится по резолвнутому элементу, а не по тексту импорта. `no-restricted-imports` матчится по сырому спецификатору и ловит именно это.
+Как это устроено: слайс — это один элемент, поэтому импорт своего же слайса приходит как `internal`-зависимость и в общем случае разрешён (иначе файлы внутри него не смогли бы ссылаться друг на друга). Отдельная политика с селектором `dependency.source: ["@*", "@*/**"]` матчится по сырому спецификатору и запрещает именно alias-вариант.
 
-Правило действует для всех слайсов `entities/*`, `features/*`, `widgets/*`, `pages/*` и для сегментов `shared/ui`, `shared/api`, `shared/config` (список — в `SLICE_LAYERS`/`SHARED_SEGMENTS` в [eslint.config.mjs](eslint.config.mjs)). Исключение — `shared/lib`: это не цельный модуль, а плоская россыпь независимых тем (di, models, utils, theme, socket, holders, ...), им разрешено ссылаться друг на друга через alias.
+Правило действует для любого слайса `entities/*`, `features/*`, `widgets/*`, `pages/*` и любого сегмента `shared/*` — списков имён в конфиге нет, новый слайс попадает под правило сразу. `shared/lib` — не цельный модуль, а плоская россыпь независимых тем (di, models, utils, theme, socket, holders, ...), поэтому каждая тема объявлена отдельным элементом: ссылаться друг на друга через alias они могут, alias на самих себя — нет.
 
 ### Контракты (Dependency Inversion)
 
@@ -348,14 +348,13 @@ AuthTokenStorage (observable) → AuthSessionService (refresh, restore) →
 
 Ключевые правила:
 
-| Правило                                 | Назначение                                                                 |
-| --------------------------------------- | -------------------------------------------------------------------------- |
-| `boundaries/dependencies`               | Границы слоёв/слайсов FSD ([eslint.boundaries.mjs](eslint.boundaries.mjs)) |
-| `no-restricted-imports`                 | Public API и self-imports внутри слайса/сегмента                           |
-| `check-file/filename-naming-convention` | Именование файлов                                                          |
-| `check-file/folder-naming-convention`   | `kebab-case` папок                                                         |
-| `simple-import-sort/imports`            | Порядок импортов (внешние → внутренние)                                    |
-| `react-refresh/only-export-components`  | Fast Refresh совместимость                                                 |
-| `react-hooks/rules-of-hooks`            | Правила хуков                                                              |
-| `react-hooks/exhaustive-deps`           | Полнота зависимостей                                                       |
-| `padding-line-between-statements`       | Пустые строки между блоками                                                |
+| Правило                                 | Назначение                                                                                           |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `boundaries/dependencies`               | Границы слоёв/слайсов FSD, public API, self-imports ([eslint.boundaries.mjs](eslint.boundaries.mjs)) |
+| `check-file/filename-naming-convention` | Именование файлов                                                                                    |
+| `check-file/folder-naming-convention`   | `kebab-case` папок                                                                                   |
+| `simple-import-sort/imports`            | Порядок импортов (внешние → внутренние)                                                              |
+| `react-refresh/only-export-components`  | Fast Refresh совместимость                                                                           |
+| `react-hooks/rules-of-hooks`            | Правила хуков                                                                                        |
+| `react-hooks/exhaustive-deps`           | Полнота зависимостей                                                                                 |
+| `padding-line-between-statements`       | Пустые строки между блоками                                                                          |
