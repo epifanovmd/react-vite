@@ -20,17 +20,31 @@ yarn generate:orval # регенерация src/shared/api/gen/
 - `src/shared/api/gen/` — orval codegen
 - `src/app/routeTree.gen.ts` — TanStack Router plugin
 
+## Документация
+
+Проектная документация (`README.md`, `ARCHITECTURE.md`, `FSD-CHEATSHEET.md`,
+`CONVENTIONS.md`, `CLEAN-CODE.md`, `DESIGN-PRINCIPLES.md`) описывает **общие принципы,
+архитектуру и структуру** — без описания конкретных слайсов, модулей и имён.
+
+**Не редактировать эти документы без явной просьбы пользователя.** Даже если задача
+изменила архитектурный факт или общее правило — сообщить об этом и оставить правку
+документации отдельной задачей. Не добавлять в них проектную конкретику (имена слайсов,
+компонентов, сторов, файлов).
+
 ## Где что читать
 
-| Вопрос                                                     | Документ                                                                     |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Слои FSD, границы импортов, public API, DI, ESLint-правила | [ARCHITECTURE.md](ARCHITECTURE.md)                                           |
-| Куда положить новый код (decision tree)                    | [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md)                                       |
-| Именование файлов, компоненты, импорты, типы, хуки, тесты  | [CONVENTIONS.md](CONVENTIONS.md)                                             |
-| Clean code, SOLID, паттерны                                | [CLEAN-CODE.md](CLEAN-CODE.md), [DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md) |
-| Compound slots API                                         | [src/shared/lib/slots/README.md](src/shared/lib/slots/README.md)             |
+| Вопрос                                                    | Документ                                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Слои FSD, границы импортов, public API, DI, автопроверки  | [ARCHITECTURE.md](ARCHITECTURE.md)                                           |
+| Куда положить новый код (decision tree)                   | [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md)                                       |
+| Именование файлов, компоненты, импорты, типы, хуки, тесты | [CONVENTIONS.md](CONVENTIONS.md)                                             |
+| Clean code, SOLID, паттерны                               | [CLEAN-CODE.md](CLEAN-CODE.md), [DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md) |
+| Compound slots API                                        | [src/shared/lib/slots/README.md](src/shared/lib/slots/README.md)             |
 
-Детальная память проекта (проверенные факты, gotcha, точные файловые карты) — [.claude/memory/MEMORY.md](.claude/memory/MEMORY.md): architecture, aliases, build, auth, holders, ui, routing, testing, patterns. Загружай тематический файл, когда работаешь в соответствующей области.
+Конкретика проекта (проверенные факты, gotcha, точные файловые карты) — не в корневых
+документах, а в [.claude/memory/MEMORY.md](.claude/memory/MEMORY.md): architecture,
+aliases, build, auth, holders, ui, routing, testing, patterns. Загружай тематический
+файл, когда работаешь в соответствующей области.
 
 ## Минимум, который надо знать всегда
 

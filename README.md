@@ -1,6 +1,6 @@
 # React Vite
 
-Messenger/admin panel built with React + Vite + MobX + Inversify.
+Клиентское веб-приложение на React + Vite, построенное по Feature-Sliced Design.
 
 ##### Stack:
 
@@ -16,27 +16,33 @@ Messenger/admin panel built with React + Vite + MobX + Inversify.
 
 ### Architecture
 
-Проект построен по методологии **[Feature-Sliced Design](https://feature-sliced.design)**: `app → pages → widgets → features → entities → shared`.
+Проект построен по методологии
+**[Feature-Sliced Design](https://feature-sliced.design)**:
+`app → pages → widgets → features → entities → shared`.
 
 ```
 src/
-  app/        ← композиционный корень (App.tsx, router.tsx, routes/, DI-модули, стили)
-  pages/      ← экраны — тонкая композиция widgets/features/entities под роут
-  widgets/    ← крупные самостоятельные блоки UI (app-layout, auth-layout)
-  features/   ← юзкейсы (sign-in, sign-up, edit-profile, ...)
-  entities/   ← бизнес-сущности — состояние и модели, без UI-форм (auth, user)
+  app/        ← композиционный корень (точка входа, роутер, DI-модули, глобальные стили)
+  pages/      ← экраны — тонкая композиция widgets/features/entities под маршрут
+  widgets/    ← крупные самостоятельные блоки UI
+  features/   ← пользовательские сценарии и действия
+  entities/   ← бизнес-сущности: состояние и доменные модели, без UI-форм
   shared/     ← переиспользуемый код без знания о бизнес-логике
     ui/       ←   UI-кит
-    api/      ←   HttpClient + orval codegen
-    config/   ←   env
-    lib/      ←   DI, holders, socket, storage, theme, notifications, models, utils
+    api/      ←   HTTP-клиент и сгенерированные контракты
+    config/   ←   конфигурация окружения
+    lib/      ←   независимые технические модули (DI, async-состояние, транспорт, хранилище, тема, уведомления, утилиты)
 ```
 
-Подробнее про текущее устройство проекта: [ARCHITECTURE.md](ARCHITECTURE.md).
-Краткая памятка «что куда класть»: [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md).
-Правила написания кода: [CONVENTIONS.md](CONVENTIONS.md).
-Практика clean code и design principles: [CLEAN-CODE.md](CLEAN-CODE.md) и
-[DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md).
+Документация:
+
+- архитектурная модель, слои, границы и правила зависимостей — [ARCHITECTURE.md](ARCHITECTURE.md);
+- памятка «что куда класть» — [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md);
+- правила написания кода — [CONVENTIONS.md](CONVENTIONS.md);
+- принципы проектирования — [CLEAN-CODE.md](CLEAN-CODE.md) и [DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md).
+
+Документация описывает общие принципы и не содержит описания конкретных слайсов и
+модулей. Она не изменяется без явного запроса.
 
 ### Requirements
 
@@ -46,12 +52,13 @@ src/
 ### Installation
 
 ```sh
-git clone https://github.com/epifanovmd/react-vite.git
-cd react-vite
+git clone <repository-url>
+cd <project-directory>
 yarn
 ```
 
-Скопируйте `.env.development` / `.env.production` и при необходимости поправьте `VITE_BASE_URL` / `VITE_SOCKET_BASE_URL`.
+Скопируйте файлы окружения (`.env.development` / `.env.production`) и при необходимости
+поправьте адреса backend и real-time транспорта.
 
 ### Run
 
@@ -73,22 +80,32 @@ yarn build
 yarn prod
 ```
 
-### Lint & Format
+### Checks
+
+Обязательный минимум перед merge (это же выполняет pre-commit hook):
 
 ```sh
-yarn lint:fix        # eslint --fix
-yarn prettier:fix     # prettier --write
+yarn lint            # eslint, включая границы слоёв FSD — 0 ошибок
+yarn typecheck       # tsc --noEmit
+yarn test            # vitest run
 ```
 
-Границы слоёв FSD (`boundaries/dependencies`) и self-import правила проверяются линтером — 0 ошибок обязательны для мержа.
+Автофиксы:
+
+```sh
+yarn lint:fix
+yarn prettier:fix
+```
 
 ### API codegen
 
-HTTP-клиент и типы (`src/shared/api/gen/`) генерируются из OpenAPI-схемы через orval и **не редактируются вручную**:
+HTTP-клиент и типы генерируются из OpenAPI-схемы и **не редактируются вручную**:
 
 ```sh
 yarn generate:orval
 ```
+
+То же относится к сгенерированному дереву маршрутов роутера.
 
 ### License
 

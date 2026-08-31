@@ -1,61 +1,56 @@
 # Architecture Guide
 
-Документ фиксирует текущее устройство проекта и обязательные архитектурные решения.
-Краткая памятка для размещения нового кода — [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md).
-Правила написания и оформления кода — [CONVENTIONS.md](CONVENTIONS.md).
+Документ описывает архитектурную модель приложения: слои, границы, правила
+зависимостей и способ организации состояния. Он не описывает конкретные слайсы,
+модули и имена — это область кода и проектной памяти.
+
+- Выбор места для нового кода — [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md).
+- Правила написания и оформления кода — [CONVENTIONS.md](CONVENTIONS.md).
+- Принципы проектирования — [CLEAN-CODE.md](CLEAN-CODE.md), [DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md).
+
+Технологические решения (библиотека состояния, DI-контейнер, роутер, HTTP-клиент,
+кодогенератор) описываются здесь категориями, а не брендами: архитектура не должна
+зависеть от конкретной библиотеки. Актуальный выбор фиксируется в README проекта.
 
 ## Feature-Sliced Design
 
-Проект построен по методологии **[Feature-Sliced Design](https://feature-sliced.design)**. Шесть слоёв, каждый следующий строится поверх предыдущих и не знает о вышестоящих:
+Приложение строится по методологии
+**[Feature-Sliced Design](https://feature-sliced.design)**. Шесть слоёв, каждый
+следующий строится поверх предыдущих и не знает о вышестоящих:
 
 ```
 app → pages → widgets → features → entities → shared
 ```
 
+| Слой       | Ответственность                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| `app`      | композиционный корень: запуск, роутер, глобальные providers, сборка DI, глобальные стили |
+| `pages`    | экраны — тонкая композиция нижних слоёв под маршрут                                      |
+| `widgets`  | крупные самостоятельные блоки UI                                                         |
+| `features` | пользовательские сценарии и действия над сущностями                                      |
+| `entities` | бизнес-сущности: состояние, доменные модели, представление сущности                      |
+| `shared`   | переиспользуемый фундамент без знания о бизнес-логике                                    |
+
 ```
 src/
-  app/                    ← композиционный корень
-    App.tsx               ←   точка входа, инициализация DI + AppDataStore
-    router.tsx             ←   TanStack Router instance
-    routes/                 ←   файловый роутинг (routesDirectory)
-    app.module.ts            ←   регистрация всех ContainerModule
-    app-data.store.ts, .types.ts, app-data.module.ts
-    styles/                  ←   глобальные стили, темы
-
-  pages/                  ← экраны — тонкая композиция widgets/features/entities под роут
-    sign-in/, sign-up/, forgot-password/, reset-password/
-    profile/
-    ui-kit-demo/
-    errors/
-
-  widgets/                ← крупные самостоятельные блоки UI
-    app-layout/           ←   Header, MobileMenu, ProfileMenu, useHeaderVM
-    auth-layout/
-
-  features/               ← юзкейсы — интерактивные сценарии поверх entities
-    sign-in/, sign-up/, forgot-password/, reset-password/
-    edit-profile/, request-email-verification/, sign-out/
-
-  entities/               ← бизнес-сущности — состояние и доменные модели, без UI-форм
-    auth/                 ←   model/ (store, validation), api/ (jwt, session, token)
-    user/                  ←   model/ (store, session, realtime, ...), ui/ (UserAvatar)
-
-  shared/                 ← переиспользуемый код без знания о бизнес-логике
-    ui/                   ←   UI-кит (button, input, modal, ...)
-    api/                   ←   HttpClient, orval codegen (gen/), контракты
-    config/                 ←   env.ts (BASE_URL, SOCKET_BASE_URL)
-    lib/                     ←   di, holders, socket, storage, theme, notifications, models, utils, ...
+  app/       ← точка входа, роутер, регистрация DI-модулей, глобальные стили
+  pages/     ← <page>/
+  widgets/   ← <widget>/
+  features/  ← <feature>/
+  entities/  ← <entity>/
+  shared/
+    ui/      ←   UI-кит
+    api/     ←   HTTP-клиент, сгенерированные контракты, общие типы ответа
+    config/  ←   конфигурация окружения
+    lib/     ←   независимые технические модули (DI, async-состояние, транспорт, хранилище, тема, уведомления, утилиты)
 ```
 
-Каждый слайс (`entities/auth`, `features/sign-in`, `widgets/app-layout`, `pages/profile`, ...)
-самодостаточен. У `shared` и `app` слайсов нет.
+Каждый слайс самодостаточен. У `app` и `shared` слайсов нет.
 
-## Слайсы и внутренняя структура
+## Слайсы и сегменты
 
-Слайсы существуют в `pages`, `widgets`, `features` и `entities`. `app` и `shared`
-слайсов не содержат.
-
-Внутри слайса используются сегменты по назначению:
+Слайсы существуют в `pages`, `widgets`, `features` и `entities`. Внутри слайса код
+группируется по назначению:
 
 | Сегмент  | Ответственность                                      |
 | -------- | ---------------------------------------------------- |
@@ -66,18 +61,16 @@ src/
 | `config` | конфигурация и feature flags                         |
 
 Набор сегментов не фиксирован: маленький слайс может быть плоским, пустые директории
-создавать не нужно. При росте код раскладывается по назначению. `pages` подчиняется тем же
-правилам; `stack`, `tabs` и route groups — группы слайсов, а не сегменты.
+создавать не нужно. При росте код раскладывается по назначению. `pages` подчиняется тем
+же правилам; группы маршрутов и навигаторов — это группы слайсов, а не сегменты.
 
-Новые директории `components`, `hooks`, `types`, `utils` как сегменты не создаются:
-они описывают вид файлов, а не ответственность. Дополнительный сегмент допустим, если его
-название выражает назначение. Существующие legacy-директории с техническими именами не
-являются образцом для нового кода.
+Новые сегменты с техническими именами (`components`, `hooks`, `types`, `utils`) не
+создаются: они описывают вид файлов, а не ответственность. Дополнительный сегмент
+допустим, если его название выражает назначение. Существующие legacy-директории с
+техническими именами не являются образцом для нового кода.
 
-FSD не задаёт направление зависимостей между `ui`, `model` и `api` внутри одного слайса:
-это сегменты, а не вложенные слои.
-
-Практическое руководство и decision tree: [FSD-CHEATSHEET.md](FSD-CHEATSHEET.md).
+FSD не задаёт направление зависимостей между `ui`, `model` и `api` внутри одного
+слайса: это сегменты, а не вложенные слои.
 
 ## Правила зависимостей
 
@@ -85,276 +78,247 @@ FSD не задаёт направление зависимостей между
         ┌────────────┐
         │    app     │  видит всё
         └─────┬──────┘
-              │
         ┌─────▼──────┐
         │   pages    │  shared + entities + features + widgets
         └─────┬──────┘
-              │
         ┌─────▼──────┐
         │  widgets   │  shared + entities + features
         └─────┬──────┘
-              │
         ┌─────▼──────┐
         │  features  │  shared + entities
         └─────┬──────┘
-              │
         ┌─────▼──────┐
         │  entities  │  shared
         └─────┬──────┘
-              │
         ┌─────▼──────┐
         │   shared   │  ничего бизнесового
         └────────────┘
 ```
 
-Правило FSD: _модуль слайса может импортировать только слайсы строго нижних слоёв_. Импорт с того же слоя или сверху — запрещён.
+Правило FSD: _модуль слайса может импортировать только слайсы строго нижних слоёв_.
+Импорт с того же слоя или сверху запрещён.
 
 ### Слайсы одного слоя не видят друг друга
 
-`entities/auth` не импортирует `entities/user`, `features/sign-in` не импортирует `features/sign-up`, `widgets/app-layout` не импортирует `widgets/auth-layout`, `pages/profile` не импортирует `pages/sign-in` — и так для каждого слоя со слайсами.
+Слайс не импортирует соседний слайс своего слоя — ни в `entities`, ни в `features`, ни
+в `widgets`, ни в `pages`.
 
-Если двум слайсам одного слоя нужна общая логика — она лежит слоем ниже. Пример: `loginValidation`/`passwordValidation` используются в `features/sign-in` и `features/sign-up`, определены в `entities/auth/model/validation.ts`.
+Если двум слайсам одного слоя нужна общая логика — она опускается слоем ниже. Например,
+валидация, общая для нескольких сценариев одного домена, принадлежит соответствующей
+сущности, а не одному из сценариев.
 
 ### Разрешено
 
-| Откуда     | Куда                                        | Пример                                     |
-| ---------- | ------------------------------------------- | ------------------------------------------ |
-| `shared`   | `shared`                                    | `shared/ui/button` → `shared/lib/utils/cn` |
-| `entities` | `shared`                                    | `entities/auth` → `@shared/lib/di`         |
-| `features` | `shared`, `entities`                        | `features/sign-in` → `@entities/auth`      |
-| `widgets`  | `shared`, `entities`, `features`            | `widgets/app-layout` → `@entities/user`    |
-| `pages`    | `shared`, `entities`, `features`, `widgets` | `pages/profile` → `@features/edit-profile` |
-| `app`      | всё                                         | `app/app.module.ts` → `@entities/auth`     |
+| Откуда     | Куда                                        |
+| ---------- | ------------------------------------------- |
+| `shared`   | `shared`                                    |
+| `entities` | `shared`                                    |
+| `features` | `shared`, `entities`                        |
+| `widgets`  | `shared`, `entities`, `features`            |
+| `pages`    | `shared`, `entities`, `features`, `widgets` |
+| `app`      | всё                                         |
 
 ### Запрещено
 
-| Нарушение                           | Почему                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------ |
-| **Слайс → слайс того же слоя**      | `entities/auth` → `entities/user` ✗ (используй Dependency Inversion — контракт в `shared`) |
-| **Слой → слой выше**                | `entities/*` → `@features/*` ✗                                                             |
-| **Self-import через свой же alias** | внутри `entities/auth/model/` — `@entities/auth` ✗, только относительные пути              |
+| Нарушение                           | Почему                                                                |
+| ----------------------------------- | --------------------------------------------------------------------- |
+| **Слайс → слайс того же слоя**      | связывает независимые слайсы; общее выносится вниз или через контракт |
+| **Слой → слой выше**                | инвертирует направление зависимостей                                  |
+| **Self-import через свой же alias** | внутри слайса используются только относительные пути                  |
 
-Всё это проверяется `eslint-plugin-boundaries` ([eslint.boundaries.mjs](eslint.boundaries.mjs)) — 0 нарушений считается обязательным условием для мержа.
+Границы проверяются линтером (`eslint-plugin-boundaries`); 0 нарушений — обязательное
+условие для мержа.
 
 ### Self-imports
 
-Внутри слайса/сегмента — только **относительные** пути. Публичный alias самого себя — запрещён (`boundaries/dependencies`, [eslint.boundaries.mjs](eslint.boundaries.mjs)).
+Внутри слайса или shared-модуля — только **относительные** пути. Публичный alias самого
+себя запрещён.
 
 ```ts
-// ✅ Правильно (внутри entities/auth/api/session-guard.ts)
-import { IAuthStore } from "../model/types";
+// ✅ внутри слайса — относительный путь
+import { IStore } from "../model/types";
 
-// ❌ Неправильно (та же папка)
-import { IAuthStore } from "@entities/auth";
+// ❌ внутри того же слайса — self-import через alias
+import { IStore } from "@entities/<entity>";
 
-// ✅ Правильно (из features/sign-in в entities/auth)
-import { IAuthStore } from "@entities/auth";
+// ✅ из другого слайса — только через public API
+import { IStore } from "@entities/<entity>";
 ```
 
-Как это устроено: слайс — это один элемент, поэтому импорт своего же слайса приходит как `internal`-зависимость и в общем случае разрешён (иначе файлы внутри него не смогли бы ссылаться друг на друга). Отдельная политика с селектором `dependency.source: ["@*", "@*/**"]` матчится по сырому спецификатору и запрещает именно alias-вариант.
+Механика правила: слайс — это один элемент линтера, поэтому импорт внутри него приходит
+как `internal`-зависимость и в общем случае разрешён (иначе файлы слайса не смогли бы
+ссылаться друг на друга). Запрет alias-варианта задаётся отдельной политикой, которая
+матчится по сырому спецификатору импорта.
 
-Правило действует для любого слайса `entities/*`, `features/*`, `widgets/*`, `pages/*` и любого сегмента `shared/*` — списков имён в конфиге нет, новый слайс попадает под правило сразу. `shared/lib` — не цельный модуль, а плоская россыпь независимых тем (di, models, utils, theme, socket, holders, ...), поэтому каждая тема объявлена отдельным элементом: ссылаться друг на друга через alias они могут, alias на самих себя — нет.
+Правило описывается через шаблоны слоёв и сегментов, а не через перечисление имён:
+новый слайс попадает под него сразу после создания. Директории `shared` — не цельный
+модуль, а плоская россыпь независимых тем, поэтому каждая тема объявляется отдельным
+элементом: ссылаться друг на друга через alias они могут, alias на самих себя — нет.
 
 ### Контракты (Dependency Inversion)
 
-Если `shared/lib` требует данные из `entities` — создаётся контракт (интерфейс) внутри `shared`, а `entities` его реализует.
+Если нижний слой требует данные верхнего — создаётся контракт (интерфейс) внизу, а
+верхний слой его реализует и регистрирует в DI.
 
 ```
-shared/lib/socket/transport/
-  socket.transport.ts ──→ shared/lib/socket/contract/token-provider.types.ts
-                               ↑
-                               │ (interface, ITokenProvider)
-                               │
-entities/auth/api/
-  token-provider.ts ──implements──→ ITokenProvider
+shared/lib/<module>/<impl>.ts ──→ shared/lib/<module>/contract/<name>.contract.ts
+                                        ↑
+                                        │ implements
+entities/<entity>/api/<adapter>.ts ─────┘
 ```
 
-## Public API (index.ts)
+Так инфраструктура (транспорт, хранилище, аналитика) остаётся в `shared`, а знание о
+домене — в `entities`.
+
+## Public API
 
 Правило зависит от того, есть ли у слоя слайсы.
 
-**entities / features / widgets / pages** — Public API один на весь слайс, `index.ts` на корне слайса. Сегменты внутри (`model/`, `api/`, `ui/`) — внутренняя организация, у них нет своего `index.ts`, снаружи слайс виден только через корневой barrel:
+**entities / features / widgets / pages** — один Public API на весь слайс, `index.ts` в
+корне слайса. Сегменты внутри — внутренняя организация, своих `index.ts` у них нет:
 
 ```
-entities/auth/index.ts          ← Public API слайса
-entities/auth/model/store.ts    ← нет model/index.ts
-entities/auth/api/token-provider.ts  ← нет api/index.ts
+<layer>/<slice>/index.ts        ← Public API слайса
+<layer>/<slice>/model/store.ts  ← внутренняя реализация, без model/index.ts
 ```
 
-**shared** — слайсов нет, поэтому Public API определяется отдельно на каждый самостоятельный модуль/сегмент:
+**shared** — слайсов нет, поэтому Public API определяется на каждом самостоятельном
+модуле:
 
 ```
-shared/ui/button/index.ts
-shared/api/contract/index.ts
-shared/lib/di/index.ts
-shared/lib/socket/transport/index.ts
+shared/ui/<component>/index.ts
+shared/lib/<module>/index.ts
 ```
 
-## Project conventions
-
-Общие правила именования, компонентов, импортов, типов, хуков, комментариев и тестов
-описаны в [CONVENTIONS.md](CONVENTIONS.md).
-
-Проектные исключения:
-
-- именами файлов в `app/routes/` владеет TanStack Router;
-- `app/router.tsx` является instance-модулем с JSX, а не компонентом;
-- `shared/lib/notifications/notification-service.tsx` является сервисом с JSX внутри
-  `toast.custom`, а не React-компонентом.
-
-Автоматические naming-проверки определены в [eslint.naming.mjs](eslint.naming.mjs).
+Public API содержит только то, что поддерживается для внешних потребителей. Экспортов
+«на всякий случай» быть не должно.
 
 ## State Management
 
-### Сторы (MobX)
+### Синхронное состояние домена (сторы)
 
 ```
-entities/auth/
+entities/<entity>/
   model/
-    store.ts        ← класс MobX store (AuthStore)
-    types.ts         ← AuthStatus, IAuthStore (DI-токен)
-  auth.module.ts      ← bind(IAuthStore.Tid).to(AuthStore).inSingletonScope()
+    store.ts            ← класс стора
+    types.ts            ← доменные типы и DI-токен интерфейса
+  <entity>.module.ts    ← регистрация реализации в контейнере (singleton)
 ```
 
-- Стор — **только состояние и переходы**. Инфраструктура (токены, refresh) — в `api/`.
-- Регистрация — явная, через `ContainerModule` в `<slice>.module.ts` (не декоратором на классе).
-- Зависимости — через DI: `@IAuthTokenStorage() private _tokenStorage: IAuthTokenStorage`.
+- Стор хранит **только состояние и переходы**. Инфраструктура (транспорт, токены,
+  хранилище) живёт в `api`/`lib`.
+- Регистрация — явная, через модуль контейнера, а не декоратором на классе.
+- Зависимости приходят через DI, а не создаются внутри стора.
 
-### Холдеры (async state) + React-хуки
+### Асинхронное состояние (холдеры)
 
-Каждый холдер — самодостаточная папка с классом, React-хуком и опциональным Provider/Context:
+Асинхронные данные не хранятся в ad-hoc `useState` + `useEffect`-загрузке. Для них
+используется единый набор холдеров в `shared/lib` — переиспользуемых объектов состояния
+запроса с React-хуками поверх них (модель, близкая к query-библиотекам):
 
-```
-shared/lib/holders/
-  entity/             ← EntityHolder<T> + useEntity + useEntityContext + EntityProvider
-  collection/         ← CollectionHolder<T> + useCollection + ...
-  paged/              ← PagedHolder<T> + usePaged + ...
-  infinite/           ← InfiniteHolder<T> + useInfinite + ...
-  mutation/           ← MutationHolder<T> + useMutation + ...
-  polling/            ← PollingHolder<T> + usePolling + ...
-  base/               ← BaseHolder, BaseListHolder, CombinedHolder
-  hooks/              ← shared: useHolderRef, useWatchEffect, contextHelpers
-```
+| Назначение               | Хук             |
+| ------------------------ | --------------- |
+| одна сущность            | `useEntity`     |
+| список                   | `useCollection` |
+| постраничный список      | `usePaged`      |
+| бесконечная подгрузка    | `useInfinite`   |
+| изменяющая операция      | `useMutation`   |
+| периодический перезапрос | `usePolling`    |
 
-**React-хуки** (TanStack Query-like API):
+Каждый холдер — самодостаточная папка: класс состояния, React-хук и опциональные
+Provider/Context для шаринга одного холдера по дереву компонентов.
 
-| Хук             | Holder             | Аналог TQ                    |
-| --------------- | ------------------ | ---------------------------- |
-| `useEntity`     | `EntityHolder`     | `useQuery`                   |
-| `useCollection` | `CollectionHolder` | `useQuery` (list)            |
-| `usePaged`      | `PagedHolder`      | `useQuery` (paginated)       |
-| `useInfinite`   | `InfiniteHolder`   | `useInfiniteQuery`           |
-| `useMutation`   | `MutationHolder`   | `useMutation`                |
-| `usePolling`    | `PollingHolder`    | `useQuery` + refetchInterval |
+Общие свойства, обязательные для любого холдера:
 
-Ключевые фичи: `queryFn`, `watch` (авто-загрузка + перезапрос при изменении), `enabled` (пропуск условия), `isBusy`.
+- запрос описывается функцией-загрузчиком, а не императивным кодом в компоненте;
+- поддерживаются реактивный перезапрос по зависимостям и условное отключение запроса;
+- результат возвращается как `{ data } | { error }`, исключения наружу не выбрасываются;
+- устаревшие ответы игнорируются (cancellation), фоновая перезагрузка не «моргает»
+  данными.
 
-**Provider/Context** — для шаринга состояния через дерево компонентов:
+Это ядро инфраструктуры: оно покрывается тестами и имеет собственный порог покрытия.
 
-```tsx
-<EntityProvider queryFn={id => api.getPost(id)} watch={[postId]}>
-  <Child /> {/* useEntityContext() — тот же holder */}
-</EntityProvider>
-```
+## Dependency Injection
 
-- Все холдеры возвращают `{ data } | { error }`, никогда не кидают исключения
-- Поддерживают cancellation (stale responses игнорируются)
-- "Quiet refresh" — данные остаются видимыми при фоновом обновлении
+- Контейнер собирается явно: каждый слайс с биндингами объявляет свой модуль
+  контейнера, все модули регистрируются в композиционном корне (`app`).
+- Токен и интерфейс объявляются вместе; фабрика токена даёт единый способ получить
+  реализацию.
+- Отдельных обёрточных хуков (`use<X>Store`) не создаётся — потребитель обращается к
+  токену напрямую.
 
-## DI (Dependency Injection)
+| Где                                      | Как                                |
+| ---------------------------------------- | ---------------------------------- |
+| В React-компоненте или хуке              | хук получения экземпляра из токена |
+| Вне React (guard, сервис, инициализация) | синхронное получение из токена     |
+| Инъекция в конструктор класса            | декоратор токена в параметре       |
 
-- Контейнер: **Inversify**, регистрация — явная через `ContainerModule` (не auto-bind декоратором).
-- Токен/фабрика: `createInjectDecorator<T>()` — возвращает объект-декоратор с `.Tid`, `.getInstance()`, `.useInstance()`.
-- Каждый слайс с DI-биндингами имеет свой `<slice>.module.ts`, все модули собираются в `app/app.module.ts` (`registerContainerModules`).
+Правила выбора: DI применяется на реальных внешних границах (транспорт, хранилище,
+платформенные API, домённые сторы), а не для каждого класса с единственной реализацией
+— см. [DESIGN-PRINCIPLES.md](DESIGN-PRINCIPLES.md).
 
-```ts
-// entities/auth/api/jwt-types.ts
-export const IAuthJwtService = createInjectDecorator<IAuthJwtService>();
-export interface IAuthJwtService {
-  parse(token: string): JwtPayload | null;
-}
+## HTTP и сессия
 
-// entities/auth/api/jwt-service.ts
-@injectable()
-export class AuthJwtService implements IAuthJwtService {
-  parse(token: string): JwtPayload | null { ... }
-}
-
-// entities/auth/auth.module.ts
-export const authModule = new ContainerModule(({ bind }) => {
-  bind(IAuthJwtService.Tid).to(AuthJwtService).inSingletonScope();
-});
-```
-
-Получение экземпляра:
-
-| Где                                    | Как                                                |
-| -------------------------------------- | -------------------------------------------------- |
-| В React-компоненте/хуке                | `IAuthJwtService.useInstance()`                    |
-| Вне React (route guard, другой сервис) | `IAuthJwtService.getInstance()`                    |
-| Инъекция в конструктор класса          | `@IAuthJwtService() private _jwt: IAuthJwtService` |
-
-Отдельных wrapper-хуков (`useAuthStore` и т.п.) нет — компоненты вызывают `IXxx.useInstance()` напрямую.
-
-## HTTP и авторизация
-
-### Token lifecycle
+Жизненный цикл авторизации выстраивается как цепочка ответственностей, а не как логика
+внутри компонентов:
 
 ```
-AuthTokenStorage (observable) → AuthSessionService (refresh, restore) →
-  HttpClient (interceptors) → API calls
-  SocketTransport (via ITokenProvider)
+хранилище токенов → сервис сессии (refresh, восстановление)
+    → HTTP-клиент (interceptors) → вызовы API
+    → транспорт реального времени (через контракт провайдера токена)
 ```
 
-### JWT
+Обязательные свойства:
 
-- Парсинг через `AuthJwtService.parse()` — типизированный payload, валидация структуры
-- `isTokenExpiringSoon()` через `AuthJwtService`, не через голый `atob()`
-- 60s buffer для preemptive refresh
+- разбор и проверка токена — отдельный сервис с типизированным payload, а не ручной
+  разбор в месте использования;
+- проактивное обновление токена до истечения (с буфером), а не только реакция на 401;
+- конкурентные 401 дедуплицируются: все запросы ждут одного обновления и повторяются;
+- неуспешное обновление очищает сессию через единый канал «сессия истекла»;
+- транспорт реального времени переподключается с экспоненциальной задержкой и
+  ограничением, инициализация идемпотентна.
 
-### 401 handling
+## Обработка ошибок
 
-- **Request interceptor**: `ensureFreshToken()` → проактивный refresh при скором expiry
-- **Response interceptor**: на 401 → `_handleConcurrentRefresh()` (дедуплицированный)
-- При ошибке refresh → `clearTokens()` + `onSessionExpired` → `AuthStore.signOut()`
-- Все запросы, получившие 401, ждут одного refresh и ретраятся
+- Все API-вызовы возвращают `{ data } | { error }`; исключения наружу не выбрасываются.
+- Ошибка транспорта нормализуется в типизированный объект с предикатами вида
+  «не авторизован / нет доступа / не найдено / ошибка сервера / сеть».
+- Сетевые и серверные ошибки показываются пользователю централизованно, на уровне
+  interceptor.
+- Ошибки авторизации не показываются пользователю: их обрабатывает цикл
+  обновления сессии.
+- Одна ошибка сообщается один раз: слой сценария не дублирует глобальное уведомление.
 
-### Socket transport
+## Уведомления и глобальные providers
 
-- Подключение: socket.io с `reconnection: true`, `reconnectionAttempts: Infinity`
-- Auth token: через `ITokenProvider` (контракт в `shared/lib/socket/contract`, реализация в `entities/auth`)
-- Exponential backoff при "io server disconnect" и auth_error: 1s → 2s → 4s → 8s → 10s max
-- При успешном connect: сброс счётчика retry
-- `initialize()` идемпотентен
+Расположение определяется ответственностью, а не удобством:
 
-## Error Handling
+- контракт и универсальный сервис уведомлений → `shared/lib`;
+- визуальное представление → `shared/ui`;
+- provider остаётся рядом с shared-модулем, только пока он является переносимой частью
+  его публичного API и не знает о роутере, сторах и конфигурации приложения;
+- как только provider начинает собирать app-специфичные зависимости — он переезжает в
+  `app/providers/<module>`, а контракт и универсальный сервис остаются в `shared`.
 
-- Все API-вызовы возвращают `{ data } | { error }`, исключения не кидаются
-- HttpError: `isUnauthorized`, `isForbidden`, `isNotFound`, `isServerError`, `isNetworkError`
-- Сетевые ошибки и 500+ показываются toast'ом (interceptor)
-- 401-ошибки НЕ показываются toast'ом — они обрабатываются refresh/reconnect
+## Автоматические проверки
 
-## In-app уведомления (`shared/lib/notifications/`)
+Архитектурные правила должны быть машинно проверяемыми там, где это возможно:
 
-- `INotificationService` — общий контракт уведомлений, зарегистрированный в DI.
-- `NotificationProvider` подключает `react-hot-toast` и монтируется один раз в `App.tsx`.
-- `NotificationToast` и `notification-service.tsx` адаптируют библиотеку к публичному API проекта.
-- Модуль остаётся в `shared`, пока provider является переносимой частью его публичного API и
-  не знает о router, store или конфигурации приложения.
-- Если provider начнёт собирать app-specific зависимости, его следует перенести в
-  `app/providers/notifications`, оставив контракт и универсальный сервис в `shared`.
+| Область                 | Что проверяется                                          |
+| ----------------------- | -------------------------------------------------------- |
+| Границы слоёв и слайсов | направление импортов, public API, self-imports           |
+| Именование              | имена файлов и директорий                                |
+| Импорты                 | порядок и группировка                                    |
+| React                   | правила хуков, полнота зависимостей, совместимость с HMR |
+| Форматирование          | пустые строки между логическими блоками, prettier        |
+| Типы и тесты            | typecheck без ошибок, зелёные тесты, пороги покрытия     |
 
-## ESLint
+Правило, которое нельзя проверить автоматически, остаётся предметом code review и
+должно быть описано в [CONVENTIONS.md](CONVENTIONS.md).
 
-Ключевые правила:
+## Проектные исключения
 
-| Правило                                 | Назначение                                                                                           |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `boundaries/dependencies`               | Границы слоёв/слайсов FSD, public API, self-imports ([eslint.boundaries.mjs](eslint.boundaries.mjs)) |
-| `check-file/filename-naming-convention` | Именование файлов                                                                                    |
-| `check-file/folder-naming-convention`   | `kebab-case` папок                                                                                   |
-| `simple-import-sort/imports`            | Порядок импортов (внешние → внутренние)                                                              |
-| `react-refresh/only-export-components`  | Fast Refresh совместимость                                                                           |
-| `react-hooks/rules-of-hooks`            | Правила хуков                                                                                        |
-| `react-hooks/exhaustive-deps`           | Полнота зависимостей                                                                                 |
-| `padding-line-between-statements`       | Пустые строки между блоками                                                                          |
+Исключения из общих правил (файлы, именами которых владеет фреймворк или кодогенератор;
+модули с JSX, не являющиеся компонентами; сгенерированный код) фиксируются в
+конфигурации линтера и в проектной документации рядом с ней. Исключение должно быть
+узким, обоснованным и не распространяться на новый код автоматически.
