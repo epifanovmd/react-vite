@@ -7,7 +7,7 @@ services:
     image: react-vite:latest
     container_name: react-vite
     ports:
-      - "${APP_PORT:-3001}:4173"
+      - "${APP_PORT:-4173}:4173"
     restart: unless-stopped
     networks:
       - react-net
