@@ -1,4 +1,4 @@
-import { IApiService } from "@shared/api";
+import { IMainApi } from "@shared/api";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
 
@@ -8,7 +8,7 @@ import {
 } from "./validation";
 
 export const useForgotPasswordVM = () => {
-  const api = IApiService.useInstance();
+  const api = IMainApi.useInstance();
   const [sent, setSent] = useState(false);
 
   const form = useZodForm(forgotPasswordFormValidationSchema);

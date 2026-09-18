@@ -1,6 +1,8 @@
-import { createInjectDecorator } from "@shared/lib/di";
+import type { ITokenSource } from "@shared/lib/http";
+import type { INotificationService } from "@shared/lib/notifications/notification.types";
 
-import type { getRestApi } from "./gen/api";
-
-export type IApiService = ReturnType<typeof getRestApi>;
-export const IApiService = createInjectDecorator<IApiService>();
+/** Общий вход фабрик HTTP-клиентов; стек middleware каждый выбирает сам. */
+export interface ApiClientDeps {
+  session: ITokenSource;
+  notifications: INotificationService;
+}

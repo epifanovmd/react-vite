@@ -1,9 +1,9 @@
 import { IAuthStore } from "@entities/auth";
-import { IApiService } from "@shared/api";
+import { IMainApi } from "@shared/api";
 import {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
-} from "@shared/api/gen/model";
+} from "@shared/api/gen/main/model";
 import { IStorageService } from "@shared/lib/storage";
 import {
   browserSupportsWebAuthn,
@@ -24,7 +24,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
     storage.getItem(PROFILE_ID_KEY),
   );
 
-  const api = IApiService.useInstance();
+  const api = IMainApi.useInstance();
   const { restore } = IAuthStore.useInstance();
 
   useEffect(() => {

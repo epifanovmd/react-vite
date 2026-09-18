@@ -1,4 +1,4 @@
-import { IApiService } from "@shared/api";
+import { IMainApi } from "@shared/api";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
 
@@ -16,7 +16,7 @@ export const useResetPasswordVM = ({
   token,
   onSuccess,
 }: UseResetPasswordVMOptions) => {
-  const api = IApiService.useInstance();
+  const api = IMainApi.useInstance();
   const [error, setError] = useState<string | null>(null);
 
   const form = useZodForm(resetPasswordFormValidationSchema);

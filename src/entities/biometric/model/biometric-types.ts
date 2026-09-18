@@ -1,13 +1,13 @@
-import { ApiError, ApiResponse } from "@shared/api";
 import {
   IBiometricDeviceDto,
   IDeleteBiometricResponseDto,
   IGenerateNonceResponseDto,
   IRegisterBiometricResponseDto,
   IVerifyBiometricSignatureResponseDto,
-} from "@shared/api/gen/model";
+} from "@shared/api/gen/main/model";
 import { createInjectDecorator } from "@shared/lib/di";
 import { CollectionHolder } from "@shared/lib/holders";
+import { ApiError, ApiResponse } from "@shared/lib/http";
 
 export const IBiometricStore = createInjectDecorator<IBiometricStore>();
 

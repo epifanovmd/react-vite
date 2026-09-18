@@ -1,4 +1,4 @@
-import { ProfileDto } from "@shared/api/gen/model";
+import { ProfileDto } from "@shared/api/gen/main/model";
 import { DataModelBase } from "@shared/lib/models";
 import { DateModel } from "@shared/lib/models/date";
 import { LambdaValue } from "@shared/lib/utils/lambda-value";

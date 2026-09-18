@@ -1,4 +1,4 @@
-import { UserDto } from "@shared/api/gen/model";
+import { UserDto } from "@shared/api/gen/main/model";
 import { DataModelBase } from "@shared/lib/models";
 import { DateModel } from "@shared/lib/models/date";
 import { computed, makeObservable } from "mobx";

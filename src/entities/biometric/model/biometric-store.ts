@@ -1,5 +1,5 @@
-import { IApiService } from "@shared/api";
-import { IBiometricDeviceDto } from "@shared/api/gen/model";
+import { IMainApi } from "@shared/api";
+import { IBiometricDeviceDto } from "@shared/api/gen/main/model";
 import { CollectionHolder } from "@shared/lib/holders";
 import { injectable } from "inversify";
 import { makeAutoObservable } from "mobx";
@@ -16,7 +16,7 @@ export class BiometricStore implements IBiometricStore {
     },
   });
 
-  constructor(@IApiService() private _api: IApiService) {
+  constructor(@IMainApi() private _api: IMainApi) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
