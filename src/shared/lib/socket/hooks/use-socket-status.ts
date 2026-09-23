@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ISocketTransport, SocketTransportState } from "../transport";
 
-export function useSocketStatus(): SocketTransportState {
+export const useSocketStatus = (): SocketTransportState => {
   const transport = ISocketTransport.useInstance();
   const [state, setState] = useState<SocketTransportState>(transport.state);
 
@@ -11,10 +11,10 @@ export function useSocketStatus(): SocketTransportState {
   }, [transport]);
 
   return state;
-}
+};
 
-export function useIsSocketConnected(): boolean {
+export const useIsSocketConnected = (): boolean => {
   const { status } = useSocketStatus();
 
   return status === "connected";
-}
+};

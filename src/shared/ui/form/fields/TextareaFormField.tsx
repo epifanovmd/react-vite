@@ -15,7 +15,7 @@ export type TextareaFormFieldProps<
   >;
 
 /** @example <TextareaFormField<TForm> name="comment" label="Comment" /> */
-export function TextareaFormField<
+export const TextareaFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, string | undefined> =
     FieldPathByValue<TFormData, string | undefined>,
@@ -37,7 +37,7 @@ export function TextareaFormField<
   onBlur,
   variant,
   ...textareaProps
-}: TextareaFormFieldProps<TFormData, TName>): React.ReactElement {
+}: TextareaFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -74,4 +74,4 @@ export function TextareaFormField<
       )}
     />
   );
-}
+};

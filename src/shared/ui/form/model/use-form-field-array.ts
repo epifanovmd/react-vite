@@ -12,12 +12,12 @@ import {
  * @example
  * const phones = useFormFieldArray<TForm>({ name: "phones" });
  */
-export function useFormFieldArray<
+export const useFormFieldArray = <
   TFormData extends FieldValues,
   TName extends FieldArrayPath<TFormData> = FieldArrayPath<TFormData>,
   TKeyName extends string = "id",
 >(
   options: UseFieldArrayProps<TFormData, TName, TKeyName>,
-): UseFieldArrayReturn<TFormData, TName, TKeyName> {
+): UseFieldArrayReturn<TFormData, TName, TKeyName> => {
   return useFieldArray(options);
-}
+};

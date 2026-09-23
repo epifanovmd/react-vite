@@ -20,7 +20,7 @@ export type MaskedInputFormFieldProps<
  * @example
  * <MaskedInputFormField<TForm> name="phone" label="Phone" mask={phoneMask} />
  */
-export function MaskedInputFormField<
+export const MaskedInputFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, string | undefined> =
     FieldPathByValue<TFormData, string | undefined>,
@@ -44,7 +44,7 @@ export function MaskedInputFormField<
   onClear,
   variant,
   ...maskedInputProps
-}: MaskedInputFormFieldProps<TFormData, TName, TMask>): React.ReactElement {
+}: MaskedInputFormFieldProps<TFormData, TName, TMask>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -85,4 +85,4 @@ export function MaskedInputFormField<
       )}
     />
   );
-}
+};

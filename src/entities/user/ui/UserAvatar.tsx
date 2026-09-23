@@ -12,14 +12,13 @@ const COLORS = [
   "bg-orange-500",
 ];
 
-function colorFromString(s: string): string {
+const colorFromString = (s: string): string => {
   let h = 0;
 
-  for (let i = 0; i < s.length; i++)
-    h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
 
   return COLORS[Math.abs(h) % COLORS.length];
-}
+};
 
 const SIZE_CLASS: Record<NonNullable<UserAvatarProps["size"]>, string> = {
   sm: "w-7 h-7 text-xs",

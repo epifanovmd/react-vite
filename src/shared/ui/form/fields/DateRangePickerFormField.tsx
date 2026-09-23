@@ -16,7 +16,7 @@ export type DateRangePickerFormFieldProps<
   Omit<DateRangePickerProps, "disabled" | "id" | "name" | "value">;
 
 /** @example <DateRangePickerFormField<TForm> name="period" label="Period" /> */
-export function DateRangePickerFormField<
+export const DateRangePickerFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, DateRange | undefined> =
     FieldPathByValue<TFormData, DateRange | undefined>,
@@ -38,7 +38,7 @@ export function DateRangePickerFormField<
   onBlur,
   variant,
   ...dateRangePickerProps
-}: DateRangePickerFormFieldProps<TFormData, TName>): React.ReactElement {
+}: DateRangePickerFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -74,4 +74,4 @@ export function DateRangePickerFormField<
       )}
     />
   );
-}
+};

@@ -85,6 +85,15 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Все функции — стрелочные (объявления `function` запрещены).
+    // Сгенерированные файлы (src/shared/api/gen, routeTree.gen.ts) игнорируются глобально.
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "func-style": ["error", "expression"],
+      "prefer-arrow-callback": "error",
+    },
+  },
   boundariesConfig,
   namingConfig,
 );

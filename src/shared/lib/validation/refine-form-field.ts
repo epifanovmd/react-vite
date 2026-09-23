@@ -10,15 +10,15 @@ export interface RefineFormFieldOptions<
 }
 
 /** Добавляет sync/async-проверку с типизированным путём ошибки верхнего уровня. */
-export function refineFormField<
+export const refineFormField = <
   TSchema extends z.ZodType,
   const TField extends Extract<keyof z.output<TSchema>, string>,
 >(
   schema: TSchema,
   options: RefineFormFieldOptions<z.output<TSchema>, TField>,
-): TSchema {
+): TSchema => {
   return schema.refine(options.check, {
     path: [options.field],
     message: options.message,
   });
-}
+};

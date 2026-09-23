@@ -7,7 +7,7 @@ export const ModalFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse p-6 pt-4 gap-2 sm:flex-row sm:justify-end sm:space-x-2 border-t border-border",
+      "flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end sm:space-x-2",
       className,
     )}
     {...props}

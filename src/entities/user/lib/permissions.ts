@@ -4,10 +4,10 @@ import { KnownPermission, KnownRole } from "@shared/api/gen/main/model";
  * Проверяет наличие права с поддержкой wildcard-иерархии.
  * Иерархия wildcards: "chat:manage" → "chat:*" → "*".
  */
-export function hasPermission(
+export const hasPermission = (
   userPerms: KnownPermission[],
   required: KnownPermission,
-): boolean {
+): boolean => {
   if (userPerms.includes(KnownPermission["*"])) return true;
   if (userPerms.includes(required)) return true;
 
@@ -20,26 +20,22 @@ export function hasPermission(
   }
 
   return false;
-}
+};
 
 /** Возвращает true, если пользователь имеет роль admin (superadmin bypass). */
-export function isAdminRole(roles: KnownRole[]): boolean {
-  return roles.includes(KnownRole.admin);
-}
+export const isAdminRole = (roles: KnownRole[]): boolean =>
+  roles.includes(KnownRole.admin);
 
 /** Проверяет доступ: admin bypass ИЛИ конкретное право. */
-export function canAccess(
+export const canAccess = (
   roles: KnownRole[],
   userPerms: KnownPermission[],
   required: KnownPermission,
-): boolean {
-  return isAdminRole(roles) || hasPermission(userPerms, required);
-}
+): boolean => isAdminRole(roles) || hasPermission(userPerms, required);
 
 /** Вычисляет effective permissions = union(rolePermissions) ∪ directPermissions. */
-export function computeEffectivePermissions(
+export const computeEffectivePermissions = (
   rolePermissions: KnownPermission[],
   directPermissions: KnownPermission[],
-): KnownPermission[] {
-  return Array.from(new Set([...rolePermissions, ...directPermissions]));
-}
+): KnownPermission[] =>
+  Array.from(new Set([...rolePermissions, ...directPermissions]));

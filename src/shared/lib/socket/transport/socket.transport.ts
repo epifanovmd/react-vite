@@ -29,10 +29,15 @@ export class SocketTransport implements ISocketTransport {
   private _initializeDisposers: (() => void) | null = null;
   private _reconnect = new ReconnectScheduler();
 
+  /**
+   * Провайдер токена необязателен: без него соединение гостевое — сервер
+   * такие принимает. Появится авторизация — достаточно забиндить контракт.
+   */
   constructor(
-    @ITokenProvider() private _tokenProvider: ITokenProvider,
     @IAppStateService() private _appState: IAppStateService,
     @INetworkStatusService() private _network: INetworkStatusService,
+    @ITokenProvider({ optional: true })
+    private _tokenProvider?: ITokenProvider,
   ) {}
 
   get state(): SocketTransportState {
@@ -42,13 +47,14 @@ export class SocketTransport implements ISocketTransport {
   initialize(): () => void {
     if (this._initializeDisposers) return this._initializeDisposers;
 
-    this._disposeTokenReaction = this._tokenProvider.onTokenChange(token => {
-      if (!this._socket || this._isManualDisconnect) return;
+    this._disposeTokenReaction =
+      this._tokenProvider?.onTokenChange(token => {
+        if (!this._socket || this._isManualDisconnect) return;
 
-      this._socket.auth = { token };
-      (this._socket.io.opts.query as Record<string, string>).access_token =
-        token;
-    });
+        this._socket.auth = { token };
+        (this._socket.io.opts.query as Record<string, string>).access_token =
+          token;
+      }) ?? null;
 
     const disposeAppActive = this._appState.onChange(isActive => {
       if (isActive && !this._isManualDisconnect && !this._socket?.connected) {
@@ -156,16 +162,7 @@ export class SocketTransport implements ISocketTransport {
     return new Promise<void>((resolve, reject) => {
       this._teardown();
 
-      const accessToken = this._tokenProvider.accessToken;
-
-      if (!accessToken) {
-        const err = new Error("[Socket] No access token available");
-
-        this._setState({ status: "error", error: err });
-        reject(err);
-
-        return;
-      }
+      const accessToken = this._tokenProvider?.accessToken ?? "";
 
       this._isManualDisconnect = false;
       this._setState({ status: "connecting", error: null });
@@ -179,8 +176,8 @@ export class SocketTransport implements ISocketTransport {
         reconnectionDelayMax: 30_000,
         transports: ["websocket"],
         timeout: 10_000,
-        auth: { token: accessToken },
-        query: { access_token: accessToken },
+        auth: accessToken ? { token: accessToken } : {},
+        query: accessToken ? { access_token: accessToken } : {},
       });
 
       this._socket = socket;
@@ -237,8 +234,7 @@ export class SocketTransport implements ISocketTransport {
 
     if (reason === "io server disconnect") {
       this._reconnect.schedule(() =>
-        this._tokenProvider
-          .refreshToken()
+        Promise.resolve(this._tokenProvider?.refreshToken())
           .then(() => this.connect())
           .catch(() => {}),
       );
@@ -252,9 +248,11 @@ export class SocketTransport implements ISocketTransport {
   private _onAuthError = ({ message }: { message: string }): void => {
     console.warn("[Socket] Auth error:", message);
 
+    if (!this._tokenProvider) return;
+
     this._reconnect.schedule(() =>
       this._tokenProvider
-        .restoreSession()
+        ?.restoreSession()
         .then((restored): void => {
           if (restored) this.connect();
         })

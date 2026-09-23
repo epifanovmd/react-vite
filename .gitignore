@@ -1,6 +1,6 @@
 dist
 build
-.claude
+.claude/settings.local.json
 
 # Operating system files
 .DS_Store

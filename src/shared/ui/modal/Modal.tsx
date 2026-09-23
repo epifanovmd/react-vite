@@ -6,9 +6,10 @@ import { ModalDescription } from "./components/ModalDescription";
 import { ModalFooter } from "./components/ModalFooter";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalOverlay } from "./components/ModalOverlay";
+import { ModalRoot } from "./components/ModalRoot";
 import { ModalTitle } from "./components/ModalTitle";
 
-export const Modal = Object.assign(DialogPrimitive.Root, {
+export const Modal = Object.assign(ModalRoot, {
   Trigger: DialogPrimitive.Trigger,
   Portal: DialogPrimitive.Portal,
   Close: DialogPrimitive.Close,

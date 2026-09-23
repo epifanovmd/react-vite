@@ -13,7 +13,7 @@ export type SegmentedFormFieldProps<
   };
 
 /** @example <SegmentedFormField<TForm> name="view" label="View" options={options} /> */
-export function SegmentedFormField<
+export const SegmentedFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, string | undefined> =
     FieldPathByValue<TFormData, string | undefined>,
@@ -34,7 +34,7 @@ export function SegmentedFormField<
   onValueChange,
   onBlur,
   ...segmentedProps
-}: SegmentedFormFieldProps<TFormData, TName>): React.ReactElement {
+}: SegmentedFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -68,4 +68,4 @@ export function SegmentedFormField<
       )}
     />
   );
-}
+};

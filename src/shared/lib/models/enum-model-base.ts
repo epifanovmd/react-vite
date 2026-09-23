@@ -18,7 +18,7 @@ type TEnumModelBase<TEnum> = ModelClassType<
   TEnum
 >;
 
-export function createEnumModelBase<TEnum>(enm: any) {
+export const createEnumModelBase = <TEnum>(enm: any) => {
   class EnumModel extends DataModelBase<Maybe<EnumValue<TEnum>>> {}
 
   getEnumNamesAndValues<any>(enm).forEach(item => {
@@ -34,4 +34,4 @@ export function createEnumModelBase<TEnum>(enm: any) {
   });
 
   return EnumModel as TEnumModelBase<TEnum>;
-}
+};

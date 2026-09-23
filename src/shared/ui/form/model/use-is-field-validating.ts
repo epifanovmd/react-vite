@@ -13,12 +13,14 @@ const readPath = (value: unknown, path: string): unknown =>
   }, value);
 
 /** Подписывается на состояние асинхронной проверки одного поля. */
-export function useIsFieldValidating<
+export const useIsFieldValidating = <
   TFormData extends FieldValues,
   TName extends FieldPath<TFormData>,
->(name: TName): boolean {
+>(
+  name: TName,
+): boolean => {
   const { control } = useFormContext<TFormData>();
   const { validatingFields } = useFormState({ control, name, exact: true });
 
   return readPath(validatingFields, name) === true;
-}
+};

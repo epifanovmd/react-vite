@@ -18,7 +18,7 @@ export interface BooleanDiscriminatedUnionOptions<
 }
 
 /** Создаёт структурные true/false-ветки, сохраняя объектные схемы явными. */
-export function createBooleanDiscriminatedUnion<
+export const createBooleanDiscriminatedUnion = <
   const TDiscriminator extends string,
   TEnabledShape extends z.ZodRawShape,
   TDisabledShape extends z.ZodRawShape,
@@ -30,7 +30,7 @@ export function createBooleanDiscriminatedUnion<
   TDiscriminator,
   TEnabledShape,
   TDisabledShape
->) {
+>) => {
   const enabledDiscriminator = {
     [discriminator]: z.literal(true),
   } as BooleanDiscriminatorShape<TDiscriminator, true>;
@@ -42,4 +42,4 @@ export function createBooleanDiscriminatedUnion<
     enabled.extend(enabledDiscriminator),
     disabled.extend(disabledDiscriminator),
   ]);
-}
+};

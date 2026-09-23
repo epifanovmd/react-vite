@@ -18,7 +18,7 @@ export type MultiSelectFormFieldProps<
   };
 
 /** @example <MultiSelectFormField<TForm> name="roles" label="Roles" options={options} /> */
-export function MultiSelectFormField<
+export const MultiSelectFormField = <
   TFormData extends FieldValues,
   TValue extends SelectValue = string,
   TName extends FieldPathByValue<TFormData, TValue[] | undefined> =
@@ -42,7 +42,7 @@ export function MultiSelectFormField<
   onOpenChange,
   variant,
   ...selectProps
-}: MultiSelectFormFieldProps<TFormData, TValue, TName>): React.ReactElement {
+}: MultiSelectFormFieldProps<TFormData, TValue, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -84,4 +84,4 @@ export function MultiSelectFormField<
       )}
     />
   );
-}
+};

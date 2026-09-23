@@ -16,7 +16,7 @@ export type RadioFormFieldProps<
  *   <Radio value="free" label="Free" />
  * </RadioFormField>
  */
-export function RadioFormField<
+export const RadioFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, string | undefined> =
     FieldPathByValue<TFormData, string | undefined>,
@@ -37,7 +37,7 @@ export function RadioFormField<
   onChange,
   onBlur,
   ...radioProps
-}: RadioFormFieldProps<TFormData, TName>): React.ReactElement {
+}: RadioFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -71,4 +71,4 @@ export function RadioFormField<
       )}
     />
   );
-}
+};

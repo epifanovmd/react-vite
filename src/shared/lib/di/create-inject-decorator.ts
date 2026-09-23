@@ -14,7 +14,9 @@ export interface IIoCDecoratorOptions {
 export interface IInjectDecorator<T> {
   readonly Tid: string;
 
-  (options?: IIoCDecoratorOptions): (target: any, targetKey?: string, index?: number) => void;
+  (
+    options?: IIoCDecoratorOptions,
+  ): (target: any, targetKey?: string, index?: number) => void;
 
   getInstance(options?: { optional?: true }): T;
 
@@ -23,11 +25,11 @@ export interface IInjectDecorator<T> {
 
 const { lazyInject } = decorators(iocContainer);
 
-function createInjectDecorator<TInterface>(): IInjectDecorator<TInterface> {
+const createInjectDecorator = <TInterface>(): IInjectDecorator<TInterface> => {
   const name: string = shortid();
 
-  function injectDecoratorFactory(options?: IIoCDecoratorOptions) {
-    return function injectDecorator(target: any, targetKey?: string, index?: number) {
+  const injectDecoratorFactory = (options?: IIoCDecoratorOptions) => {
+    return (target: any, targetKey?: string, index?: number) => {
       if (index !== undefined) {
         inject(name)(target, targetKey!, index);
         if (options?.optional) {
@@ -48,7 +50,7 @@ function createInjectDecorator<TInterface>(): IInjectDecorator<TInterface> {
         );
       }
     };
-  }
+  };
 
   injectDecoratorFactory.Tid = name;
 
@@ -56,14 +58,17 @@ function createInjectDecorator<TInterface>(): IInjectDecorator<TInterface> {
     const isOpt = options?.optional ?? false;
     const isBound = iocContainer.isBound(name);
 
-    return (isBound || !isOpt ? iocContainer.get<TInterface>(name) : undefined) as TInterface;
+    return (
+      isBound || !isOpt ? iocContainer.get<TInterface>(name) : undefined
+    ) as TInterface;
   };
 
-  injectDecoratorFactory.useInstance = function useInstance() {
-    return useRef(injectDecoratorFactory.getInstance()).current;
-  };
+  const useInstance = () =>
+    useRef(injectDecoratorFactory.getInstance()).current;
+
+  injectDecoratorFactory.useInstance = useInstance;
 
   return injectDecoratorFactory as IInjectDecorator<TInterface>;
-}
+};
 
 export { createInjectDecorator };

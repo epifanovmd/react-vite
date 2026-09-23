@@ -30,7 +30,7 @@ export type SelectFormFieldProps<
  * @example
  * <SelectFormField<TForm> name="country" label="Country" options={options} />
  */
-export function SelectFormField<
+export const SelectFormField = <
   TFormData extends FieldValues,
   TValue extends SelectValue = string,
   TName extends FieldPathByValue<TFormData, TValue | null | undefined> =
@@ -55,7 +55,7 @@ export function SelectFormField<
   onOpenChange,
   variant,
   ...selectProps
-}: SelectFormFieldProps<TFormData, TValue, TName>): React.ReactElement {
+}: SelectFormFieldProps<TFormData, TValue, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -98,4 +98,4 @@ export function SelectFormField<
       )}
     />
   );
-}
+};

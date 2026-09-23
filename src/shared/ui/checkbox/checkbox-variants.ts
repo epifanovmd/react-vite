@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 
 export const checkboxVariants = cva(
   [
-    "peer shrink-0 rounded border border-border bg-background",
+    "peer inline-flex shrink-0 items-center justify-center rounded border-2 border-muted-foreground/50 bg-background",
     "transition-all duration-200",
     "focus-visible:outline-none focus-visible:shadow-focus-offset",
     "disabled:cursor-not-allowed disabled:opacity-50",

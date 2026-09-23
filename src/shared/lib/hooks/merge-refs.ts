@@ -1,9 +1,10 @@
 import React from "react";
 
-export function mergeRefs<T = any>(
-  refs: Array<React.RefObject<T> | React.Ref<T>>,
-): React.RefCallback<T> {
-  return value => {
+export const mergeRefs =
+  <T = any>(
+    refs: Array<React.RefObject<T> | React.Ref<T>>,
+  ): React.RefCallback<T> =>
+  value => {
     refs.forEach(ref => {
       if (typeof ref === "function") {
         ref(value);
@@ -12,4 +13,3 @@ export function mergeRefs<T = any>(
       }
     });
   };
-}

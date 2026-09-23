@@ -11,7 +11,7 @@ export type CheckboxFormFieldProps<
   Omit<CheckboxProps, "checked" | "disabled" | "id" | "name">;
 
 /** @example <CheckboxFormField<TForm> name="accepted" label="I agree" /> */
-export function CheckboxFormField<
+export const CheckboxFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, boolean | undefined> =
     FieldPathByValue<TFormData, boolean | undefined>,
@@ -33,7 +33,7 @@ export function CheckboxFormField<
   onBlur,
   variant,
   ...checkboxProps
-}: CheckboxFormFieldProps<TFormData, TName>): React.ReactElement {
+}: CheckboxFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -69,4 +69,4 @@ export function CheckboxFormField<
       )}
     />
   );
-}
+};

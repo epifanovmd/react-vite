@@ -7,7 +7,8 @@ import * as React from "react";
 import { checkboxVariants } from "./checkbox-variants";
 
 export interface CheckboxProps
-  extends React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>,
+  extends
+    React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>,
     VariantProps<typeof checkboxVariants> {
   indeterminate?: boolean;
   label?: React.ReactNode;
@@ -43,7 +44,9 @@ const Checkbox = React.forwardRef<
         checked={indeterminate ? "indeterminate" : props.checked}
       >
         <CheckboxPrimitive.Indicator
-          className={cn("flex items-center justify-center text-current")}
+          className={cn(
+            "flex items-center justify-center text-current [&_svg]:stroke-[3]",
+          )}
         >
           {indeterminate ? (
             <Minus

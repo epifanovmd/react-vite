@@ -1,4 +1,7 @@
-import { LambdaValue, resolveLambdaValue } from "@shared/lib/utils/lambda-value";
+import {
+  LambdaValue,
+  resolveLambdaValue,
+} from "@shared/lib/utils/lambda-value";
 import { isFunction } from "@shared/lib/utils/type-guards";
 import { computed, makeObservable, observable } from "mobx";
 
@@ -51,10 +54,10 @@ export class DataModelBase<TData> implements IDataModel<TData> {
  * }
  * ```
  */
-export function createModelMapper<TItem, TModel extends DataModelBase<TItem>>(
+export const createModelMapper = <TItem, TModel extends DataModelBase<TItem>>(
   keyExtractor: (item: TItem) => string | number,
   factory: (item: TItem) => TModel,
-): (items: TItem[]) => TModel[] {
+): ((items: TItem[]) => TModel[]) => {
   let cache = new Map<string | number, TModel>();
 
   return (items: TItem[]): TModel[] => {
@@ -81,4 +84,4 @@ export function createModelMapper<TItem, TModel extends DataModelBase<TItem>>(
 
     return result;
   };
-}
+};

@@ -72,7 +72,7 @@ export type DynamicZodRefine<
  * выводит связь вида «company => inn обязателен». Если требуется точный union
  * вариантов submit-данных, следует использовать `z.discriminatedUnion`.
  */
-export function dynamicZodResolver<
+export const dynamicZodResolver = <
   TShape extends z.ZodRawShape,
   const TMask extends Record<string, boolean>,
 >(
@@ -85,7 +85,7 @@ export function dynamicZodResolver<
   z.input<typeof schema> & FieldValues,
   unknown,
   DynamicZodOutput<TShape, TMask> & FieldValues
-> {
+> => {
   type DynamicResolver = Resolver<
     z.input<typeof schema> & FieldValues,
     unknown,
@@ -126,4 +126,4 @@ export function dynamicZodResolver<
 
     return resolver(values, context, options);
   };
-}
+};

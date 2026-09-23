@@ -14,7 +14,7 @@ export type AutocompleteFormFieldProps<
   };
 
 /** @example <AutocompleteFormField<TForm> name="city" label="City" options={options} /> */
-export function AutocompleteFormField<
+export const AutocompleteFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, string | undefined> =
     FieldPathByValue<TFormData, string | undefined>,
@@ -37,7 +37,7 @@ export function AutocompleteFormField<
   onOpenChange,
   variant,
   ...autocompleteProps
-}: AutocompleteFormFieldProps<TFormData, TName>): React.ReactElement {
+}: AutocompleteFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -77,4 +77,4 @@ export function AutocompleteFormField<
       )}
     />
   );
-}
+};

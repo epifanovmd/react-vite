@@ -22,10 +22,43 @@ export {
   CardTitle,
   cardVariants,
 } from "./card";
+export type {
+  ChartAxisConfig,
+  ChartCurveType,
+  ChartDataTableMode,
+  ChartGridMode,
+  ChartLegendPlacement,
+  ChartLegendProps,
+  ChartMargin,
+  ChartPoint,
+  ChartProps,
+  ChartReferenceLine,
+  ChartResolvedSeries,
+  ChartSeries,
+  ChartSeriesType,
+  ChartTooltipContentProps,
+  ChartTooltipData,
+  ChartTooltipEntry,
+  ChartTooltipProps,
+  ChartXScaleType,
+  ChartXValue,
+  ChartYAxisConfig,
+  SparklineProps,
+} from "./chart";
+export {
+  Chart,
+  CHART_COLORS,
+  ChartLegend,
+  ChartTooltip,
+  ChartTooltipContent,
+  Sparkline,
+} from "./chart";
 export type { CheckboxProps } from "./checkbox";
 export { Checkbox } from "./checkbox";
 export type { ChipsProps } from "./chips";
 export { Chips, chipsVariants } from "./chips";
+export type { CodeChipProps } from "./code-chip";
+export { CodeChip } from "./code-chip";
 export type {
   CollapseContentProps,
   CollapseProps,
@@ -85,6 +118,8 @@ export type { EmptyProps, PageEmptyProps } from "./empty";
 export { Empty, emptyVariants, PageEmpty } from "./empty";
 export type { ErrorBoundaryProps } from "./error-boundary";
 export { ErrorBoundary } from "./error-boundary";
+export type { FileDropProps } from "./file-drop";
+export { FileDrop } from "./file-drop";
 export type {
   AutocompleteFormFieldProps,
   CheckboxFormFieldProps,
@@ -185,6 +220,9 @@ export {
   useKanbanCard,
   useKanbanColumn,
 } from "./kanban";
+export { Kbd } from "./kbd";
+export type { LabeledFieldProps } from "./labeled-field";
+export { LabeledField } from "./labeled-field";
 export type { PageLoaderProps } from "./loaders";
 export { PageLoader } from "./loaders";
 export type {
@@ -262,6 +300,8 @@ export {
   PopoverContent,
   popoverContentVariants,
 } from "./popover";
+export type { ProgressProps } from "./progress";
+export { Progress } from "./progress";
 export type { RadioGroupProps, RadioProps } from "./radio";
 export { Radio, RadioGroup, radioVariants } from "./radio";
 export type { SegmentedOption, SegmentedProps } from "./segmented";

@@ -6,7 +6,8 @@ import {
 } from "../foundation/field-variants";
 
 export const selectContentClasses = [
-  "z-50 overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-md",
+  // Тень и кольцо: на тёмной теме список почти сливался с панелью под ним.
+  "z-50 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-xl ring-1 ring-black/10 dark:ring-white/10",
   "data-[state=open]:animate-in data-[state=closed]:animate-out",
   "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
   "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

@@ -11,7 +11,7 @@ export type SwitchFormFieldProps<
   Omit<SwitchProps, "checked" | "disabled" | "id" | "name">;
 
 /** @example <SwitchFormField<TForm> name="notifications" label="Alerts" /> */
-export function SwitchFormField<
+export const SwitchFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, boolean | undefined> =
     FieldPathByValue<TFormData, boolean | undefined>,
@@ -33,7 +33,7 @@ export function SwitchFormField<
   onBlur,
   variant,
   ...switchProps
-}: SwitchFormFieldProps<TFormData, TName>): React.ReactElement {
+}: SwitchFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -69,4 +69,4 @@ export function SwitchFormField<
       )}
     />
   );
-}
+};

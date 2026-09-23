@@ -13,8 +13,9 @@ export interface TabItem {
   disabled?: boolean;
 }
 
-export interface TabsProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
+export interface TabsProps extends React.ComponentPropsWithoutRef<
+  typeof TabsPrimitive.Root
+> {
   items?: TabItem[];
   listProps?: TabsListProps;
 }
@@ -33,8 +34,10 @@ const _Tabs = React.forwardRef<
               value={item.value}
               disabled={item.disabled}
             >
-              {item.icon && <span className="inline-flex">{item.icon}</span>}
-              {item.label}
+              {item.icon && (
+                <span className="inline-flex shrink-0">{item.icon}</span>
+              )}
+              <span className="truncate">{item.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>

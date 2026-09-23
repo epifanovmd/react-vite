@@ -25,7 +25,7 @@ export type InputFormFieldProps<
  *   placeholder="name@example.com"
  * />
  */
-export function InputFormField<
+export const InputFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, string | undefined> =
     FieldPathByValue<TFormData, string | undefined>,
@@ -48,7 +48,7 @@ export function InputFormField<
   onClear,
   variant,
   ...inputProps
-}: InputFormFieldProps<TFormData, TName>): React.ReactElement {
+}: InputFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -89,4 +89,4 @@ export function InputFormField<
       )}
     />
   );
-}
+};

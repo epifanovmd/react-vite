@@ -3,6 +3,8 @@ export * from "./deep-keys";
 export * from "./download-blob";
 export * from "./enum-values";
 export * from "./flatten";
+export * from "./format-bytes";
+export * from "./format-duration";
 export * from "./formatter";
 export * from "./lambda-value";
 export * from "./noop";

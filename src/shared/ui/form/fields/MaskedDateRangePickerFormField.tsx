@@ -16,7 +16,7 @@ export type MaskedDateRangePickerFormFieldProps<
   Omit<MaskedDateRangePickerProps, "disabled" | "id" | "name" | "value">;
 
 /** @example <MaskedDateRangePickerFormField<TForm> name="period" label="Period" /> */
-export function MaskedDateRangePickerFormField<
+export const MaskedDateRangePickerFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, DateRange | undefined> =
     FieldPathByValue<TFormData, DateRange | undefined>,
@@ -38,7 +38,10 @@ export function MaskedDateRangePickerFormField<
   onBlur,
   variant,
   ...pickerProps
-}: MaskedDateRangePickerFormFieldProps<TFormData, TName>): React.ReactElement {
+}: MaskedDateRangePickerFormFieldProps<
+  TFormData,
+  TName
+>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -74,4 +77,4 @@ export function MaskedDateRangePickerFormField<
       )}
     />
   );
-}
+};

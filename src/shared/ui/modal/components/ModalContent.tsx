@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { Button, type ButtonProps } from "../../button";
 import { IconButton } from "../../icon-button";
+import { useModalOpen } from "../modal-open-context";
 import { modalContentVariants } from "./modal-variants";
 import { ModalBody } from "./ModalBody";
 import { ModalDescription } from "./ModalDescription";
@@ -65,9 +66,23 @@ export const ModalContent = React.forwardRef<
     const [confirmLoading, setConfirmLoading] = React.useState(false);
     const closeRef = React.useRef<HTMLButtonElement>(null);
 
+    /**
+     * Пока играет анимация закрытия, Radix держит окно смонтированным, а
+     * данные под ним уже обнулились: `open={!!model}` и `{model && <Body/>}`
+     * дают пустое окно на две десятых секунды. Поэтому на время закрытия
+     * содержимое замораживается — последний виденный кадр и доигрывает.
+     */
+    const open = useModalOpen();
+    const view = { children, title, description, footer };
+    const frozen = React.useRef(view);
+
+    if (open !== false) frozen.current = view;
+
+    const shown = open === false ? frozen.current : view;
+
     const isSkeletonMode =
-      title !== undefined ||
-      footer !== undefined ||
+      shown.title !== undefined ||
+      shown.footer !== undefined ||
       onConfirm !== undefined ||
       onCancel !== undefined;
 
@@ -87,7 +102,7 @@ export const ModalContent = React.forwardRef<
     };
 
     const resolvedFooter =
-      footer ??
+      shown.footer ??
       (onConfirm !== undefined || onCancel !== undefined ? (
         <>
           {onCancel !== undefined && (
@@ -131,19 +146,19 @@ export const ModalContent = React.forwardRef<
         >
           {isSkeletonMode ? (
             <>
-              {title !== undefined && (
+              {shown.title !== undefined && (
                 <ModalHeader>
-                  <ModalTitle>{title}</ModalTitle>
-                  {description && (
-                    <ModalDescription>{description}</ModalDescription>
+                  <ModalTitle>{shown.title}</ModalTitle>
+                  {shown.description && (
+                    <ModalDescription>{shown.description}</ModalDescription>
                   )}
                 </ModalHeader>
               )}
-              {children && <ModalBody>{children}</ModalBody>}
+              {shown.children && <ModalBody>{shown.children}</ModalBody>}
               {resolvedFooter && <ModalFooter>{resolvedFooter}</ModalFooter>}
             </>
           ) : (
-            children
+            shown.children
           )}
 
           {!hideCloseButton && (

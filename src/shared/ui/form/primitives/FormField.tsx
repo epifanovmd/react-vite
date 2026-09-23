@@ -23,7 +23,7 @@ export interface FormFieldProps<
  *   <Input {...controlProps} {...field} />
  * )} />
  */
-export function FormField<
+export const FormField = <
   TFormData extends FieldValues,
   TName extends FieldPath<TFormData> = FieldPath<TFormData>,
 >({
@@ -41,7 +41,7 @@ export function FormField<
   required,
   fieldClassName,
   render,
-}: FormFieldProps<TFormData, TName>): React.ReactElement {
+}: FormFieldProps<TFormData, TName>): React.ReactElement => {
   const generatedId = React.useId();
   const controlId = id ?? `${generatedId}-control`;
   const labelId = label !== undefined ? `${generatedId}-label` : undefined;
@@ -87,4 +87,4 @@ export function FormField<
       })}
     </Field>
   );
-}
+};

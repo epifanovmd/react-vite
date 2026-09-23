@@ -4,9 +4,11 @@ import { AlertsSection } from "./AlertsSection";
 import { AvatarsSection } from "./AvatarsSection";
 import { ButtonsSection } from "./ButtonsSection";
 import { CardsSection } from "./CardsSection";
+import { ChartsSection } from "./ChartsSection";
 import { ControlsSection } from "./ControlsSection";
 import { DatePickersSection } from "./DatePickersSection";
 import { EmptySection } from "./EmptySection";
+import { FileDropSection } from "./FileDropSection";
 import { FormsSection } from "./FormsSection";
 import { InputsSection } from "./InputsSection";
 import { KanbanSection } from "./KanbanSection";
@@ -15,6 +17,7 @@ import { ModalsSection } from "./ModalsSection";
 import { NotificationsSection } from "./NotificationsSection";
 import { PaginationSection } from "./PaginationSection";
 import { PopoverSection } from "./PopoverSection";
+import { ProgressSection } from "./ProgressSection";
 import { SegmentedSection } from "./SegmentedSection";
 import { SelectSection } from "./SelectSection";
 import { SeparatorsSection } from "./SeparatorsSection";
@@ -51,11 +54,14 @@ export const UI_SECTIONS: UISection[] = [
   { value: "date", label: "Даты", Component: DatePickersSection },
   { value: "masked", label: "Маски ввода", Component: MaskedInputsSection },
   { value: "table", label: "Таблица", Component: TableSection },
+  { value: "charts", label: "Графики", Component: ChartsSection },
   { value: "kanban", label: "Kanban", Component: KanbanSection },
   { value: "modals", label: "Модалки и Drawer", Component: ModalsSection },
   { value: "tooltip", label: "Тултипы", Component: TooltipSection },
   { value: "popover", label: "Popover", Component: PopoverSection },
   { value: "cards", label: "Карточки", Component: CardsSection },
   { value: "spinner", label: "Спиннеры", Component: SpinnerSection },
+  { value: "progress", label: "Прогресс", Component: ProgressSection },
+  { value: "file-drop", label: "Загрузка файлов", Component: FileDropSection },
   { value: "empty", label: "Пустые состояния", Component: EmptySection },
 ];

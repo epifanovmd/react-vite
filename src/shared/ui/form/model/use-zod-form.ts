@@ -13,13 +13,13 @@ import { z } from "zod";
  * @example
  * const form = useZodForm(schema, { defaultValues: { name: "" } });
  */
-export function useZodForm<
+export const useZodForm = <
   TInput extends FieldValues,
   TOutput extends FieldValues,
 >(
   schema: z.ZodType<TOutput, TInput>,
   options: Omit<UseFormProps<TInput, unknown, TOutput>, "resolver"> = {},
-): UseFormReturn<TInput, unknown, TOutput> {
+): UseFormReturn<TInput, unknown, TOutput> => {
   return useForm<TInput, unknown, TOutput>({
     mode: "onBlur",
     reValidateMode: "onChange",
@@ -27,4 +27,4 @@ export function useZodForm<
     ...options,
     resolver: zodResolver(schema),
   });
-}
+};

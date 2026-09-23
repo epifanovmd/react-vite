@@ -5,7 +5,8 @@ import * as React from "react";
 import { badgeVariants } from "./badge-variants";
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
   dot?: boolean;
   /** When `children` is a number greater than `max`, renders `${max}+` instead. */
@@ -31,7 +32,15 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
         {dot && (
           <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80 flex-shrink-0" />
         )}
-        <span className="truncate min-w-0">{formatContent(children, max)}</span>
+        {/* Текст обрезается, разметка с иконками рендерится как есть —
+            иначе иконка и подпись попадают в один truncate-span и съезжают. */}
+        {typeof children === "string" || typeof children === "number" ? (
+          <span className="truncate min-w-0">
+            {formatContent(children, max)}
+          </span>
+        ) : (
+          formatContent(children, max)
+        )}
       </div>
     );
   },

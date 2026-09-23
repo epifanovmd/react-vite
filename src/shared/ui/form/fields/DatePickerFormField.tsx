@@ -12,7 +12,7 @@ export type DatePickerFormFieldProps<
   Omit<DatePickerProps, "disabled" | "id" | "name" | "value">;
 
 /** @example <DatePickerFormField<TForm> name="birthDate" label="Birth date" /> */
-export function DatePickerFormField<
+export const DatePickerFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, Date | undefined> =
     FieldPathByValue<TFormData, Date | undefined>,
@@ -34,7 +34,7 @@ export function DatePickerFormField<
   onBlur,
   variant,
   ...datePickerProps
-}: DatePickerFormFieldProps<TFormData, TName>): React.ReactElement {
+}: DatePickerFormFieldProps<TFormData, TName>): React.ReactElement => {
   return (
     <FormField
       name={name}
@@ -70,4 +70,4 @@ export function DatePickerFormField<
       )}
     />
   );
-}
+};

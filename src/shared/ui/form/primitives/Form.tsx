@@ -29,7 +29,7 @@ export interface FormProps<
  *   <FormSubmit>Save</FormSubmit>
  * </Form>
  */
-export function Form<
+export const Form = <
   TFormData extends FieldValues,
   TContext = unknown,
   TOutput extends FieldValues = TFormData,
@@ -40,7 +40,7 @@ export function Form<
   noValidate = true,
   children,
   ...props
-}: FormProps<TFormData, TContext, TOutput>): React.ReactElement {
+}: FormProps<TFormData, TContext, TOutput>): React.ReactElement => {
   return (
     <FormProvider {...form}>
       <form
@@ -52,4 +52,4 @@ export function Form<
       </form>
     </FormProvider>
   );
-}
+};

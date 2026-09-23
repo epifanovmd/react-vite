@@ -7,7 +7,8 @@ import { TabsContext } from "./tabs-context";
 import { tabsTriggerVariants } from "./tabs-variants";
 
 export interface TabsTriggerProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>,
+  extends
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>,
     VariantProps<typeof tabsTriggerVariants> {}
 
 const TabsTrigger = React.forwardRef<
@@ -29,7 +30,8 @@ const TabsTrigger = React.forwardRef<
         className={cn(tabsTriggerVariants({ variant, size, className }))}
         {...props}
       >
-        <span className="relative z-10 min-w-0 overflow-hidden shrink truncate">
+        {/* flex + gap: иначе иконка липнет к подписи и садится на базовую линию */}
+        <span className="relative z-10 flex min-w-0 shrink items-center justify-center gap-1.5 overflow-hidden">
           {children}
         </span>
       </TabsPrimitive.Trigger>

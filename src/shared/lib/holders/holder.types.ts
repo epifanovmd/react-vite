@@ -24,24 +24,18 @@ export interface IHolderError {
   isCanceled?: boolean;
 }
 
+export const isCancelError = (e: unknown): boolean =>
+  typeof e === "object" &&
+  e !== null &&
+  (e as { isCanceled?: unknown }).isCanceled === true;
+
 /** Отменённый ответ: `error` с флагом `isCanceled` (контракт `ApiError`). */
-export function isCancelResponse(res: unknown): boolean {
-  return (
-    typeof res === "object" &&
-    res !== null &&
-    isCancelError((res as { error?: unknown }).error)
-  );
-}
+export const isCancelResponse = (res: unknown): boolean =>
+  typeof res === "object" &&
+  res !== null &&
+  isCancelError((res as { error?: unknown }).error);
 
-export function isCancelError(e: unknown): boolean {
-  return (
-    typeof e === "object" &&
-    e !== null &&
-    (e as { isCanceled?: unknown }).isCanceled === true
-  );
-}
-
-export function toHolderError(e: unknown): IHolderError {
+export const toHolderError = (e: unknown): IHolderError => {
   if (e instanceof Error) {
     return {
       message: e.message,
@@ -51,7 +45,7 @@ export function toHolderError(e: unknown): IHolderError {
   if (typeof e === "string") return { message: e };
 
   return { message: "Unknown error", details: e };
-}
+};
 
 export interface IApiResponse<
   TData = unknown,
