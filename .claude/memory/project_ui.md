@@ -44,6 +44,24 @@ Barrel `shared/ui/index.ts` — только явные именованные �
 Вне shared: `AppLogo` → `widgets/app-layout/ui`, `ThemeToggle` → `features/toggle-theme`.
 Удалены: `AuthFormCard` (формы auth на `Card`), `ButtonLink`, `Divider`, `Chart`/`Sparkline`, compound-формы Card/Tabs/Tooltip.
 
+### Добавлены позже (второй проход)
+
+- `dropdown-menu/`, `context-menu/` — общие классы пунктов в `foundation/menu-parts.ts`; шорткаты, checkbox/radio, sub-меню, `destructive`. `ThemeMenuItem` (features/toggle-theme) — пункт меню темы, используется в ProfileMenu.
+- `command/` — cmdk: Command*, CommandDialog, `useCommandShortcut(onTrigger, { key, enabled })` — обёртка над `useHotkeys` (`mod+key`, `allowInInputs`).
+- `@shared/lib/hotkeys` — горячие клавиши: `useHotkeys([[combo | combo[], handler, { preventDefault?, allowInInputs? }]], { enabled, target })`, `getHotkeyHandler` (для `onKeyDown`, поля ввода разрешены), `formatHotkey(combo)` (`⇧⌘P` на Apple / `Ctrl+Shift+P`), `parseHotkey`/`matchesHotkey`. `mod` = Ctrl ИЛИ Cmd на любой платформе; клавиша сверяется и по `key`, и по `code` (любая раскладка). Подписи `shortcut` у пунктов меню/Command строить через `formatHotkey`, не хардкодить `⌘`.
+- `scroll-area/` — Radix ScrollArea, `viewportRef` для виртуализации.
+- `skeleton/` — Skeleton, SkeletonText/Avatar/ListItem, SkeletonGroup (объявляет загрузку один раз).
+- `virtual-list/` — VirtualList + `useVirtualList` (@tanstack/react-virtual), `scrollElementRef`, `onEndReached`, `gap`. Gotcha: ref скролл-контейнера цепляется до первого измерения — порядок attach важен (см. use-virtual-list).
+- `otp-input/` — OtpInput/OtpInputCell/`useOtpInput`: `separator` (число/массив), `mask`, `mode`, paste/SMS autofill (`one-time-code` на первой ячейке).
+- `number-input/` — `number | null`, ru-RU формат, степпер, clamp/precision на blur. Не пересинхронизирует draft при внешнем изменении в фокусе.
+- `slider/` — дженерик по форме значения (число/массив), `marks`, `showValue`+`formatValue`, вертикальный.
+- `input/` — `prefix`/`suffix` (паддинг меряется ResizeObserver). Floating-label Field не сдвигает prefix.
+- `date-picker/` — TimePicker; DatePicker/MaskedDatePicker `withTime` + `timeStep`.
+- `form/` — адаптеры OtpInput/NumberInput/Slider/TimePicker FormField.
+- Расширения: select `creatable`/`virtual`; avatar `status`; table `bulkActions`, `useTableSettings` + `createLocalStorageTableSettings`, `virtual`; file-drop `maxSize`/`maxFiles`, `FileDropList`, `useFileList`, `validateFiles`; chart `referenceLines`/`bands`; modal `fullScreenOnMobile`, `size="full"`.
+- Gotcha tailwind-merge: `max-h-none` и `max-h-[85vh]` конфликтуют — последний класс побеждает, порядок в `cn` важен.
+- `useModalController` в управляемом режиме выводит состояние из текущего конфига по сигнатурам (не из ref в рендере) — регрессионные тесты есть.
+
 UI-примитивы построены на Radix UI + `class-variance-authority` + `tailwind-merge`/`cn`.
 Общие хуки — в `shared/lib/hooks`: `useControllableState`, `useLatestRef`/`useEvent`,
 `useMergedCallback`, `useInfiniteScrollSentinel`.
@@ -76,6 +94,15 @@ UI-примитивы построены на Radix UI + `class-variance-authori
 - `widgets/auth-layout/` — лейаут для публичных auth-роутов (`_auth.tsx`): `AuthLayout` (единственный компонент).
 
 Оба потребляют `entities/user`/`entities/auth` (текущий юзер, аватар, sign-out) и `shared/ui` — но не знают друг о друге (разные слайсы одного слоя).
+
+## ui-kit-demo — документация в стиле UI-китов
+
+`/ui/<section>`: `ui/UiKitLayout` (шапка, сайдбар с поиском и группами, мобильная
+выдвижная панель, прокрутка контента к началу при смене раздела), `ui/UiKitSectionPage`
+(хлебные крошки, заголовок, описание, примеры, пейджер назад/далее, «раздел не найден»).
+Реестр `sections/index.ts` → `UI_SECTIONS` с `group` и `description`; порядок групп и
+соседи — чистые функции `model/ui-kit-navigation.ts` (покрыты тестами). Новый раздел =
+запись в `UI_SECTIONS`.
 
 ## ui-kit-demo — общие хелперы
 

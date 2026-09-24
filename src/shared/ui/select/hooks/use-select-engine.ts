@@ -24,6 +24,11 @@ export interface UseSelectEngineOptions<V extends SelectValue> {
   /** Сброс поисковой строки: при закрытии дропдауна и после каждого
    *  переключения опции (в multi дропдаун остаётся открытым). */
   onSearchReset?: () => void;
+  /** Пункт «Создать» перед опциями: занимает навигационный индекс 0
+   *  и получает подсветку при появлении. */
+  createItem?: boolean;
+  /** Выбор пункта «Создать» (клавиатурой или указателем). */
+  onCreateItem?: () => void;
 }
 
 export interface UseSelectEngineResult<V extends SelectValue> {
@@ -38,7 +43,15 @@ export interface UseSelectEngineResult<V extends SelectValue> {
   triggerRef: React.RefObject<HTMLDivElement | null>;
   listRef: React.RefObject<HTMLDivElement | null>;
   listboxId: string;
+  /** id пункта по навигационному индексу (с учётом пункта «Создать»). */
   getOptionId: (index: number) => string;
+  /** Сдвиг навигационного индекса опции относительно её индекса в `options`. */
+  optionOffset: number;
+  /** Сюда список регистрирует свою прокрутку к навигационному индексу
+   *  (виртуализация); без регистрации — поиск пункта по id. */
+  scrollToIndexRef: React.RefObject<((index: number) => void) | null>;
+  /** Выбор по навигационному индексу. */
+  selectByIndex: (index: number) => void;
   activeDescendant: string | undefined;
   selectedValues: V[];
   isSelected: (v: V) => boolean;
@@ -71,6 +84,8 @@ export const useSelectEngine = <V extends SelectValue>({
   closeOnClear = true,
   searchable = false,
   onSearchReset,
+  createItem = false,
+  onCreateItem,
 }: UseSelectEngineOptions<V>): UseSelectEngineResult<V> => {
   const [open, setOpen] = useControllableState({
     value: openProp,
@@ -163,26 +178,57 @@ export const useSelectEngine = <V extends SelectValue>({
     onChange?.(selectedValues.filter(x => x !== v));
   });
 
-  const isDisabled = useEvent((index: number) => !!options[index]?.disabled);
+  const optionOffset = createItem ? 1 : 0;
+  const scrollToIndexRef = React.useRef<((index: number) => void) | null>(null);
+
+  const isDisabled = useEvent(
+    (index: number) =>
+      index >= optionOffset && !!options[index - optionOffset]?.disabled,
+  );
 
   const selectByIndex = useEvent((index: number) => {
-    const option = options[index];
+    if (index < optionOffset) {
+      onCreateItem?.();
+
+      return;
+    }
+
+    const option = options[index - optionOffset];
 
     if (option && !option.disabled) select(option.value);
   });
+
+  const scrollToIndex = useEvent((index: number) => {
+    if (scrollToIndexRef.current) {
+      scrollToIndexRef.current(index);
+
+      return;
+    }
+
+    const item = document.getElementById(getOptionId(index));
+
+    item?.scrollIntoView?.({ block: "nearest" });
+  });
+
+  const resetKey = React.useMemo(
+    () => ({ options, optionOffset }),
+    [options, optionOffset],
+  );
 
   const openList = React.useCallback(() => handleOpen(true), [handleOpen]);
 
   const { focusedIndex, setFocusedIndex, handleKeyDown, listRef, resetFocus } =
     useKeyboardNav({
       open,
-      count: options.length,
+      count: options.length + optionOffset,
       isDisabled,
       onSelect: selectByIndex,
       onOpen: openList,
       onClose: close,
       openOnType: searchable,
-      resetKey: options,
+      resetKey,
+      resetIndex: createItem ? 0 : -1,
+      scrollToIndex,
     });
 
   resetFocusRef.current = resetFocus;
@@ -204,18 +250,13 @@ export const useSelectEngine = <V extends SelectValue>({
         handleOpen(nextOpen);
       },
       scrollTo(index: number) {
-        const item =
-          listRef.current?.querySelectorAll<HTMLElement>('[role="option"]')[
-            index
-          ];
-
-        item?.scrollIntoView?.({ block: "nearest" });
+        scrollToIndex(index + optionOffset);
       },
       get nativeElement() {
         return triggerRef.current;
       },
     }),
-    [handleOpen, listRef],
+    [handleOpen, scrollToIndex, optionOffset],
   );
 
   return {
@@ -228,6 +269,9 @@ export const useSelectEngine = <V extends SelectValue>({
     listRef,
     listboxId,
     getOptionId,
+    optionOffset,
+    scrollToIndexRef,
+    selectByIndex,
     activeDescendant,
     selectedValues,
     isSelected,

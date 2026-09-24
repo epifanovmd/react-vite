@@ -1,4 +1,5 @@
 import { cn } from "@shared/lib/utils/cn";
+import { joinIds } from "@shared/lib/utils/join-ids";
 import { Eye, EyeOff, X } from "lucide-react";
 import * as React from "react";
 
@@ -7,10 +8,11 @@ import { Spinner } from "../spinner";
 import { type InputVariantProps, inputVariants } from "./input-variants";
 import { InputActionButton } from "./InputActionButton";
 import { useInput } from "./use-input";
+import { useInputAffixes } from "./use-input-affixes";
 
 export interface InputProps
   extends
-    Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, "size" | "prefix">,
     InputVariantProps {
   /**
    * Декоративная иконка слева; клики проходят сквозь неё в поле.
@@ -23,6 +25,18 @@ export interface InputProps
   leftAddon?: React.ReactNode;
   /** Интерактивный слот справа; виден всегда, после кнопок действий. */
   rightAddon?: React.ReactNode;
+  /**
+   * Текстовый аффикс перед значением («https://», «$»): приглушён, не
+   * интерактивен, входит в описание поля. Стоит после `leftAddon`/`leftIcon`,
+   * отступ текста рассчитывается по его ширине.
+   */
+  prefix?: React.ReactNode;
+  /**
+   * Текстовый аффикс после значения («₽», «кг»). Порядок справа: суффикс →
+   * загрузка / пароль / очистка / `rightIcon` → `rightAddon`; суффикс виден
+   * всегда, отступ текста рассчитывается по ширине всего правого кластера.
+   */
+  suffix?: React.ReactNode;
   clearable?: boolean;
   onClear?: () => void;
   loading?: boolean;
@@ -48,6 +62,10 @@ const ACTIONS_CLASS =
 const RIGHT_ICON_CLASS = "pointer-events-none text-muted-foreground";
 const RIGHT_ADDON_CLASS = "flex items-center";
 const ACTION_ICON_CLASS = "h-4 w-4";
+const AFFIX_CLASS =
+  "pointer-events-none whitespace-nowrap text-muted-foreground select-none";
+const PREFIX_POSITION_CLASS = "absolute top-1/2 flex -translate-y-1/2";
+const AFFIX_SIZE_CLASS = { sm: "text-sm", md: "text-sm", lg: "text-base" };
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
@@ -60,6 +78,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       rightIcon,
       leftAddon,
       rightAddon,
+      prefix,
+      suffix,
       clearable,
       onClear,
       loading,
@@ -75,6 +95,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       readOnly = false,
       "aria-busy": ariaBusy,
       "aria-invalid": ariaInvalid,
+      "aria-describedby": ariaDescribedBy,
+      style,
       ...props
     },
     ref,
@@ -115,13 +137,26 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const showLeftAddon = Boolean(leftAddon);
     const showLeftIcon = !showLeftAddon && Boolean(leftIcon);
     const hasLeftContent = showLeftAddon || showLeftIcon;
+    const hasPrefix = prefix != null && prefix !== false;
+    const hasSuffix = suffix != null && suffix !== false;
     const hasRightContent = Boolean(
       loading ||
       showClearButton ||
       showPasswordToggle ||
       rightIcon ||
-      rightAddon,
+      rightAddon ||
+      hasSuffix,
     );
+    const affixId = React.useId();
+    const prefixId = hasPrefix ? `${affixId}-prefix` : undefined;
+    const suffixId = hasSuffix ? `${affixId}-suffix` : undefined;
+    const { prefixRef, actionsRef, inputStyle } = useInputAffixes({
+      hasPrefix,
+      hasSuffix,
+      hasLeftContent,
+      style,
+    });
+    const affixClass = cn(AFFIX_CLASS, AFFIX_SIZE_CLASS[size ?? "md"]);
     const passwordToggleLabel = isPasswordVisible
       ? hidePasswordAriaLabel
       : showPasswordAriaLabel;
@@ -145,6 +180,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {leftAddon}
           </div>
         )}
+        {hasPrefix && (
+          <span
+            ref={prefixRef}
+            id={prefixId}
+            className={cn(
+              affixClass,
+              PREFIX_POSITION_CLASS,
+              hasLeftContent ? "left-10" : "left-3",
+            )}
+            data-slot="input-prefix"
+          >
+            {prefix}
+          </span>
+        )}
         <input
           ref={inputRef}
           type={inputType}
@@ -159,12 +208,27 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           readOnly={readOnly}
           aria-busy={ariaBusy ?? (loading || undefined)}
           aria-invalid={ariaInvalid ?? (isInvalidVariant(variant) || undefined)}
+          aria-describedby={joinIds(ariaDescribedBy, prefixId, suffixId)}
+          style={inputStyle}
           {...valueProps}
           onChange={handleChange}
           {...props}
         />
         {hasRightContent && (
-          <div className={ACTIONS_CLASS} data-slot="input-actions">
+          <div
+            ref={actionsRef}
+            className={ACTIONS_CLASS}
+            data-slot="input-actions"
+          >
+            {hasSuffix && (
+              <span
+                id={suffixId}
+                className={affixClass}
+                data-slot="input-suffix"
+              >
+                {suffix}
+              </span>
+            )}
             {loading && (
               <Spinner size="sm" variant="muted" data-slot="input-loading" />
             )}

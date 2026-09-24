@@ -134,6 +134,31 @@ export const InputsSection: FC = () => {
           </DemoRow>
         </DemoBlock>
 
+        <DemoBlock title="Текстовые аффиксы (prefix / suffix)">
+          <DemoRow>
+            <DemoField label="prefix">
+              <Input placeholder="example.com" prefix="https://" />
+            </DemoField>
+            <DemoField label="suffix + clearable">
+              <Input
+                placeholder="0"
+                suffix="₽"
+                clearable
+                defaultValue="1 500"
+                inputMode="decimal"
+              />
+            </DemoField>
+            <DemoField label="leftIcon + prefix + suffix">
+              <Input
+                placeholder="Домен"
+                leftIcon={<Search className="h-4 w-4" />}
+                prefix="@"
+                suffix=".ru"
+              />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
+
         <DemoBlock title="Интерактивные слоты">
           <DemoRow>
             <DemoField label="leftAddon">

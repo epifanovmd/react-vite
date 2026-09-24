@@ -13,6 +13,11 @@ export interface UseKeyboardNavOptions {
   openOnType?: boolean;
   /** Смена значения сбрасывает подсветку (обычно — identity `options`). */
   resetKey?: unknown;
+  /** Индекс подсветки после сброса по `resetKey` (по умолчанию -1). */
+  resetIndex?: number;
+  /** Прокрутка к подсвеченному с клавиатуры пункту; по умолчанию —
+   *  `scrollIntoView` n-го `[role="option"]` внутри `listRef`. */
+  scrollToIndex?: (index: number) => void;
 }
 
 export interface UseKeyboardNavResult {
@@ -52,6 +57,8 @@ export const useKeyboardNav = ({
   onClose,
   openOnType = false,
   resetKey,
+  resetIndex = -1,
+  scrollToIndex,
 }: UseKeyboardNavOptions): UseKeyboardNavResult => {
   const [focusedIndex, setFocusedIndexState] = React.useState(-1);
   const [prevResetKey, setPrevResetKey] = React.useState(resetKey);
@@ -60,7 +67,7 @@ export const useKeyboardNav = ({
 
   if (prevResetKey !== resetKey) {
     setPrevResetKey(resetKey);
-    setFocusedIndexState(-1);
+    setFocusedIndexState(resetIndex);
   }
 
   const latest = useLatestRef({
@@ -72,6 +79,7 @@ export const useKeyboardNav = ({
     onClose,
     openOnType,
     focusedIndex,
+    scrollToIndex,
   });
 
   const setFocusedIndex = React.useCallback((index: number) => {
@@ -171,13 +179,21 @@ export const useKeyboardNav = ({
     if (!scrollPendingRef.current || focusedIndex < 0) return;
     scrollPendingRef.current = false;
 
+    const customScroll = latest.current.scrollToIndex;
+
+    if (customScroll) {
+      customScroll(focusedIndex);
+
+      return;
+    }
+
     const item =
       listRef.current?.querySelectorAll<HTMLElement>('[role="option"]')[
         focusedIndex
       ];
 
     item?.scrollIntoView?.({ block: "nearest" });
-  }, [focusedIndex]);
+  }, [focusedIndex, latest]);
 
   return { focusedIndex, setFocusedIndex, handleKeyDown, listRef, resetFocus };
 };

@@ -1,7 +1,20 @@
 export type { AlertProps, AlertVariant } from "./alert";
 export { Alert } from "./alert";
-export type { AvatarGroupProps, AvatarProps } from "./avatar";
-export { Avatar, AvatarGroup } from "./avatar";
+export type {
+  AvatarGroupProps,
+  AvatarProps,
+  AvatarSize,
+  AvatarStatus,
+  AvatarStatusDotProps,
+} from "./avatar";
+export {
+  Avatar,
+  AVATAR_SIZE_CLASS,
+  AVATAR_STATUS_LABEL,
+  AvatarGroup,
+  AvatarStatusDot,
+  avatarVariants,
+} from "./avatar";
 export type {
   BadgeAnchorPlacement,
   BadgeAnchorProps,
@@ -21,11 +34,14 @@ export {
 } from "./card";
 export type {
   AreaChartProps,
+  ChartAnnotationVariant,
+  ChartBand,
   ChartBaseProps,
   ChartCurveType,
   ChartGridMode,
   ChartLegendPlacement,
   ChartMargin,
+  ChartReferenceLine,
   ChartSeries,
   ChartTooltipData,
   ChartTooltipEntry,
@@ -52,6 +68,64 @@ export type {
   UseCollapseResult,
 } from "./collapse";
 export { Collapse, useCollapse } from "./collapse";
+export type {
+  CommandDialogProps,
+  CommandEmptyProps,
+  CommandGroupProps,
+  CommandInputProps,
+  CommandItemProps,
+  CommandListProps,
+  CommandProps,
+  CommandSeparatorProps,
+  CommandShortcutProps,
+  UseCommandShortcutOptions,
+} from "./command";
+export {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+  useCommandShortcut,
+} from "./command";
+export type {
+  ContextMenuCheckboxItemProps,
+  ContextMenuContentProps,
+  ContextMenuGroupProps,
+  ContextMenuItemProps,
+  ContextMenuLabelProps,
+  ContextMenuPortalProps,
+  ContextMenuProps,
+  ContextMenuRadioGroupProps,
+  ContextMenuRadioItemProps,
+  ContextMenuSeparatorProps,
+  ContextMenuShortcutProps,
+  ContextMenuSubContentProps,
+  ContextMenuSubProps,
+  ContextMenuSubTriggerProps,
+  ContextMenuTriggerProps,
+} from "./context-menu";
+export {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuPortal,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from "./context-menu";
 export type { CopyableTextProps } from "./copyable-text";
 export { CopyableText } from "./copyable-text";
 export type {
@@ -63,6 +137,7 @@ export type {
   MaskedDatePickerProps,
   MaskedDateRangePickerProps,
   RangeCalendarProps,
+  TimePickerProps,
   WeekStartsOn,
 } from "./date-picker";
 export {
@@ -72,6 +147,7 @@ export {
   MaskedDatePicker,
   MaskedDateRangePicker,
   RangeCalendar,
+  TimePicker,
 } from "./date-picker";
 export type {
   DrawerBodyProps,
@@ -95,12 +171,68 @@ export {
   DrawerOverlay,
   DrawerTitle,
 } from "./drawer";
+export type {
+  DropdownMenuCheckboxItemProps,
+  DropdownMenuContentProps,
+  DropdownMenuGroupProps,
+  DropdownMenuItemProps,
+  DropdownMenuLabelProps,
+  DropdownMenuPortalProps,
+  DropdownMenuProps,
+  DropdownMenuRadioGroupProps,
+  DropdownMenuRadioItemProps,
+  DropdownMenuSeparatorProps,
+  DropdownMenuShortcutProps,
+  DropdownMenuSubContentProps,
+  DropdownMenuSubProps,
+  DropdownMenuSubTriggerProps,
+  DropdownMenuTriggerProps,
+} from "./dropdown-menu";
+export {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
 export type { EmptyIconName, EmptyProps } from "./empty";
 export { Empty, emptyIconVariants, emptyVariants } from "./empty";
 export type { ErrorBoundaryProps, ErrorFallbackProps } from "./error-boundary";
 export { ErrorBoundary, ErrorFallback } from "./error-boundary";
-export type { FileDropProps } from "./file-drop";
-export { FileDrop, matchesAccept } from "./file-drop";
+export type {
+  FileDropListItemData,
+  FileDropListItemPatch,
+  FileDropListItemProps,
+  FileDropListProps,
+  FileDropProps,
+  FileRejection,
+  FileRejectionReason,
+  UseFileListOptions,
+  UseFileListResult,
+  ValidateFilesOptions,
+  ValidateFilesResult,
+} from "./file-drop";
+export {
+  FileDrop,
+  FileDropList,
+  FileDropListItem,
+  formatFileSize,
+  getFileTypeIcon,
+  isImageFile,
+  matchesAccept,
+  useFileList,
+  validateFiles,
+} from "./file-drop";
 export type {
   AutocompleteFormFieldProps,
   CheckboxFormFieldProps,
@@ -124,11 +256,15 @@ export type {
   MaskedDateRangePickerFormFieldProps,
   MaskedInputFormFieldProps,
   MultiSelectFormFieldProps,
+  NumberInputFormFieldProps,
+  OtpInputFormFieldProps,
   RadioFormFieldProps,
   SegmentedFormFieldProps,
   SelectFormFieldProps,
+  SliderFormFieldProps,
   SwitchFormFieldProps,
   TextareaFormFieldProps,
+  TimePickerFormFieldProps,
 } from "./form";
 export {
   AutocompleteFormField,
@@ -148,11 +284,15 @@ export {
   MaskedInputFormField,
   MultiSelectFormField,
   normalizeEmptyString,
+  NumberInputFormField,
+  OtpInputFormField,
   RadioFormField,
   SegmentedFormField,
   SelectFormField,
+  SliderFormField,
   SwitchFormField,
   TextareaFormField,
+  TimePickerFormField,
   useFieldArray,
   useFormValue,
   useIsFieldValidating,
@@ -275,6 +415,21 @@ export {
   useModal,
   useModalController,
 } from "./modal";
+export type {
+  NumberInputProps,
+  UseNumberInputOptions,
+  UseNumberInputResult,
+} from "./number-input";
+export { NumberInput, useNumberInput } from "./number-input";
+export type {
+  OtpCellHandlers,
+  OtpInputCellProps,
+  OtpInputMode,
+  OtpInputProps,
+  UseOtpInputOptions,
+  UseOtpInputResult,
+} from "./otp-input";
+export { OtpInput, OtpInputCell, useOtpInput } from "./otp-input";
 export type { PageHeaderHeading, PageHeaderProps } from "./page-header";
 export { PageHeader } from "./page-header";
 export type { PageLayoutProps } from "./page-layout";
@@ -312,6 +467,12 @@ export type { ProgressProps } from "./progress";
 export { Progress } from "./progress";
 export type { RadioGroupProps, RadioProps } from "./radio";
 export { Radio, RadioGroup } from "./radio";
+export type {
+  ScrollAreaOrientation,
+  ScrollAreaProps,
+  ScrollBarProps,
+} from "./scroll-area";
+export { ScrollArea, ScrollBar, scrollBarVariants } from "./scroll-area";
 export type { SegmentedOption, SegmentedProps } from "./segmented";
 export { Segmented } from "./segmented";
 export type {
@@ -328,6 +489,7 @@ export type {
   LabeledValue,
   OptionRenderer,
   OptionRenderInfo,
+  SelectCreateHandler,
   SelectDataProps,
   SelectOption,
   SelectOptionGroup,
@@ -335,6 +497,7 @@ export type {
   SelectRef,
   SelectTriggerAppearance,
   SelectValue,
+  SelectVirtualConfig,
   TagRenderInfo,
   UseAsyncOptionsConfig,
   UseControlledOptionsConfig,
@@ -357,6 +520,31 @@ export {
 } from "./select";
 export type { SeparatorProps } from "./separator";
 export { Separator } from "./separator";
+export type {
+  SkeletonAvatarProps,
+  SkeletonGroupProps,
+  SkeletonProps,
+  SkeletonRowProps,
+  SkeletonTextGap,
+  SkeletonTextProps,
+} from "./skeleton";
+export {
+  Skeleton,
+  SkeletonAvatar,
+  SkeletonGroup,
+  SkeletonRow,
+  SkeletonText,
+  skeletonVariants,
+} from "./skeleton";
+export type {
+  SliderMark,
+  SliderOrientation,
+  SliderProps,
+  SliderSize,
+  SliderValue,
+  SliderVariantProps,
+} from "./slider";
+export { Slider } from "./slider";
 export type { SpinnerProps } from "./spinner";
 export { Spinner } from "./spinner";
 export type { StatCardProps, StatCardVariant } from "./stat-card";
@@ -388,6 +576,8 @@ export type {
   RowSelectionFeatureOptions,
   RowSelectionMode,
   SortingFeatureOptions,
+  TableBulkActionsRenderer,
+  TableBulkSelection,
   TableColumnAlign,
   TableFeatureKind,
   TableFeatureOf,
@@ -402,12 +592,20 @@ export type {
   TableRowClickHandler,
   TableRowEvent,
   TableRowProps,
+  TableSettings,
+  TableSettingsPart,
+  TableSettingsStorage,
+  TableSettingsUpdater,
   TableSize,
   TableVariant,
+  TableVirtualOptions,
   UseTableInstanceOptions,
+  UseTableSettingsOptions,
+  UseTableSettingsResult,
 } from "./table";
 export {
   createColumnHelper,
+  createLocalStorageTableSettings,
   DEFAULT_PAGE_SIZE_OPTIONS,
   Table,
   TABLE_LABELS,
@@ -432,6 +630,7 @@ export {
   useRowSelectionFeature,
   useSortingFeature,
   useTableInstance,
+  useTableSettings,
 } from "./table";
 export type {
   TabsContentProps,
@@ -456,3 +655,10 @@ export {
   TooltipProvider,
   TooltipTrigger,
 } from "./tooltip";
+export type {
+  UseVirtualListOptions,
+  UseVirtualListResult,
+  VirtualListEstimateSize,
+  VirtualListProps,
+} from "./virtual-list";
+export { useVirtualList, VirtualList } from "./virtual-list";

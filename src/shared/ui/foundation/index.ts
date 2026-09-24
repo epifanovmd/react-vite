@@ -29,6 +29,20 @@ export {
   INTENT_SOLID,
 } from "./intent";
 export { isInvalidVariant } from "./is-invalid-variant";
+export {
+  MENU_CHECKABLE_ITEM_CLASS,
+  MENU_CONTENT_CLASS,
+  MENU_ITEM_ICON_CLASS,
+  MENU_ITEM_INDICATOR_CLASS,
+  MENU_LABEL_CLASS,
+  MENU_LABEL_INSET_CLASS,
+  MENU_SEPARATOR_CLASS,
+  MENU_SHORTCUT_CLASS,
+  MENU_SUB_TRIGGER_CHEVRON_CLASS,
+  MENU_SUB_TRIGGER_OPEN_CLASS,
+  type MenuItemVariantProps,
+  menuItemVariants,
+} from "./menu-parts";
 export { RippleLayer, type RippleLayerProps } from "./ripple/RippleLayer";
 export {
   type Ripple,

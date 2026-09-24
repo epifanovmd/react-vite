@@ -1,7 +1,15 @@
 import { cva } from "class-variance-authority";
 
+/** Ниже `sm` — на весь экран с отступами под вырезы и системные панели. */
+const FULL_SCREEN_MOBILE = [
+  "max-sm:inset-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-none",
+  "max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:border-0",
+  "max-sm:pt-[env(safe-area-inset-top)] max-sm:pb-[env(safe-area-inset-bottom)]",
+  "max-sm:pl-[env(safe-area-inset-left)] max-sm:pr-[env(safe-area-inset-right)]",
+].join(" ");
+
 export const modalContentVariants = cva(
-  "fixed z-50 border bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 rounded-xl",
+  "fixed z-50 flex max-h-[85vh] flex-col border bg-background shadow-lg duration-200 focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 rounded-xl",
   {
     variants: {
       position: {
@@ -16,12 +24,21 @@ export const modalContentVariants = cva(
         md: "w-full max-w-lg",
         lg: "w-full max-w-2xl",
         xl: "w-full max-w-4xl",
-        full: "w-[calc(100vw-2rem)] max-w-none mx-4",
+        full: "h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none",
+      },
+      fullScreenOnMobile: {
+        true: FULL_SCREEN_MOBILE,
+        false: "",
       },
     },
     defaultVariants: {
       position: "center",
       size: "md",
+      fullScreenOnMobile: false,
     },
   },
 );
+
+/** Крестик в полноэкранном режиме уходит ниже выреза экрана. */
+export const MODAL_CLOSE_FULL_SCREEN_MOBILE_CLASS =
+  "max-sm:top-[calc(env(safe-area-inset-top)+0.75rem)] max-sm:right-[calc(env(safe-area-inset-right)+0.75rem)]";

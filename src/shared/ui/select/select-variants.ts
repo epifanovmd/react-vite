@@ -21,6 +21,10 @@ export const selectItemClasses = [
 
 export const selectItemHighlightedClasses = "bg-accent text-accent-foreground";
 
+/** Подпись группы опций (в обычном и виртуальном списке). */
+export const selectGroupLabelClasses =
+  "px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide";
+
 export const selectSearchInputClasses = `flex-1 min-w-0 bg-transparent outline-none ${INHERIT_FONT_CLASS} text-inherit placeholder:text-muted-foreground cursor-text`;
 
 const resolveValidationVariant = (

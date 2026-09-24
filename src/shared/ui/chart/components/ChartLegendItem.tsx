@@ -48,7 +48,7 @@ export const ChartLegendItem = ({
         type="button"
         onClick={onToggle}
         aria-pressed={!hidden}
-        className={cn(className, "hover:text-foreground")}
+        className={cn(className, "cursor-pointer hover:text-foreground")}
       >
         {content}
       </button>

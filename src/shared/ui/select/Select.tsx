@@ -14,10 +14,12 @@ import {
 } from "./primitives";
 import type {
   LabeledValue,
+  SelectOption,
   SelectProps,
   SelectRef,
   SelectValue,
 } from "./types";
+import { getOptionText } from "./utils/get-option-text";
 
 type RawValue<V extends SelectValue> =
   V | V[] | LabeledValue<V> | LabeledValue<V>[] | null | undefined;
@@ -44,6 +46,24 @@ const unwrapLabeled = <V extends SelectValue>(
 
 /** Кнопка рядом с тегами: занимает остаток строки, шеврон прижат вправо. */
 const TAGS_TRIGGER_BUTTON_CLASS = "min-w-8 justify-end";
+
+const isPromiseLike = (value: unknown): value is PromiseLike<unknown> =>
+  typeof (value as PromiseLike<unknown> | null)?.then === "function";
+
+const defaultCreateLabel = (query: string): React.ReactNode =>
+  `Создать «${query}»`;
+
+/** Есть ли опция, чей текст совпадает с запросом без учёта регистра. */
+const hasExactOption = <V extends SelectValue>(
+  options: SelectOption<V>[],
+  query: string,
+): boolean => {
+  const normalized = query.toLocaleLowerCase();
+
+  return options.some(
+    option => getOptionText(option).toLocaleLowerCase() === normalized,
+  );
+};
 
 /** Скрытые input'ы для нативной формы (по одному на значение). */
 const renderHiddenInputs = <V extends SelectValue>(
@@ -94,6 +114,10 @@ const SelectInner = <V extends SelectValue = string>(
     hideEmpty,
     closeOnClear,
     closeOnTriggerClick,
+    creatable = false,
+    onCreate,
+    createLabel = defaultCreateLabel,
+    virtual,
     onSelect,
     onDeselect,
     onFocus,
@@ -154,6 +178,46 @@ const SelectInner = <V extends SelectValue = string>(
 
   const resetQuery = React.useCallback(() => setQuery(""), [setQuery]);
 
+  const createQuery = query.trim();
+  const exactMatch = React.useMemo(
+    () => createQuery !== "" && hasExactOption(options, createQuery),
+    [options, createQuery],
+  );
+  const showCreate =
+    creatable &&
+    search &&
+    createQuery !== "" &&
+    !exactMatch &&
+    !loading &&
+    !error;
+
+  const creatingRef = React.useRef(false);
+  const selectCreatedRef = React.useRef<(value: V | undefined | void) => void>(
+    () => {},
+  );
+
+  const handleCreate = useEvent(() => {
+    if (!createQuery || creatingRef.current) return;
+
+    const result = onCreate?.(createQuery);
+
+    if (!isPromiseLike(result)) {
+      selectCreatedRef.current(result);
+
+      return;
+    }
+
+    creatingRef.current = true;
+    Promise.resolve(result)
+      .then(
+        value => selectCreatedRef.current(value as V | undefined),
+        () => undefined,
+      )
+      .finally(() => {
+        creatingRef.current = false;
+      });
+  });
+
   const engine = useSelectEngine<V>({
     ref,
     options,
@@ -167,13 +231,31 @@ const SelectInner = <V extends SelectValue = string>(
     closeOnClear,
     searchable: search,
     onSearchReset: resetQuery,
+    createItem: showCreate,
+    onCreateItem: handleCreate,
+  });
+
+  // Созданное значение выбирается, но не переключается: в multi повторное
+  // создание уже выбранного не должно его снимать.
+  React.useLayoutEffect(() => {
+    selectCreatedRef.current = (value: V | undefined | void) => {
+      if (value == null) return;
+      if (!engine.isSelected(value)) {
+        engine.select(value);
+
+        return;
+      }
+      resetQuery();
+      if (!multi) engine.close();
+    };
   });
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setQuery(e.target.value);
 
   const showClear = clearable && !loading && !disabled && engine.hasValue;
-  const hidden = hideEmpty && !loading && !error && options.length === 0;
+  const hidden =
+    hideEmpty && !loading && !error && options.length === 0 && !showCreate;
 
   const comboboxProps = {
     id,
@@ -326,6 +408,11 @@ const SelectInner = <V extends SelectValue = string>(
           onScrollEnd={onScrollEnd}
           className={listClassName}
           maxHeight={maxHeight}
+          createContent={showCreate ? createLabel(createQuery) : undefined}
+          onCreate={handleCreate}
+          optionOffset={engine.optionOffset}
+          virtual={virtual}
+          scrollToIndexRef={engine.scrollToIndexRef}
         />
       </SelectDropdown>
     </>

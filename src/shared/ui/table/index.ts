@@ -41,7 +41,12 @@ export type {
   TableFeatureResult,
   TableFilterFieldConfig,
   TableFiltersConfig,
+  TableSettings,
+  TableSettingsPart,
+  TableSettingsUpdater,
   UseTableInstanceOptions,
+  UseTableSettingsOptions,
+  UseTableSettingsResult,
 } from "./hooks";
 export {
   useColumnFiltersFeature,
@@ -57,11 +62,14 @@ export {
   useRowSelectionFeature,
   useSortingFeature,
   useTableInstance,
+  useTableSettings,
 } from "./hooks";
 export type { TablePaginationProps } from "./pagination";
 export { TablePagination } from "./pagination";
 export { Table } from "./Table";
 export type {
+  TableBulkActionsRenderer,
+  TableBulkSelection,
   TableColumnAlign,
   TableInstanceResult,
   TableProps,
@@ -70,6 +78,9 @@ export type {
   TableRowEvent,
   TableSize,
   TableVariant,
+  TableVirtualOptions,
 } from "./table.types";
+export type { TableSettingsStorage } from "./utils";
+export { createLocalStorageTableSettings } from "./utils";
 export type { ColumnDef } from "@tanstack/react-table";
 export { createColumnHelper } from "@tanstack/react-table";

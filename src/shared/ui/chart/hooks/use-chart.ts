@@ -10,6 +10,7 @@ import type {
   ChartXValue,
   ChartYAxisConfig,
 } from "../chart.types";
+import { collectAnnotationValues } from "../utils/annotations";
 import { resolveChartMargin } from "../utils/chart-margin";
 import {
   createTimeFormat,
@@ -33,6 +34,8 @@ export interface UseChartOptions<Datum> extends Pick<
   | "margin"
   | "formatValue"
   | "formatX"
+  | "referenceLines"
+  | "bands"
 > {
   /** Включать 0 в домен Y, если ось не сказала иначе. */
   zero: boolean;
@@ -54,10 +57,14 @@ export interface ChartModel<Datum> {
   yAxis: ChartYAxisConfig | false;
   xScaleType: ChartResolvedXScaleType;
   zero: boolean;
+  /** Значения Y опорных линий и полос — расширяют домен оси. */
+  annotationValues: readonly number[];
   formatXTick: (value: ChartXValue) => string;
   getTooltipData: (index: number) => ChartTooltipData<Datum> | null;
   toggleSeries: (key: string) => void;
 }
+
+const NO_VALUES: readonly number[] = [];
 
 const resolveXTickFormat = (
   axis: ChartXAxisConfig | false,
@@ -90,6 +97,8 @@ export const useChart = <Datum>({
   formatX,
   zero,
   stacked = false,
+  referenceLines,
+  bands,
 }: UseChartOptions<Datum>): ChartModel<Datum> => {
   const { hiddenKeys, toggle } = useSeriesVisibility(series);
 
@@ -115,6 +124,15 @@ export const useChart = <Datum>({
   const visiblePoints = useMemo(
     () => visibleSeries.flatMap(item => item.points),
     [visibleSeries],
+  );
+
+  // Аннотации обычно передают литералом: ключ из значений держит домен стабильным.
+  const annotationKey = collectAnnotationValues(referenceLines, bands).join(
+    ",",
+  );
+  const annotationValues = useMemo(
+    () => (annotationKey ? annotationKey.split(",").map(Number) : NO_VALUES),
+    [annotationKey],
   );
 
   const margin = useMemo(
@@ -152,6 +170,7 @@ export const useChart = <Datum>({
     yAxis,
     xScaleType: resolveXScaleType(xScale, xValues[0]),
     zero,
+    annotationValues,
     formatXTick,
     getTooltipData,
     toggleSeries: toggle,

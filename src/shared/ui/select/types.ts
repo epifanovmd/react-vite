@@ -109,6 +109,21 @@ export interface DropdownPlacementProps {
   maxHeight?: number;
 }
 
+// ─── Creatable / Virtual ──────────────────────────────────────────────────
+
+/** Создание опции из строки поиска. Вернувшееся значение (сразу или через
+ *  Promise) выбирается; `undefined` — ничего не выбирать (например, отказ). */
+export type SelectCreateHandler<V extends SelectValue = string> = (
+  query: string,
+) => V | undefined | void | Promise<V | undefined | void>;
+
+export interface SelectVirtualConfig {
+  /** Оценка высоты опции в px (по умолчанию 32). */
+  estimateSize?: number;
+  /** Опций за пределами видимой области (по умолчанию 8). */
+  overscan?: number;
+}
+
 // ─── Appearance ───────────────────────────────────────────────────────────
 
 export interface SelectTriggerAppearance extends VariantProps<
@@ -157,6 +172,16 @@ interface SelectBaseProps<V extends SelectValue = string>
    *  (по умолчанию: Select — true без поиска и false с поиском,
    *  Autocomplete — false). */
   closeOnTriggerClick?: boolean;
+  /** Пункт «Создать «запрос»» над списком, когда поиск не совпадает ни с
+   *  одной опцией точно (без учёта регистра). Работает вместе с `search`. */
+  creatable?: boolean;
+  /** Выбор пункта «Создать»: добавить опцию и вернуть её значение. */
+  onCreate?: SelectCreateHandler<V>;
+  /** Текст пункта «Создать» (по умолчанию «Создать «запрос»»). */
+  createLabel?: (query: string) => React.ReactNode;
+  /** Виртуализация длинного списка: в DOM только видимые опции.
+   *  Группы отображаются плоско — заголовок группы становится строкой списка. */
+  virtual?: boolean | SelectVirtualConfig;
 }
 
 // ─── Value modes (discriminated union) ────────────────────────────────────
@@ -250,7 +275,10 @@ type AutocompleteOmittedProps =
   | "closeOnTriggerClick"
   | "groups"
   | "renderValue"
-  | "tagRender";
+  | "tagRender"
+  | "creatable"
+  | "onCreate"
+  | "createLabel";
 
 export interface AutocompleteProps<V extends string = string> extends Omit<
   SelectBaseProps<V>,

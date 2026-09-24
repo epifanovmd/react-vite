@@ -44,6 +44,17 @@ export const normalizeDateValue = (
   return Number.isNaN(parsed.getTime()) ? undefined : startOfDay(parsed);
 };
 
+/** Как `normalizeDateValue`, но сохраняет время — для пикеров с `withTime`. */
+export const normalizeDateTimeValue = (
+  value: Date | string | undefined,
+): Date | undefined => {
+  if (value == null || value === "") return undefined;
+
+  const parsed = typeof value === "string" ? parseISO(value) : value;
+
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
 /**
  * Превью диапазона при наведении: пока выбрана только «от», наведённая
  * дата становится второй границей (в хронологическом порядке).

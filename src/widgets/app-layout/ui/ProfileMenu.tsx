@@ -1,6 +1,13 @@
 import { SignOutButton } from "@features/sign-out";
-import { ThemeToggle } from "@features/toggle-theme";
-import { Popover } from "@shared/ui";
+import { ThemeMenuItem } from "@features/toggle-theme";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@shared/ui";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, User } from "lucide-react";
 import { FC } from "react";
@@ -13,16 +20,19 @@ interface ProfileMenuProps {
   subtitle?: string;
 }
 
+const SIGN_OUT_CLASS =
+  "font-medium data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive";
+
 export const ProfileMenu: FC<ProfileMenuProps> = ({
   displayName,
   initials,
   subtitle,
 }) => (
-  <Popover>
-    <Popover.Trigger asChild>
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
       <button
         type="button"
-        className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-accent"
+        className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-accent data-[state=open]:bg-accent"
       >
         <ProfileAvatar initials={initials} />
         <span className="hidden max-w-[140px] truncate text-sm font-medium text-foreground sm:block">
@@ -30,13 +40,14 @@ export const ProfileMenu: FC<ProfileMenuProps> = ({
         </span>
         <ChevronDown
           size={15}
+          aria-hidden
           className="hidden flex-shrink-0 text-muted-foreground sm:block"
         />
       </button>
-    </Popover.Trigger>
+    </DropdownMenuTrigger>
 
-    <Popover.Content size="none" align="end" className="w-48">
-      <div className="flex items-center gap-3 border-b border-border p-3">
+    <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuLabel className="flex items-center gap-3 p-2 font-normal">
         <ProfileAvatar initials={initials} size="md" />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">
@@ -46,30 +57,24 @@ export const ProfileMenu: FC<ProfileMenuProps> = ({
             <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
           )}
         </div>
-      </div>
+      </DropdownMenuLabel>
 
-      <div className="flex flex-col p-1">
-        <Popover.Close asChild>
-          <Link
-            to="/profile"
-            className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-accent"
-          >
-            <User size={16} className="text-muted-foreground" />
-            Профиль
-          </Link>
-        </Popover.Close>
+      <DropdownMenuSeparator />
 
-        <div className="flex items-center justify-between rounded-md px-2.5 py-1.5">
-          <span className="text-sm text-muted-foreground">Тема</span>
-          <ThemeToggle variant="ghost" size="sm" className="h-7 w-7 p-0" />
-        </div>
-      </div>
+      <DropdownMenuItem asChild>
+        <Link to="/profile">
+          <User aria-hidden className="text-muted-foreground" />
+          Профиль
+        </Link>
+      </DropdownMenuItem>
 
-      <div className="border-t border-border p-1">
-        <Popover.Close asChild>
-          <SignOutButton className="w-full rounded-md px-2.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-destructive/10 hover:text-destructive" />
-        </Popover.Close>
-      </div>
-    </Popover.Content>
-  </Popover>
+      <ThemeMenuItem />
+
+      <DropdownMenuSeparator />
+
+      <DropdownMenuItem asChild className={SIGN_OUT_CLASS}>
+        <SignOutButton />
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 );

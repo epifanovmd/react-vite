@@ -25,6 +25,7 @@ export {
   tableVariants,
 } from "./table-variants";
 export { TableBodySection } from "./TableBodySection";
+export { TableBulkBar } from "./TableBulkBar";
 export { TableColumnVisibility } from "./TableColumnVisibility";
 export { TableFooterSection } from "./TableFooterSection";
 export { TableHeaderSection } from "./TableHeaderSection";

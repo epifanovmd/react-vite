@@ -73,4 +73,38 @@ describe("useModalController", () => {
 
     expect(result.current.modals).toBe(first);
   });
+
+  it("в управляемом режиме отражает внешнее open без задержки", () => {
+    const onOpenChange = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ open }) =>
+        useModalController({ list: { open, onOpenChange }, other: {} }),
+      { initialProps: { open: false } },
+    );
+
+    expect(result.current.modals.list.open).toBe(false);
+
+    rerender({ open: true });
+    expect(result.current.modals.list.open).toBe(true);
+    expect(result.current.isOpen("list")).toBe(true);
+
+    act(() => result.current.modals.list.onClose());
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+
+    rerender({ open: false });
+    expect(result.current.modals.list.open).toBe(false);
+  });
+
+  it("toggle в управляемом режиме опирается на актуальное внешнее значение", () => {
+    const onOpenChange = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ open }) => useModalController({ list: { open, onOpenChange } }),
+      { initialProps: { open: false } },
+    );
+
+    rerender({ open: true });
+    act(() => result.current.toggle("list"));
+
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
 });

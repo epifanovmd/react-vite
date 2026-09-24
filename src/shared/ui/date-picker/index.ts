@@ -10,4 +10,6 @@ export type { MaskedDateRangePickerProps } from "./MaskedDateRangePicker";
 export { MaskedDateRangePicker } from "./MaskedDateRangePicker";
 export type { RangeCalendarProps } from "./RangeCalendar";
 export { RangeCalendar } from "./RangeCalendar";
+export type { TimePickerProps } from "./TimePicker";
+export { TimePicker } from "./TimePicker";
 export type { DateRange, DateRangePreset, WeekStartsOn } from "./types";

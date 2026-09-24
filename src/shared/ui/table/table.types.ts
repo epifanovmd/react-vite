@@ -55,6 +55,24 @@ export type TableRowAttributes = React.HTMLAttributes<HTMLTableRowElement> & {
   [key: `data-${string}`]: string | number | boolean | undefined;
 };
 
+export interface TableBulkSelection<TData> {
+  /** Выбранные строки (по всем страницам, среди загруженных данных). */
+  rows: Row<TData>[];
+  /** Снимает выделение со всех строк. */
+  clear: () => void;
+}
+
+export type TableBulkActionsRenderer<TData> = (
+  selection: TableBulkSelection<TData>,
+) => React.ReactNode;
+
+export interface TableVirtualOptions {
+  /** Оценка высоты строки до замера, px; по умолчанию — по `size`. */
+  estimateSize?: number;
+  /** Сколько строк рендерить за пределами видимой области. */
+  overscan?: number;
+}
+
 export interface TableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, any>[];
@@ -96,6 +114,20 @@ export interface TableProps<TData> {
   getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
 
   tableOptions?: Partial<TableOptions<TData>>;
+
+  /**
+   * Действия над выбранными строками (нужна `useRowSelectionFeature`): над
+   * таблицей появляется панель «Выбрано: N» с этими действиями и сбросом.
+   */
+  bulkActions?: TableBulkActionsRenderer<TData>;
+  /**
+   * Виртуализация строк: рендерится только видимое окно, высоту держат
+   * строки-распорки, так что `<table>`-семантика и sticky-шапка сохраняются.
+   * Высота строк (и раскрытых подкомпонентов) замеряется после рендера.
+   * Скролл-контейнеру нужна ограниченная высота (`containerClassName` или
+   * flex-родитель), иначе виртуализировать нечего.
+   */
+  virtual?: boolean | TableVirtualOptions;
 }
 
 export interface TableInstanceResult<TData = unknown> {

@@ -31,6 +31,10 @@ const toDate = (value: ChartXValue): Date =>
 const toNumber = (value: ChartXValue): number =>
   value instanceof Date ? value.getTime() : Number(value);
 
+/** Ключ сравнения X: даты — по времени, иначе по строковому виду. */
+const toXKey = (value: ChartXValue): string =>
+  value instanceof Date ? `d:${value.getTime()}` : `${typeof value}:${value}`;
+
 /** Категории отступают от краёв на половину шага, чтобы точки не ложились на оси. */
 const POINT_SCALE_PADDING = 0.5;
 
@@ -51,6 +55,8 @@ export interface ChartXScaleResult {
   positions: number[];
   /** Тик оси → значение X: у point-шкалы тики — индексы данных. */
   tickToX: (tick: unknown) => ChartXValue;
+  /** Значение X → пиксель; `undefined` — категории нет в данных. */
+  xToPosition: (value: ChartXValue) => number | undefined;
 }
 
 const toChartXValue = (tick: unknown): ChartXValue => {
@@ -79,10 +85,17 @@ export const createXScale = ({
       padding: POINT_SCALE_PADDING,
     });
 
+    const keys = xValues.map(toXKey);
+
     return {
       scale,
       positions: xValues.map((_, index) => scale(index) ?? 0),
       tickToX: tick => xValues[Number(tick)] ?? "",
+      xToPosition: value => {
+        const index = keys.indexOf(toXKey(value));
+
+        return index === -1 ? undefined : scale(index);
+      },
     };
   }
 
@@ -99,6 +112,7 @@ export const createXScale = ({
       scale,
       positions: dates.map(date => scale(date)),
       tickToX: toChartXValue,
+      xToPosition: value => scale(toDate(value)),
     };
   }
 
@@ -114,6 +128,7 @@ export const createXScale = ({
     scale,
     positions: numbers.map(number => scale(number)),
     tickToX: toChartXValue,
+    xToPosition: value => scale(toNumber(value)),
   };
 };
 
@@ -123,6 +138,8 @@ export interface CreateYScaleOptions<Datum> {
   /** Включать 0 в домен, если ось не сказала иначе. */
   zero: boolean;
   height: number;
+  /** Значения аннотаций, которые должны попасть в домен. */
+  extraValues?: readonly number[];
 }
 
 /** Плоский домен (одно значение) растягивается, иначе линия ложится на край. */
@@ -143,6 +160,7 @@ export const createYScale = <Datum>({
   axis,
   zero,
   height,
+  extraValues = [],
 }: CreateYScaleOptions<Datum>) => {
   const config = axis === false ? undefined : axis;
 
@@ -153,6 +171,8 @@ export const createYScale = <Datum>({
   if (config?.zero ?? zero) {
     values.push(0);
   }
+
+  values.push(...extraValues);
 
   const [min, max] = extent(values);
 

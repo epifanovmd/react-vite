@@ -43,8 +43,15 @@ export const useChartScales = <Datum>({
         axis: model.yAxis,
         zero: model.zero,
         height: innerHeight,
+        extraValues: model.annotationValues,
       }),
-    [innerHeight, model.visiblePoints, model.yAxis, model.zero],
+    [
+      innerHeight,
+      model.visiblePoints,
+      model.yAxis,
+      model.zero,
+      model.annotationValues,
+    ],
   );
 
   const margin = useMemo(() => {
@@ -78,6 +85,7 @@ export const useChartScales = <Datum>({
       yScale,
       positions: x.positions,
       tickToX: x.tickToX,
+      xToPosition: x.xToPosition,
       innerWidth,
       innerHeight,
       margin,

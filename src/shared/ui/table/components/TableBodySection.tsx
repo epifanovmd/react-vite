@@ -6,12 +6,17 @@ import { Fragment, type ReactNode, type RefObject } from "react";
 import { Empty } from "../../empty";
 import { Spinner } from "../../spinner";
 import type { InfiniteScrollFeatureMeta } from "../hooks/features/types";
-import type { TableProps, TableRowClickHandler } from "../table.types";
+import type {
+  TableProps,
+  TableRowClickHandler,
+  TableVirtualOptions,
+} from "../table.types";
 import { TableBody } from "./primitives";
 import { useTableContext } from "./table-context";
 import { TableDataRow } from "./TableDataRow";
 import { TableExpandedRow } from "./TableExpandedRow";
 import { TableStatusRow } from "./TableStatusRow";
+import { TableVirtualRows } from "./TableVirtualRows";
 
 interface TableBodySectionProps<TData> {
   rows: Row<TData>[];
@@ -30,6 +35,8 @@ interface TableBodySectionProps<TData> {
   resizable?: boolean;
   scrollContainerRef?: RefObject<HTMLElement | null>;
   infiniteScroll?: InfiniteScrollFeatureMeta;
+  /** Виртуализация строк; нужен `scrollContainerRef`. */
+  virtual?: Required<TableVirtualOptions>;
 }
 
 const NOOP = () => {};
@@ -53,6 +60,7 @@ export const TableBodySection = <TData,>({
   resizable,
   scrollContainerRef,
   infiniteScroll,
+  virtual,
 }: TableBodySectionProps<TData>) => {
   const { labels } = useTableContext();
   // Наблюдатель зависит от того, смонтирован ли сторожевой ряд: иначе после
@@ -107,16 +115,23 @@ export const TableBodySection = <TData,>({
     );
   }
 
-  return (
-    <TableBody
-      aria-busy={busy}
-      className={cn(
-        "transition-opacity duration-150",
-        refreshing && "pointer-events-none opacity-50",
-        className,
-      )}
-    >
-      {rows.map(row => (
+  const rowsNode =
+    virtual && scrollContainerRef ? (
+      <TableVirtualRows
+        rows={rows}
+        totalColumns={totalColumns}
+        columnSizing={columnSizing}
+        scrollContainerRef={scrollContainerRef}
+        options={virtual}
+        onRowClick={onRowClick}
+        onRowDoubleClick={onRowDoubleClick}
+        rowClassName={rowClassName}
+        getRowProps={getRowProps}
+        renderSubComponent={renderSubComponent}
+        resizable={resizable}
+      />
+    ) : (
+      rows.map(row => (
         <Fragment key={row.id}>
           <TableDataRow
             row={row}
@@ -139,7 +154,19 @@ export const TableBodySection = <TData,>({
             />
           )}
         </Fragment>
-      ))}
+      ))
+    );
+
+  return (
+    <TableBody
+      aria-busy={busy}
+      className={cn(
+        "transition-opacity duration-150",
+        refreshing && "pointer-events-none opacity-50",
+        className,
+      )}
+    >
+      {rowsNode}
 
       {sentinelVisible && (
         <TableStatusRow

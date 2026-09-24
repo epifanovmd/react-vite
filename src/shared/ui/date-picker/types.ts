@@ -58,8 +58,21 @@ export interface PickerFieldProps<TElement extends HTMLElement>
   onOpenChange?: (open: boolean) => void;
   onBlur?: React.FocusEventHandler<TElement>;
   onFocus?: React.FocusEventHandler<TElement>;
+  "aria-label"?: string;
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
   "aria-labelledby"?: string;
   "aria-required"?: boolean;
+}
+
+/** Выбор времени в пикерах одной даты. */
+export interface PickerTimeProps {
+  /**
+   * Выбирать и время: под календарём появляется поле «чч:мм», значение
+   * хранит часы и минуты, формат по умолчанию дополняется временем.
+   * Время без выбранного дня применяется к сегодняшнему дню.
+   */
+  withTime?: boolean;
+  /** Шаг ArrowUp/ArrowDown в поле времени, минут (по умолчанию 30). */
+  timeStep?: number;
 }

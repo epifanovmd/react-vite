@@ -7,7 +7,10 @@ import * as React from "react";
 import { type ButtonProps } from "../../button";
 import { IconButton } from "../../icon-button";
 import { useModalOpen } from "../modal-open-context";
-import { modalContentVariants } from "./modal-variants";
+import {
+  MODAL_CLOSE_FULL_SCREEN_MOBILE_CLASS,
+  modalContentVariants,
+} from "./modal-variants";
 import { ModalBody } from "./ModalBody";
 import { ModalConfirmFooter } from "./ModalConfirmFooter";
 import { ModalDescription } from "./ModalDescription";
@@ -23,7 +26,13 @@ type ContentProps = Omit<
 
 type ModalVariantProps = VariantProps<typeof modalContentVariants>;
 
-export interface ModalContentProps extends ContentProps, ModalVariantProps {
+export interface ModalContentProps
+  extends ContentProps, Omit<ModalVariantProps, "fullScreenOnMobile"> {
+  /**
+   * Ниже брейкпоинта `sm` окно занимает весь экран: без скруглений, с
+   * прокручиваемым телом и отступами под safe-area.
+   */
+  fullScreenOnMobile?: boolean;
   /** Запрещает закрывать окно по ESC и клику вне его. */
   disableInteractOutside?: boolean;
   hideCloseButton?: boolean;
@@ -51,6 +60,8 @@ export interface ModalContentProps extends ContentProps, ModalVariantProps {
   cancelVariant?: ButtonProps["variant"];
 }
 
+const CLOSE_BUTTON_CLASS = "absolute right-3 top-3";
+
 const ModalContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   ModalContentProps
@@ -61,6 +72,7 @@ const ModalContent = React.forwardRef<
       children,
       position,
       size,
+      fullScreenOnMobile = false,
       disableInteractOutside,
       hideCloseButton,
       title,
@@ -194,8 +206,7 @@ const ModalContent = React.forwardRef<
         <DialogPrimitive.Content
           ref={ref}
           className={cn(
-            modalContentVariants({ position, size }),
-            "flex max-h-[85vh] flex-col focus:outline-none",
+            modalContentVariants({ position, size, fullScreenOnMobile }),
             className,
           )}
           onEscapeKeyDown={handleEscapeKeyDown}
@@ -209,7 +220,10 @@ const ModalContent = React.forwardRef<
               type="button"
               size="xs"
               aria-label="Закрыть"
-              className="absolute right-3 top-3"
+              className={cn(
+                CLOSE_BUTTON_CLASS,
+                fullScreenOnMobile && MODAL_CLOSE_FULL_SCREEN_MOBILE_CLASS,
+              )}
               onClick={handleDismiss}
             >
               <X size={14} aria-hidden />

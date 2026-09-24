@@ -7,21 +7,30 @@ import {
   DatePicker,
   DateRange,
   DateRangePicker,
+  MaskedDatePicker,
+  TimePicker,
 } from "@shared/ui";
 import { type FC, useState } from "react";
 
-import { DemoField, DemoRow } from "./shared";
+import { DemoBlock, DemoEmittedValue, DemoField, DemoRow } from "./shared";
+
+const toEmitted = (date: Date | undefined): string =>
+  date ? date.toLocaleString("ru-RU") : "";
 
 export const DatePickersSection: FC = () => {
   const [date, setDate] = useState<Date | undefined>();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [meetingAt, setMeetingAt] = useState<Date | undefined>();
+  const [callAt, setCallAt] = useState<Date | undefined>();
+  const [reminderAt, setReminderAt] = useState<Date | undefined>();
+  const [deadline, setDeadline] = useState<Date | undefined>();
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Date Pickers</CardTitle>
         <CardDescription className="text-xs">
-          DatePicker и DateRangePicker
+          DatePicker, DateRangePicker и TimePicker
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -239,6 +248,60 @@ export const DatePickersSection: FC = () => {
             </div>
           </div>
         </div>
+        <hr className="border-border" />
+
+        <DemoBlock title="TimePicker — время (24 ч)">
+          <DemoRow>
+            <DemoField label="step 30 (default)">
+              <TimePicker
+                aria-label="Время встречи"
+                value={meetingAt}
+                onChange={setMeetingAt}
+                clearable
+              />
+              <DemoEmittedValue value={toEmitted(meetingAt)} />
+            </DemoField>
+            <DemoField label="step 15 + openOnFocus">
+              <TimePicker
+                aria-label="Время звонка"
+                value={callAt}
+                onChange={setCallAt}
+                step={15}
+                openOnFocus
+              />
+              <DemoEmittedValue value={toEmitted(callAt)} />
+            </DemoField>
+            <DemoField label="error / disabled">
+              <TimePicker aria-label="Время с ошибкой" variant="error" />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
+
+        <DemoBlock title="Дата и время (withTime)">
+          <DemoRow>
+            <DemoField label="DatePicker withTime">
+              <DatePicker
+                aria-label="Напоминание"
+                withTime
+                timeStep={15}
+                value={reminderAt}
+                onChange={setReminderAt}
+                clearable
+              />
+              <DemoEmittedValue value={toEmitted(reminderAt)} />
+            </DemoField>
+            <DemoField label="MaskedDatePicker withTime">
+              <MaskedDatePicker
+                aria-label="Дедлайн"
+                withTime
+                value={deadline}
+                onChange={setDeadline}
+                clearable
+              />
+              <DemoEmittedValue value={toEmitted(deadline)} />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
       </CardContent>
     </Card>
   );

@@ -1,5 +1,6 @@
 export { Appearance } from "./Appearance";
 export { Capabilities } from "./Capabilities";
+export { Creatable } from "./Creatable";
 export { CustomRendering } from "./CustomRendering";
 export { Dependent } from "./Dependent";
 export { DropdownPositioning } from "./DropdownPositioning";
@@ -7,3 +8,4 @@ export { Grouped } from "./Grouped";
 export { LabelInValue } from "./LabelInValue";
 export { RefApi } from "./RefApi";
 export { StrategiesExt } from "./StrategiesExt";
+export { VirtualOptions } from "./VirtualOptions";

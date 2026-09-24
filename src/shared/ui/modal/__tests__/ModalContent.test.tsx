@@ -122,3 +122,58 @@ describe("ModalContent", () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 });
+
+describe("ModalContent layout", () => {
+  it("fullScreenOnMobile растягивает окно на экран ниже sm", () => {
+    render(
+      <Modal open>
+        <Modal.Content title="Окно" fullScreenOnMobile>
+          Тело
+        </Modal.Content>
+      </Modal>,
+    );
+
+    const dialog = screen.getByRole("dialog");
+
+    expect(dialog).toHaveClass(
+      "max-sm:inset-0",
+      "max-sm:h-dvh",
+      "max-sm:max-h-dvh",
+      "max-sm:max-w-none",
+      "max-sm:rounded-none",
+      "max-sm:translate-x-0",
+      "max-sm:translate-y-0",
+    );
+    expect(dialog.className).toContain("safe-area-inset-bottom");
+    expect(dialog).toHaveClass("max-h-[85vh]");
+  });
+
+  it("без fullScreenOnMobile мобильных классов нет", () => {
+    render(
+      <Modal open>
+        <Modal.Content title="Окно">Тело</Modal.Content>
+      </Modal>,
+    );
+
+    expect(screen.getByRole("dialog").className).not.toContain("max-sm:");
+  });
+
+  it("size=full занимает почти весь экран и снимает ограничение высоты", () => {
+    render(
+      <Modal open>
+        <Modal.Content title="Окно" size="full">
+          Тело
+        </Modal.Content>
+      </Modal>,
+    );
+
+    const dialog = screen.getByRole("dialog");
+
+    expect(dialog).toHaveClass(
+      "w-[calc(100vw-2rem)]",
+      "h-[calc(100dvh-2rem)]",
+      "max-h-[calc(100dvh-2rem)]",
+    );
+    expect(dialog).not.toHaveClass("max-h-[85vh]");
+  });
+});

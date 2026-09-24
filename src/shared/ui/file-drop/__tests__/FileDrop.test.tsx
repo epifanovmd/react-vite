@@ -40,7 +40,10 @@ describe("FileDrop", () => {
     dropFiles(screen.getByRole("button"), [image, doc]);
 
     expect(onFiles).toHaveBeenCalledWith([image]);
-    expect(onReject).toHaveBeenCalledWith([doc]);
+    expect(onReject).toHaveBeenCalledWith(
+      [doc],
+      [{ file: doc, reason: "type" }],
+    );
   });
 
   it("links the hint through aria-describedby and passes inputProps", () => {
@@ -57,5 +60,77 @@ describe("FileDrop", () => {
 
     expect(zone).toHaveAttribute("aria-describedby", hint.id);
     expect(document.querySelector('input[name="attachments"]')).not.toBeNull();
+  });
+});
+
+describe("FileDrop validation", () => {
+  const sized = (name: string, type: string, size: number) =>
+    new File([new Uint8Array(size)], name, { type });
+
+  it("отклоняет по размеру и количеству с причинами, сохраняя первый аргумент onReject", () => {
+    const onFiles = vi.fn();
+    const onReject = vi.fn();
+
+    render(
+      <FileDrop
+        onFiles={onFiles}
+        onReject={onReject}
+        accept="image/*"
+        maxSize={100}
+        maxFiles={2}
+      />,
+    );
+
+    const ok1 = sized("a.png", "image/png", 10);
+    const big = sized("b.png", "image/png", 500);
+    const doc = sized("c.pdf", "application/pdf", 10);
+    const ok2 = sized("d.png", "image/png", 10);
+    const extra = sized("e.png", "image/png", 10);
+
+    dropFiles(screen.getByRole("button"), [ok1, big, doc, ok2, extra]);
+
+    expect(onFiles).toHaveBeenCalledWith([ok1, ok2]);
+    expect(onReject).toHaveBeenCalledWith(
+      [big, doc, extra],
+      [
+        { file: big, reason: "size" },
+        { file: doc, reason: "type" },
+        { file: extra, reason: "count" },
+      ],
+    );
+  });
+
+  it("проверяет и файлы, выбранные через диалог", () => {
+    const onFiles = vi.fn();
+    const onReject = vi.fn();
+
+    render(<FileDrop onFiles={onFiles} onReject={onReject} maxSize={5} />);
+
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const big = sized("a.txt", "text/plain", 50);
+
+    fireEvent.change(input, { target: { files: [big] } });
+
+    expect(onFiles).not.toHaveBeenCalled();
+    expect(onReject).toHaveBeenCalledWith(
+      [big],
+      [{ file: big, reason: "size" }],
+    );
+  });
+
+  it("без multiple и maxFiles по-прежнему молча берёт первый файл", () => {
+    const onFiles = vi.fn();
+    const onReject = vi.fn();
+
+    render(<FileDrop onFiles={onFiles} onReject={onReject} multiple={false} />);
+
+    const a = makeFile("a.txt", "text/plain");
+    const b = makeFile("b.txt", "text/plain");
+
+    dropFiles(screen.getByRole("button"), [a, b]);
+
+    expect(onFiles).toHaveBeenCalledWith([a]);
+    expect(onReject).not.toHaveBeenCalled();
   });
 });

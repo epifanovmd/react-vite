@@ -8,11 +8,15 @@ export type {
   MaskedDateRangePickerFormFieldProps,
   MaskedInputFormFieldProps,
   MultiSelectFormFieldProps,
+  NumberInputFormFieldProps,
+  OtpInputFormFieldProps,
   RadioFormFieldProps,
   SegmentedFormFieldProps,
   SelectFormFieldProps,
+  SliderFormFieldProps,
   SwitchFormFieldProps,
   TextareaFormFieldProps,
+  TimePickerFormFieldProps,
 } from "./fields";
 export {
   AutocompleteFormField,
@@ -24,11 +28,15 @@ export {
   MaskedDateRangePickerFormField,
   MaskedInputFormField,
   MultiSelectFormField,
+  NumberInputFormField,
+  OtpInputFormField,
   RadioFormField,
   SegmentedFormField,
   SelectFormField,
+  SliderFormField,
   SwitchFormField,
   TextareaFormField,
+  TimePickerFormField,
 } from "./fields";
 export type {
   DynamicZodOmitMask,

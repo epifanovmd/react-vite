@@ -47,3 +47,11 @@ export {
 } from "./features";
 export type { UseTableInstanceOptions } from "./use-table-instance";
 export { useTableInstance } from "./use-table-instance";
+export type {
+  TableSettings,
+  TableSettingsPart,
+  TableSettingsUpdater,
+  UseTableSettingsOptions,
+  UseTableSettingsResult,
+} from "./use-table-settings";
+export { useTableSettings } from "./use-table-settings";

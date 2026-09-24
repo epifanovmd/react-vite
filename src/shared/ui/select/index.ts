@@ -30,6 +30,7 @@ export type {
   LabeledValue,
   OptionRenderer,
   OptionRenderInfo,
+  SelectCreateHandler,
   SelectDataProps,
   SelectOption,
   SelectOptionGroup,
@@ -37,5 +38,6 @@ export type {
   SelectRef,
   SelectTriggerAppearance,
   SelectValue,
+  SelectVirtualConfig,
   TagRenderInfo,
 } from "./types";

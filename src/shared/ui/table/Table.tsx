@@ -3,6 +3,7 @@ import * as React from "react";
 
 import {
   TableBodySection,
+  TableBulkBar,
   TableColumnVisibility,
   TableContext,
   type TableContextValue,
@@ -10,10 +11,28 @@ import {
   TableHeaderSection,
   TableRoot,
 } from "./components";
-import { TABLE_LABELS } from "./constants";
+import {
+  TABLE_LABELS,
+  VIRTUAL_OVERSCAN,
+  VIRTUAL_ROW_ESTIMATE,
+} from "./constants";
 import { useTableInstance } from "./hooks";
 import { TablePagination } from "./pagination";
-import type { TableProps } from "./table.types";
+import type { TableProps, TableSize, TableVirtualOptions } from "./table.types";
+
+const resolveVirtual = (
+  virtual: TableProps<unknown>["virtual"],
+  size: TableSize,
+): Required<TableVirtualOptions> | undefined => {
+  if (!virtual) return undefined;
+
+  const options = virtual === true ? {} : virtual;
+
+  return {
+    estimateSize: options.estimateSize ?? VIRTUAL_ROW_ESTIMATE[size],
+    overscan: options.overscan ?? VIRTUAL_OVERSCAN,
+  };
+};
 
 export const Table = <TData,>(props: TableProps<TData>) => {
   const {
@@ -45,6 +64,8 @@ export const Table = <TData,>(props: TableProps<TData>) => {
     getRowProps,
     getRowId,
     tableOptions,
+    bulkActions,
+    virtual,
   } = props;
 
   const labels = React.useMemo(
@@ -66,6 +87,7 @@ export const Table = <TData,>(props: TableProps<TData>) => {
     renderSubComponent,
     pageSizeOptions,
     infiniteScroll,
+    selectionEnabled,
   } = useTableInstance<TData>({
     data,
     columns,
@@ -85,6 +107,16 @@ export const Table = <TData,>(props: TableProps<TData>) => {
 
   const hasToolbar = !!toolbar || !!showColumnVisibility;
 
+  // Опции часто передают литералом: мемо по примитивам, а не по объекту.
+  const { estimateSize, overscan } = resolveVirtual(virtual, size) ?? {};
+  const virtualOptions = React.useMemo(
+    () =>
+      estimateSize === undefined || overscan === undefined
+        ? undefined
+        : { estimateSize, overscan },
+    [estimateSize, overscan],
+  );
+
   return (
     <TableContext.Provider value={contextValue}>
       <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
@@ -100,6 +132,10 @@ export const Table = <TData,>(props: TableProps<TData>) => {
               />
             )}
           </div>
+        )}
+
+        {bulkActions && selectionEnabled && (
+          <TableBulkBar table={table} bulkActions={bulkActions} />
         )}
 
         <div
@@ -137,6 +173,7 @@ export const Table = <TData,>(props: TableProps<TData>) => {
               resizable={resizingEnabled}
               scrollContainerRef={containerRef}
               infiniteScroll={infiniteScroll}
+              virtual={virtualOptions}
             />
             {hasFooter && (
               <TableFooterSection

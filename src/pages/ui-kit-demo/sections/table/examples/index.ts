@@ -1,6 +1,7 @@
 import type { FC } from "react";
 
 import { BasicExample } from "./basic";
+import { BulkActionsExample } from "./bulk-actions";
 import { ColumnFiltersExample } from "./column-filters";
 import { ColumnOrderExample } from "./column-order";
 import { ColumnPinningExample } from "./column-pinning";
@@ -13,10 +14,12 @@ import { GlobalFilterExample } from "./global-filter";
 import { GroupingExample } from "./grouping";
 import { InfiniteScrollExample } from "./infinite-scroll";
 import { PaginationExample } from "./pagination";
+import { PersistedSettingsExample } from "./persisted-settings";
 import { RowClickExample } from "./row-click";
 import { RowSelectionExample } from "./row-selection";
 import { SortingExample } from "./sorting";
 import { StickyExample } from "./sticky";
+import { VirtualExample } from "./virtual";
 
 export interface TableExample {
   value: string;
@@ -42,6 +45,11 @@ export const TABLE_EXAMPLES: TableExample[] = [
     value: "row-selection",
     label: "Выбор строк",
     Component: RowSelectionExample,
+  },
+  {
+    value: "bulk-actions",
+    label: "Массовые действия",
+    Component: BulkActionsExample,
   },
   { value: "pagination", label: "Пагинация", Component: PaginationExample },
   {
@@ -70,6 +78,11 @@ export const TABLE_EXAMPLES: TableExample[] = [
     Component: ColumnResizingExample,
   },
   {
+    value: "persisted-settings",
+    label: "Сохранение настроек",
+    Component: PersistedSettingsExample,
+  },
+  {
     value: "expanding",
     label: "Разворачивание строк",
     Component: ExpandingExample,
@@ -80,6 +93,7 @@ export const TABLE_EXAMPLES: TableExample[] = [
     label: "Липкие шапка и подвал",
     Component: StickyExample,
   },
+  { value: "virtual", label: "Виртуализация", Component: VirtualExample },
   {
     value: "display-options",
     label: "Внешний вид",

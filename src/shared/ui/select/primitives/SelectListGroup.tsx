@@ -1,6 +1,8 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
+import { selectGroupLabelClasses } from "../select-variants";
+
 export interface SelectListGroupProps {
   label: string;
   className?: string;
@@ -20,10 +22,7 @@ export const SelectListGroup = ({
       aria-labelledby={labelId}
       className={cn("py-1", className)}
     >
-      <div
-        id={labelId}
-        className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
-      >
+      <div id={labelId} className={selectGroupLabelClasses}>
         {label}
       </div>
       {children}

@@ -1,19 +1,30 @@
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import * as React from "react";
 
 import { createDateMask, useMaskedInput } from "../masked-input";
 import type { PopoverContentProps } from "../popover";
 import { Calendar, type CalendarProps } from "./Calendar";
 import {
+  CalendarTimeField,
   type DatePickerTriggerVariantProps,
   MaskedPickerField,
 } from "./components";
 import { usePickerPopover } from "./hooks";
-import type { PickerFieldProps } from "./types";
-import { DATE_LOCALE, isDayDisabled } from "./utils";
+import type { PickerFieldProps, PickerTimeProps } from "./types";
+import {
+  applyTime,
+  createDateTimeMask,
+  DATE_LOCALE,
+  isDayDisabled,
+  mergeDateAndTime,
+  type TimeParts,
+} from "./utils";
 
 export interface MaskedDatePickerProps
-  extends PickerFieldProps<HTMLInputElement>, DatePickerTriggerVariantProps {
+  extends
+    PickerFieldProps<HTMLInputElement>,
+    PickerTimeProps,
+    DatePickerTriggerVariantProps {
   value?: Date;
   /** Вызывается только с полной корректной датой или `undefined` (очистка). */
   onChange?: (date: Date | undefined) => void;
@@ -23,9 +34,14 @@ export interface MaskedDatePickerProps
   calendarProps?: Omit<CalendarProps, "selected" | "onSelect">;
 }
 
+const DATE_FORMAT = "dd.MM.yyyy";
+const DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm";
+
 /**
  * Дата с ручным вводом по маске и календарём. Незавершённый или
  * недопустимый ввод не меняет значение и откатывается при потере фокуса.
+ * С `withTime` маска и формат включают время (`dd.MM.yyyy HH:mm`), под
+ * календарём появляется поле времени.
  */
 export const MaskedDatePicker = React.forwardRef<
   HTMLInputElement,
@@ -35,8 +51,10 @@ export const MaskedDatePicker = React.forwardRef<
     {
       value,
       onChange,
-      placeholder = "дд.мм.гггг",
-      dateFormat = "dd.MM.yyyy",
+      withTime = false,
+      timeStep,
+      placeholder = withTime ? "дд.мм.гггг чч:мм" : "дд.мм.гггг",
+      dateFormat = withTime ? DATE_TIME_FORMAT : DATE_FORMAT,
       open: openProp,
       onOpenChange,
       locale = DATE_LOCALE,
@@ -56,8 +74,11 @@ export const MaskedDatePicker = React.forwardRef<
     const displayValue = value ? format(value, dateFormat) : "";
 
     const mask = React.useMemo(
-      () => createDateMask({ dateFormat, min: minDate, max: maxDate }),
-      [dateFormat, minDate, maxDate],
+      () =>
+        withTime
+          ? createDateTimeMask({ dateFormat, min: minDate, max: maxDate })
+          : createDateMask({ dateFormat, min: minDate, max: maxDate }),
+      [dateFormat, minDate, maxDate, withTime],
     );
 
     const masked = useMaskedInput({
@@ -96,15 +117,24 @@ export const MaskedDatePicker = React.forwardRef<
 
     const handleSelect = React.useCallback(
       (date: Date) => {
+        if (withTime) {
+          onChange?.(mergeDateAndTime(date, value));
+
+          return;
+        }
+
         onChange?.(date);
         popover.close();
       },
-      [onChange, popover],
+      [onChange, popover, value, withTime],
     );
+
+    const handleTimeChange = (time: TimeParts) =>
+      onChange?.(applyTime(value ?? startOfDay(new Date()), time));
 
     const previewPlaceholder =
       popover.open && popover.hoverDate
-        ? format(popover.hoverDate, dateFormat)
+        ? format(mergeDateAndTime(popover.hoverDate, value), dateFormat)
         : placeholder;
 
     return (
@@ -131,6 +161,13 @@ export const MaskedDatePicker = React.forwardRef<
           disableDate={disableDate}
           {...calendarProps}
         />
+        {withTime && (
+          <CalendarTimeField
+            value={value}
+            step={timeStep}
+            onTimeChange={handleTimeChange}
+          />
+        )}
       </MaskedPickerField>
     );
   },

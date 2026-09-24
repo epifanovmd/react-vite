@@ -16,6 +16,9 @@ export interface SelectListItemProps {
   /** Стабильные колбэки с индексом — чтобы `memo` реально срабатывал. */
   onSelect?: (index: number) => void;
   onFocus?: (index: number) => void;
+  /** Размер набора и позиция — для виртуального списка, где в DOM не все опции. */
+  setSize?: number;
+  posInSet?: number;
   children?: React.ReactNode;
 }
 
@@ -29,6 +32,8 @@ const SelectListItemInner = ({
   disabled,
   onSelect,
   onFocus,
+  setSize,
+  posInSet,
   children,
 }: SelectListItemProps) => {
   const handleClick = () => {
@@ -43,6 +48,8 @@ const SelectListItemInner = ({
       role="option"
       aria-selected={selected}
       aria-disabled={disabled || undefined}
+      aria-setsize={setSize}
+      aria-posinset={posInSet}
       className={cn(
         selectItemClasses,
         "hover:bg-accent hover:text-accent-foreground",

@@ -1,5 +1,7 @@
 import type { AreaChartProps } from "./chart.types";
 import { ChartAreaSeries } from "./components/ChartAreaSeries";
+import { ChartBands } from "./components/ChartBands";
+import { ChartReferenceLines } from "./components/ChartReferenceLines";
 import { ChartRoot } from "./components/ChartRoot";
 import { useChart } from "./hooks/use-chart";
 
@@ -14,6 +16,8 @@ export const AreaChart = <Datum,>({
   margin,
   formatValue,
   formatX,
+  referenceLines,
+  bands,
   curve,
   stacked = false,
   fillOpacity,
@@ -30,6 +34,8 @@ export const AreaChart = <Datum,>({
     margin,
     formatValue,
     formatX,
+    referenceLines,
+    bands,
     zero: true,
     stacked,
   });
@@ -41,6 +47,8 @@ export const AreaChart = <Datum,>({
       showTotal={stacked}
       {...rootProps}
     >
+      {bands && <ChartBands bands={bands} />}
+
       {model.visibleSeries.map(item => (
         <ChartAreaSeries
           key={item.key}
@@ -50,6 +58,8 @@ export const AreaChart = <Datum,>({
           strokeWidth={strokeWidth}
         />
       ))}
+
+      {referenceLines && <ChartReferenceLines lines={referenceLines} />}
     </ChartRoot>
   );
 };

@@ -14,6 +14,7 @@ export type ModalContentOptions = Pick<
   ModalContentProps,
   | "size"
   | "position"
+  | "fullScreenOnMobile"
   | "disableInteractOutside"
   | "hideCloseButton"
   | "title"

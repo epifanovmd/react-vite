@@ -26,7 +26,10 @@ _auth/
   forgot-password.lazy.tsx          /forgot-password
   reset-password.tsx                non-lazy: validateSearch + beforeLoad guard (token обязателен)
   reset-password.lazy.tsx           сам компонент страницы (lazy chunk)
-ui.lazy.tsx                          /ui — ui-kit-demo плейграунд
+ui.lazy.tsx                         /ui — каркас документации UI Kit (UiKitLayout + Outlet)
+ui.index.lazy.tsx                   /ui/ → Navigate на первый раздел сайдбара
+ui.$section.lazy.tsx                /ui/$section — страница раздела (параметр читает
+                                    сама страница через getRouteApi("/ui/$section"))
 ```
 
 `_app`/`_auth` — pathless layout routes (префикс `_`, не часть URL) — TanStack Router группирует дочерние роуты под общий layout + `beforeLoad` guard.
@@ -64,3 +67,10 @@ Guard'ы читают `IAuthStore` через `getInstance()` (вне React, с�
 ## Публичный vs авторизованный периметр
 
 Нет отдельного списка `PUBLIC_ROUTES`/`PRIVATE_ROUTES` (в отличие от RN-проекта с явным `App.screens.ts`) — принадлежность роута к периметру определяется тем, под каким pathless layout (`_app` или `_auth`) он физически лежит в файловом дереве `routes/`.
+
+## Хуки в файлах роутов
+
+Компонент, объявленный прямо в опциях `createLazyFileRoute(...)({ component: () => ... })`,
+не проходит `react-hooks/rules-of-hooks`, а локальный компонент в файле роута —
+`react-refresh/only-export-components`. Параметры роута страница читает сама через
+`getRouteApi("<route id>")`, файл роута только ссылается на компонент.

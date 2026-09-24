@@ -4,6 +4,8 @@ import {
   FormSubmit,
   InputFormField,
   MaskedInputFormField,
+  NumberInputFormField,
+  OtpInputFormField,
   phoneMask,
   TextareaFormField,
   useZodForm,
@@ -17,6 +19,11 @@ const textFieldsSchema = z.object({
   name: z.string().min(2, "Введите минимум 2 символа"),
   phone: z.string().min(11, "Введите телефон полностью"),
   bio: z.string().max(120, "Максимум 120 символов").optional(),
+  age: z
+    .number()
+    .nullable()
+    .refine(age => age !== null && age >= 18, "Укажите возраст от 18 лет"),
+  code: z.string().length(4, "Введите код из 4 цифр"),
 });
 
 type TextFieldsValues = z.input<typeof textFieldsSchema>;
@@ -24,13 +31,13 @@ type TextFieldsValues = z.input<typeof textFieldsSchema>;
 export const TextFieldsFormExample = () => {
   const [result, setResult] = useState<TextFieldsValues>();
   const form = useZodForm(textFieldsSchema, {
-    defaultValues: { name: "", phone: "", bio: "" },
+    defaultValues: { name: "", phone: "", bio: "", age: null, code: "" },
   });
 
   return (
     <Card
       title="Текстовые поля"
-      description="Обычный, маскированный и многострочный ввод"
+      description="Обычный, маскированный, многострочный, числовой ввод и код подтверждения"
     >
       <Form
         form={form}
@@ -59,6 +66,23 @@ export const TextFieldsFormExample = () => {
             label="О себе"
             showCount
             maxLength={120}
+          />
+          <NumberInputFormField<TextFieldsValues>
+            name="age"
+            label="Возраст"
+            min={0}
+            max={120}
+            precision={0}
+            allowNegative={false}
+            suffix="лет"
+            required
+          />
+          <OtpInputFormField<TextFieldsValues>
+            name="code"
+            label="Код из SMS"
+            description="Можно вставить код целиком"
+            length={4}
+            required
           />
           <FormSubmit>Отправить</FormSubmit>
         </FormExampleLayout>

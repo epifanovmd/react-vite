@@ -3,16 +3,26 @@ import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
 import { Spinner } from "../../spinner";
+import { selectGroupLabelClasses } from "../select-variants";
 import type {
   OptionRenderer,
   SelectOption,
   SelectOptionGroup,
   SelectValue,
+  SelectVirtualConfig,
 } from "../types";
+import {
+  buildOptionRows,
+  getVisibleGroups,
+  mapNavIndexToRow,
+  type OptionRow,
+} from "../utils/option-rows";
+import { SelectCreateItem } from "./SelectCreateItem";
 import { SelectEmpty } from "./SelectEmpty";
 import { SelectListGroup } from "./SelectListGroup";
 import { SelectListItem } from "./SelectListItem";
 import { SelectLoading } from "./SelectLoading";
+import { SelectVirtualItems } from "./SelectVirtualItems";
 
 export interface OptionsListProps<V extends SelectValue> {
   id?: string;
@@ -27,27 +37,52 @@ export interface OptionsListProps<V extends SelectValue> {
   empty?: React.ReactNode;
   errorContent?: React.ReactNode;
   optionRender?: OptionRenderer<V>;
+  /** Подсвеченный навигационный индекс (опция: индекс + `optionOffset`). */
   focusedIndex: number;
   setFocusedIndex: (index: number) => void;
   isSelected: (v: V) => boolean;
   onSelect: (v: V) => void;
+  /** id пункта по навигационному индексу. */
   getOptionId: (index: number) => string;
   listRef: React.RefObject<HTMLDivElement | null>;
   onScrollEnd?: () => void;
   className?: string;
   maxHeight?: number;
+  /** Содержимое пункта «Создать»; `undefined` — пункта нет. */
+  createContent?: React.ReactNode;
+  onCreate?: () => void;
+  /** Сдвиг навигационных индексов опций (1 при пункте «Создать»). */
+  optionOffset?: number;
+  virtual?: boolean | SelectVirtualConfig;
+  /** Регистрация прокрутки виртуального списка для клавиатуры и ref-API. */
+  scrollToIndexRef?: React.RefObject<((index: number) => void) | null>;
 }
 
 const DEFAULT_MAX_HEIGHT = 240;
+const DEFAULT_VIRTUAL_ITEM_SIZE = 32;
+const DEFAULT_VIRTUAL_OVERSCAN = 8;
 
 const LIST_CLASS = "overflow-y-auto p-1";
 
 /** Догрузка стартует чуть раньше, чем sentinel доедет до края списка. */
 const SENTINEL_ROOT_MARGIN = "48px";
 
+const resolveVirtual = (
+  virtual: OptionsListProps<SelectValue>["virtual"],
+): Required<SelectVirtualConfig> | null => {
+  if (!virtual) return null;
+  const config = virtual === true ? {} : virtual;
+
+  return {
+    estimateSize: config.estimateSize ?? DEFAULT_VIRTUAL_ITEM_SIZE,
+    overscan: config.overscan ?? DEFAULT_VIRTUAL_OVERSCAN,
+  };
+};
+
 /**
  * Скроллируемый список опций с состояниями loading / error / empty /
- * items / loadingMore и догрузкой по sentinel-элементу.
+ * items / loadingMore, догрузкой по sentinel-элементу, пунктом «Создать»
+ * и опциональной виртуализацией.
  */
 export const OptionsList = <V extends SelectValue>({
   id,
@@ -70,14 +105,28 @@ export const OptionsList = <V extends SelectValue>({
   onScrollEnd,
   className,
   maxHeight = DEFAULT_MAX_HEIGHT,
+  createContent,
+  onCreate,
+  optionOffset = 0,
+  virtual,
+  scrollToIndexRef,
 }: OptionsListProps<V>): React.ReactElement => {
-  const selectByIndex = React.useCallback(
-    (index: number) => {
-      const option = options[index];
+  const hasCreate = createContent !== undefined;
+  const virtualConfig = resolveVirtual(virtual);
+  const isVirtual = virtualConfig !== null;
+
+  const selectByNavIndex = React.useCallback(
+    (navIndex: number) => {
+      const option = options[navIndex - optionOffset];
 
       if (option) onSelect(option.value);
     },
-    [options, onSelect],
+    [options, onSelect, optionOffset],
+  );
+
+  const focusCreate = React.useCallback(
+    () => setFocusedIndex(0),
+    [setFocusedIndex],
   );
 
   const showSentinel = !!onScrollEnd && !loading && options.length > 0;
@@ -100,10 +149,23 @@ export const OptionsList = <V extends SelectValue>({
     return map;
   }, [options]);
 
-  const renderItem = (option: SelectOption<V>) => {
-    const index = indexByValue.get(option.value) ?? -1;
+  const rows = React.useMemo(
+    () =>
+      isVirtual
+        ? buildOptionRows(options, indexByValue, groups, hasCreate)
+        : [],
+    [isVirtual, options, indexByValue, groups, hasCreate],
+  );
+
+  const rowByNavIndex = React.useMemo(
+    () => mapNavIndexToRow(rows, optionOffset),
+    [rows, optionOffset],
+  );
+
+  const renderOption = (option: SelectOption<V>, index: number) => {
+    const navIndex = index + optionOffset;
     const selected = isSelected(option.value);
-    const focused = index === focusedIndex;
+    const focused = navIndex === focusedIndex;
     const disabled = !!option.disabled;
     const content = optionRender
       ? optionRender({ option, index, selected, focused, disabled })
@@ -112,40 +174,92 @@ export const OptionsList = <V extends SelectValue>({
     return (
       <SelectListItem
         key={option.value}
-        id={getOptionId(index)}
-        index={index}
+        id={getOptionId(navIndex)}
+        index={navIndex}
         selected={selected}
         focused={focused}
         disabled={disabled}
-        onSelect={selectByIndex}
+        onSelect={selectByNavIndex}
         onFocus={setFocusedIndex}
+        setSize={isVirtual ? options.length : undefined}
+        posInSet={isVirtual ? index + 1 : undefined}
       >
         {content}
       </SelectListItem>
     );
   };
 
+  const renderByValue = (option: SelectOption<V>) =>
+    renderOption(option, indexByValue.get(option.value) ?? -1);
+
+  const createItem = hasCreate && (
+    <SelectCreateItem
+      id={getOptionId(0)}
+      focused={focusedIndex === 0}
+      onSelect={onCreate}
+      onFocus={focusCreate}
+    >
+      {createContent}
+    </SelectCreateItem>
+  );
+
+  const renderRow = (row: OptionRow<V>) => {
+    if (row.kind === "create") return createItem;
+    if (row.kind === "group") {
+      return (
+        <div role="presentation" className={selectGroupLabelClasses}>
+          {row.label}
+        </div>
+      );
+    }
+
+    return renderOption(row.option, row.index);
+  };
+
   const renderItems = () => {
-    if (!groups) return options.map(renderItem);
+    if (virtualConfig) {
+      return (
+        <SelectVirtualItems<V>
+          rows={rows}
+          renderRow={renderRow}
+          focusedRow={rowByNavIndex.get(focusedIndex) ?? -1}
+          rowByNavIndex={rowByNavIndex}
+          scrollElementRef={listRef}
+          scrollToIndexRef={scrollToIndexRef}
+          estimateSize={virtualConfig.estimateSize}
+          overscan={virtualConfig.overscan}
+        />
+      );
+    }
+
+    if (!groups) {
+      return (
+        <>
+          {createItem}
+          {options.map(renderOption)}
+        </>
+      );
+    }
 
     // В группах показываются только опции из `options` (после фильтрации).
-    return groups
-      .map(group => ({
-        ...group,
-        options: group.options.filter(option => indexByValue.has(option.value)),
-      }))
-      .filter(group => group.options.length > 0)
-      .map(group => (
-        <SelectListGroup key={group.group} label={group.group}>
-          {group.options.map(renderItem)}
-        </SelectListGroup>
-      ));
+    return (
+      <>
+        {createItem}
+        {getVisibleGroups(groups, indexByValue).map(group => (
+          <SelectListGroup key={group.group} label={group.group}>
+            {group.options.map(renderByValue)}
+          </SelectListGroup>
+        ))}
+      </>
+    );
   };
 
   const renderContent = () => {
     if (loading) return <SelectLoading />;
     if (error) return <SelectEmpty>{errorContent}</SelectEmpty>;
-    if (options.length === 0) return <SelectEmpty>{empty}</SelectEmpty>;
+    if (options.length === 0 && !hasCreate) {
+      return <SelectEmpty>{empty}</SelectEmpty>;
+    }
 
     return renderItems();
   };

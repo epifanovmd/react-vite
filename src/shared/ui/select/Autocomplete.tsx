@@ -35,6 +35,7 @@ const AutocompleteInner = <V extends string = string>(
     empty,
     errorContent,
     optionRender,
+    virtual,
     hideEmpty = true,
     closeOnClear = false,
     onSelect,
@@ -181,6 +182,8 @@ const AutocompleteInner = <V extends string = string>(
           onScrollEnd={onScrollEnd}
           className={listClassName}
           maxHeight={maxHeight}
+          virtual={virtual}
+          scrollToIndexRef={engine.scrollToIndexRef}
         />
       </SelectDropdown>
     </>

@@ -2,7 +2,7 @@ import { cn } from "@shared/lib/utils/cn";
 import { UploadCloud } from "lucide-react";
 import * as React from "react";
 
-import { matchesAccept } from "./match-accept";
+import { type FileRejection, validateFiles } from "./validate-files";
 
 type NativeInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -15,11 +15,22 @@ export interface FileDropProps extends Omit<
 > {
   onFiles: (files: File[]) => void;
   /**
-   * Правила `accept` для input; при перетаскивании файлы, не прошедшие
-   * проверку, отбрасываются и приходят в `onReject`.
+   * Правила `accept` для input; файлы, не прошедшие проверку (и при
+   * перетаскивании, и из диалога), отбрасываются и приходят в `onReject`.
    */
   accept?: string;
-  onReject?: (files: File[]) => void;
+  /** Максимальный размер одного файла, байт. */
+  maxSize?: number;
+  /**
+   * Сколько файлов принять за одну операцию; лишние отклоняются с причиной
+   * `count`. При накоплении списка передавайте остаток (`useFileList().remaining`).
+   */
+  maxFiles?: number;
+  /**
+   * Отклонённые файлы; второй аргумент — причины (`type`/`size`/`count`)
+   * в том же порядке.
+   */
+  onReject?: (files: File[], rejections: FileRejection[]) => void;
   multiple?: boolean;
   /**
    * Выбор папки целиком через диалог (Chromium/WebKit); пути файлов — в
@@ -54,6 +65,8 @@ const FileDrop = React.forwardRef<HTMLDivElement, FileDropProps>(
       onFiles,
       onReject,
       accept,
+      maxSize,
+      maxFiles,
       multiple = true,
       directory,
       disabled,
@@ -90,10 +103,18 @@ const FileDrop = React.forwardRef<HTMLDivElement, FileDropProps>(
     };
 
     const emitFiles = (files: File[]) => {
-      const accepted = files.filter(file => matchesAccept(file, accept));
-      const rejected = files.filter(file => !matchesAccept(file, accept));
+      const { accepted, rejections } = validateFiles(files, {
+        accept,
+        maxSize,
+        maxFiles,
+      });
 
-      if (rejected.length) onReject?.(rejected);
+      if (rejections.length) {
+        onReject?.(
+          rejections.map(rejection => rejection.file),
+          rejections,
+        );
+      }
       if (accepted.length) onFiles(multiple ? accepted : accepted.slice(0, 1));
     };
 
@@ -142,7 +163,7 @@ const FileDrop = React.forwardRef<HTMLDivElement, FileDropProps>(
       const files = collect(event.target.files);
 
       event.target.value = "";
-      if (files.length) onFiles(files);
+      if (files.length) emitFiles(files);
     };
 
     /** Клик по input всплывает к области и открыл бы диалог второй раз. */

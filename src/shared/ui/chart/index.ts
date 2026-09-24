@@ -1,11 +1,14 @@
 export { AreaChart } from "./AreaChart";
 export type {
   AreaChartProps,
+  ChartAnnotationVariant,
+  ChartBand,
   ChartBaseProps,
   ChartCurveType,
   ChartGridMode,
   ChartLegendPlacement,
   ChartMargin,
+  ChartReferenceLine,
   ChartSeries,
   ChartTooltipData,
   ChartTooltipEntry,

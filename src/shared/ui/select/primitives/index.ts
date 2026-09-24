@@ -1,5 +1,7 @@
 export type { OptionsListProps } from "./OptionsList";
 export { OptionsList } from "./OptionsList";
+export type { SelectCreateItemProps } from "./SelectCreateItem";
+export { SelectCreateItem } from "./SelectCreateItem";
 export type { SelectDropdownProps } from "./SelectDropdown";
 export { SelectDropdown } from "./SelectDropdown";
 export type { SelectEmptyProps } from "./SelectEmpty";
@@ -28,3 +30,5 @@ export type { SelectTriggerContentProps } from "./SelectTriggerContent";
 export { SelectTriggerContent } from "./SelectTriggerContent";
 export type { SelectTriggerIconProps } from "./SelectTriggerIcon";
 export { SelectTriggerIcon } from "./SelectTriggerIcon";
+export type { SelectVirtualItemsProps } from "./SelectVirtualItems";
+export { SelectVirtualItems } from "./SelectVirtualItems";

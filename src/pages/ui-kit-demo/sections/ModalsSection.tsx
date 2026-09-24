@@ -25,6 +25,7 @@ import {
 import {
   ConfirmDemo,
   ControlledModals,
+  FullScreenModals,
   StackedModals,
   SuspendedModals,
 } from "./modals";
@@ -375,6 +376,19 @@ export const ModalsSection = () => {
               </DrawerFooter>
             </DrawerContent>
           </Drawer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Полноэкранные окна</CardTitle>
+          <CardDescription className="text-xs">
+            fullScreenOnMobile — ниже sm окно на весь экран с safe-area;
+            size=&quot;full&quot; — почти весь экран на любой ширине.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FullScreenModals />
         </CardContent>
       </Card>
 

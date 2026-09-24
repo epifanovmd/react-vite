@@ -6,6 +6,7 @@ import {
   FormSubmit,
   MaskedDatePickerFormField,
   MaskedDateRangePickerFormField,
+  TimePickerFormField,
   useZodForm,
 } from "@shared/ui";
 import { useState } from "react";
@@ -22,6 +23,8 @@ const dateFieldsSchema = z.object({
   period: dateRangeSchema,
   documentDate: z.date().optional(),
   documentPeriod: dateRangeSchema,
+  meetingAt: z.date().optional(),
+  reminderAt: z.date().optional(),
 });
 
 type DateFieldsValues = z.input<typeof dateFieldsSchema>;
@@ -33,7 +36,7 @@ export const DateFieldsFormExample = () => {
   return (
     <Card
       title="Поля дат"
-      description="Одиночные даты и диапазоны с обычным и маскированным вводом"
+      description="Одиночные даты, диапазоны, дата со временем и отдельное время"
     >
       <Form
         form={form}
@@ -59,6 +62,19 @@ export const DateFieldsFormExample = () => {
           <MaskedDateRangePickerFormField<DateFieldsValues>
             name="documentPeriod"
             label="Срок действия"
+            clearable
+          />
+          <DatePickerFormField<DateFieldsValues>
+            name="meetingAt"
+            label="Встреча"
+            withTime
+            timeStep={15}
+            clearable
+          />
+          <TimePickerFormField<DateFieldsValues>
+            name="reminderAt"
+            label="Время напоминания"
+            step={15}
             clearable
           />
           <FormSubmit>Отправить</FormSubmit>

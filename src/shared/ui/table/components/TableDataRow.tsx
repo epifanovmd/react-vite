@@ -20,6 +20,10 @@ interface TableDataRowProps<TData> {
   className?: string | ((row: TData) => string);
   getRowProps?: TableProps<TData>["getRowProps"];
   resizable?: boolean;
+  /** Замер высоты строки виртуализатором. */
+  measureRef?: (element: HTMLTableRowElement | null) => void;
+  /** Индекс в списке виртуализатора (`data-index` для замера). */
+  virtualIndex?: number;
 }
 
 const isActivationKey = (key: string) => key === "Enter" || key === " ";
@@ -33,6 +37,8 @@ const TableDataRowInner = <TData,>({
   className,
   getRowProps,
   resizable,
+  measureRef,
+  virtualIndex,
 }: TableDataRowProps<TData>) => {
   const resolvedClassName =
     typeof className === "function" ? className(row.original) : className;
@@ -57,6 +63,8 @@ const TableDataRowInner = <TData,>({
   return (
     <TableRow
       {...rowProps}
+      ref={measureRef}
+      data-index={virtualIndex}
       selected={isSelected}
       tabIndex={clickable ? 0 : undefined}
       onClick={clickable ? handleClick : undefined}

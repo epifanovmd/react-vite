@@ -90,6 +90,29 @@ export interface ChartTooltipData<Datum> {
   formattedTotal: string;
 }
 
+export type ChartAnnotationVariant =
+  "default" | "destructive" | "success" | "warning";
+
+/** Опорная линия: `y` — горизонтальная (план, порог), `x` — вертикальная (событие). */
+export interface ChartReferenceLine {
+  y?: number;
+  /** Значение X из данных; для категорий — сама категория. */
+  x?: ChartXValue;
+  /** Подпись у конца линии: строка или SVG-узел (`<tspan>`). */
+  label?: ReactNode;
+  variant?: ChartAnnotationVariant;
+  dashed?: boolean;
+}
+
+/** Горизонтальная полоса между значениями Y — например, целевая зона. */
+export interface ChartBand {
+  from: number;
+  to: number;
+  /** Подпись в левом верхнем углу полосы: строка или SVG-узел. */
+  label?: ReactNode;
+  variant?: ChartAnnotationVariant;
+}
+
 export interface ChartBaseProps<Datum> {
   data: Datum[];
   series: ChartSeries<Datum>[];
@@ -117,6 +140,10 @@ export interface ChartBaseProps<Datum> {
   emptyText?: ReactNode;
   ariaLabel?: string;
   className?: string;
+  /** Опорные линии поверх серий; значения `y` попадают в домен оси. */
+  referenceLines?: ChartReferenceLine[];
+  /** Полосы под сериями; границы попадают в домен оси. */
+  bands?: ChartBand[];
 }
 
 export interface LineChartProps<Datum> extends ChartBaseProps<Datum> {
