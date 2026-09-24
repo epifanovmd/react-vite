@@ -171,9 +171,9 @@ axios ошибка ─▶ axiosErrorToApiError
 
 ```
 bearerAuth ──▶ ITokenSource (им является TokenSession)
-   ├ ensureFreshToken() → shouldRefresh(tokens)?
-   │     main:      refreshBeforeJwtExpiry(60) — по exp JWT, до запроса
-   │     dummyjson: refreshNever               — только реакция на 401
+   ├ ensureFreshToken() → нет access или наступил refreshAt?
+   │     main:      refreshAt из expiresIn ответа (+ таймер тихого обновления)
+   │     dummyjson: срока нет — только реакция на 401
    └ refreshToken() → дедупликация одного in-flight → config.refresh(refreshToken)
                               ▼
                   <Name>AuthApi.refresh (BaseApi)

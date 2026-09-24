@@ -75,7 +75,18 @@ UI-примитивы построены на Radix UI + `class-variance-authori
 - `@shared/lib/navigation` — `useLeaveConfirmation({ when, dialog, confirm, onConfirm, shouldBlock, blockSamePath, beforeUnload, disabled })` → `{ withoutConfirmation }`. Применён в `features/edit-profile`. В тестах переходы через `router.history.push` без `act`.
 - `Textarea` — авторост `[minRows, maxRows]`, учёт рамки при border-box, `resize`, `clearable`, `onSubmitShortcut` (Mod+Enter). Очистка полей — `foundation/clearNativeField`.
 - Графики: серии обрезаются по области (`ChartPlotArea`); подписи вертикальных `referenceLines` у правого края — слева от линии, вне обрезки.
-- Gotcha `Card`: `contentClassName` работает только в режиме шортката; без него — `<CardContent>`.
+- `Card`: заданный `contentClassName` оборачивает children в `CardContent` и без шортката.
+
+### Движение (motion)
+
+Единственный источник — `src/app/styles/motion.css` (импорт в `index.css`), одинаковый в react-vite и ml:
+токены `--motion-fast/base`, `--motion-lift`, `--motion-zoom`, `ease-standard`; утилиты
+`hover-surface` (рамка brand + оверлей accent через `inset box-shadow`, фон карточки не затирается),
+`hover-lift` (рамка, `shadow-lg`, подъём), `hover-zoom` (на ребёнке `.group`), `reveal-on-hover`
+(действия при hover/focus-within; на touch видны всегда). Все эффекты — внутри `@media (hover: hover)`.
+`Card interactive="surface" | "lift"` (`foundation/INTERACTION`). Смена страниц — `defaultViewTransition: true`
+в `createRouter`, вид в `::view-transition-*`. `prefers-reduced-motion` гасит переходы, но не спиннеры.
+Не писать ad-hoc `transition-* hover:*` для карточек и строк — брать утилиту.
 
 ## Tailwind CSS 4 — CSS-first config
 

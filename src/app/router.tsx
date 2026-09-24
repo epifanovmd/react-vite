@@ -7,6 +7,8 @@ import { routeTree } from "./routeTree.gen";
 
 export const router = createRouter({
   routeTree,
+  // Смена страниц — через View Transitions; вид перехода в motion.css.
+  defaultViewTransition: true,
   defaultPendingMinMs: 300,
   defaultPendingMs: 100,
   defaultPendingComponent: () => (

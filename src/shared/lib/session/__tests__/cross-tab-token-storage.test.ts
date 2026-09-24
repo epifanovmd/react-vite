@@ -14,17 +14,17 @@ const createBacking = (): IStorageService => ({
   removeItem: key => localStorage.removeItem(key),
 });
 
-const createStorage = () =>
+const createStorage = (channel?: string) =>
   new CrossTabTokenStorage(
     new PersistentTokenStorage(createBacking(), { key: REFRESH_KEY }),
-    [REFRESH_KEY],
+    { keys: [REFRESH_KEY], channel },
   );
 
 /** Событие `storage` браузер шлёт только в чужие вкладки. */
 const emitStorageEvent = (key: string | null) =>
   window.dispatchEvent(new StorageEvent("storage", { key }));
 
-describe("CrossTabTokenStorage", () => {
+describe("CrossTabTokenStorage: событие storage", () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -84,5 +84,81 @@ describe("CrossTabTokenStorage", () => {
     emitStorageEvent(REFRESH_KEY);
 
     expect(listener).not.toHaveBeenCalled();
+  });
+});
+
+describe("CrossTabTokenStorage: BroadcastChannel", () => {
+  const CHANNEL = "test:tokens";
+  const full: TokenPair = {
+    accessToken: "a",
+    refreshToken: "r",
+    expiresAt: 10,
+    refreshAt: 5,
+    sessionId: "s-1",
+  };
+
+  /** Сообщение канала приходит асинхронно. */
+  const nextMessage = () => new Promise(resolve => setTimeout(resolve, 20));
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("другая вкладка получает полную пару, а на диск ложится только refresh", async () => {
+    const writer = createStorage(CHANNEL);
+    const reader = createStorage(CHANNEL);
+    const listener = vi.fn();
+
+    reader.subscribe(listener);
+    writer.write(full);
+    await nextMessage();
+
+    expect(listener).toHaveBeenCalledWith(full);
+    expect(localStorage.getItem(REFRESH_KEY)).toBe("r");
+    expect(reader.read()).toEqual({ accessToken: "", refreshToken: "r" });
+
+    writer.dispose();
+    reader.dispose();
+  });
+
+  it("выход рассылается как null", async () => {
+    const writer = createStorage(CHANNEL);
+    const reader = createStorage(CHANNEL);
+    const listener = vi.fn();
+
+    reader.subscribe(listener);
+    writer.clear();
+    await nextMessage();
+
+    expect(listener).toHaveBeenCalledWith(null);
+
+    writer.dispose();
+    reader.dispose();
+  });
+
+  it("с каналом событие storage не дублирует доставку", () => {
+    const storage = createStorage(CHANNEL);
+    const listener = vi.fn();
+
+    storage.subscribe(listener);
+    emitStorageEvent(REFRESH_KEY);
+
+    expect(listener).not.toHaveBeenCalled();
+    storage.dispose();
+  });
+
+  it("отписка снимает слушателя канала", async () => {
+    const writer = createStorage(CHANNEL);
+    const reader = createStorage(CHANNEL);
+    const listener = vi.fn();
+
+    reader.subscribe(listener)();
+    writer.write(full);
+    await nextMessage();
+
+    expect(listener).not.toHaveBeenCalled();
+
+    writer.dispose();
+    reader.dispose();
   });
 });

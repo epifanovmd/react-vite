@@ -25,15 +25,15 @@ index.ts               Public API: authModule, AuthStatus, IAuthStore, loginVali
 
 ```
 TokenSession (shared/lib/session)
-  ← конфиг бэкенда: PersistentTokenStorage(app:refresh_token) + refreshBeforeJwtExpiry(60)
+  ← конфиг бэкенда: CrossTabTokenStorage(app:refresh_token, канал app:tokens) + lock app:token-refresh
   → bearerAuth (HTTP middleware)        → запросы основного бэкенда
   → SocketTransport (via ITokenProvider) → socket auth
 ```
 
 - `refreshToken` персистится в `IStorageService` под ключом `app:refresh_token`;
   `accessToken` живёт только в памяти и восстанавливается обновлением.
-- Проактивное обновление — политика `refreshBeforeJwtExpiry(60)` поверх
-  `parseJwt`/`isJwtExpired` из `shared/lib/session`.
+- Проактивное обновление — по `expiresIn` из ответа бэкенда (таймер + проверка
+  перед запросом), JWT не разбирается; см. `project_session.md`.
 - Конкурентные обновления делят один `refresh`; неудачное обновление чистит
   сессию и поднимает `onSessionExpired`, на который подписан `AuthStore.signOut()`.
 - `restoreSession()` читает refresh-токен из хранилища и форсирует обновление;
@@ -71,7 +71,7 @@ TokenSession (shared/lib/session)
 - `terminateMutation: MutationHolder<string>` — terminate одной сессии по id
 - `terminateOtherSessions()` — logout всех сессий кроме текущей
 - `handleNewSession`/`handleSessionTerminated` — реалтайм-обновления (см. `entities/user/model/realtime.ts`, socket events)
-- Если завершена **текущая** сессия (`IAuthSessionGuard.isCurrentSession(sessionId)`, сверяется по `sessionId` из JWT payload) → форсированный `signOut()` через `AuthSessionGuard`
+- Если завершена **текущая** сессия (`IAuthSessionGuard.isCurrentSession(sessionId)`, сверяется по `session.sessionId` из ответа бэкенда) → форсированный `signOut()` через `AuthSessionGuard`
 
 `AuthSessionGuard` — контракт `IAuthSessionGuard` (`shared/lib/contracts`), implements `entities/auth/api/session-guard.ts`, инжектится в `entities/user` без прямого импорта `entities/auth` (Dependency Inversion, т.к. `entities/user` и `entities/auth` — соседние слайсы одного слоя).
 

@@ -28,6 +28,7 @@ export {
   INTENT_SOFT,
   INTENT_SOLID,
 } from "./intent";
+export { INTERACTION, type Interaction } from "./interaction";
 export { isInvalidVariant } from "./is-invalid-variant";
 export {
   MENU_CHECKABLE_ITEM_CLASS,

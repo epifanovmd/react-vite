@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "./light-theme.css";
 @import "./dark-theme.css";
+@import "./motion.css";
 /* В слой base: без него правила normalize идут вне слоёв и по каскаду бьют
    утилиты Tailwind — `a { background-color: transparent }` не давал ссылкам
    подсветку `hover:bg-accent`. */

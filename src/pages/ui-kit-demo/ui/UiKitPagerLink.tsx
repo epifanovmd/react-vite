@@ -10,7 +10,7 @@ export interface UiKitPagerLinkProps {
 }
 
 const LINK_CLASS =
-  "group flex flex-col gap-1 rounded-xl border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "group hover-surface flex flex-col gap-1 rounded-xl border bg-card p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 const DIRECTION = {
   previous: { caption: "Назад", Icon: ChevronLeft, className: "items-start" },

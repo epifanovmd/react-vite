@@ -44,7 +44,7 @@ export const AppLogo = ({
           "relative flex flex-shrink-0 items-center justify-center rounded-xl",
           "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground",
           "shadow-sm shadow-brand/30 ring-1 ring-inset ring-white/15",
-          "transition-transform duration-200 group-hover:scale-105",
+          "hover-zoom",
           classes.badge,
         )}
       >

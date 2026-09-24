@@ -18,7 +18,10 @@ export interface CardProps
   /** Правый слот шапки: действия, бейдж. */
   extra?: React.ReactNode;
   footer?: React.ReactNode;
-  /** Класс `CardContent` в режиме шортката. */
+  /**
+   * Класс `CardContent`. Заданный без шортката, тоже оборачивает `children`
+   * в `CardContent` — иначе он молча терялся бы вместе с отступами.
+   */
   contentClassName?: string;
 }
 
@@ -28,14 +31,16 @@ const hasContent = (node: React.ReactNode): boolean =>
 /**
  * Карточка. Отступы задают секции (`CardHeader`/`CardContent`/`CardFooter`),
  * у корня своих отступов нет. Шорткат `title`/`description`/`extra`/`footer`
- * сам собирает эти секции и кладёт `children` в `CardContent`; без шортката
- * `children` рендерятся как есть — для составной разметки из секций.
+ * (или `contentClassName`) сам собирает секции и кладёт `children` в
+ * `CardContent`; без них `children` рендерятся как есть — для составной
+ * разметки из секций. `interactive` — эффект наведения из общих утилит.
  */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   (
     {
       className,
       variant,
+      interactive,
       title,
       description,
       extra,
@@ -49,13 +54,14 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const hasHeader =
       hasContent(title) || hasContent(description) || hasContent(extra);
     const hasFooter = hasContent(footer);
-    const isShorthand = hasHeader || hasFooter;
+    const isShorthand =
+      hasHeader || hasFooter || contentClassName !== undefined;
     const hasBody = hasContent(children);
 
     return (
       <div
         ref={ref}
-        className={cn(cardVariants({ variant }), className)}
+        className={cn(cardVariants({ variant, interactive }), className)}
         {...props}
       >
         {hasHeader && (
