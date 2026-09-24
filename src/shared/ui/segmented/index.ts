@@ -1,7 +1,3 @@
-export type { SegmentedOption, SegmentedProps } from "./Segmented";
+export type { SegmentedProps } from "./Segmented";
 export { Segmented } from "./Segmented";
-export {
-  segmentedIndicatorVariants,
-  segmentedItemVariants,
-  segmentedVariants,
-} from "./segmented-variants";
+export type { SegmentedOption } from "./SegmentedItem";

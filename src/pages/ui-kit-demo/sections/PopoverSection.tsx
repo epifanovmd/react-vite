@@ -46,7 +46,7 @@ export const PopoverSection: FC = () => (
             </Popover.Trigger>
             <Popover.Content variant="dark" size="sm">
               <p className="font-medium mb-1">Dark popover</p>
-              <p className="text-gray-300">Тёмный стиль для акцентов.</p>
+              <p className="text-background/70">Тёмный стиль для акцентов.</p>
             </Popover.Content>
           </Popover>
 
@@ -162,7 +162,7 @@ export const PopoverSection: FC = () => (
               <div className="flex items-center justify-between mb-3">
                 <p className="font-semibold text-sm">Уведомления</p>
                 <Popover.Close asChild>
-                  <IconButton size="sm" variant="ghost">
+                  <IconButton size="xs" variant="ghost" aria-label="Закрыть">
                     <X size={12} />
                   </IconButton>
                 </Popover.Close>

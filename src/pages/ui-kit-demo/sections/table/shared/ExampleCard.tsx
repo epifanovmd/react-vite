@@ -18,10 +18,7 @@ export const ExampleCard: FC<ExampleCardProps> = ({
   description,
   children,
 }) => (
-  <Card
-    className="flex overflow-hidden"
-    contentClassName="flex flex-col min-h-0 flex-1 gap-4 overflow-hidden p-6 pt-0"
-  >
+  <Card className="flex min-h-0 flex-col overflow-hidden">
     <CardHeader className="shrink-0">
       <CardTitle className="text-base">{title}</CardTitle>
       {description && (

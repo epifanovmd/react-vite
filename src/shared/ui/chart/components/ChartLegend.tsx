@@ -1,10 +1,12 @@
 import { cn } from "@shared/lib/utils/cn";
 
 import type { ChartResolvedSeries } from "../chart.types";
+import type { ChartLegendShape } from "./ChartLegendItem";
 import { ChartLegendItem } from "./ChartLegendItem";
 
 export interface ChartLegendProps<Datum> {
   series: ChartResolvedSeries<Datum>[];
+  shape: ChartLegendShape;
   onToggle?: (key: string) => void;
   className?: string;
 }
@@ -15,6 +17,7 @@ export interface ChartLegendProps<Datum> {
  */
 export const ChartLegend = <Datum,>({
   series,
+  shape,
   onToggle,
   className,
 }: ChartLegendProps<Datum>) => (
@@ -26,7 +29,7 @@ export const ChartLegend = <Datum,>({
         key={item.key}
         label={item.label}
         color={item.color}
-        type={item.type}
+        shape={shape}
         hidden={item.hidden}
         onToggle={onToggle && (() => onToggle(item.key))}
       />

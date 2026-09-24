@@ -1,48 +1,69 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import * as React from "react";
 
+import { Popover } from "../../../popover";
 import { DatePickerTrigger } from "../DatePickerTrigger";
 
+const renderTrigger = (
+  props: Partial<React.ComponentProps<typeof DatePickerTrigger>> = {},
+) =>
+  render(
+    <Popover>
+      <DatePickerTrigger aria-label="Дата" {...props}>
+        12 марта 2024
+      </DatePickerTrigger>
+    </Popover>,
+  );
+
 describe("DatePickerTrigger", () => {
-  it("forwards native props, classes and ref", () => {
+  it("кладёт классы поля на оболочку, а ref и атрибуты — на кнопку", () => {
     const ref = React.createRef<HTMLButtonElement>();
 
-    render(
-      <DatePickerTrigger
-        aria-label="Date"
-        className="custom"
-        ref={ref}
-        size="sm"
-      />,
-    );
-    const trigger = screen.getByRole("button", { name: "Date" });
+    renderTrigger({ ref, className: "custom", size: "sm" });
 
-    expect(ref.current).toBe(trigger);
-    expect(trigger).toHaveAttribute("type", "button");
-    expect(trigger).toHaveClass("custom", "h-8", "rounded-lg");
-    expect(trigger).toHaveClass("data-[state=open]:shadow-focus");
+    const button = screen.getByRole("button", { name: "Дата" });
+
+    expect(ref.current).toBe(button);
+    expect(button).toHaveAttribute("type", "button");
+    expect(button.parentElement).toHaveClass("custom", "h-8", "rounded-lg");
   });
 
-  it("derives aria-invalid from semantic variants and respects overrides", () => {
-    const view = render(
-      <DatePickerTrigger aria-label="Date" variant="error" />,
-    );
+  it("выводит aria-invalid из варианта ошибки и уважает явное значение", () => {
+    const view = renderTrigger({ variant: "error" });
 
-    expect(screen.getByRole("button", { name: "Date" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Дата" })).toHaveAttribute(
       "aria-invalid",
       "true",
     );
 
     view.rerender(
-      <DatePickerTrigger
-        aria-invalid="false"
-        aria-label="Date"
-        variant="error"
-      />,
+      <Popover>
+        <DatePickerTrigger
+          aria-label="Дата"
+          aria-invalid={false}
+          variant="error"
+        />
+      </Popover>,
     );
-    expect(screen.getByRole("button", { name: "Date" })).toHaveAttribute(
+
+    expect(screen.getByRole("button", { name: "Дата" })).toHaveAttribute(
       "aria-invalid",
       "false",
     );
+  });
+
+  it("рендерит очистку соседней кнопкой, а не внутри триггера", () => {
+    const onClear = vi.fn();
+
+    renderTrigger({ showClear: true, onClear });
+
+    const clear = screen.getByRole("button", { name: "Очистить" });
+
+    expect(screen.getByRole("button", { name: "Дата" })).not.toContainElement(
+      clear,
+    );
+
+    fireEvent.click(clear);
+    expect(onClear).toHaveBeenCalledTimes(1);
   });
 });

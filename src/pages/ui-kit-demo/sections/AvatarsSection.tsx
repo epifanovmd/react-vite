@@ -21,7 +21,7 @@ export const AvatarsSection: FC = () => (
       <div>
         <p className="text-xs text-muted-foreground mb-2">Размеры</p>
         <div className="flex items-center gap-3 flex-wrap">
-          {(["sm", "md", "lg", "xl"] as const).map(s => (
+          {(["xs", "sm", "md", "lg", "xl"] as const).map(s => (
             <Avatar key={s} size={s} name="Иван Петров" />
           ))}
         </div>

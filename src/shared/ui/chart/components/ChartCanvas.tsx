@@ -1,162 +1,116 @@
-import { GridColumns, GridRows } from "@visx/grid";
 import { Group } from "@visx/group";
+import type { ReactNode } from "react";
+import { useCallback } from "react";
 
-import type {
-  ChartAxisConfig,
-  ChartGridMode,
-  ChartMargin,
-  ChartReferenceLine,
-  ChartXValue,
-  ChartYAxisConfig,
-} from "../chart.types";
-import type { ChartModel } from "../hooks/use-chart-model";
-import { SURFACE_GAP } from "../utils/chart-constants";
+import type { ChartGridMode, ChartTooltipData } from "../chart.types";
+import { ChartScalesContext } from "../hooks/chart-scales-context";
+import type { ChartModel } from "../hooks/use-chart";
+import { useChartScales } from "../hooks/use-chart-scales";
+import { useChartTooltip } from "../hooks/use-chart-tooltip";
 import { ChartAxes } from "./ChartAxes";
 import { ChartCrosshair } from "./ChartCrosshair";
-import type { ChartOverlayPoint } from "./ChartOverlay";
+import { ChartGrid } from "./ChartGrid";
 import { ChartOverlay } from "./ChartOverlay";
-import { ChartReferenceLines } from "./ChartReferenceLines";
-import { ChartSeriesLayer } from "./ChartSeriesLayer";
+import { ChartTooltip } from "./ChartTooltip";
 
 export interface ChartCanvasProps<Datum> {
   model: ChartModel<Datum>;
   width: number;
   height: number;
-  margin: ChartMargin;
-  innerWidth: number;
-  innerHeight: number;
   grid: ChartGridMode;
-  xAxis: ChartAxisConfig | false;
-  yAxis: ChartYAxisConfig | false;
-  formatXTick: (value: ChartXValue, index: number) => string;
-  referenceLines: ChartReferenceLine[];
-  activeIndex: number | null;
-  onActive: (index: number | null, point: ChartOverlayPoint | null) => void;
-  onSelect?: (index: number) => void;
-  crosshair: boolean;
-  interactive: boolean;
-  surface: string;
+  tooltip: boolean;
+  renderTooltip?: (data: ChartTooltipData<Datum>) => ReactNode;
+  showTotal?: boolean;
+  onPointClick?: (data: ChartTooltipData<Datum>) => void;
   ariaLabel?: string;
+  /** Серии — рисуются внутри области графика поверх сетки. */
+  children: ReactNode;
 }
 
+/** svg с сериями плюс HTML-тултипы поверх него; порядок детей — слои. */
 export const ChartCanvas = <Datum,>({
   model,
   width,
   height,
-  margin,
-  innerWidth,
-  innerHeight,
   grid,
-  xAxis,
-  yAxis,
-  formatXTick,
-  referenceLines,
-  activeIndex,
-  onActive,
-  onSelect,
-  crosshair,
-  interactive,
-  surface,
+  tooltip,
+  renderTooltip,
+  showTotal,
+  onPointClick,
   ariaLabel,
+  children,
 }: ChartCanvasProps<Datum>) => {
-  const showRows = grid === "y" || grid === "both";
+  const scales = useChartScales({ model, width, height });
+  const { margin } = scales;
 
-  // По категориям вертикальная сетка превращается в частокол — только шкалы.
-  const showColumns =
-    (grid === "x" || grid === "both") && model.xScaleType !== "band";
+  const topOf = useCallback(
+    (index: number) => {
+      const tops = model.visibleSeries.flatMap(item => {
+        const point = item.points[index];
 
-  const highlight =
-    model.hasBars && activeIndex !== null
-      ? model.slotStarts[activeIndex]
-      : undefined;
+        return point && point.value !== null ? scales.yScale(point.y1) : [];
+      });
+
+      return tops.length > 0 ? Math.min(...tops) : scales.innerHeight / 2;
+    },
+    [model.visibleSeries, scales],
+  );
+
+  const handleSelect = useCallback(
+    (index: number) => {
+      const data = model.getTooltipData(index);
+
+      if (data) {
+        onPointClick?.(data);
+      }
+    },
+    [model, onPointClick],
+  );
+
+  const interaction = useChartTooltip({
+    positions: scales.positions,
+    originX: margin.left,
+    topOf,
+    onSelect: onPointClick ? handleSelect : undefined,
+  });
+
+  const active = tooltip || onPointClick ? interaction.active : null;
+  const tooltipData = active ? model.getTooltipData(active.index) : null;
 
   return (
-    <svg width={width} height={height} className="select-none overflow-visible">
-      <Group left={margin.left} top={margin.top}>
-        {showRows && (
-          <GridRows
-            scale={model.yScale}
-            width={innerWidth}
-            numTicks={model.yTickCount}
-            stroke="var(--border)"
-            strokeWidth={1}
-          />
-        )}
+    <ChartScalesContext.Provider value={scales}>
+      <svg width={width} height={height} role="img" aria-label={ariaLabel}>
+        <Group left={margin.left} top={margin.top}>
+          <ChartGrid mode={grid} />
 
-        {showColumns && (
-          <GridColumns
-            scale={model.xScale}
-            height={innerHeight}
-            stroke="var(--border)"
-            strokeWidth={1}
-          />
-        )}
+          {children}
 
-        {highlight !== undefined && (
-          <rect
-            x={highlight - SURFACE_GAP}
-            y={0}
-            width={model.slotWidth + SURFACE_GAP * 2}
-            height={innerHeight}
-            fill="var(--muted-foreground)"
-            opacity={0.08}
-            pointerEvents="none"
-          />
-        )}
+          {active && (
+            <ChartCrosshair series={model.visibleSeries} index={active.index} />
+          )}
 
-        {model.drawn.map(series => (
-          <ChartSeriesLayer
-            key={series.key}
-            series={series}
-            model={model}
-            activeIndex={activeIndex}
-            surface={surface}
-          />
-        ))}
+          <ChartOverlay interaction={interaction} ariaLabel={ariaLabel} />
+        </Group>
 
-        {referenceLines.length > 0 && (
-          <ChartReferenceLines
-            model={model}
-            lines={referenceLines}
-            innerWidth={innerWidth}
-            innerHeight={innerHeight}
-          />
-        )}
+        <ChartAxes
+          margin={margin}
+          xAxis={model.xAxis}
+          yAxis={model.yAxis}
+          tickToX={scales.tickToX}
+          formatXTick={model.formatXTick}
+        />
+      </svg>
 
-        {activeIndex !== null && (
-          <ChartCrosshair
-            model={model}
-            activeIndex={activeIndex}
-            innerHeight={innerHeight}
-            surface={surface}
-            showLine={crosshair}
-          />
-        )}
-
-        {interactive && (
-          <ChartOverlay
-            width={innerWidth}
-            height={innerHeight}
-            marginLeft={margin.left}
-            marginTop={margin.top}
-            positions={model.positions}
-            activeIndex={activeIndex}
-            onActive={onActive}
-            onSelect={onSelect}
-            ariaLabel={ariaLabel}
-          />
-        )}
-      </Group>
-
-      <ChartAxes
-        model={model}
-        innerWidth={innerWidth}
-        innerHeight={innerHeight}
-        margin={margin}
-        xAxis={xAxis}
-        yAxis={yAxis}
-        formatXTick={formatXTick}
-      />
-    </svg>
+      {tooltip && active && tooltipData && (
+        <ChartTooltip
+          active={active}
+          data={tooltipData}
+          margin={margin}
+          innerHeight={scales.innerHeight}
+          renderTooltip={renderTooltip}
+          showTotal={showTotal}
+        />
+      )}
+    </ChartScalesContext.Provider>
   );
 };

@@ -1,240 +1,181 @@
 import { useMergedRef } from "@mantine/hooks";
-import { cn } from "@shared/lib/utils/cn";
-import { scrollIntoViewCenter } from "@shared/lib/utils/scroll-into-view-center";
-import { type VariantProps } from "class-variance-authority";
 import {
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotion,
-} from "motion/react";
+  useControllableState,
+  useSmoothHorizontalScroll,
+} from "@shared/lib/hooks";
+import { cn } from "@shared/lib/utils/cn";
+import type { VariantProps } from "class-variance-authority";
+import { motion, useReducedMotion } from "motion/react";
 import * as React from "react";
 
+import { useActiveIndicator } from "../foundation";
 import {
   segmentedIndicatorVariants,
-  segmentedItemVariants,
   segmentedVariants,
 } from "./segmented-variants";
+import { SegmentedItem, type SegmentedOption } from "./SegmentedItem";
 
-export interface SegmentedOption {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-  disabled?: boolean;
-}
-
-export interface SegmentedProps
+export interface SegmentedProps<V extends string = string>
   extends
-    Omit<React.HTMLAttributes<HTMLDivElement>, "onChange">,
+    Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue">,
     VariantProps<typeof segmentedVariants> {
-  options: SegmentedOption[];
-  value?: string;
-  defaultValue?: string;
-  onChange?: (value: string) => void;
+  options: SegmentedOption<V>[];
+  value?: V;
+  /** Без `value` и `defaultValue` выбирается первая опция. */
+  defaultValue?: V;
+  onValueChange?: (value: V) => void;
   disabled?: boolean;
 }
 
-const indicatorTransition = {
-  duration: 0.2,
-  ease: "easeInOut",
-} as const;
+const INDICATOR_TRANSITION = { duration: 0.2, ease: "easeInOut" } as const;
+const INSTANT_TRANSITION = { duration: 0 } as const;
 
-const Segmented = React.forwardRef<HTMLDivElement, SegmentedProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      options,
-      value: controlledValue,
-      defaultValue,
-      onChange,
-      disabled = false,
-      ...props
+type KeyStep = 1 | -1 | "first" | "last";
+
+const KEY_STEP: Record<string, KeyStep> = {
+  ArrowRight: 1,
+  ArrowDown: 1,
+  ArrowLeft: -1,
+  ArrowUp: -1,
+  Home: "first",
+  End: "last",
+};
+
+const nextEnabledIndex = <V extends string>(
+  options: SegmentedOption<V>[],
+  currentValue: V | undefined,
+  step: KeyStep,
+): number => {
+  const enabled = options
+    .map((option, index) => ({ option, index }))
+    .filter(({ option }) => !option.disabled);
+
+  if (enabled.length === 0) return -1;
+
+  if (step === "first") return enabled[0]!.index;
+
+  if (step === "last") return enabled[enabled.length - 1]!.index;
+
+  const position = enabled.findIndex(
+    ({ option }) => option.value === currentValue,
+  );
+  const start = position === -1 ? (step === 1 ? -1 : enabled.length) : position;
+
+  return enabled[(start + step + enabled.length) % enabled.length]!.index;
+};
+
+const SegmentedInner = <V extends string = string>(
+  {
+    className,
+    variant,
+    size,
+    fullWidth,
+    options,
+    value,
+    defaultValue,
+    onValueChange,
+    disabled = false,
+    ...props
+  }: SegmentedProps<V>,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) => {
+  const [current, setCurrent] = useControllableState<V | undefined>({
+    value,
+    defaultValue: defaultValue ?? options[0]?.value,
+    onChange: next => {
+      if (next !== undefined) onValueChange?.(next);
     },
-    ref,
-  ) => {
-    const [selectedValue, setSelectedValue] = React.useState(
-      controlledValue || defaultValue || options[0]?.value,
+  });
+  const shouldReduceMotion = useReducedMotion();
+
+  const innerRef = React.useRef<HTMLDivElement>(null);
+  const { scrollToCenter } = useSmoothHorizontalScroll(innerRef);
+  const { containerRef, rect, animated } = useActiveIndicator<HTMLDivElement>({
+    activeSelector: '[data-active="true"]',
+    value: current,
+    itemsKey: options,
+    onActiveChange: scrollToCenter,
+  });
+  const setRef = useMergedRef(ref, innerRef, containerRef);
+
+  const selectedOption = options.find(option => option.value === current);
+  const focusableValue =
+    selectedOption && !selectedOption.disabled
+      ? selectedOption.value
+      : options.find(option => !option.disabled)?.value;
+
+  const focusItem = (index: number) => {
+    const items = innerRef.current?.querySelectorAll<HTMLButtonElement>(
+      "[data-segmented-item]",
     );
 
-    const innerRef = React.useRef<HTMLDivElement>(null);
-    const previousValueRef = React.useRef<string | undefined>(undefined);
-    const indicatorAnimationsRef = React.useRef<ReturnType<typeof animate>[]>(
-      [],
-    );
-    const indicatorX = useMotionValue(0);
-    const indicatorY = useMotionValue(0);
-    const indicatorWidth = useMotionValue(0);
-    const indicatorHeight = useMotionValue(0);
-    const shouldReduceMotion = useReducedMotion();
+    items?.[index]?.focus();
+  };
 
-    const value =
-      controlledValue !== undefined ? controlledValue : selectedValue;
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const step = KEY_STEP[event.key];
 
-    const setRef = useMergedRef(ref, innerRef);
+    if (!step || disabled) return;
 
-    const stopIndicatorAnimations = React.useCallback(() => {
-      indicatorAnimationsRef.current.forEach(animation => animation.stop());
-      indicatorAnimationsRef.current = [];
-    }, []);
+    event.preventDefault();
 
-    const updateIndicator = React.useCallback(
-      (animated: boolean) => {
-        const activeItem = innerRef.current?.querySelector<HTMLElement>(
-          '[data-active="true"]',
-        );
+    const index = nextEnabledIndex(options, current, step);
+    const next = options[index];
 
-        if (!activeItem) return;
+    if (!next) return;
 
-        const nextRect = {
-          x: activeItem.offsetLeft,
-          y: activeItem.offsetTop,
-          width: activeItem.offsetWidth,
-          height: activeItem.offsetHeight,
-        };
+    setCurrent(next.value);
+    focusItem(index);
+  };
 
-        stopIndicatorAnimations();
+  const transition =
+    animated && !shouldReduceMotion ? INDICATOR_TRANSITION : INSTANT_TRANSITION;
 
-        if (animated && !shouldReduceMotion) {
-          indicatorAnimationsRef.current = [
-            animate(indicatorX, nextRect.x, indicatorTransition),
-            animate(indicatorY, nextRect.y, indicatorTransition),
-            animate(indicatorWidth, nextRect.width, indicatorTransition),
-            animate(indicatorHeight, nextRect.height, indicatorTransition),
-          ];
+  return (
+    <div
+      ref={setRef}
+      role="radiogroup"
+      aria-disabled={disabled || undefined}
+      className={cn(segmentedVariants({ variant, size, fullWidth }), className)}
+      {...props}
+    >
+      {rect && (
+        <motion.div
+          aria-hidden
+          data-slot="segmented-indicator"
+          className={segmentedIndicatorVariants({ variant })}
+          initial={false}
+          animate={{
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          }}
+          transition={transition}
+        />
+      )}
+      {options.map(option => (
+        <SegmentedItem<V>
+          key={option.value}
+          option={option}
+          variant={variant}
+          size={size}
+          selected={current === option.value}
+          disabled={disabled || Boolean(option.disabled)}
+          focusable={option.value === focusableValue}
+          onSelect={setCurrent}
+          onKeyDown={handleKeyDown}
+        />
+      ))}
+    </div>
+  );
+};
 
-          return;
-        }
+const SegmentedForwarded = React.forwardRef(SegmentedInner);
 
-        indicatorX.set(nextRect.x);
-        indicatorY.set(nextRect.y);
-        indicatorWidth.set(nextRect.width);
-        indicatorHeight.set(nextRect.height);
-      },
-      [
-        indicatorHeight,
-        indicatorWidth,
-        indicatorX,
-        indicatorY,
-        shouldReduceMotion,
-        stopIndicatorAnimations,
-      ],
-    );
+SegmentedForwarded.displayName = "Segmented";
 
-    React.useLayoutEffect(() => {
-      const shouldAnimate =
-        previousValueRef.current !== undefined &&
-        previousValueRef.current !== value;
-
-      updateIndicator(shouldAnimate);
-      previousValueRef.current = value;
-    }, [options.length, updateIndicator, value]);
-
-    React.useLayoutEffect(() => {
-      const root = innerRef.current;
-
-      if (!root || typeof ResizeObserver === "undefined") return;
-
-      const resizeObserver = new ResizeObserver(() => updateIndicator(false));
-
-      resizeObserver.observe(root);
-      root
-        .querySelectorAll<HTMLElement>("[data-segmented-item]")
-        .forEach(item => resizeObserver.observe(item));
-
-      return () => resizeObserver.disconnect();
-    }, [options.length, updateIndicator]);
-
-    React.useEffect(
-      () => () => {
-        stopIndicatorAnimations();
-      },
-      [stopIndicatorAnimations],
-    );
-
-    React.useEffect(() => {
-      scrollIntoViewCenter(
-        innerRef.current?.querySelector<HTMLElement>('[data-active="true"]'),
-      );
-    }, [value]);
-
-    const handleSelect = (optionValue: string, disabled?: boolean) => {
-      if (disabled) return;
-
-      if (controlledValue === undefined) {
-        setSelectedValue(optionValue);
-      }
-      onChange?.(optionValue);
-    };
-
-    return (
-      <div
-        ref={setRef}
-        className={cn(
-          "relative",
-          segmentedVariants({ variant, size }),
-          className,
-        )}
-        aria-disabled={disabled || undefined}
-        {...props}
-      >
-        {value !== undefined && (
-          <motion.div
-            aria-hidden
-            data-slot="segmented-indicator"
-            className={cn(
-              "absolute top-0 left-0 z-0",
-              segmentedIndicatorVariants({ variant, size }),
-            )}
-            style={{
-              x: indicatorX,
-              y: indicatorY,
-              width: indicatorWidth,
-              height: indicatorHeight,
-            }}
-          />
-        )}
-        {options.map(option => {
-          const isSelected = value === option.value;
-          const isDisabled = disabled || option.disabled;
-
-          return (
-            <button
-              key={option.value}
-              className={cn(
-                segmentedItemVariants({ size }),
-                isSelected
-                  ? variant === "primary"
-                    ? "text-primary-foreground"
-                    : variant === "secondary"
-                      ? "text-secondary-foreground"
-                      : "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-                isDisabled && "opacity-50 cursor-not-allowed",
-              )}
-              onClick={() => handleSelect(option.value, option.disabled)}
-              disabled={isDisabled}
-              type="button"
-              data-active={isSelected}
-              data-segmented-item
-            >
-              <span className="relative z-10 inline-flex items-center">
-                {option.icon && (
-                  <span className="mr-1.5 inline-flex items-center">
-                    {option.icon}
-                  </span>
-                )}
-                {option.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    );
-  },
-);
-
-Segmented.displayName = "Segmented";
-
-export { Segmented };
+/** Сегментированный переключатель; тип значения выводится из `options`. */
+export const Segmented = SegmentedForwarded as <V extends string = string>(
+  props: SegmentedProps<V> & { ref?: React.Ref<HTMLDivElement> },
+) => React.ReactElement;

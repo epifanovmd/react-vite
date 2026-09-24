@@ -1,10 +1,14 @@
-import { cn } from "@shared/lib/utils/cn";
-import * as React from "react";
-import { type ComponentPropsWithRef } from "react";
+import type * as React from "react";
 
-import { SelectTag } from "./SelectTag";
+import type { SelectValue, TagRenderInfo } from "../types";
+import {
+  SelectSearchInput,
+  type SelectSearchInputProps,
+} from "./SelectSearchInput";
+import { SelectTagsValue } from "./SelectTagsValue";
+import { SelectTextValue } from "./SelectTextValue";
 
-export interface SelectTriggerContentProps<V> {
+export interface SelectTriggerContentProps<V extends SelectValue> {
   multi: boolean;
   tagsDisplay: boolean;
   search: boolean;
@@ -13,14 +17,19 @@ export interface SelectTriggerContentProps<V> {
   placeholder?: string;
   disabled?: boolean;
   selectedValues: V[];
-  hasValue: boolean;
-  getLabel: (v: V) => React.ReactNode;
-  searchInputProps: ComponentPropsWithRef<"input">;
-  onRemoveTag: (v: V) => void;
+  getLabel: (value: V) => string;
+  renderValue?: (info: { values: V[]; labels: string[] }) => React.ReactNode;
+  tagRender?: (info: TagRenderInfo<V>) => React.ReactNode;
+  onRemoveTag: (value: V) => void;
   maxTagCount?: number;
+  /** Пропсы поискового инпута (ref, id, aria-*, onChange, onKeyDown). */
+  searchInputProps?: SelectSearchInputProps & {
+    ref?: React.Ref<HTMLInputElement>;
+  };
 }
 
-const SelectTriggerContentInner = <V,>({
+/** Содержимое триггера: теги, текст значения или поисковый инпут. */
+export const SelectTriggerContent = <V extends SelectValue>({
   multi,
   tagsDisplay,
   search,
@@ -29,121 +38,63 @@ const SelectTriggerContentInner = <V,>({
   placeholder,
   disabled,
   selectedValues,
-  hasValue,
   getLabel,
-  searchInputProps,
+  renderValue,
+  tagRender,
   onRemoveTag,
   maxTagCount,
+  searchInputProps,
 }: SelectTriggerContentProps<V>): React.ReactElement => {
-  if (multi) {
-    const vals = selectedValues;
+  const hasValue = selectedValues.length > 0;
+  const labels = selectedValues.map(getLabel);
+  const text = hasValue ? labels.join(", ") : undefined;
 
-    if (tagsDisplay) {
-      if (!search && vals.length === 0) {
-        return (
-          <span className="flex-1 truncate text-muted-foreground">
-            {placeholder}
-          </span>
-        );
-      }
-
-      const visibleVals =
-        maxTagCount != null && vals.length > maxTagCount
-          ? vals.slice(0, maxTagCount)
-          : vals;
-      const overflowCount = maxTagCount != null ? vals.length - maxTagCount : 0;
-
-      return (
-        <div className="flex flex-wrap gap-1 flex-1 min-w-0 overflow-hidden items-center py-0.5">
-          {visibleVals.map((v, index) => (
-            <SelectTag
-              key={index}
-              label={getLabel(v)}
-              onRemove={() => onRemoveTag(v)}
-              disabled={disabled}
-            />
-          ))}
-          {overflowCount > 0 && (
-            <span className="inline-flex items-center rounded-md bg-accent px-2 py-0.5 text-xs font-medium text-muted-foreground opacity-60">
-              +{overflowCount}
-            </span>
-          )}
-          {search && (
-            <input
-              {...searchInputProps}
-              value={open ? query : ""}
-              placeholder={vals.length === 0 ? placeholder : undefined}
-            />
-          )}
-        </div>
-      );
-    }
-
-    const commaLabel =
-      vals.length > 0
-        ? vals.map(v => String(getLabel(v))).join(", ")
-        : undefined;
-
-    if (search) {
-      return (
-        <input
-          {...searchInputProps}
-          value={open ? query : (commaLabel ?? "")}
-          placeholder={
-            open
-              ? (commaLabel ?? placeholder)
-              : commaLabel
-                ? undefined
-                : placeholder
-          }
-        />
-      );
+  if (multi && tagsDisplay) {
+    if (!search && !hasValue) {
+      return <SelectTextValue muted>{placeholder}</SelectTextValue>;
     }
 
     return (
-      <span
-        className={cn(
-          "flex-1 truncate",
-          !commaLabel && "text-muted-foreground",
-        )}
+      <SelectTagsValue<V>
+        values={selectedValues}
+        labels={labels}
+        disabled={disabled}
+        maxTagCount={maxTagCount}
+        tagRender={tagRender}
+        onRemoveTag={onRemoveTag}
       >
-        {commaLabel ?? placeholder}
-      </span>
+        {search && (
+          <SelectSearchInput
+            {...searchInputProps}
+            value={open ? query : ""}
+            placeholder={hasValue ? undefined : placeholder}
+          />
+        )}
+      </SelectTagsValue>
     );
   }
 
   if (search) {
-    const displayLabel = hasValue
-      ? String(getLabel(selectedValues[0]))
-      : undefined;
+    const inputValue = open ? query : (text ?? "");
+    const closedPlaceholder = hasValue ? undefined : placeholder;
+    const inputPlaceholder = open ? (text ?? placeholder) : closedPlaceholder;
 
     return (
-      <input
+      <SelectSearchInput
         {...searchInputProps}
-        value={open ? query : (displayLabel ?? "")}
-        placeholder={
-          open
-            ? (displayLabel ?? placeholder)
-            : hasValue
-              ? undefined
-              : placeholder
-        }
+        value={inputValue}
+        placeholder={inputPlaceholder}
       />
     );
   }
 
+  const valueNode = renderValue
+    ? renderValue({ values: selectedValues, labels })
+    : text;
+
   return (
-    <span
-      className={cn("flex-1 truncate", !hasValue && "text-muted-foreground")}
-    >
-      {hasValue ? String(getLabel(selectedValues[0])) : placeholder}
-    </span>
+    <SelectTextValue muted={!hasValue}>
+      {valueNode ?? placeholder}
+    </SelectTextValue>
   );
 };
-
-const MemoSelectTriggerContent = React.memo(SelectTriggerContentInner);
-
-MemoSelectTriggerContent.displayName = "SelectTriggerContent";
-
-export const SelectTriggerContent =
-  MemoSelectTriggerContent as typeof SelectTriggerContentInner;

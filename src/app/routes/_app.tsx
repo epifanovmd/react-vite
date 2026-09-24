@@ -1,6 +1,11 @@
 import { IAuthStore } from "@entities/auth";
 import { ErrorBoundary } from "@shared/ui";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  useLocation,
+} from "@tanstack/react-router";
 import { AppLayout } from "@widgets/app-layout";
 import { memo } from "react";
 
@@ -12,11 +17,15 @@ export const Route = createFileRoute("/_app")({
       throw redirect({ to: "/sign-in" });
     }
   },
-  component: memo(() => (
-    <AppLayout>
-      <ErrorBoundary>
-        <Outlet />
-      </ErrorBoundary>
-    </AppLayout>
-  )),
+  component: memo(() => {
+    const pathname = useLocation({ select: location => location.pathname });
+
+    return (
+      <AppLayout>
+        <ErrorBoundary resetKeys={[pathname]}>
+          <Outlet />
+        </ErrorBoundary>
+      </AppLayout>
+    );
+  }),
 });

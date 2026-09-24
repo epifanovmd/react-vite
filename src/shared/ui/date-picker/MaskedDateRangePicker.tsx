@@ -1,43 +1,41 @@
-import { useMergedRef } from "@mantine/hooks";
-import { cn } from "@shared/lib/utils/cn";
-import { Calendar as CalendarIcon } from "lucide-react";
 import * as React from "react";
 
-import { Input } from "../input";
 import {
   createDateRangeMask,
   formatDateRangeValue,
   parseDateRangeValue,
   useMaskedInput,
 } from "../masked-input";
-import { Popover, type PopoverContentProps } from "../popover";
-import type { DatePickerTriggerVariantProps } from "./components";
-import { useDateRangeHoverPreview } from "./hooks";
+import type { PopoverContentProps } from "../popover";
+import {
+  type DatePickerTriggerVariantProps,
+  MaskedPickerField,
+} from "./components";
+import { usePickerPopover } from "./hooks";
 import { RangeCalendar, type RangeCalendarProps } from "./RangeCalendar";
-import type { DateRange } from "./types";
+import type { DateRange, PickerFieldProps } from "./types";
+import { DATE_LOCALE, getPreviewRange, isDayDisabled } from "./utils";
 
-export interface MaskedDateRangePickerProps extends DatePickerTriggerVariantProps {
-  id?: string;
-  name?: string;
+export interface MaskedDateRangePickerProps
+  extends PickerFieldProps<HTMLInputElement>, DatePickerTriggerVariantProps {
   value?: DateRange;
+  /** Вызывается только с полным корректным периодом или `undefined`. */
   onChange?: (range: DateRange | undefined) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-  dateFormat?: string;
-  clearable?: boolean;
   openOnFocus?: boolean;
-  disableDate?: (date: Date) => boolean;
   contentProps?: Partial<PopoverContentProps>;
-  calendarProps?: Omit<RangeCalendarProps, "selected" | "onSelect">;
-  onBlur?: React.FocusEventHandler<HTMLInputElement>;
-  onFocus?: React.FocusEventHandler<HTMLInputElement>;
-  "aria-describedby"?: string;
-  "aria-invalid"?: boolean;
-  "aria-labelledby"?: string;
-  "aria-required"?: boolean;
+  calendarProps?: Omit<
+    RangeCalendarProps,
+    "selected" | "onSelect" | "hoverDate" | "onDateHover"
+  >;
 }
 
+const isComplete = (range: DateRange | undefined) =>
+  Boolean(range?.from && range.to);
+
+/**
+ * Период с ручным вводом по маске и календарём. Превью при наведении
+ * показывается только в placeholder: набранный текст не перетирается.
+ */
 export const MaskedDateRangePicker = React.forwardRef<
   HTMLInputElement,
   MaskedDateRangePickerProps
@@ -47,167 +45,108 @@ export const MaskedDateRangePicker = React.forwardRef<
       value,
       onChange,
       placeholder = "дд.мм.гггг — дд.мм.гггг",
-      disabled,
-      className,
       dateFormat = "dd.MM.yyyy",
-      clearable = false,
-      openOnFocus = false,
+      open: openProp,
+      onOpenChange,
+      locale = DATE_LOCALE,
+      weekStartsOn,
+      minDate,
+      maxDate,
       disableDate,
-      size,
-      variant,
-      contentProps,
       calendarProps,
-      id,
-      name,
       onBlur,
-      onFocus,
-      "aria-describedby": ariaDescribedBy,
-      "aria-invalid": ariaInvalid,
-      "aria-labelledby": ariaLabelledBy,
-      "aria-required": ariaRequired,
+      ...fieldProps
     },
     ref,
   ) => {
-    const [open, setOpen] = React.useState(false);
-    const [hoverDate, setHoverDate] = React.useState<Date | undefined>();
-    const onChangeRef = React.useRef(onChange);
+    const popover = usePickerPopover({ open: openProp, onOpenChange });
+    const rejectedRef = React.useRef(false);
 
-    onChangeRef.current = onChange;
+    const displayValue = formatDateRangeValue(value, { dateFormat });
 
     const mask = React.useMemo(
-      () => createDateRangeMask({ dateFormat }),
-      [dateFormat],
+      () => createDateRangeMask({ dateFormat, min: minDate, max: maxDate }),
+      [dateFormat, minDate, maxDate],
     );
 
-    const { previewRange, previewText } = useDateRangeHoverPreview({
-      value,
-      hoverDate,
-      dateFormat,
-    });
+    const isRangeDisabled = (range: DateRange) =>
+      [range.from, range.to].some(
+        date => date && isDayDisabled(date, { minDate, maxDate, disableDate }),
+      );
 
-    const displayValue = React.useMemo(
-      () => formatDateRangeValue(previewRange ?? value, { dateFormat }),
-      [previewRange, value, dateFormat],
-    );
-
-    const rollbackValue = React.useMemo(
-      () => formatDateRangeValue(value, { dateFormat }),
-      [value, dateFormat],
-    );
-
-    const previewRangeRef = React.useRef(previewRange);
-
-    previewRangeRef.current = previewRange;
-
-    const {
-      ref: maskRef,
-      value: maskedValue,
-      isComplete,
-      setValue,
-      clear,
-    } = useMaskedInput({
+    const masked = useMaskedInput({
       mask,
       value: displayValue,
-      disabled,
-      onChange: ({ value: acceptedValue }) => {
-        if (previewRangeRef.current) return;
-        const range = parseDateRangeValue(acceptedValue, { dateFormat });
+      onChange: ({ value: text, isComplete: textComplete }) => {
+        rejectedRef.current = false;
 
-        onChangeRef.current?.(range.from || range.to ? range : undefined);
+        if (text === "") {
+          onChange?.(undefined);
+
+          return;
+        }
+
+        if (!textComplete) return;
+
+        const range = parseDateRangeValue(text, { dateFormat });
+
+        if (!isComplete(range) || isRangeDisabled(range)) {
+          rejectedRef.current = true;
+
+          return;
+        }
+
+        onChange?.(range);
       },
     });
 
-    const mergedRef = useMergedRef(ref, maskRef);
+    const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      if (!masked.isComplete || rejectedRef.current) {
+        rejectedRef.current = false;
+        masked.setValue(displayValue);
+      }
+      onBlur?.(event);
+    };
 
-    const close = React.useCallback(() => {
-      setOpen(false);
-      setHoverDate(undefined);
-    }, []);
-
-    const handleBlur = React.useCallback<
-      React.FocusEventHandler<HTMLInputElement>
-    >(
-      event => {
-        if (!isComplete) setValue(rollbackValue);
-        onBlur?.(event);
+    const handleSelect = React.useCallback(
+      (range: DateRange | undefined) => {
+        onChange?.(range);
+        if (isComplete(range)) popover.close();
       },
-      [isComplete, setValue, rollbackValue, onBlur],
+      [onChange, popover],
     );
 
-    const handleClear = React.useCallback(() => {
-      clear();
-      onChangeRef.current?.(undefined);
-    }, [clear]);
-
-    const handleInteractOutside = React.useCallback(
-      (event: Event) => {
-        if (event.target === maskRef.current) event.preventDefault();
-      },
-      [maskRef],
-    );
+    const previewRange = getPreviewRange(value, popover.hoverDate);
+    const previewPlaceholder = previewRange
+      ? formatDateRangeValue(previewRange, { dateFormat })
+      : placeholder;
 
     return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <Input
-          ref={mergedRef}
-          id={id}
-          name={name}
-          data-state={open ? "open" : "closed"}
-          defaultValue={displayValue}
-          hasValue={maskedValue.length > 0}
-          placeholder={previewText ?? placeholder}
-          disabled={disabled}
-          className={cn(previewRange && "text-muted-foreground", className)}
-          size={size}
-          variant={variant}
-          clearable={clearable}
-          onClear={handleClear}
-          onFocus={event => {
-            if (openOnFocus) setOpen(true);
-            onFocus?.(event);
-          }}
-          onBlur={handleBlur}
-          aria-describedby={ariaDescribedBy}
-          aria-invalid={ariaInvalid}
-          aria-labelledby={ariaLabelledBy}
-          aria-required={ariaRequired}
-          leftIcon={
-            <Popover.Trigger asChild>
-              <button
-                type="button"
-                disabled={disabled}
-                tabIndex={-1}
-                onMouseDown={e => e.preventDefault()}
-                className="pointer-events-auto cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <CalendarIcon className="h-4 w-4" />
-              </button>
-            </Popover.Trigger>
-          }
+      <MaskedPickerField
+        {...fieldProps}
+        inputRef={masked.ref}
+        forwardedRef={ref}
+        defaultValue={displayValue}
+        hasValue={masked.value.length > 0}
+        placeholder={previewPlaceholder}
+        onClear={masked.clear}
+        onBlur={handleBlur}
+        open={popover.open}
+        onOpenChange={popover.setOpen}
+      >
+        <RangeCalendar
+          selected={value}
+          onSelect={handleSelect}
+          hoverDate={popover.hoverDate}
+          onDateHover={popover.handleDateHover}
+          locale={locale}
+          weekStartsOn={weekStartsOn}
+          minDate={minDate}
+          maxDate={maxDate}
+          disableDate={disableDate}
+          {...calendarProps}
         />
-
-        <Popover.Content
-          size="auto"
-          align="start"
-          className="p-0"
-          onOpenAutoFocus={
-            openOnFocus ? event => event.preventDefault() : undefined
-          }
-          onInteractOutside={openOnFocus ? handleInteractOutside : undefined}
-          {...contentProps}
-        >
-          <RangeCalendar
-            selected={value}
-            onSelect={range => {
-              onChangeRef.current?.(range);
-              if (range?.from && range?.to) close();
-            }}
-            disableDate={disableDate}
-            onDateHover={setHoverDate}
-            {...calendarProps}
-          />
-        </Popover.Content>
-      </Popover>
+      </MaskedPickerField>
     );
   },
 );

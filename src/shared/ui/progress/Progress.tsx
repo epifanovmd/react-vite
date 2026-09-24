@@ -1,52 +1,53 @@
 import { cn } from "@shared/lib/utils/cn";
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-export interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Доля от 0 до 1. */
-  value: number;
+import {
+  progressBarVariants,
+  progressTrackVariants,
+} from "./progress-variants";
+
+export interface ProgressProps
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof progressTrackVariants>,
+    Omit<VariantProps<typeof progressBarVariants>, "indeterminate"> {
+  /** Доля от 0 до 1; не нужна в режиме `indeterminate`. */
+  value?: number;
   /** Неопределённый прогресс — бегущая полоса. */
   indeterminate?: boolean;
-  size?: "sm" | "md";
-  color?: "brand" | "success" | "destructive";
 }
 
-const COLOR = {
-  brand: "bg-brand",
-  success: "bg-success",
-  destructive: "bg-destructive",
-};
+const toPercent = (value: number | undefined): number =>
+  Math.round(Math.max(0, Math.min(1, value ?? 0)) * 100);
 
-export const Progress: React.FC<ProgressProps> = ({
-  value,
-  indeterminate,
-  size = "md",
-  color = "brand",
-  className,
-  ...props
-}) => {
-  const percent = Math.round(Math.max(0, Math.min(1, value)) * 100);
+const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
+  (
+    { value, indeterminate = false, size, variant, className, ...props },
+    ref,
+  ) => {
+    const percent = toPercent(value);
+    const barStyle = indeterminate ? undefined : { width: `${percent}%` };
 
-  return (
-    <div
-      role="progressbar"
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={indeterminate ? undefined : percent}
-      className={cn(
-        "w-full overflow-hidden rounded-full bg-muted",
-        size === "sm" ? "h-1" : "h-2",
-        className,
-      )}
-      {...props}
-    >
+    return (
       <div
-        className={cn(
-          "h-full rounded-full transition-[width] duration-300",
-          COLOR[color],
-          indeterminate && "w-1/3 animate-pulse",
-        )}
-        style={indeterminate ? undefined : { width: `${percent}%` }}
-      />
-    </div>
-  );
-};
+        ref={ref}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={indeterminate ? undefined : percent}
+        className={cn(progressTrackVariants({ size }), className)}
+        {...props}
+      >
+        <div
+          className={progressBarVariants({ variant, indeterminate })}
+          style={barStyle}
+        />
+      </div>
+    );
+  },
+);
+
+Progress.displayName = "Progress";
+
+export { Progress };

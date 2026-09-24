@@ -25,3 +25,7 @@
 
 - [Testing](project_testing.md) — Vitest + Testing Library, **tests** рядом с кодом, 100% coverage порог на holders
 - [Patterns](project_patterns.md) — создание entity-стора, feature (VM + validation), page, widget
+
+## Текущая работа
+
+- [Рефакторинг shared/ui](plan_shared_ui_refactor.md) — завершён 2026-09-24; открыты ручная проверка, документация, коммит

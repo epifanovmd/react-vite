@@ -1,45 +1,37 @@
-import {
-  type OnChangeFn,
-  type Row,
-  type RowSelectionState,
-} from "@tanstack/react-table";
+import { useControllableState } from "@shared/lib/hooks";
+import type { Row, RowSelectionState } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import type { SelectionMode } from "../../table.types";
-import { resolveSelectionMode } from "../../utils";
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
-
-export interface RowSelectionFeatureMeta {
-  multi: boolean;
-}
+import type { RowSelectionMode, TableFeatureOf } from "./types";
 
 export interface RowSelectionFeatureOptions<TData> {
-  selection?: SelectionMode;
-  rowSelection?: RowSelectionState;
+  enabled?: boolean;
+  mode?: RowSelectionMode;
+  rowSelectionState?: RowSelectionState;
   defaultRowSelection?: RowSelectionState;
   onRowSelectionChange?: (state: RowSelectionState) => void;
   enableRowSelection?: boolean | ((row: Row<TData>) => boolean);
   enableSubRowSelection?: boolean | ((row: Row<TData>) => boolean);
 }
 
-export const useRowSelectionFeature = <TData>(
+const DEFAULT_SELECTION: RowSelectionState = {};
+
+export const useRowSelectionFeature = <TData = unknown>(
   options: RowSelectionFeatureOptions<TData> = {},
-): TableFeatureResult<TData, RowSelectionFeatureMeta> => {
+): TableFeatureOf<TData, "rowSelection"> => {
   const {
-    selection = "multi",
-    rowSelection,
+    enabled = true,
+    mode = "multi",
+    rowSelectionState,
     defaultRowSelection,
     onRowSelectionChange,
-    enableRowSelection,
+    enableRowSelection = true,
     enableSubRowSelection,
   } = options;
 
-  const mode = resolveSelectionMode(selection);
-
   const [state, setState] = useControllableState<RowSelectionState>({
-    value: rowSelection,
-    defaultValue: defaultRowSelection ?? {},
+    value: rowSelectionState,
+    defaultValue: defaultRowSelection ?? DEFAULT_SELECTION,
     onChange: onRowSelectionChange,
   });
 
@@ -48,20 +40,13 @@ export const useRowSelectionFeature = <TData>(
       kind: "rowSelection" as const,
       state: { rowSelection: state },
       options: {
-        enableRowSelection: mode.enabled && (enableRowSelection ?? true),
-        enableMultiRowSelection: mode.enabled && mode.multi,
+        enableRowSelection: enabled && enableRowSelection,
+        enableMultiRowSelection: enabled && mode === "multi",
         enableSubRowSelection,
-        onRowSelectionChange: mode.enabled ? setState : undefined,
+        onRowSelectionChange: enabled ? setState : undefined,
       },
-      meta: { multi: mode.multi },
+      meta: { mode },
     }),
-    [
-      state,
-      setState,
-      mode.enabled,
-      mode.multi,
-      enableRowSelection,
-      enableSubRowSelection,
-    ],
+    [state, setState, enabled, mode, enableRowSelection, enableSubRowSelection],
   );
 };

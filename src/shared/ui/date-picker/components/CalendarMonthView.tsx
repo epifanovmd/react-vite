@@ -1,27 +1,41 @@
 import { cn } from "@shared/lib/utils/cn";
+import type { Locale } from "date-fns";
 import * as React from "react";
 
-import { MONTHS } from "../utils";
+import { getMonthNames } from "../utils";
 
-interface CalendarMonthViewProps {
-  currentMonth: number;
+export interface CalendarMonthViewProps {
+  locale: Locale;
+  /** Месяц выбранной даты (если она в просматриваемом году). */
+  selectedMonth?: number;
   onMonthSelect: (month: number) => void;
 }
 
-export const CalendarMonthView = React.memo(
-  ({ currentMonth, onMonthSelect }: CalendarMonthViewProps) => (
+const MONTH_BUTTON_CLASS =
+  "py-3 px-4 rounded-md text-sm transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground";
+
+const SELECTED_CLASS =
+  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground";
+
+export const CalendarMonthView = ({
+  locale,
+  selectedMonth,
+  onMonthSelect,
+}: CalendarMonthViewProps) => {
+  const months = React.useMemo(() => getMonthNames(locale), [locale]);
+
+  return (
     <div className="p-3">
       <div className="grid grid-cols-3 gap-2">
-        {MONTHS.map((month, index) => (
+        {months.map((month, index) => (
           <button
             key={month}
             type="button"
+            aria-pressed={selectedMonth === index}
             onClick={() => onMonthSelect(index)}
             className={cn(
-              "py-3 px-4 rounded-md text-sm transition-colors cursor-pointer",
-              "hover:bg-accent hover:text-accent-foreground",
-              currentMonth === index &&
-                "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+              MONTH_BUTTON_CLASS,
+              selectedMonth === index && SELECTED_CLASS,
             )}
           >
             {month}
@@ -29,7 +43,5 @@ export const CalendarMonthView = React.memo(
         ))}
       </div>
     </div>
-  ),
-);
-
-CalendarMonthView.displayName = "CalendarMonthView";
+  );
+};

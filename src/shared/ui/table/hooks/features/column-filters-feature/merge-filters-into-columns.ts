@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
 import type { ColumnFilterConfig } from "../../../table.types";
-import { getColumnDefId } from "../shared";
+import { getColumnDefId } from "../column-id";
 
 export const mergeFiltersIntoColumns = <TData>(
   columns: ColumnDef<TData, any>[],

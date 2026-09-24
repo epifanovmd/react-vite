@@ -1,4 +1,4 @@
-export type { FieldProps } from "./Field";
+export type { FieldElementProps, FieldProps } from "./Field";
 export { Field } from "./Field";
 export type { FormProps } from "./Form";
 export { Form } from "./Form";

@@ -3,7 +3,6 @@ import type { FilterFn } from "@tanstack/react-table";
 
 import type { Order } from "./order.types";
 import { formatCurrency, formatDate } from "./order-table.meta";
-import { RightAlign } from "./RightAlign";
 import { StatusBadge } from "./StatusBadge";
 
 const orderHelper = createColumnHelper<Order>();
@@ -33,9 +32,8 @@ const dateRangeFilterFn: FilterFn<Order> = (
 dateRangeFilterFn.autoRemove = (value: DateRange) => !value?.from && !value?.to;
 
 /**
- * Column set shared by every Table example — keeps every demo visually and
- * structurally consistent so the differences between them come only from
- * the feature being demonstrated, not from re-modeled columns.
+ * Общий набор колонок для всех примеров Table: различия между демо
+ * определяются только показываемой фичей, а не перестроенными колонками.
  */
 export const createOrderColumns = () => [
   orderHelper.accessor("id", {
@@ -66,38 +64,32 @@ export const createOrderColumns = () => [
     cell: ({ getValue }) => <StatusBadge status={getValue()} />,
   }),
   orderHelper.accessor("items", {
-    header: () => <RightAlign>Позиций</RightAlign>,
+    header: "Позиций",
     size: 100,
+    meta: { align: "right" },
     aggregationFn: "sum",
-    cell: ({ getValue }) => <RightAlign>{getValue()}</RightAlign>,
-    aggregatedCell: ({ getValue }) => (
-      <RightAlign>Σ {getValue<number>()}</RightAlign>
-    ),
+    cell: ({ getValue }) => getValue(),
+    aggregatedCell: ({ getValue }) => `Σ ${getValue<number>()}`,
   }),
   orderHelper.accessor("amount", {
-    header: () => <RightAlign>Сумма</RightAlign>,
+    header: "Сумма",
     size: 130,
+    meta: { align: "right" },
     aggregationFn: "sum",
     cell: ({ row }) => (
-      <RightAlign>
-        <span className="font-medium">
-          {formatCurrency(row.original.amount)}
-        </span>
-      </RightAlign>
+      <span className="font-medium">{formatCurrency(row.original.amount)}</span>
     ),
     aggregatedCell: ({ getValue }) => (
-      <RightAlign>
-        <span className="font-medium">
-          Σ {formatCurrency(getValue<number>())}
-        </span>
-      </RightAlign>
+      <span className="font-medium">
+        Σ {formatCurrency(getValue<number>())}
+      </span>
     ),
     footer: ({ table }) => {
       const total = table
         .getRowModel()
         .rows.reduce((sum, row) => sum + row.original.amount, 0);
 
-      return <RightAlign>Σ {formatCurrency(total)}</RightAlign>;
+      return `Σ ${formatCurrency(total)}`;
     },
   }),
   orderHelper.accessor("createdAt", {

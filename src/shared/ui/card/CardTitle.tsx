@@ -1,16 +1,20 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-const CardTitle = React.forwardRef<
-  HTMLHeadingElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn("font-semibold leading-none tracking-tight", className)}
-    {...props}
-  />
-));
+export interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  /** Уровень заголовка по месту карточки в иерархии страницы. */
+  as?: "h2" | "h3" | "h4";
+}
+
+const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
+  ({ className, as: Heading = "h3", ...props }, ref) => (
+    <Heading
+      ref={ref}
+      className={cn("font-semibold leading-none tracking-tight", className)}
+      {...props}
+    />
+  ),
+);
 
 CardTitle.displayName = "CardTitle";
 

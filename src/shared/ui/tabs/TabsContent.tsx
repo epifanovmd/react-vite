@@ -2,20 +2,24 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
+export type TabsContentProps = React.ComponentPropsWithoutRef<
+  typeof TabsPrimitive.Content
+>;
+
+const CONTENT_CLASS =
+  "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+
 const TabsContent = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+  TabsContentProps
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Content
     ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className,
-    )}
+    className={cn(CONTENT_CLASS, className)}
     {...props}
   />
 ));
 
-TabsContent.displayName = TabsPrimitive.Content.displayName;
+TabsContent.displayName = "TabsContent";
 
 export { TabsContent };

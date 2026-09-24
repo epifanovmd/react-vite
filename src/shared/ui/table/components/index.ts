@@ -1,13 +1,4 @@
-export type { TableContextValue } from "./table-context";
-export { TableContext } from "./table-context";
-export { TableHeadFilter } from "./table-head-filter";
-export { tableCellVariants, tableHeadVariants, tableVariants } from "./table-variants";
-export { TableBodySection } from "./TableBodySection";
-export { TableColumnVisibility } from "./TableColumnVisibility";
-export { TableDataRow } from "./TableDataRow";
-export { TableFooterSection } from "./TableFooterSection";
-export { TableHeadCell } from "./TableHeadCell";
-export { TableHeaderSection } from "./TableHeaderSection";
+export type { TableRowProps } from "./primitives";
 export {
   TableBody,
   TableCell,
@@ -16,4 +7,24 @@ export {
   TableHeader,
   TableRoot,
   TableRow,
-} from "./TablePrimitive";
+} from "./primitives";
+export type { TableContextValue } from "./table-context";
+export { TableContext, useTableContext } from "./table-context";
+export type {
+  BaseFilterConfig,
+  ColumnFilterConfig,
+  ColumnFilterConfigOf,
+  ColumnFilterOption,
+  ColumnFilterType,
+} from "./table-head-filter";
+export { TableHeadFilter } from "./table-head-filter";
+export {
+  tableCellVariants,
+  tableHeadVariants,
+  tableIconButtonVariants,
+  tableVariants,
+} from "./table-variants";
+export { TableBodySection } from "./TableBodySection";
+export { TableColumnVisibility } from "./TableColumnVisibility";
+export { TableFooterSection } from "./TableFooterSection";
+export { TableHeaderSection } from "./TableHeaderSection";

@@ -1,69 +1,17 @@
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as React from "react";
 
-import { TabsContent } from "./TabsContent";
-import { TabsList, type TabsListProps } from "./TabsList";
-import { TabsTrigger } from "./TabsTrigger";
+/** Индикатор `TabsList` рассчитан на горизонтальный список — `orientation` не поддерживается. */
+export type TabsProps = Omit<
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>,
+  "orientation"
+>;
 
-export interface TabItem {
-  value: string;
-  label: React.ReactNode;
-  content?: React.ReactNode;
-  icon?: React.ReactNode;
-  disabled?: boolean;
-}
-
-export interface TabsProps extends React.ComponentPropsWithoutRef<
-  typeof TabsPrimitive.Root
-> {
-  items?: TabItem[];
-  listProps?: TabsListProps;
-}
-
-const _Tabs = React.forwardRef<
+const Tabs = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Root>,
   TabsProps
->(({ items, listProps, children, ...props }, ref) => {
-  if (items) {
-    return (
-      <TabsPrimitive.Root ref={ref} {...props}>
-        <TabsList {...listProps}>
-          {items.map(item => (
-            <TabsTrigger
-              key={item.value}
-              value={item.value}
-              disabled={item.disabled}
-            >
-              {item.icon && (
-                <span className="inline-flex shrink-0">{item.icon}</span>
-              )}
-              <span className="truncate">{item.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {items.map(
-          item =>
-            item.content !== undefined && (
-              <TabsContent key={item.value} value={item.value}>
-                {item.content}
-              </TabsContent>
-            ),
-        )}
-      </TabsPrimitive.Root>
-    );
-  }
+>((props, ref) => <TabsPrimitive.Root ref={ref} {...props} />);
 
-  return (
-    <TabsPrimitive.Root ref={ref} {...props}>
-      {children}
-    </TabsPrimitive.Root>
-  );
-});
+Tabs.displayName = "Tabs";
 
-_Tabs.displayName = "Tabs";
-
-export const Tabs = Object.assign(_Tabs, {
-  List: TabsList,
-  Trigger: TabsTrigger,
-  Content: TabsContent,
-});
+export { Tabs };

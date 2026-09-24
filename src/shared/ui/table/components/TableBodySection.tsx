@@ -1,70 +1,98 @@
+import { useInfiniteScrollSentinel } from "@shared/lib/hooks";
 import { cn } from "@shared/lib/utils/cn";
-import { type Row, type VisibilityState } from "@tanstack/react-table";
-import { Fragment, MouseEvent, ReactNode, RefObject } from "react";
+import type { ColumnSizingState, Row } from "@tanstack/react-table";
+import { Fragment, type ReactNode, type RefObject } from "react";
 
 import { Empty } from "../../empty";
 import { Spinner } from "../../spinner";
-import { useInfiniteScrollSentinel } from "../hooks/use-infinite-scroll-sentinel";
+import type { InfiniteScrollFeatureMeta } from "../hooks/features/types";
+import type { TableProps, TableRowClickHandler } from "../table.types";
+import { TableBody } from "./primitives";
+import { useTableContext } from "./table-context";
 import { TableDataRow } from "./TableDataRow";
-import { TableBody } from "./TablePrimitive";
+import { TableExpandedRow } from "./TableExpandedRow";
+import { TableStatusRow } from "./TableStatusRow";
 
 interface TableBodySectionProps<TData> {
   rows: Row<TData>[];
   totalColumns: number;
+  columnSizing: ColumnSizingState;
   loading?: boolean;
   refreshing?: boolean;
+  error?: ReactNode;
   empty?: ReactNode;
-  onRowClick?: (row: TData, e: MouseEvent<HTMLTableRowElement>) => void;
-  onRowDoubleClick?: (row: TData, e: MouseEvent<HTMLTableRowElement>) => void;
+  onRowClick?: TableRowClickHandler<TData>;
+  onRowDoubleClick?: TableRowClickHandler<TData>;
   rowClassName?: string | ((row: TData) => string);
+  getRowProps?: TableProps<TData>["getRowProps"];
   renderSubComponent?: (props: { row: Row<TData> }) => ReactNode;
   className?: string;
   resizable?: boolean;
-  columnVisibility?: VisibilityState;
   scrollContainerRef?: RefObject<HTMLElement | null>;
-  hasNextPage?: boolean;
-  isFetchingNextPage?: boolean;
-  onLoadMore?: () => void;
-  infiniteScrollRootMargin?: string;
+  infiniteScroll?: InfiniteScrollFeatureMeta;
 }
+
+const NOOP = () => {};
+
+const CENTERED_CLASS = "flex items-center justify-center";
 
 export const TableBodySection = <TData,>({
   rows,
   totalColumns,
+  columnSizing,
   loading,
   refreshing,
+  error,
   empty,
   onRowClick,
   onRowDoubleClick,
   rowClassName,
+  getRowProps,
   renderSubComponent,
   className,
   resizable,
-  columnVisibility,
   scrollContainerRef,
-  hasNextPage = false,
-  isFetchingNextPage = false,
-  onLoadMore = () => {},
-  infiniteScrollRootMargin,
+  infiniteScroll,
 }: TableBodySectionProps<TData>) => {
-  const sentinelRef = useInfiniteScrollSentinel({
-    containerRef: scrollContainerRef ?? { current: null },
-    hasNextPage,
-    isFetchingNextPage,
-    onLoadMore,
-    rootMargin: infiniteScrollRootMargin,
+  const { labels } = useTableContext();
+  // Наблюдатель зависит от того, смонтирован ли сторожевой ряд: иначе после
+  // первой загрузки `hasNextPage` не меняется и эффект не перезапускается.
+  const sentinelVisible =
+    !loading && !error && rows.length > 0 && !!infiniteScroll?.hasNextPage;
+  const sentinelRef = useInfiniteScrollSentinel<HTMLTableRowElement>({
+    rootRef: scrollContainerRef,
+    hasNextPage: sentinelVisible,
+    isFetchingNextPage: infiniteScroll?.isFetchingNextPage ?? false,
+    onLoadMore: infiniteScroll?.onLoadMore ?? NOOP,
+    rootMargin: infiniteScroll?.rootMargin,
   });
+  const busy = loading || refreshing ? true : undefined;
 
   if (loading) {
     return (
+      <TableBody className={className} aria-busy={busy}>
+        <TableStatusRow colSpan={totalColumns} cellClassName="h-24">
+          <div className={CENTERED_CLASS}>
+            <Spinner size="md" variant="muted" />
+          </div>
+        </TableStatusRow>
+      </TableBody>
+    );
+  }
+
+  if (error) {
+    const errorContent =
+      error === true ? (
+        <Empty size="sm" title={labels.error} icon="question" />
+      ) : (
+        error
+      );
+
+    return (
       <TableBody className={className}>
-        <tr>
-          <td colSpan={totalColumns} className="h-24">
-            <div className="flex items-center justify-center">
-              <Spinner size="md" variant="muted" />
-            </div>
-          </td>
-        </tr>
+        <TableStatusRow colSpan={totalColumns} role="alert">
+          {errorContent}
+        </TableStatusRow>
       </TableBody>
     );
   }
@@ -72,21 +100,19 @@ export const TableBodySection = <TData,>({
   if (rows.length === 0) {
     return (
       <TableBody className={className}>
-        <tr>
-          <td colSpan={totalColumns}>
-            {empty ?? <Empty size="sm" title="No data" icon="inbox" />}
-          </td>
-        </tr>
+        <TableStatusRow colSpan={totalColumns}>
+          {empty ?? <Empty size="sm" title={labels.empty} icon="inbox" />}
+        </TableStatusRow>
       </TableBody>
     );
   }
 
   return (
     <TableBody
+      aria-busy={busy}
       className={cn(
-        refreshing
-          ? "opacity-50 pointer-events-none transition-opacity duration-150"
-          : "transition-opacity duration-150",
+        "transition-opacity duration-150",
+        refreshing && "pointer-events-none opacity-50",
         className,
       )}
     >
@@ -94,34 +120,39 @@ export const TableBodySection = <TData,>({
         <Fragment key={row.id}>
           <TableDataRow
             row={row}
+            cells={row.getVisibleCells()}
+            columnSizing={columnSizing}
             isSelected={row.getIsSelected()}
+            isExpanded={row.getIsExpanded()}
             onRowClick={onRowClick}
             onRowDoubleClick={onRowDoubleClick}
             className={rowClassName}
+            getRowProps={getRowProps}
             resizable={resizable}
-            columnVisibility={columnVisibility}
           />
 
           {row.getIsExpanded() && renderSubComponent && (
-            <tr>
-              <td colSpan={totalColumns} className="p-0">
-                {renderSubComponent({ row })}
-              </td>
-            </tr>
+            <TableExpandedRow
+              row={row}
+              colSpan={totalColumns}
+              renderSubComponent={renderSubComponent}
+            />
           )}
         </Fragment>
       ))}
 
-      {hasNextPage && (
-        <tr ref={sentinelRef}>
-          <td colSpan={totalColumns} className="h-10 p-0">
-            {isFetchingNextPage && (
-              <div className="flex items-center justify-center py-2">
-                <Spinner size="sm" variant="muted" />
-              </div>
-            )}
-          </td>
-        </tr>
+      {sentinelVisible && (
+        <TableStatusRow
+          ref={sentinelRef}
+          colSpan={totalColumns}
+          cellClassName="h-10"
+        >
+          {infiniteScroll?.isFetchingNextPage && (
+            <div className={cn(CENTERED_CLASS, "py-2")}>
+              <Spinner size="sm" variant="muted" />
+            </div>
+          )}
+        </TableStatusRow>
       )}
     </TableBody>
   );

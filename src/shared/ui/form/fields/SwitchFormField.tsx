@@ -1,70 +1,56 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { Switch, type SwitchProps } from "../../switch";
 import { FormField } from "../primitives/FormField";
 import type { FormAdapterProps } from "../types";
+import { buildRequiredLabel } from "./buildRequiredLabel";
+import { composeHandlers } from "./compose-handlers";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 export type SwitchFormFieldProps<
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, boolean | undefined>,
-> = FormAdapterProps<TFormData, TName> &
-  Omit<SwitchProps, "checked" | "disabled" | "id" | "name">;
+> = Omit<FormAdapterProps<TFormData, TName>, "hint"> &
+  Omit<SwitchProps, ManagedControlProps | "checked">;
 
-/** @example <SwitchFormField<TForm> name="notifications" label="Alerts" /> */
+/**
+ * Switch, связанный с RHF. `label` и `description` рендерит сам Switch
+ * (кликабельная подпись рядом с контролом), поэтому `hint` не поддерживается.
+ *
+ * @example <SwitchFormField<TForm> name="notifications" label="Уведомления" />
+ */
 export const SwitchFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, boolean | undefined> =
     FieldPathByValue<TFormData, boolean | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  onCheckedChange,
-  onBlur,
-  variant,
-  ...switchProps
-}: SwitchFormFieldProps<TFormData, TName>): React.ReactElement => {
+>(
+  props: SwitchFormFieldProps<TFormData, TName>,
+): ReactElement => {
+  const {
+    formFieldProps: { label, description, ...formFieldProps },
+    controlProps: { onCheckedChange, onBlur, variant, ...switchProps },
+  } = splitFormAdapterProps(props);
+  const controlLabel = buildRequiredLabel(label, formFieldProps.required);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
+      {...formFieldProps}
       render={({ field, fieldState, controlProps }) => (
         <Switch
           {...switchProps}
           {...controlProps}
           ref={field.ref}
+          label={controlLabel}
+          description={description}
           checked={Boolean(field.value)}
-          disabled={field.disabled}
+          // У Switch нет filled-вариантов, поэтому resolveFieldVariant не нужен.
           variant={fieldState.invalid ? "error" : variant}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onCheckedChange={value => {
-            field.onChange(value);
-            onCheckedChange?.(value);
-          }}
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onCheckedChange={composeHandlers(field.onChange, onCheckedChange)}
         />
       )}
     />

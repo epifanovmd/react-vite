@@ -1,14 +1,15 @@
 import type { ChartSeries } from "@shared/ui";
 import {
+  AreaChart,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Chart,
+  Switch,
 } from "@shared/ui";
 import { format } from "date-fns";
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { REVENUE, type RevenuePoint } from "./chart.data";
 
@@ -19,27 +20,23 @@ const money = new Intl.NumberFormat("ru-RU", {
   notation: "compact",
 });
 
+const formatMoney = (value: number) => money.format(value);
+
+const formatMonth = (value: Date | number | string) =>
+  format(value as Date, "LLLL yyyy");
+
 export const RevenueAreaExample: FC = () => {
+  const [stacked, setStacked] = useState(true);
+
   const series = useMemo<ChartSeries<RevenuePoint>[]>(
     () => [
       {
         key: "subscriptions",
         label: "Подписки",
-        stackId: "revenue",
         value: point => point.subscriptions,
       },
-      {
-        key: "services",
-        label: "Услуги",
-        stackId: "revenue",
-        value: point => point.services,
-      },
-      {
-        key: "ads",
-        label: "Реклама",
-        stackId: "revenue",
-        value: point => point.ads,
-      },
+      { key: "services", label: "Услуги", value: point => point.services },
+      { key: "ads", label: "Реклама", value: point => point.ads },
     ],
     [],
   );
@@ -47,23 +44,27 @@ export const RevenueAreaExample: FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Область со стеком</CardTitle>
+        <CardTitle className="text-base">AreaChart</CardTitle>
         <CardDescription className="text-xs">
-          Серии с общим stackId складываются; тултип показывает и сумму
+          Со `stacked` серии складываются, а тултип показывает сумму;
+          форматирование значений общее для оси и тултипа
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Chart
+      <CardContent className="space-y-4">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Switch size="sm" checked={stacked} onCheckedChange={setStacked} />
+          Стек
+        </label>
+
+        <AreaChart
           data={REVENUE}
           series={series}
           x={point => point.month}
-          type="area"
-          stacked
+          stacked={stacked}
           height={260}
-          formatValue={value => money.format(value)}
-          formatX={value => format(value as Date, "LLLL yyyy")}
-          yAxis={{ tickFormat: value => money.format(value) }}
-          referenceLines={[{ y: 2_000_000, label: "План" }]}
+          formatValue={formatMoney}
+          formatX={formatMonth}
+          yAxis={{ tickFormat: formatMoney }}
           ariaLabel="Выручка по направлениям за 12 месяцев"
         />
       </CardContent>

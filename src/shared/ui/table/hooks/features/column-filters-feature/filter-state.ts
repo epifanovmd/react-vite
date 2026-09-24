@@ -1,7 +1,7 @@
 import type { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 
 import type { ColumnFilterConfig } from "../../../table.types";
-import { getColumnDefId } from "../shared";
+import { getColumnDefId } from "../column-id";
 
 const getQueryKey = (column: ColumnDef<any, any>): string | undefined => {
   const filter = column.meta?.filter as ColumnFilterConfig | undefined;
@@ -38,6 +38,8 @@ export const toFilterMap = <T>(
   const map: Record<string, unknown> = {};
 
   for (const filter of filters) {
+    if (filter.value === undefined) continue;
+
     const column = columns.find(c => getColumnDefId(c) === filter.id);
     const queryKey = (column && getQueryKey(column)) ?? filter.id;
 

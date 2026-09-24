@@ -37,7 +37,6 @@ describe("Input", () => {
     render(
       <Input
         aria-label="Search"
-        clearAriaLabel="Очистить"
         clearable
         onChange={onChange}
         onClear={onClear}
@@ -82,7 +81,7 @@ describe("Input", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear input" }));
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
 
     expect(onChange).toHaveBeenCalledOnce();
     expect(changedValues).toEqual([""]);
@@ -90,13 +89,7 @@ describe("Input", () => {
 
   it("toggles password visibility with an accessible state", () => {
     render(
-      <Input
-        aria-label="Password"
-        defaultValue="secret"
-        hidePasswordAriaLabel="Скрыть пароль"
-        showPasswordAriaLabel="Показать пароль"
-        type="password"
-      />,
+      <Input aria-label="Password" defaultValue="secret" type="password" />,
     );
 
     const input = screen.getByLabelText("Password");
@@ -104,6 +97,7 @@ describe("Input", () => {
 
     expect(input).toHaveAttribute("type", "password");
     expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(toggle).not.toHaveAttribute("tabindex");
 
     fireEvent.click(toggle);
     expect(input).toHaveAttribute("type", "text");
@@ -179,7 +173,7 @@ describe("Input", () => {
 
     render(<Input aria-label="Masked" clearable hasValue onClear={onClear} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear input" }));
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
     expect(onClear).toHaveBeenCalledOnce();
   });
 
@@ -211,6 +205,93 @@ describe("Input", () => {
       />,
     );
     expect(root?.querySelector('[data-slot="input-right-icon"]')).toBeNull();
-    expect(screen.getByRole("button", { name: "Clear input" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Очистить" })).toBeVisible();
+  });
+
+  it("renders interactive addons without blocking pointer events", () => {
+    const onLeft = vi.fn();
+    const onRight = vi.fn();
+
+    render(
+      <Input
+        aria-label="Addons"
+        clearable
+        leftAddon={
+          <button type="button" onClick={onLeft}>
+            Left
+          </button>
+        }
+        rightAddon={
+          <button type="button" onClick={onRight}>
+            Right
+          </button>
+        }
+        value="value"
+      />,
+    );
+
+    const input = screen.getByRole("textbox", { name: "Addons" });
+    const root = input.closest('[data-slot="input-root"]');
+    const leftAddon = root?.querySelector('[data-slot="input-left-addon"]');
+    const rightAddon = root?.querySelector('[data-slot="input-right-addon"]');
+
+    expect(leftAddon).not.toHaveClass("pointer-events-none");
+    expect(rightAddon).not.toHaveClass("pointer-events-none");
+    expect(input).toHaveClass("pl-10", "pr-10");
+
+    fireEvent.click(screen.getByRole("button", { name: "Left" }));
+    fireEvent.click(screen.getByRole("button", { name: "Right" }));
+    expect(onLeft).toHaveBeenCalledOnce();
+    expect(onRight).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Очистить" })).toBeVisible();
+  });
+
+  it("keeps the right addon visible while loading", () => {
+    render(
+      <Input
+        aria-label="Loading addon"
+        loading
+        rightAddon={<span>Addon</span>}
+        rightIcon={<span>Icon</span>}
+      />,
+    );
+
+    expect(screen.getByText("Addon")).toBeVisible();
+    expect(screen.queryByText("Icon")).toBeNull();
+    expect(screen.getByRole("status")).toBeInTheDocument();
+  });
+  it("does not render a falsy numeric right icon as text", () => {
+    render(
+      <Input
+        aria-label="Zero icon"
+        rightAddon={<span>Addon</span>}
+        rightIcon={0}
+      />,
+    );
+
+    const input = screen.getByRole("textbox", { name: "Zero icon" });
+    const actions = input
+      .closest('[data-slot="input-root"]')
+      ?.querySelector('[data-slot="input-actions"]');
+
+    expect(actions).toHaveTextContent(/^Addon$/);
+  });
+
+  it("renders only the left addon when both left addon and icon are passed", () => {
+    render(
+      <Input
+        aria-label="Left overlap"
+        leftAddon={<span>Addon</span>}
+        leftIcon={<span>Icon</span>}
+      />,
+    );
+
+    const input = screen.getByRole("textbox", { name: "Left overlap" });
+    const root = input.closest('[data-slot="input-root"]');
+
+    expect(screen.getByText("Addon")).toBeVisible();
+    expect(screen.queryByText("Icon")).toBeNull();
+    expect(root?.querySelector('[data-slot="input-left-icon"]')).toBeNull();
+    expect(input).toHaveClass("pl-10");
   });
 });

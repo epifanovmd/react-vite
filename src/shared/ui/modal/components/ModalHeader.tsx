@@ -1,16 +1,16 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-export const ModalHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col space-y-1.5 p-6 pb-4 text-center sm:text-left",
-      className,
-    )}
-    {...props}
-  />
+import { DIALOG_HEADER_CLASS } from "../../foundation/dialog-parts";
+
+export type ModalHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+
+const ModalHeader = React.forwardRef<HTMLDivElement, ModalHeaderProps>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn(DIALOG_HEADER_CLASS, className)} {...props} />
+  ),
 );
+
 ModalHeader.displayName = "ModalHeader";
+
+export { ModalHeader };

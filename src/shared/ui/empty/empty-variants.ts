@@ -1,13 +1,13 @@
 import { cva } from "class-variance-authority";
 
 export const emptyVariants = cva(
-  "flex flex-col items-center justify-center text-center px-4 gap-4",
+  "flex flex-col items-center justify-center px-4 text-center",
   {
     variants: {
       size: {
-        sm: "py-10 gap-3",
-        md: "py-16 gap-4",
-        lg: "py-24 gap-5",
+        sm: "gap-3 py-10",
+        md: "gap-4 py-16",
+        lg: "gap-5 py-24",
       },
     },
     defaultVariants: {

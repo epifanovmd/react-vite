@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@features/toggle-theme";
 import {
   PageHeader,
   PageLayout,
@@ -5,7 +6,6 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-  ThemeToggle,
 } from "@shared/ui";
 import { LayoutGrid } from "lucide-react";
 import { FC } from "react";

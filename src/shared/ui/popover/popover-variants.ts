@@ -13,15 +13,18 @@ export const popoverContentVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-popover text-popover-foreground border shadow-md",
-        dark: "bg-gray-900 text-gray-50 border-gray-700 shadow-lg",
-        info: "bg-blue-50 text-blue-900 border-blue-200 shadow-md dark:bg-blue-950 dark:text-blue-100 dark:border-blue-800",
+        default: "bg-popover text-popover-foreground border-border shadow-md",
+        dark: "bg-foreground text-background border-foreground/20 shadow-lg",
+        /* Плавающая панель должна быть непрозрачной — подмешиваем тон к фону. */
+        info: "bg-[color-mix(in_oklab,var(--color-info)_10%,var(--color-popover))] text-popover-foreground border-info/30 shadow-md",
       },
       size: {
         sm: "w-48 p-2 text-xs",
         md: "w-72 p-4 text-sm",
         lg: "w-96 p-5 text-sm",
         auto: "p-4 text-sm",
+        /** Без отступов и ширины — для собственной раскладки контента. */
+        none: "text-sm",
       },
     },
     defaultVariants: {

@@ -1,6 +1,8 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
 import type { SelectDataProps, SelectOption, SelectValue } from "../types";
+import { useOptionsRequest } from "./use-options-request";
 
 export interface UseInfiniteOptionsConfig<TData, V extends SelectValue> {
   fetchPage: (
@@ -12,87 +14,83 @@ export interface UseInfiniteOptionsConfig<TData, V extends SelectValue> {
   pageSize?: number;
   debounce?: number;
   minQueryLength?: number;
+  enabled?: boolean;
 }
 
+/** Серверный поиск с постраничной догрузкой по скроллу. */
 export const useInfiniteOptions = <TData, V extends SelectValue>({
   fetchPage,
   getOption,
   pageSize = 20,
   debounce = 300,
   minQueryLength = 0,
+  enabled = true,
 }: UseInfiniteOptionsConfig<TData, V>): SelectDataProps<V> => {
-  const [options, setOptions] = React.useState<SelectOption<V>[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [loadingMore, setLoadingMore] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
+  const [hasMore, setHasMore] = React.useState(false);
 
-  const fetchRef = React.useRef(fetchPage);
-  const getOptionRef = React.useRef(getOption);
+  const request = useOptionsRequest<TData, V>(getOption);
+  const { run, cancel, setOptions } = request;
+  const fetchRef = useLatestRef(fetchPage);
   const pageRef = React.useRef(0);
-  const hasMoreRef = React.useRef(true);
 
-  fetchRef.current = fetchPage;
-  getOptionRef.current = getOption;
-
-  const load = React.useCallback(
-    async (q: string, page: number, signal: AbortSignal) => {
-      const first = page === 0;
-
-      if (first) setLoading(true);
-      else setLoadingMore(true);
-
-      try {
-        const data = await fetchRef.current(q, page, signal);
-
-        if (signal.aborted) return;
-        const mapped = data.map(item => getOptionRef.current(item));
-
-        setOptions(prev => (first ? mapped : [...prev, ...mapped]));
-        hasMoreRef.current = data.length >= pageSize;
+  const loadPage = React.useCallback(
+    (q: string, page: number) =>
+      run(
+        signal => fetchRef.current(q, page, signal),
+        page === 0 ? "replace" : "append",
+      ).then(result => {
+        if (!result) return;
         pageRef.current = page;
-      } catch {
-        if (!signal.aborted && first) setOptions([]);
-      } finally {
-        if (!signal.aborted) {
-          if (first) setLoading(false);
-          else setLoadingMore(false);
-        }
-      }
-    },
-    [pageSize],
+        setHasMore(result.length >= pageSize);
+      }),
+    [run, fetchRef, pageSize],
   );
 
   React.useEffect(() => {
-    if (!open) return;
-    if (query.length < minQueryLength) return;
+    if (!enabled || !open) return;
 
-    pageRef.current = 0;
-    hasMoreRef.current = true;
+    if (query.length < minQueryLength) {
+      setOptions([]);
+      setHasMore(false);
 
-    const ctrl = new AbortController();
+      return;
+    }
+
     const timer = setTimeout(
-      () => load(query, 0, ctrl.signal),
+      () => void loadPage(query, 0),
       query ? debounce : 0,
     );
 
     return () => {
       clearTimeout(timer);
-      ctrl.abort();
+      cancel();
     };
-  }, [open, query, debounce, load, minQueryLength]);
+  }, [
+    enabled,
+    open,
+    query,
+    debounce,
+    minQueryLength,
+    loadPage,
+    cancel,
+    setOptions,
+  ]);
+
+  const { loading, loadingMore } = request;
 
   const onScrollEnd = React.useCallback(() => {
-    if (loading || loadingMore || !hasMoreRef.current) return;
-    const ctrl = new AbortController();
-
-    load(query, pageRef.current + 1, ctrl.signal);
-  }, [loading, loadingMore, query, load]);
+    if (loading || loadingMore || !hasMore) return;
+    void loadPage(query, pageRef.current + 1);
+  }, [loading, loadingMore, hasMore, query, loadPage]);
 
   return {
-    options,
+    options: request.options,
     loading,
     loadingMore,
+    hasMore,
+    error: request.error,
     search: true,
     searchValue: query,
     onSearch: setQuery,

@@ -1,100 +1,59 @@
 import { useMergedRef } from "@mantine/hooks";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { useSmoothHorizontalScroll } from "@shared/lib/hooks/use-smooth-horizontal-scroll";
+import { useSmoothHorizontalScroll } from "@shared/lib/hooks";
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
-import { motion } from "motion/react";
+import type { VariantProps } from "class-variance-authority";
+import { motion, useReducedMotion } from "motion/react";
 import * as React from "react";
 
-import { TabsContext } from "./tabs-context";
-import { tabsListVariants, tabsMotionVariants } from "./tabs-variants";
+import { useActiveIndicator } from "../foundation";
+import { TabsContext, type TabsContextValue } from "./tabs-context";
+import { tabsIndicatorVariants, tabsListVariants } from "./tabs-variants";
 
 export interface TabsListProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>,
+  extends
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>,
     VariantProps<typeof tabsListVariants> {}
+
+const INDICATOR_TRANSITION = { duration: 0.2, ease: "easeInOut" } as const;
+const INSTANT_TRANSITION = { duration: 0 } as const;
 
 const TabsList = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.List>,
   TabsListProps
 >(({ className, variant, size, children, ...props }, ref) => {
   const listRef = React.useRef<HTMLDivElement>(null);
-  const [left, setLeft] = React.useState(0);
-  const [width, setWidth] = React.useState(0);
-  const [hasActive, setHasActive] = React.useState(false);
-
-  const count = React.useMemo(
-    () => React.Children.toArray(children).length,
-    [children],
-  );
-
+  const shouldReduceMotion = useReducedMotion();
   const { scrollToCenter } = useSmoothHorizontalScroll(listRef);
+  const { containerRef, rect, animated } = useActiveIndicator<HTMLDivElement>({
+    activeSelector: '[data-state="active"]',
+    itemsKey: React.Children.count(children),
+    observeAttributes: ["data-state"],
+    onActiveChange: scrollToCenter,
+  });
+  const mergedRef = useMergedRef(ref, listRef, containerRef);
 
-  const updateIndicator = React.useCallback(() => {
-    const list = listRef.current;
-
-    if (!list) return;
-
-    const active = list.querySelector<HTMLElement>('[data-state="active"]');
-
-    if (!active) {
-      setHasActive(false);
-
-      return;
-    }
-
-    const newLeft = active.offsetLeft;
-    const newWidth = active.offsetWidth;
-
-    setHasActive(true);
-    setLeft(prev => (prev === newLeft ? prev : newLeft));
-    setWidth(prev => (prev === newWidth ? prev : newWidth));
-
-    scrollToCenter(active);
-  }, [scrollToCenter]);
-
-  React.useEffect(() => {
-    const list = listRef.current;
-
-    if (!list) return;
-
-    const observer = new MutationObserver(updateIndicator);
-
-    observer.observe(list, {
-      attributes: true,
-      attributeFilter: ["data-state"],
-      subtree: true,
-    });
-
-    updateIndicator();
-
-    return () => observer.disconnect();
-  }, [updateIndicator]);
-
-  const mergedRef = useMergedRef(listRef, ref);
-
-  const ctxValue = React.useMemo(() => ({ variant, size }), [variant, size]);
-
-  if (count <= 1) {
-    return null;
-  }
+  const ctxValue = React.useMemo<TabsContextValue>(
+    () => ({ variant, size }),
+    [variant, size],
+  );
+  const transition =
+    animated && !shouldReduceMotion ? INDICATOR_TRANSITION : INSTANT_TRANSITION;
 
   return (
     <TabsContext.Provider value={ctxValue}>
       <TabsPrimitive.List
         ref={mergedRef}
-        className={cn(
-          "relative",
-          tabsListVariants({ variant, size, className }),
-        )}
+        className={cn(tabsListVariants({ variant, size }), className)}
         {...props}
       >
-        {hasActive && (
+        {rect && (
           <motion.div
-            className={tabsMotionVariants({ variant })}
+            aria-hidden
+            className={tabsIndicatorVariants({ variant })}
             initial={false}
-            animate={{ x: left, width }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            style={{ position: "absolute", left: 0 }}
+            animate={{ x: rect.x, width: rect.width }}
+            transition={transition}
           />
         )}
         {children}
@@ -103,6 +62,6 @@ const TabsList = React.forwardRef<
   );
 });
 
-TabsList.displayName = TabsPrimitive.List.displayName;
+TabsList.displayName = "TabsList";
 
 export { TabsList };

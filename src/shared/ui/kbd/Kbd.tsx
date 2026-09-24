@@ -1,16 +1,18 @@
 import { cn } from "@shared/lib/utils/cn";
-import { FC, HTMLAttributes } from "react";
+import * as React from "react";
+
+export type KbdProps = React.HTMLAttributes<HTMLElement>;
+
+const KBD_CLASS =
+  "rounded border border-border bg-muted px-1 font-mono text-[10px] text-muted-foreground";
 
 /** Клавиша: горячая клавиша класса, подсказка в редакторе. */
-export const Kbd: FC<HTMLAttributes<HTMLElement>> = ({
-  className,
-  ...props
-}) => (
-  <kbd
-    className={cn(
-      "rounded border border-border bg-muted px-1 font-mono text-[10px] text-muted-foreground",
-      className,
-    )}
-    {...props}
-  />
+const Kbd = React.forwardRef<HTMLElement, KbdProps>(
+  ({ className, ...props }, ref) => (
+    <kbd ref={ref} className={cn(KBD_CLASS, className)} {...props} />
+  ),
 );
+
+Kbd.displayName = "Kbd";
+
+export { Kbd };

@@ -1,3 +1,49 @@
-export * from "./features";
-export type { UseTableInstanceOptions } from "./useTableInstance";
-export { useTableInstance } from "./useTableInstance";
+export type {
+  ColumnFiltersFeatureOptions,
+  ColumnFiltersFeatureResult,
+  ColumnOrderFeatureOptions,
+  ColumnPinningFeatureOptions,
+  ColumnSizingFeatureOptions,
+  ColumnVisibilityFeatureOptions,
+  ExpandingFeatureMeta,
+  ExpandingFeatureOptions,
+  GlobalFilterFeatureOptions,
+  GroupingFeatureOptions,
+  InfiniteScrollFeatureMeta,
+  InfiniteScrollFeatureOptions,
+  MergedTableFeatures,
+  PaginationFeatureMeta,
+  PaginationFeatureOptions,
+  RowSelectionFeatureMeta,
+  RowSelectionFeatureOptions,
+  RowSelectionMode,
+  SortingFeatureOptions,
+  TableFeatureKind,
+  TableFeatureOf,
+  TableFeatureOptions,
+  TableFeatureResult,
+  TableFeaturesByKind,
+  TableFeatureSpec,
+  TableFeatureStateOptions,
+  TableFilterFieldConfig,
+  TableFiltersConfig,
+} from "./features";
+export {
+  getColumnDefId,
+  mergeTableFeatures,
+  useColumnFiltersFeature,
+  useColumnOrderFeature,
+  useColumnPinningFeature,
+  useColumnSizingFeature,
+  useColumnVisibilityFeature,
+  useExpandingFeature,
+  useGlobalFilterFeature,
+  useGroupingFeature,
+  useInfiniteScrollFeature,
+  usePaginationFeature,
+  useRowSelectionFeature,
+  useSortingFeature,
+  useTableFeatureState,
+} from "./features";
+export type { UseTableInstanceOptions } from "./use-table-instance";
+export { useTableInstance } from "./use-table-instance";

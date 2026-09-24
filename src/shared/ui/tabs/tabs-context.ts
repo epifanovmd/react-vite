@@ -1,9 +1,12 @@
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-export interface TabsContextValue {
-  variant?: "default" | "underline" | null;
-  size?: "sm" | "md" | "lg" | null;
-}
+import type { tabsListVariants } from "./tabs-variants";
+
+export type TabsContextValue = Pick<
+  VariantProps<typeof tabsListVariants>,
+  "variant" | "size"
+>;
 
 export const TabsContext = React.createContext<TabsContextValue>({
   variant: "default",

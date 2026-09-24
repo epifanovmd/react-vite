@@ -2,14 +2,23 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-export const ModalDescription = React.forwardRef<
+import { DIALOG_DESCRIPTION_CLASS } from "../../foundation/dialog-parts";
+
+export type ModalDescriptionProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Description
+>;
+
+const ModalDescription = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+  ModalDescriptionProps
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn(DIALOG_DESCRIPTION_CLASS, className)}
     {...props}
   />
 ));
+
 ModalDescription.displayName = "ModalDescription";
+
+export { ModalDescription };

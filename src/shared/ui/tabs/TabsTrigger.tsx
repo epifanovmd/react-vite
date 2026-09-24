@@ -1,6 +1,6 @@
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { TabsContext } from "./tabs-context";
@@ -11,6 +11,10 @@ export interface TabsTriggerProps
     React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>,
     VariantProps<typeof tabsTriggerVariants> {}
 
+/* flex + gap: иначе иконка липнет к подписи и садится на базовую линию */
+const CONTENT_CLASS =
+  "relative z-10 flex min-w-0 shrink items-center justify-center gap-1.5 overflow-hidden";
+
 const TabsTrigger = React.forwardRef<
   React.ComponentRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
@@ -19,26 +23,22 @@ const TabsTrigger = React.forwardRef<
     { className, variant: variantProp, size: sizeProp, children, ...props },
     ref,
   ) => {
-    const { variant: contextVariant, size: contextSize } =
-      React.useContext(TabsContext);
-    const variant = variantProp || contextVariant;
-    const size = sizeProp || contextSize;
+    const context = React.useContext(TabsContext);
+    const variant = variantProp ?? context.variant;
+    const size = sizeProp ?? context.size;
 
     return (
       <TabsPrimitive.Trigger
         ref={ref}
-        className={cn(tabsTriggerVariants({ variant, size, className }))}
+        className={cn(tabsTriggerVariants({ variant, size }), className)}
         {...props}
       >
-        {/* flex + gap: иначе иконка липнет к подписи и садится на базовую линию */}
-        <span className="relative z-10 flex min-w-0 shrink items-center justify-center gap-1.5 overflow-hidden">
-          {children}
-        </span>
+        <span className={CONTENT_CLASS}>{children}</span>
       </TabsPrimitive.Trigger>
     );
   },
 );
 
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+TabsTrigger.displayName = "TabsTrigger";
 
 export { TabsTrigger };

@@ -1,12 +1,11 @@
-import {
-  getSortedRowModel,
-  type OnChangeFn,
-  type SortingState,
-} from "@tanstack/react-table";
+import { getSortedRowModel, type SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
+import {
+  type TableFeatureSpec,
+  useTableFeatureState,
+} from "./create-table-feature";
+import type { TableFeatureOf } from "./types";
 
 export interface SortingFeatureOptions {
   enabled?: boolean;
@@ -19,9 +18,16 @@ export interface SortingFeatureOptions {
   sortDescFirst?: boolean;
 }
 
-export const useSortingFeature = <TData>(
+const SPEC: TableFeatureSpec<"sorting", "sorting"> = {
+  kind: "sorting",
+  stateKey: "sorting",
+  fallback: [],
+  changeOption: "onSortingChange",
+};
+
+export const useSortingFeature = <TData = unknown>(
   options: SortingFeatureOptions = {},
-): TableFeatureResult<TData> => {
+): TableFeatureOf<TData, "sorting"> => {
   const {
     enabled = true,
     sortingState,
@@ -33,35 +39,33 @@ export const useSortingFeature = <TData>(
     sortDescFirst,
   } = options;
 
-  const [sorting, setSorting] = useControllableState<SortingState>({
-    value: sortingState,
-    defaultValue: defaultSorting ?? [],
-    onChange: onSortingChange,
-  });
-
-  return useMemo(
+  const extraOptions = useMemo(
     () => ({
-      kind: "sorting" as const,
-      state: { sorting },
-      options: {
-        enableSorting: enabled,
-        onSortingChange: enabled ? setSorting : undefined,
-        manualSorting,
-        enableMultiSort,
-        enableSortingRemoval,
-        sortDescFirst,
-        getSortedRowModel:
-          enabled && !manualSorting ? getSortedRowModel() : undefined,
-      },
+      enableSorting: enabled,
+      manualSorting,
+      enableMultiSort,
+      enableSortingRemoval,
+      sortDescFirst,
+      getSortedRowModel:
+        enabled && !manualSorting ? getSortedRowModel<TData>() : undefined,
     }),
     [
-      sorting,
-      setSorting,
       enabled,
       manualSorting,
       enableMultiSort,
       enableSortingRemoval,
       sortDescFirst,
     ],
+  );
+
+  return useTableFeatureState<TData, "sorting", "sorting">(
+    SPEC,
+    {
+      enabled,
+      value: sortingState,
+      defaultValue: defaultSorting,
+      onChange: onSortingChange,
+    },
+    extraOptions,
   );
 };

@@ -1,73 +1,47 @@
-import { useMemo } from "react";
-
 import type { LabeledValue } from "../../../../select";
 import { Select } from "../../../../select";
-import {
-  useAsyncOptions,
-  useStaticOptions,
-} from "../../../../select/strategies";
-import type { ColumnFilterOption } from "./column-filter-option";
+import { useTableContext } from "../../table-context";
+import type { BaseFilterConfig, ColumnFilterOption } from "./filter-config";
 import type { FilterControlProps } from "./filter-control-props";
+import { useFilterOptions } from "./use-filter-options";
 
-export interface MultiSelectFilterConfig<T = string> {
+export interface MultiSelectFilterConfig<T = string> extends BaseFilterConfig {
   type: "multiselect";
   options?: ColumnFilterOption<T>[];
   fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
-  queryKey?: string;
   labelInValue?: boolean;
   faceted?: boolean;
 }
 
-export const MultiSelectFilterControl = <TData,>({
+const EMPTY_VALUES: never[] = [];
+
+export const MultiSelectFilterControl = ({
   config,
   column,
-}: FilterControlProps<MultiSelectFilterConfig, TData>) => {
-  const { fetchOptions, labelInValue, faceted } = config;
-
-  const uniqueValues = faceted ? column.getFacetedUniqueValues() : undefined;
-  const options = useMemo(() => {
-    if (!faceted || !config.options) return config.options;
-
-    return config.options.map(option => ({
-      ...option,
-      label: (
-        <span className={"flex gap-1"}>
-          {option.label}
-          <span className="text-muted-foreground">
-            ({uniqueValues?.get(option.value) ?? 0})
-          </span>
-        </span>
-      ),
-    }));
-  }, [config.options, faceted, uniqueValues]);
-
-  const searchable = useStaticOptions(options ?? [], { search: !fetchOptions });
-  const asyncSearchable = useAsyncOptions({
-    fetch: async query => {
-      if (fetchOptions) {
-        return await fetchOptions(query);
-      }
-
-      return [];
-    },
-    getOption: item => item,
-    debounce: 300,
-    minQueryLength: 2,
-    fetchOnMount: true,
+}: FilterControlProps<MultiSelectFilterConfig>) => {
+  const { labels } = useTableContext();
+  const { options, fetchOptions, placeholder, labelInValue, faceted } = config;
+  const dataProps = useFilterOptions({
+    column,
+    options,
+    fetchOptions,
+    faceted,
   });
-
-  const props = fetchOptions ? asyncSearchable : searchable;
+  const resolvedPlaceholder = placeholder ?? labels.filterAll;
 
   if (labelInValue) {
     return (
       <Select
-        {...props}
+        {...dataProps}
         multi
         clearable
         labelInValue
         size="sm"
-        placeholder="Все"
-        value={(column.getFilterValue() as LabeledValue[] | undefined) ?? []}
+        placeholder={resolvedPlaceholder}
+        value={
+          (column.getFilterValue() as LabeledValue[] | undefined) ??
+          EMPTY_VALUES
+        }
         onChange={(v: LabeledValue[]) => column.setFilterValue(v)}
       />
     );
@@ -75,12 +49,12 @@ export const MultiSelectFilterControl = <TData,>({
 
   return (
     <Select
-      {...props}
+      {...dataProps}
       multi
       clearable
       size="sm"
-      placeholder="Все"
-      value={(column.getFilterValue() as string[] | undefined) ?? []}
+      placeholder={resolvedPlaceholder}
+      value={(column.getFilterValue() as string[] | undefined) ?? EMPTY_VALUES}
       onChange={(v: string[]) => column.setFilterValue(v)}
     />
   );

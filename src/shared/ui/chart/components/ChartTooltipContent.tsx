@@ -1,5 +1,4 @@
 import type { ChartTooltipData } from "../chart.types";
-import { formatChartValue } from "../utils/format";
 
 export interface ChartTooltipContentProps<Datum> {
   data: ChartTooltipData<Datum>;
@@ -12,37 +11,39 @@ export interface ChartTooltipContentProps<Datum> {
  */
 export const ChartTooltipContent = <Datum,>({
   data,
-  showTotal,
-}: ChartTooltipContentProps<Datum>) => (
-  <div>
-    <p className="mb-1.5 text-xs text-muted-foreground">{data.label}</p>
+  showTotal = false,
+}: ChartTooltipContentProps<Datum>) => {
+  const hasTotal = showTotal && data.entries.length > 1;
 
-    <ul className="space-y-1">
-      {data.entries.map(entry => (
-        <li key={entry.key} className="flex items-center gap-2">
-          <span
-            className="h-0.5 w-3.5 shrink-0 rounded-full"
-            style={{ background: entry.color }}
-          />
-          <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-            {entry.label}
+  return (
+    <div>
+      <ul className="space-y-1">
+        {data.entries.map(entry => (
+          <li key={entry.key} className="flex items-center gap-2">
+            <span
+              className="h-0.5 w-3.5 shrink-0 rounded-full"
+              style={{ background: entry.color }}
+            />
+            <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+              {entry.label}
+            </span>
+            <span className="text-xs font-semibold tabular-nums">
+              {entry.formatted}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {hasTotal && (
+        <div className="mt-1.5 flex items-center gap-2 border-t pt-1.5">
+          <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+            Всего
           </span>
           <span className="text-xs font-semibold tabular-nums">
-            {entry.formatted}
+            {data.formattedTotal}
           </span>
-        </li>
-      ))}
-    </ul>
-
-    {showTotal && data.entries.length > 1 && (
-      <div className="mt-1.5 flex items-center gap-2 border-t pt-1.5">
-        <span className="min-w-0 flex-1 text-xs text-muted-foreground">
-          Всего
-        </span>
-        <span className="text-xs font-semibold tabular-nums">
-          {formatChartValue(data.total)}
-        </span>
-      </div>
-    )}
-  </div>
-);
+        </div>
+      )}
+    </div>
+  );
+};

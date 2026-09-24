@@ -2,33 +2,36 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as React from "react";
 
 import { TooltipContent, type TooltipContentProps } from "./TooltipContent";
-import { TooltipTrigger } from "./TooltipTrigger";
 
-export interface TooltipProps
-  extends React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root> {
+export interface TooltipProps extends React.ComponentPropsWithoutRef<
+  typeof TooltipPrimitive.Root
+> {
+  /** Шорткат: `children` становится триггером, `content` — подсказкой. */
   content?: React.ReactNode;
   contentProps?: TooltipContentProps;
 }
 
-const _Tooltip = React.forwardRef<
-  React.ComponentRef<typeof TooltipPrimitive.Root>,
-  TooltipProps
->(({ content, contentProps, children, ...props }, _ref) => {
-  if (content !== undefined) {
-    return (
-      <TooltipPrimitive.Root {...props}>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent {...contentProps}>{content}</TooltipContent>
-      </TooltipPrimitive.Root>
-    );
+export const Tooltip = ({
+  content,
+  contentProps,
+  children,
+  ...props
+}: TooltipProps) => {
+  if (content === undefined) {
+    return <TooltipPrimitive.Root {...props}>{children}</TooltipPrimitive.Root>;
   }
 
-  return <TooltipPrimitive.Root {...props}>{children}</TooltipPrimitive.Root>;
-});
+  /* Текст не может принять пропсы триггера — оборачиваем в фокусируемый span. */
+  const trigger = React.isValidElement(children) ? (
+    children
+  ) : (
+    <span tabIndex={0}>{children}</span>
+  );
 
-_Tooltip.displayName = "Tooltip";
-
-export const Tooltip = Object.assign(_Tooltip, {
-  Trigger: TooltipTrigger,
-  Content: TooltipContent,
-});
+  return (
+    <TooltipPrimitive.Root {...props}>
+      <TooltipPrimitive.Trigger asChild>{trigger}</TooltipPrimitive.Trigger>
+      <TooltipContent {...contentProps}>{content}</TooltipContent>
+    </TooltipPrimitive.Root>
+  );
+};

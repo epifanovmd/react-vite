@@ -41,3 +41,19 @@ export const tableCellVariants = cva("align-middle", {
     size: "md",
   },
 });
+
+/** Мини-кнопка внутри ячейки: сортировка, фильтр, группировка, pin, expand. */
+export const tableIconButtonVariants = cva(
+  "inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+  {
+    variants: {
+      active: {
+        true: "text-primary",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      active: false,
+    },
+  },
+);

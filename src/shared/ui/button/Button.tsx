@@ -1,6 +1,7 @@
 import { useMergedRef } from "@mantine/hooks";
+import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 
@@ -8,12 +9,27 @@ import { RippleLayer, useRipple } from "../foundation";
 import { buttonVariants } from "./button-variants";
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
+  /** Показывает спиннер вместо контента и блокирует кнопку. */
   loading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  /**
+   * Отдать стили и поведение единственному дочернему элементу (например,
+   * `Link` роутера). В этом режиме `loading`, иконки и ripple не рендерятся.
+   */
+  asChild?: boolean;
 }
+
+type ButtonSize = NonNullable<ButtonProps["size"]>;
+
+const LOADER_SIZE: Record<ButtonSize, string> = {
+  sm: "h-3.5 w-3.5",
+  md: "h-4 w-4",
+  lg: "h-5 w-5",
+};
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -21,12 +37,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant,
       size,
-      loading,
+      loading = false,
       leftIcon,
       rightIcon,
       children,
       disabled,
       onPointerDown,
+      type = "button",
+      asChild = false,
       ...props
     },
     ref,
@@ -37,19 +55,37 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       onPointerDown,
     });
     const mergedRef = useMergedRef(ref, buttonRef);
+    const loaderSize = LOADER_SIZE[size ?? "md"];
+    const classes = cn(buttonVariants({ variant, size }), className);
+
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref}
+          className={classes}
+          aria-disabled={isDisabled || undefined}
+          onPointerDown={onPointerDown}
+          {...props}
+        >
+          {children}
+        </Slot>
+      );
+    }
 
     return (
       <button
-        className={cn("relative", buttonVariants({ variant, size, className }))}
         ref={mergedRef}
+        type={type}
+        className={classes}
         disabled={isDisabled}
+        aria-busy={loading || undefined}
         onPointerDown={handlePointerDown}
         {...props}
       >
         <RippleLayer ripples={ripples} onRippleComplete={removeRipple} />
         {loading && (
           <span className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 aria-hidden className={cn("animate-spin", loaderSize)} />
           </span>
         )}
         <span

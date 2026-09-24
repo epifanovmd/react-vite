@@ -1,15 +1,10 @@
-import {
-  Button,
-  IconButton,
-  InputFormField,
-  useFormFieldArray,
-} from "@shared/ui";
+import { Button, IconButton, InputFormField, useFieldArray } from "@shared/ui";
 import { Plus, Trash2 } from "lucide-react";
 
 import type { FieldArrayFormValues } from "./field-array-schema";
 
 export const FieldArrayFields = () => {
-  const contacts = useFormFieldArray<FieldArrayFormValues>({
+  const contacts = useFieldArray<FieldArrayFormValues>({
     name: "contacts",
   });
 
@@ -32,7 +27,7 @@ export const FieldArrayFields = () => {
           />
           <IconButton
             type="button"
-            size="sm"
+            size="xs"
             variant="ghost"
             aria-label={`Удалить контакт ${index + 1}`}
             onClick={() => contacts.remove(index)}

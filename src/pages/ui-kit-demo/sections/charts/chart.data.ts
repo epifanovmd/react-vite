@@ -14,12 +14,6 @@ export interface RevenuePoint {
   ads: number;
 }
 
-export interface ChannelPoint {
-  channel: string;
-  mobile: number;
-  desktop: number;
-}
-
 /** Линейный конгруэнтный генератор: демо-данные не должны прыгать на каждый рендер. */
 const createRandom = (seed: number) => {
   let state = seed;
@@ -66,22 +60,3 @@ export const REVENUE: RevenuePoint[] = Array.from(
     ads: Math.round(150000 + revenueRandom() * 90000),
   }),
 );
-
-export const CHANNELS: ChannelPoint[] = [
-  { channel: "Поиск", mobile: 4120, desktop: 3280 },
-  { channel: "Реклама", mobile: 2870, desktop: 1640 },
-  { channel: "Соцсети", mobile: 3310, desktop: 780 },
-  { channel: "Почта", mobile: 940, desktop: 1520 },
-  { channel: "Рефералы", mobile: 610, desktop: 890 },
-  { channel: "Прямые", mobile: 1480, desktop: 2050 },
-];
-
-/** Скользящее среднее за 7 точек — вторая серия combo-графика на той же шкале. */
-export const movingAverage = (values: number[], window: number): number[] =>
-  values.map((_, index) => {
-    const slice = values.slice(Math.max(0, index - window + 1), index + 1);
-
-    return Math.round(
-      slice.reduce((sum, value) => sum + value, 0) / slice.length,
-    );
-  });

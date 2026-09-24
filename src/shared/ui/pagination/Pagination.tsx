@@ -1,5 +1,4 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,105 +9,123 @@ import * as React from "react";
 
 import { Button } from "../button";
 import { usePagination } from "./hooks";
-import { paginationVariants } from "./pagination-variants";
+import { type PaginationSize } from "./pagination.types";
 import { PaginationButton } from "./PaginationButton";
 import { PaginationEllipsis } from "./PaginationEllipsis";
 
-export interface PaginationProps
-  extends React.HTMLAttributes<HTMLElement>,
-    VariantProps<typeof paginationVariants> {
+export interface PaginationProps extends Omit<
+  React.HTMLAttributes<HTMLElement>,
+  "onChange"
+> {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   showFirstLast?: boolean;
+  /** См. `usePagination`: сколько элементов показывать в ряду. */
   maxVisible?: number;
+  size?: PaginationSize;
+  /** Блокирует все кнопки, например пока грузится страница. */
+  disabled?: boolean;
 }
 
-export const Pagination = React.memo(
+const NAV_ICON_CLASS = "h-4 w-4";
+
+const Pagination = React.memo(
   React.forwardRef<HTMLElement, PaginationProps>(
     (
       {
         className,
-        size,
+        size = "md",
         currentPage,
         totalPages,
         onPageChange,
         showFirstLast = false,
         maxVisible,
+        disabled = false,
         ...props
       },
       ref,
     ) => {
-      const { pages, hasPrev, hasNext } = usePagination({
+      const { pages, page, hasPrev, hasNext } = usePagination({
         currentPage,
         totalPages,
         maxVisible,
       });
-      const btnSize = size === "sm" ? "sm" : size === "lg" ? "lg" : "md";
+
+      const goFirst = () => onPageChange(1);
+      const goPrev = () => onPageChange(page - 1);
+      const goNext = () => onPageChange(page + 1);
+      const goLast = () => onPageChange(totalPages);
+
+      const pageItems = pages.map((item, idx) =>
+        item === "ellipsis" ? (
+          <PaginationEllipsis key={`ellipsis-${idx}`} size={size} />
+        ) : (
+          <PaginationButton
+            key={item}
+            page={item}
+            isActive={page === item}
+            size={size}
+            disabled={disabled}
+            onClick={onPageChange}
+          />
+        ),
+      );
 
       return (
         <nav
           ref={ref}
-          role="navigation"
-          aria-label="pagination"
-          className={cn(paginationVariants({ size, className }))}
+          aria-label="Пагинация"
+          className={cn("flex items-center gap-1", className)}
           {...props}
         >
           {showFirstLast && (
             <Button
+              type="button"
               variant="outline"
-              size={btnSize}
-              onClick={() => onPageChange(1)}
-              disabled={!hasPrev}
-              aria-label="Go to first page"
+              size={size}
+              onClick={goFirst}
+              disabled={disabled || !hasPrev}
+              aria-label="Первая страница"
             >
-              <ChevronsLeft className="h-4 w-4" />
+              <ChevronsLeft aria-hidden className={NAV_ICON_CLASS} />
             </Button>
           )}
 
           <Button
+            type="button"
             variant="outline"
-            size={btnSize}
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={!hasPrev}
-            aria-label="Go to previous page"
+            size={size}
+            onClick={goPrev}
+            disabled={disabled || !hasPrev}
+            aria-label="Предыдущая страница"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft aria-hidden className={NAV_ICON_CLASS} />
           </Button>
 
-          {pages.map((page, idx) =>
-            page === "ellipsis" ? (
-              <PaginationEllipsis key={`ellipsis-${idx}`} size={btnSize} />
-            ) : (
-              <PaginationButton
-                key={page}
-                page={page}
-                isActive={currentPage === page}
-                size={btnSize}
-                onClick={onPageChange}
-              />
-            ),
-          )}
+          {pageItems}
 
           <Button
+            type="button"
             variant="outline"
-            size={btnSize}
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={!hasNext}
-            aria-label="Go to next page"
+            size={size}
+            onClick={goNext}
+            disabled={disabled || !hasNext}
+            aria-label="Следующая страница"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight aria-hidden className={NAV_ICON_CLASS} />
           </Button>
 
           {showFirstLast && (
             <Button
+              type="button"
               variant="outline"
-              size={btnSize}
-              onClick={() => onPageChange(totalPages)}
-              disabled={!hasNext}
-              aria-label="Go to last page"
+              size={size}
+              onClick={goLast}
+              disabled={disabled || !hasNext}
+              aria-label="Последняя страница"
             >
-              <ChevronsRight className="h-4 w-4" />
+              <ChevronsRight aria-hidden className={NAV_ICON_CLASS} />
             </Button>
           )}
         </nav>
@@ -118,3 +135,5 @@ export const Pagination = React.memo(
 );
 
 Pagination.displayName = "Pagination";
+
+export { Pagination };

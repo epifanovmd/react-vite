@@ -1,5 +1,5 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import {
   AlertCircle,
   AlertTriangle,
@@ -16,35 +16,66 @@ import {
 } from "./alert-variants";
 
 const DEFAULT_ICONS: Record<AlertVariant, React.ReactNode> = {
-  default: <Info className="h-4 w-4" />,
-  info: <Info className="h-4 w-4" />,
-  success: <CheckCircle2 className="h-4 w-4" />,
-  warning: <AlertTriangle className="h-4 w-4" />,
-  error: <AlertCircle className="h-4 w-4" />,
+  default: <Info aria-hidden className="h-4 w-4" />,
+  info: <Info aria-hidden className="h-4 w-4" />,
+  success: <CheckCircle2 aria-hidden className="h-4 w-4" />,
+  warning: <AlertTriangle aria-hidden className="h-4 w-4" />,
+  destructive: <AlertCircle aria-hidden className="h-4 w-4" />,
 };
 
+/** Срочные варианты объявляются немедленно, остальные — вежливо. */
+const ASSERTIVE_VARIANTS: ReadonlySet<AlertVariant> = new Set([
+  "destructive",
+  "warning",
+]);
+
+const CLOSE_BUTTON_CLASS =
+  "-mr-1 shrink-0 cursor-pointer self-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 export interface AlertProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title">,
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, "title">,
     VariantProps<typeof alertVariants> {
   title?: React.ReactNode;
+  /** `false` — без иконки; по умолчанию иконка подбирается по варианту. */
   icon?: React.ReactNode | false;
   onClose?: () => void;
+  /** Доступное имя кнопки закрытия. */
+  closeLabel?: string;
 }
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
-  ({ className, variant, title, icon, onClose, children, ...props }, ref) => {
-    const v = (variant ?? "default") as AlertVariant;
-    const iconNode = icon === undefined ? DEFAULT_ICONS[v] : icon;
+  (
+    {
+      className,
+      variant,
+      title,
+      icon,
+      onClose,
+      closeLabel = "Закрыть",
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const resolvedVariant: AlertVariant = variant ?? "default";
+    const iconNode = icon === undefined ? DEFAULT_ICONS[resolvedVariant] : icon;
+    const role = ASSERTIVE_VARIANTS.has(resolvedVariant) ? "alert" : "status";
 
     return (
       <div
         ref={ref}
-        role="alert"
+        role={role}
         className={cn(alertVariants({ variant }), className)}
         {...props}
       >
         {icon !== false && (
-          <span className={cn("mt-0.5 shrink-0", ALERT_ICON_COLORS[v])}>
+          <span
+            className={cn(
+              "mt-0.5 shrink-0",
+              ALERT_ICON_COLORS[resolvedVariant],
+            )}
+          >
             {iconNode}
           </span>
         )}
@@ -62,10 +93,10 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           <button
             type="button"
             onClick={onClose}
-            aria-label="Dismiss"
-            className="-mr-1 shrink-0 self-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground cursor-pointer"
+            aria-label={closeLabel}
+            className={CLOSE_BUTTON_CLASS}
           >
-            <X className="h-4 w-4" />
+            <X aria-hidden className="h-4 w-4" />
           </button>
         )}
       </div>

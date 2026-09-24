@@ -1,21 +1,28 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import { joinIds } from "@shared/lib/utils/join-ids";
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
+import { ChoiceLabel } from "../foundation";
 import { useRadioGroup } from "./radio-group-context";
 import { radioDotVariants, radioVariants } from "./radio-variants";
 
 export interface RadioProps
-  extends Omit<
+  extends
+    Omit<
       React.InputHTMLAttributes<HTMLInputElement>,
       "size" | "type" | "value"
     >,
     VariantProps<typeof radioVariants> {
   value: string;
   label?: React.ReactNode;
-  description?: string;
+  description?: React.ReactNode;
 }
 
+/**
+ * Внутри `RadioGroup` пропсы `name`, `checked` и `onChange` берутся из
+ * группы; переданные напрямую игнорируются.
+ */
 const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
   (
     {
@@ -30,6 +37,7 @@ const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
       checked,
       onChange,
       name,
+      "aria-describedby": ariaDescribedBy,
       ...props
     },
     ref,
@@ -37,9 +45,11 @@ const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
     const group = useRadioGroup();
     const generatedId = React.useId();
     const radioId = id ?? generatedId;
+    const descriptionId =
+      description !== undefined ? `${radioId}-description` : undefined;
 
-    const rSize = size ?? group?.size ?? "md";
-    const rVariant = variant ?? group?.variant ?? "default";
+    const resolvedSize = size ?? group?.size ?? "md";
+    const resolvedVariant = variant ?? group?.variant ?? "default";
     const isDisabled = disabled ?? group?.disabled;
 
     const stateProps = group
@@ -51,46 +61,40 @@ const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
       : { name, checked, onChange };
 
     return (
-      <label
+      <ChoiceLabel
         htmlFor={radioId}
-        className={cn(
-          "flex items-start gap-2.5",
-          isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-        )}
+        label={label}
+        description={description}
+        descriptionId={descriptionId}
+        disabled={isDisabled}
+        className={className}
       >
-        <span className="relative mt-0.5 inline-flex shrink-0">
+        <span className="relative inline-flex shrink-0">
           <input
             ref={ref}
             type="radio"
             id={radioId}
             value={value}
             disabled={isDisabled}
+            aria-describedby={joinIds(ariaDescribedBy, descriptionId)}
             className="peer sr-only"
             {...stateProps}
             {...props}
           />
           <span
-            className={cn(radioVariants({ size: rSize, variant: rVariant }))}
+            className={radioVariants({
+              size: resolvedSize,
+              variant: resolvedVariant,
+            })}
           />
           <span
-            className={radioDotVariants({ size: rSize, variant: rVariant })}
+            className={radioDotVariants({
+              size: resolvedSize,
+              variant: resolvedVariant,
+            })}
           />
         </span>
-        {(label || description) && (
-          <span className={cn("flex flex-col", className)}>
-            {label && (
-              <span className="text-sm font-medium text-foreground leading-snug select-none">
-                {label}
-              </span>
-            )}
-            {description && (
-              <span className="text-xs text-muted-foreground mt-0.5">
-                {description}
-              </span>
-            )}
-          </span>
-        )}
-      </label>
+      </ChoiceLabel>
     );
   },
 );

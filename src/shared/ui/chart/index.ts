@@ -1,29 +1,19 @@
-export { Chart } from "./Chart";
+export { AreaChart } from "./AreaChart";
 export type {
-  ChartAxisConfig,
+  AreaChartProps,
+  ChartBaseProps,
   ChartCurveType,
-  ChartDataTableMode,
   ChartGridMode,
   ChartLegendPlacement,
   ChartMargin,
-  ChartPoint,
-  ChartProps,
-  ChartReferenceLine,
-  ChartResolvedSeries,
   ChartSeries,
-  ChartSeriesType,
   ChartTooltipData,
   ChartTooltipEntry,
+  ChartXAxisConfig,
   ChartXScaleType,
   ChartXValue,
   ChartYAxisConfig,
+  LineChartProps,
 } from "./chart.types";
-export type { ChartLegendProps } from "./components/ChartLegend";
-export { ChartLegend } from "./components/ChartLegend";
-export type { ChartTooltipProps } from "./components/ChartTooltip";
-export { ChartTooltip } from "./components/ChartTooltip";
-export type { ChartTooltipContentProps } from "./components/ChartTooltipContent";
-export { ChartTooltipContent } from "./components/ChartTooltipContent";
-export type { SparklineProps } from "./Sparkline";
-export { Sparkline } from "./Sparkline";
+export { LineChart } from "./LineChart";
 export { CHART_COLORS } from "./utils/palette";

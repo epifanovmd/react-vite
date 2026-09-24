@@ -1,64 +1,66 @@
-import type { ChartModel } from "../hooks/use-chart-model";
+import { Line } from "@visx/shape";
+
+import type { ChartResolvedSeries } from "../chart.types";
+import { useChartScales } from "../hooks/chart-scales-context";
 import { POINT_RADIUS, POINT_RING } from "../utils/chart-constants";
 
 export interface ChartCrosshairProps<Datum> {
-  model: ChartModel<Datum>;
-  activeIndex: number;
-  innerHeight: number;
-  surface: string;
-  showLine: boolean;
+  series: ChartResolvedSeries<Datum>[];
+  index: number;
 }
 
-/**
- * Читатель целится в дату, а не в двухпиксельную линию: вертикаль
- * притягивается к ближайшей позиции данных, а точки подсвечивают значения.
- */
-export const ChartCrosshair = <Datum,>({
-  model,
-  activeIndex,
-  innerHeight,
-  surface,
-  showLine,
-}: ChartCrosshairProps<Datum>) => {
-  const x = model.positions[activeIndex];
+const CROSSHAIR_STROKE = "var(--muted-foreground)";
 
-  if (x === undefined) {
-    return null;
-  }
+/** Вертикаль на позиции данных и точка каждой серии с тенью под ней. */
+export const ChartCrosshair = <Datum,>({
+  series,
+  index,
+}: ChartCrosshairProps<Datum>) => {
+  const { yScale, positions, innerHeight } = useChartScales();
+
+  const x = positions[index];
+
+  const points = series.flatMap(item => {
+    const point = item.points[index];
+
+    return point && point.value !== null
+      ? { key: item.key, color: item.color, y: yScale(point.y1) }
+      : [];
+  });
 
   return (
     <g pointerEvents="none">
-      {showLine && (
-        <line
-          x1={x}
-          x2={x}
-          y1={0}
-          y2={innerHeight}
-          stroke="var(--muted-foreground)"
-          strokeWidth={1}
-          opacity={0.45}
-        />
-      )}
+      <Line
+        from={{ x, y: 0 }}
+        to={{ x, y: innerHeight }}
+        stroke={CROSSHAIR_STROKE}
+        strokeWidth={1}
+        strokeDasharray="5,2"
+        strokeOpacity={0.6}
+      />
 
-      {model.drawn.map(series => {
-        const point = series.points[activeIndex];
-
-        if (series.type === "bar" || !point || point.value === null) {
-          return null;
-        }
-
-        return (
+      {points.map(point => (
+        <g key={point.key}>
           <circle
-            key={series.key}
             cx={x}
-            cy={model.yScale(point.y1)}
+            cy={point.y + 1}
             r={POINT_RADIUS}
-            fill={series.color}
-            stroke={surface}
+            fill="black"
+            fillOpacity={0.1}
+            stroke="black"
+            strokeOpacity={0.1}
             strokeWidth={POINT_RING}
           />
-        );
-      })}
+          <circle
+            cx={x}
+            cy={point.y}
+            r={POINT_RADIUS}
+            fill={point.color}
+            stroke="var(--card)"
+            strokeWidth={POINT_RING}
+          />
+        </g>
+      ))}
     </g>
   );
 };

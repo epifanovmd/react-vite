@@ -1,4 +1,4 @@
-import { usePaginationFeature } from "@shared/ui";
+import { useInfiniteScrollFeature } from "@shared/ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createOrderColumns, type Order, ORDERS } from "../../shared";
@@ -24,13 +24,13 @@ export const useInfiniteScrollExample = () => {
     }, LOAD_DELAY_MS);
   }, []);
 
-  const pagination = usePaginationFeature<Order>({
+  const infiniteScroll = useInfiniteScrollFeature<Order>({
     hasNextPage,
     isFetchingNextPage,
     onLoadMore,
   });
 
-  const features = useMemo(() => [pagination], [pagination]);
+  const features = useMemo(() => [infiniteScroll], [infiniteScroll]);
 
   useEffect(() => () => clearTimeout(timeoutRef.current), []);
 

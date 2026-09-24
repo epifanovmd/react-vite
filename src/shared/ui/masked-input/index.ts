@@ -1,6 +1,7 @@
 export type { UseDateMaskInputOptions, UseDateMaskInputResult } from "./hooks";
 export type {
   MaskedInputChangeInfo,
+  MaskedValueMode,
   UseMaskedInputOptions,
   UseMaskedInputResult,
 } from "./hooks";

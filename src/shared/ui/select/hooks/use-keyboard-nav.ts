@@ -1,74 +1,183 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
-export interface UseKeyboardNavProps {
+export interface UseKeyboardNavOptions {
+  open: boolean;
   count: number;
+  isDisabled: (index: number) => boolean;
   onSelect: (index: number) => void;
+  onOpen: () => void;
   onClose: () => void;
+  /** Печатаемый символ при закрытом списке открывает его (search-режим);
+   *  пробел при этом печатается, а не выбирает. */
+  openOnType?: boolean;
+  /** Смена значения сбрасывает подсветку (обычно — identity `options`). */
+  resetKey?: unknown;
 }
 
 export interface UseKeyboardNavResult {
   focusedIndex: number;
-  setFocusedIndex: React.Dispatch<React.SetStateAction<number>>;
+  /** Подсветка от указателя — без прокрутки списка. */
+  setFocusedIndex: (index: number) => void;
   handleKeyDown: (e: React.KeyboardEvent) => void;
   listRef: React.RefObject<HTMLDivElement | null>;
+  resetFocus: () => void;
 }
 
+const OPEN_KEYS = new Set(["ArrowDown", "ArrowUp", "Enter", " "]);
+
+const isPrintableKey = (e: React.KeyboardEvent): boolean =>
+  e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+/** Ближайший не-disabled индекс от `from` в направлении `step`; -1 если нет. */
+const findEnabled = (
+  from: number,
+  step: 1 | -1,
+  count: number,
+  isDisabled: (index: number) => boolean,
+): number => {
+  for (let i = from; i >= 0 && i < count; i += step) {
+    if (!isDisabled(i)) return i;
+  }
+
+  return -1;
+};
+
 export const useKeyboardNav = ({
+  open,
   count,
+  isDisabled,
   onSelect,
+  onOpen,
   onClose,
-}: UseKeyboardNavProps): UseKeyboardNavResult => {
-  const [focusedIndex, setFocusedIndex] = React.useState(-1);
+  openOnType = false,
+  resetKey,
+}: UseKeyboardNavOptions): UseKeyboardNavResult => {
+  const [focusedIndex, setFocusedIndexState] = React.useState(-1);
+  const [prevResetKey, setPrevResetKey] = React.useState(resetKey);
   const listRef = React.useRef<HTMLDivElement>(null);
+  const scrollPendingRef = React.useRef(false);
 
-  const onSelectRef = React.useRef(onSelect);
-  const onCloseRef = React.useRef(onClose);
-  const focusedIndexRef = React.useRef(focusedIndex);
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
+    setFocusedIndexState(-1);
+  }
 
-  onSelectRef.current = onSelect;
-  onCloseRef.current = onClose;
-  focusedIndexRef.current = focusedIndex;
+  const latest = useLatestRef({
+    open,
+    count,
+    isDisabled,
+    onSelect,
+    onOpen,
+    onClose,
+    openOnType,
+    focusedIndex,
+  });
+
+  const setFocusedIndex = React.useCallback((index: number) => {
+    scrollPendingRef.current = false;
+    setFocusedIndexState(index);
+  }, []);
+
+  const resetFocus = React.useCallback(
+    () => setFocusedIndex(-1),
+    [setFocusedIndex],
+  );
+
+  const focusByKeyboard = React.useCallback((index: number) => {
+    if (index < 0) return;
+    scrollPendingRef.current = true;
+    setFocusedIndexState(index);
+  }, []);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
+      const state = latest.current;
+
+      if (!state.open) {
+        if (OPEN_KEYS.has(e.key)) {
+          e.preventDefault();
+          state.onOpen();
+          if (e.key === "ArrowDown") {
+            focusByKeyboard(findEnabled(0, 1, state.count, state.isDisabled));
+          }
+          if (e.key === "ArrowUp") {
+            focusByKeyboard(
+              findEnabled(state.count - 1, -1, state.count, state.isDisabled),
+            );
+          }
+        } else if (state.openOnType && isPrintableKey(e)) {
+          state.onOpen();
+        }
+
+        return;
+      }
+
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setFocusedIndex(i => Math.min(i + 1, count - 1));
+          focusByKeyboard(
+            findEnabled(
+              state.focusedIndex + 1,
+              1,
+              state.count,
+              state.isDisabled,
+            ),
+          );
           break;
         case "ArrowUp":
           e.preventDefault();
-          setFocusedIndex(i => Math.max(i - 1, 0));
+          focusByKeyboard(
+            findEnabled(
+              state.focusedIndex - 1,
+              -1,
+              state.count,
+              state.isDisabled,
+            ),
+          );
+          break;
+        case "Home":
+          e.preventDefault();
+          focusByKeyboard(findEnabled(0, 1, state.count, state.isDisabled));
+          break;
+        case "End":
+          e.preventDefault();
+          focusByKeyboard(
+            findEnabled(state.count - 1, -1, state.count, state.isDisabled),
+          );
+          break;
+        case " ":
+          if (state.openOnType) return;
+          e.preventDefault();
+          if (state.focusedIndex >= 0) state.onSelect(state.focusedIndex);
           break;
         case "Enter":
           e.preventDefault();
-          if (focusedIndexRef.current >= 0)
-            onSelectRef.current(focusedIndexRef.current);
+          if (state.focusedIndex >= 0) state.onSelect(state.focusedIndex);
           break;
         case "Escape":
           e.preventDefault();
-          onCloseRef.current();
+          state.onClose();
           break;
         case "Tab":
-          onCloseRef.current();
+          state.onClose();
           break;
       }
     },
-    [count],
+    [latest, focusByKeyboard],
   );
 
   React.useEffect(() => {
-    if (focusedIndex < 0 || !listRef.current) return;
-    const item = listRef.current.children[focusedIndex] as
-      | HTMLElement
-      | undefined;
+    if (!scrollPendingRef.current || focusedIndex < 0) return;
+    scrollPendingRef.current = false;
 
-    item?.scrollIntoView({ block: "nearest" });
+    const item =
+      listRef.current?.querySelectorAll<HTMLElement>('[role="option"]')[
+        focusedIndex
+      ];
+
+    item?.scrollIntoView?.({ block: "nearest" });
   }, [focusedIndex]);
 
-  React.useEffect(() => {
-    setFocusedIndex(-1);
-  }, [count]);
-
-  return { focusedIndex, setFocusedIndex, handleKeyDown, listRef };
+  return { focusedIndex, setFocusedIndex, handleKeyDown, listRef, resetFocus };
 };

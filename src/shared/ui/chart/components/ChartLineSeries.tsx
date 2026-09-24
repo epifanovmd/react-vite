@@ -1,49 +1,63 @@
 import { LinePath } from "@visx/shape";
 
-import type { ChartPoint, ChartResolvedSeries } from "../chart.types";
-import type { ChartModel } from "../hooks/use-chart-model";
+import type {
+  ChartCurveType,
+  ChartPoint,
+  ChartResolvedSeries,
+} from "../chart.types";
+import { useChartScales } from "../hooks/chart-scales-context";
 import { LINE_WIDTH, POINT_RADIUS, POINT_RING } from "../utils/chart-constants";
 import { resolveCurve } from "../utils/curve";
 
 export interface ChartLineSeriesProps<Datum> {
   series: ChartResolvedSeries<Datum>;
-  model: ChartModel<Datum>;
-  surface: string;
+  curve?: ChartCurveType;
+  strokeWidth?: number;
+  showPoints?: boolean;
 }
+
+const isDefined = <Datum,>(point: ChartPoint<Datum>) => point.value !== null;
 
 export const ChartLineSeries = <Datum,>({
   series,
-  model,
-  surface,
-}: ChartLineSeriesProps<Datum>) => (
-  <g>
-    <LinePath<ChartPoint<Datum>>
-      data={series.points}
-      x={point => model.positions[point.index]}
-      y={point => model.yScale(point.y1)}
-      defined={point => point.value !== null}
-      curve={resolveCurve(series.source.curve)}
-      stroke={series.color}
-      strokeWidth={series.source.strokeWidth ?? LINE_WIDTH}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeDasharray={series.source.dashed ? "6 5" : undefined}
-      fill="none"
-    />
+  curve,
+  strokeWidth = LINE_WIDTH,
+  showPoints = false,
+}: ChartLineSeriesProps<Datum>) => {
+  const { yScale, positions } = useChartScales();
 
-    {series.source.points &&
-      series.points.map(point =>
-        point.value === null ? null : (
-          <circle
-            key={point.index}
-            cx={model.positions[point.index]}
-            cy={model.yScale(point.y1)}
-            r={POINT_RADIUS}
-            fill={series.color}
-            stroke={surface}
-            strokeWidth={POINT_RING}
-          />
-        ),
-      )}
-  </g>
-);
+  const getX = (point: ChartPoint<Datum>) => positions[point.index];
+  const getY = (point: ChartPoint<Datum>) => yScale(point.y1);
+
+  const visiblePoints = showPoints ? series.points.filter(isDefined) : [];
+
+  return (
+    <g>
+      <LinePath<ChartPoint<Datum>>
+        data={series.points}
+        x={getX}
+        y={getY}
+        defined={isDefined}
+        curve={resolveCurve(curve)}
+        stroke={series.color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+
+      {visiblePoints.map(point => (
+        <circle
+          key={point.index}
+          cx={getX(point)}
+          cy={getY(point)}
+          r={POINT_RADIUS}
+          fill={series.color}
+          stroke="var(--card)"
+          strokeWidth={POINT_RING}
+          pointerEvents="none"
+        />
+      ))}
+    </g>
+  );
+};

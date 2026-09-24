@@ -1,6 +1,6 @@
-export type { TabItem, TabsProps } from "./Tabs";
+export type { TabsProps } from "./Tabs";
 export { Tabs } from "./Tabs";
-export { tabsListVariants, tabsTriggerVariants } from "./tabs-variants";
+export type { TabsContentProps } from "./TabsContent";
 export { TabsContent } from "./TabsContent";
 export type { TabsListProps } from "./TabsList";
 export { TabsList } from "./TabsList";

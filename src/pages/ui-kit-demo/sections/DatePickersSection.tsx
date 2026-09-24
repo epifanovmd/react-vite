@@ -8,26 +8,9 @@ import {
   DateRange,
   DateRangePicker,
 } from "@shared/ui";
-import { type FC, type ReactNode, useState } from "react";
+import { type FC, useState } from "react";
 
-const Row = ({ children }: { children: ReactNode }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-    {children}
-  </div>
-);
-
-const Field = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <div className="flex flex-col gap-1.5">
-    <p className="text-[10px] text-muted-foreground">{label}</p>
-    {children}
-  </div>
-);
+import { DemoField, DemoRow } from "./shared";
 
 export const DatePickersSection: FC = () => {
   const [date, setDate] = useState<Date | undefined>();
@@ -50,54 +33,109 @@ export const DatePickersSection: FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <p className="text-[10px] text-muted-foreground mb-2">Размеры</p>
-              <Row>
-                <Field label="sm">
-                  <DatePicker value={date} onChange={setDate} size="sm" placeholder="sm" />
-                </Field>
-                <Field label="md (default)">
-                  <DatePicker value={date} onChange={setDate} size="md" placeholder="md" />
-                </Field>
-                <Field label="lg">
-                  <DatePicker value={date} onChange={setDate} size="lg" placeholder="lg" />
-                </Field>
-              </Row>
+              <DemoRow>
+                <DemoField label="sm">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    size="sm"
+                    placeholder="sm"
+                  />
+                </DemoField>
+                <DemoField label="md (default)">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    size="md"
+                    placeholder="md"
+                  />
+                </DemoField>
+                <DemoField label="lg">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    size="lg"
+                    placeholder="lg"
+                  />
+                </DemoField>
+              </DemoRow>
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground mb-2">Варианты</p>
-              <Row>
-                <Field label="default">
-                  <DatePicker value={date} onChange={setDate} variant="default" placeholder="default" />
-                </Field>
-                <Field label="filled">
-                  <DatePicker value={date} onChange={setDate} variant="filled" placeholder="filled" />
-                </Field>
-                <Field label="filled-error">
-                  <DatePicker value={date} onChange={setDate} variant="filled-error" placeholder="filled error" />
-                </Field>
-                <Field label="filled-success">
-                  <DatePicker value={date} onChange={setDate} variant="filled-success" placeholder="filled success" />
-                </Field>
-                <Field label="error">
-                  <DatePicker value={date} onChange={setDate} variant="error" placeholder="error" />
-                </Field>
-                <Field label="success">
-                  <DatePicker value={date} onChange={setDate} variant="success" placeholder="success" />
-                </Field>
-                <Field label="disabled">
-                  <DatePicker value={date} onChange={setDate} disabled placeholder="disabled" />
-                </Field>
-                <Field label="clearable">
-                  <DatePicker value={date} onChange={setDate} clearable placeholder="Выберите дату" />
-                </Field>
-                <Field label="disableDate (выходные)">
+              <DemoRow>
+                <DemoField label="default">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    variant="default"
+                    placeholder="default"
+                  />
+                </DemoField>
+                <DemoField label="filled">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    variant="filled"
+                    placeholder="filled"
+                  />
+                </DemoField>
+                <DemoField label="filled-error">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    variant="filled-error"
+                    placeholder="filled error"
+                  />
+                </DemoField>
+                <DemoField label="filled-success">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    variant="filled-success"
+                    placeholder="filled success"
+                  />
+                </DemoField>
+                <DemoField label="error">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    variant="error"
+                    placeholder="error"
+                  />
+                </DemoField>
+                <DemoField label="success">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    variant="success"
+                    placeholder="success"
+                  />
+                </DemoField>
+                <DemoField label="disabled">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    disabled
+                    placeholder="disabled"
+                  />
+                </DemoField>
+                <DemoField label="clearable">
+                  <DatePicker
+                    value={date}
+                    onChange={setDate}
+                    clearable
+                    placeholder="Выберите дату"
+                  />
+                </DemoField>
+                <DemoField label="disableDate (выходные)">
                   <DatePicker
                     value={date}
                     onChange={setDate}
                     disableDate={d => d.getDay() === 0 || d.getDay() === 6}
                     placeholder="Только будни"
                   />
-                </Field>
-              </Row>
+                </DemoField>
+              </DemoRow>
             </div>
           </div>
         </div>
@@ -112,43 +150,92 @@ export const DatePickersSection: FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <p className="text-[10px] text-muted-foreground mb-2">Размеры</p>
-              <Row>
-                <Field label="sm">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} size="sm" placeholder="sm" />
-                </Field>
-                <Field label="md (default)">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} size="md" placeholder="md" />
-                </Field>
-                <Field label="lg">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} size="lg" placeholder="lg" />
-                </Field>
-              </Row>
+              <DemoRow>
+                <DemoField label="sm">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    size="sm"
+                    placeholder="sm"
+                  />
+                </DemoField>
+                <DemoField label="md (default)">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    size="md"
+                    placeholder="md"
+                  />
+                </DemoField>
+                <DemoField label="lg">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    size="lg"
+                    placeholder="lg"
+                  />
+                </DemoField>
+              </DemoRow>
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground mb-2">Варианты</p>
-              <Row>
-                <Field label="default">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} placeholder="default" />
-                </Field>
-                <Field label="filled">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} variant="filled" placeholder="filled" />
-                </Field>
-                <Field label="filled-error">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} variant="filled-error" placeholder="filled error" />
-                </Field>
-                <Field label="filled-success">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} variant="filled-success" placeholder="filled success" />
-                </Field>
-                <Field label="error">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} variant="error" placeholder="error" />
-                </Field>
-                <Field label="success">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} variant="success" placeholder="success" />
-                </Field>
-                <Field label="clearable">
-                  <DateRangePicker value={dateRange} onChange={setDateRange} clearable placeholder="Выберите период" />
-                </Field>
-              </Row>
+              <DemoRow>
+                <DemoField label="default">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    placeholder="default"
+                  />
+                </DemoField>
+                <DemoField label="filled">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    variant="filled"
+                    placeholder="filled"
+                  />
+                </DemoField>
+                <DemoField label="filled-error">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    variant="filled-error"
+                    placeholder="filled error"
+                  />
+                </DemoField>
+                <DemoField label="filled-success">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    variant="filled-success"
+                    placeholder="filled success"
+                  />
+                </DemoField>
+                <DemoField label="error">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    variant="error"
+                    placeholder="error"
+                  />
+                </DemoField>
+                <DemoField label="success">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    variant="success"
+                    placeholder="success"
+                  />
+                </DemoField>
+                <DemoField label="clearable">
+                  <DateRangePicker
+                    value={dateRange}
+                    onChange={setDateRange}
+                    clearable
+                    placeholder="Выберите период"
+                  />
+                </DemoField>
+              </DemoRow>
             </div>
           </div>
         </div>

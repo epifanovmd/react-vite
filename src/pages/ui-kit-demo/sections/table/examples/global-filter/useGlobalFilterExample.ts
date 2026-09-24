@@ -1,5 +1,5 @@
 import { useGlobalFilterFeature } from "@shared/ui";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { createOrderColumns, type Order, ORDERS } from "../../shared";
 
@@ -10,13 +10,11 @@ export const useGlobalFilterExample = () => {
   const data = useMemo(() => ORDERS.slice(0, 12), []);
 
   const globalFilter = useGlobalFilterFeature<Order>({
-    globalFilter: search,
+    globalFilterState: search,
     onGlobalFilterChange: setSearch,
   });
 
   const features = useMemo(() => [globalFilter], [globalFilter]);
 
-  const onSearchChange = useCallback((value: string) => setSearch(value), []);
-
-  return { data, columns, features, search, onSearchChange };
+  return { data, columns, features, search, onSearchChange: setSearch };
 };

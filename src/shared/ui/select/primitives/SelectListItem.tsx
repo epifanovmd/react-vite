@@ -8,64 +8,60 @@ import {
 } from "../select-variants";
 
 export interface SelectListItemProps {
+  id?: string;
+  index: number;
   selected?: boolean;
   focused?: boolean;
   disabled?: boolean;
-  onSelect?: () => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
+  /** Стабильные колбэки с индексом — чтобы `memo` реально срабатывал. */
+  onSelect?: (index: number) => void;
+  onFocus?: (index: number) => void;
   children?: React.ReactNode;
 }
 
-export const SelectListItem = React.memo(
-  ({
-    selected,
-    focused,
-    disabled,
-    onSelect,
-    onFocus,
-    onBlur,
-    children,
-  }: SelectListItemProps) => {
-    const onSelectRef = React.useRef(onSelect);
-    const onFocusRef = React.useRef(onFocus);
-    const onBlurRef = React.useRef(onBlur);
+const preventFocusSteal = (e: React.PointerEvent) => e.preventDefault();
 
-    onSelectRef.current = onSelect;
-    onFocusRef.current = onFocus;
-    onBlurRef.current = onBlur;
+const SelectListItemInner = ({
+  id,
+  index,
+  selected,
+  focused,
+  disabled,
+  onSelect,
+  onFocus,
+  children,
+}: SelectListItemProps) => {
+  const handleClick = () => {
+    if (!disabled) onSelect?.(index);
+  };
 
-    const handleSelect = React.useCallback(() => onSelectRef.current?.(), []);
-    const handleFocus = React.useCallback(() => onFocusRef.current?.(), []);
-    const handleBlur = React.useCallback(() => onBlurRef.current?.(), []);
+  const handleMouseEnter = () => onFocus?.(index);
 
-    return (
-      <div
-        role="option"
-        aria-selected={selected}
-        className={cn(
-          selectItemClasses,
-          "hover:bg-accent hover:text-accent-foreground",
-          focused && selectItemHighlightedClasses,
-          disabled && "pointer-events-none opacity-50",
-        )}
-        onMouseEnter={handleFocus}
-        onMouseLeave={handleBlur}
-        onPointerDown={e => e.preventDefault()}
-        onClick={!disabled ? handleSelect : undefined}
-      >
-        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-          {selected && <Check className="h-4 w-4" />}
-        </span>
-        {children}
-      </div>
-    );
-  },
-  (prev, next) =>
-    prev.selected === next.selected &&
-    prev.focused === next.focused &&
-    prev.disabled === next.disabled &&
-    prev.children === next.children,
-);
+  return (
+    <div
+      id={id}
+      role="option"
+      aria-selected={selected}
+      aria-disabled={disabled || undefined}
+      className={cn(
+        selectItemClasses,
+        "hover:bg-accent hover:text-accent-foreground",
+        focused && selectItemHighlightedClasses,
+        disabled && "pointer-events-none opacity-50",
+      )}
+      onMouseEnter={handleMouseEnter}
+      onPointerDown={preventFocusSteal}
+      onClick={handleClick}
+    >
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        {selected && <Check className="h-4 w-4" />}
+      </span>
+      {children}
+    </div>
+  );
+};
+
+/** Опций может быть много, а на hover меняется только одна — memo оправдан. */
+export const SelectListItem = React.memo(SelectListItemInner);
 
 SelectListItem.displayName = "SelectListItem";

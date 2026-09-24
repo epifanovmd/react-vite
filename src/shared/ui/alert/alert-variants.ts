@@ -1,4 +1,4 @@
-import { cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 
 export const alertVariants = cva(
   "relative flex gap-3 rounded-lg border p-4 text-sm",
@@ -9,7 +9,7 @@ export const alertVariants = cva(
         info: "bg-info/10 border-info/30",
         success: "bg-success/10 border-success/30",
         warning: "bg-warning/10 border-warning/30",
-        error: "bg-destructive/10 border-destructive/30",
+        destructive: "bg-destructive/10 border-destructive/30",
       },
     },
     defaultVariants: {
@@ -18,12 +18,14 @@ export const alertVariants = cva(
   },
 );
 
-export type AlertVariant = "default" | "info" | "success" | "warning" | "error";
+export type AlertVariant = NonNullable<
+  VariantProps<typeof alertVariants>["variant"]
+>;
 
 export const ALERT_ICON_COLORS: Record<AlertVariant, string> = {
   default: "text-muted-foreground",
   info: "text-info",
   success: "text-success",
   warning: "text-warning",
-  error: "text-destructive",
+  destructive: "text-destructive",
 };

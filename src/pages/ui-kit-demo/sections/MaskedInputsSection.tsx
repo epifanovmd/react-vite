@@ -38,26 +38,9 @@ import {
   Phone,
   Wallet,
 } from "lucide-react";
-import { type FC, type ReactNode, useState } from "react";
+import { type FC, useState } from "react";
 
-const Row = ({ children }: { children: ReactNode }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-    {children}
-  </div>
-);
-
-const Field = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="flex flex-col gap-1.5">
-    <p className="text-[10px] text-muted-foreground">{label}</p>
-    {children}
-  </div>
-);
-
-const GroupTitle = ({ children }: { children: ReactNode }) => (
-  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-    {children}
-  </p>
-);
+import { DemoBlock, DemoField, DemoRow } from "./shared";
 
 const currencyMask = createCurrencyMask({ scale: 0, thousandsSeparator: " " });
 const discountMask = createPercentMask({ max: 100 });
@@ -99,10 +82,9 @@ export const MaskedInputsSection: FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <div>
-          <GroupTitle>Общие пресеты</GroupTitle>
-          <Row>
-            <Field label="Телефон (phoneMask)">
+        <DemoBlock title="Общие пресеты">
+          <DemoRow>
+            <DemoField label="Телефон (phoneMask)">
               <MaskedInput
                 mask={phoneMask}
                 value={phone}
@@ -110,8 +92,8 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Phone className="h-4 w-4" />}
                 placeholder="+7 (___) ___-__-__"
               />
-            </Field>
-            <Field label="Номер карты (cardNumberMask)">
+            </DemoField>
+            <DemoField label="Номер карты (cardNumberMask)">
               <MaskedInput
                 mask={cardNumberMask}
                 value={cardNumber}
@@ -119,16 +101,16 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<CreditCard className="h-4 w-4" />}
                 placeholder="0000 0000 0000 0000"
               />
-            </Field>
-            <Field label="Срок карты (cardExpiryMask)">
+            </DemoField>
+            <DemoField label="Срок карты (cardExpiryMask)">
               <MaskedInput
                 mask={cardExpiryMask}
                 value={cardExpiry}
                 onChange={info => setCardExpiry(info.value)}
                 placeholder="MM/YY"
               />
-            </Field>
-            <Field label="Время (timeMask)">
+            </DemoField>
+            <DemoField label="Время (timeMask)">
               <MaskedInput
                 mask={timeMask}
                 value={time}
@@ -136,8 +118,8 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Clock className="h-4 w-4" />}
                 placeholder="ЧЧ:ММ"
               />
-            </Field>
-            <Field label="Сумма (createCurrencyMask)">
+            </DemoField>
+            <DemoField label="Сумма (createCurrencyMask)">
               <MaskedInput
                 mask={currencyMask}
                 value={amount}
@@ -146,8 +128,8 @@ export const MaskedInputsSection: FC = () => {
                 placeholder="0"
                 clearable
               />
-            </Field>
-            <Field label="Скидка (createPercentMask)">
+            </DemoField>
+            <DemoField label="Скидка (createPercentMask)">
               <MaskedInput
                 mask={discountMask}
                 value={discount}
@@ -155,8 +137,8 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Percent className="h-4 w-4" />}
                 placeholder="0%"
               />
-            </Field>
-            <Field label="Код товара (createPatternMask)">
+            </DemoField>
+            <DemoField label="Код товара (createPatternMask)">
               <MaskedInput
                 mask={productCodeMask}
                 value={productCode}
@@ -164,64 +146,63 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Hash className="h-4 w-4" />}
                 placeholder="AA-0000"
               />
-            </Field>
-          </Row>
-        </div>
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
         <hr className="border-border" />
 
-        <div>
-          <GroupTitle>Документы РФ</GroupTitle>
-          <Row>
-            <Field label="СНИЛС (snilsMask)">
+        <DemoBlock title="Документы РФ">
+          <DemoRow>
+            <DemoField label="СНИЛС (snilsMask)">
               <MaskedInput
                 mask={snilsMask}
                 value={snils}
                 onChange={info => setSnils(info.value)}
                 placeholder="000-000-000 00"
               />
-            </Field>
-            <Field label="Паспорт (passportMask)">
+            </DemoField>
+            <DemoField label="Паспорт (passportMask)">
               <MaskedInput
                 mask={passportMask}
                 value={passport}
                 onChange={info => setPassport(info.value)}
                 placeholder="0000 000000"
               />
-            </Field>
-            <Field label="ИНН (innMask)">
+            </DemoField>
+            <DemoField label="ИНН (innMask)">
               <MaskedInput
                 mask={innMask}
                 value={inn}
                 onChange={info => setInn(info.value)}
                 placeholder="000000000000"
               />
-            </Field>
-            <Field label="Расчётный счёт (bankAccountMask)">
+            </DemoField>
+            <DemoField label="Расчётный счёт (bankAccountMask)">
               <MaskedInput
                 mask={bankAccountMask}
                 value={bankAccount}
                 onChange={info => setBankAccount(info.value)}
                 placeholder="0000 0000 0000 0000 0000"
               />
-            </Field>
-            <Field label="БИК (bicMask)">
+            </DemoField>
+            <DemoField label="БИК (bicMask)">
               <MaskedInput
                 mask={bicMask}
                 value={bic}
                 onChange={info => setBic(info.value)}
                 placeholder="000000000"
               />
-            </Field>
-            <Field label="ОГРН (ogrnMask)">
+            </DemoField>
+            <DemoField label="ОГРН (ogrnMask)">
               <MaskedInput
                 mask={ogrnMask}
                 value={ogrn}
                 onChange={info => setOgrn(info.value)}
                 placeholder="0000000000000"
               />
-            </Field>
-            <Field label="Индекс (postalCodeMask)">
+            </DemoField>
+            <DemoField label="Индекс (postalCodeMask)">
               <MaskedInput
                 mask={postalCodeMask}
                 value={postalCode}
@@ -229,24 +210,23 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<MapPin className="h-4 w-4" />}
                 placeholder="000000"
               />
-            </Field>
-            <Field label="Госномер авто (licensePlateMask)">
+            </DemoField>
+            <DemoField label="Госномер авто (licensePlateMask)">
               <MaskedInput
                 mask={licensePlateMask}
                 value={licensePlate}
                 onChange={info => setLicensePlate(info.value)}
                 placeholder="А000АА 000"
               />
-            </Field>
-          </Row>
-        </div>
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
         <hr className="border-border" />
 
-        <div>
-          <GroupTitle>Технические</GroupTitle>
-          <Row>
-            <Field label="IP-адрес (ipAddressMask)">
+        <DemoBlock title="Технические">
+          <DemoRow>
+            <DemoField label="IP-адрес (ipAddressMask)">
               <MaskedInput
                 mask={ipAddressMask}
                 value={ip}
@@ -254,16 +234,16 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Network className="h-4 w-4" />}
                 placeholder="000.000.000.000"
               />
-            </Field>
-            <Field label="MAC-адрес (macAddressMask)">
+            </DemoField>
+            <DemoField label="MAC-адрес (macAddressMask)">
               <MaskedInput
                 mask={macAddressMask}
                 value={mac}
                 onChange={info => setMac(info.value)}
                 placeholder="00:1A:2B:3C:4D:5E"
               />
-            </Field>
-            <Field label="HEX-цвет (hexColorMask)">
+            </DemoField>
+            <DemoField label="HEX-цвет (hexColorMask)">
               <MaskedInput
                 mask={hexColorMask}
                 value={hexColor}
@@ -271,33 +251,32 @@ export const MaskedInputsSection: FC = () => {
                 leftIcon={<Palette className="h-4 w-4" />}
                 placeholder="#FFFFFF"
               />
-            </Field>
-          </Row>
-        </div>
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
         <hr className="border-border" />
 
-        <div>
-          <GroupTitle>Дата и период с маской ввода</GroupTitle>
-          <Row>
-            <Field label="MaskedDatePicker — печатайте, выбирайте в календаре или наводите для превью">
+        <DemoBlock title="Дата и период с маской ввода">
+          <DemoRow>
+            <DemoField label="MaskedDatePicker — печатайте, выбирайте в календаре или наводите для превью">
               <MaskedDatePicker
                 value={maskedDate}
                 onChange={setMaskedDate}
                 clearable
                 openOnFocus
               />
-            </Field>
-            <Field label="MaskedDateRangePicker — период одной маской «от — до»">
+            </DemoField>
+            <DemoField label="MaskedDateRangePicker — период одной маской «от — до»">
               <MaskedDateRangePicker
                 value={dateRange}
                 onChange={setDateRange}
                 clearable
                 openOnFocus
               />
-            </Field>
-          </Row>
-        </div>
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
       </CardContent>
     </Card>
   );

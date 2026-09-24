@@ -1,10 +1,22 @@
 import { IAuthStore } from "@entities/auth";
-import { AuthFormCard, Form, FormSubmit, InputFormField } from "@shared/ui";
+import {
+  Button,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Form,
+  FormSubmit,
+  InputFormField,
+} from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
 import { useSignUpVM } from "../model/useSignUpVM";
 import { TSignUpForm } from "../model/validation";
+
+/** Текстовая ссылка формы в фирменном цвете. */
+const AUTH_LINK_CLASS = "text-brand";
 
 interface SignUpFormProps {
   onSuccess: () => void;
@@ -17,10 +29,12 @@ export const SignUpForm: FC<SignUpFormProps> = observer(
     const { form, handleSignUp } = useSignUpVM(onSuccess);
 
     return (
-      <AuthFormCard
-        title="Создать аккаунт"
-        subtitle="Заполните данные для регистрации"
-      >
+      <Card className="p-6">
+        <CardHeader className="mb-6 p-0 md:p-0">
+          <CardTitle className="text-xl font-bold">Создать аккаунт</CardTitle>
+          <CardDescription>Заполните данные для регистрации</CardDescription>
+        </CardHeader>
+
         <Form
           form={form}
           onSubmit={handleSignUp}
@@ -56,15 +70,16 @@ export const SignUpForm: FC<SignUpFormProps> = observer(
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Уже есть аккаунт?{" "}
-          <button
-            type="button"
-            className="text-brand hover:underline"
+          <Button
+            variant="link"
+            size="sm"
+            className={AUTH_LINK_CLASS}
             onClick={onSignIn}
           >
             Войти
-          </button>
+          </Button>
         </p>
-      </AuthFormCard>
+      </Card>
     );
   },
 );

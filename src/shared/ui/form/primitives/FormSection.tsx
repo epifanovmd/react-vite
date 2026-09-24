@@ -1,4 +1,5 @@
 import { cn } from "@shared/lib/utils/cn";
+import { joinIds } from "@shared/lib/utils/join-ids";
 import * as React from "react";
 
 export interface FormSectionProps extends Omit<
@@ -9,24 +10,49 @@ export interface FormSectionProps extends Omit<
   description?: React.ReactNode;
 }
 
-/** Accessible group for related form controls. */
+const ROOT_CLASS = "flex min-w-0 flex-col gap-4";
+const TITLE_CLASS = "text-sm font-semibold text-foreground";
+const DESCRIPTION_CLASS = "-mt-2 text-xs text-muted-foreground";
+
+/** Доступная группа связанных контролов формы: описание связано через `aria-describedby`. */
 export const FormSection = React.forwardRef<
   HTMLFieldSetElement,
   FormSectionProps
->(({ title, description, className, children, ...props }, ref) => (
-  <fieldset
-    ref={ref}
-    className={cn("flex min-w-0 flex-col gap-4", className)}
-    {...props}
-  >
-    {title !== undefined && (
-      <legend className="text-sm font-semibold text-foreground">{title}</legend>
-    )}
-    {description !== undefined && (
-      <p className="-mt-2 text-xs text-muted-foreground">{description}</p>
-    )}
-    {children}
-  </fieldset>
-));
+>(
+  (
+    {
+      title,
+      description,
+      className,
+      children,
+      "aria-describedby": ariaDescribedBy,
+      ...props
+    },
+    ref,
+  ) => {
+    const generatedId = React.useId();
+    const descriptionId =
+      description !== undefined ? `${generatedId}-description` : undefined;
+
+    return (
+      <fieldset
+        ref={ref}
+        className={cn(ROOT_CLASS, className)}
+        aria-describedby={joinIds(ariaDescribedBy, descriptionId)}
+        {...props}
+      >
+        {title !== undefined && (
+          <legend className={TITLE_CLASS}>{title}</legend>
+        )}
+        {description !== undefined && (
+          <p id={descriptionId} className={DESCRIPTION_CLASS}>
+            {description}
+          </p>
+        )}
+        {children}
+      </fieldset>
+    );
+  },
+);
 
 FormSection.displayName = "FormSection";

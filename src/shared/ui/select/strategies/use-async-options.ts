@@ -1,132 +1,119 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
 import type { SelectDataProps, SelectOption, SelectValue } from "../types";
+import { useOptionsRequest } from "./use-options-request";
 
 export interface UseAsyncOptionsConfig<TData, V extends SelectValue> {
   fetch: (query: string, signal: AbortSignal) => Promise<TData[]>;
   getOption: (item: TData) => SelectOption<V>;
   debounce?: number;
+  /** Результат пустого запроса кэшируется: повторное открытие и возврат
+   *  к пустой строке не перезапрашивают. */
   loadOnce?: boolean;
-  deps?: React.DependencyList;
+  /** Смена ключа сбрасывает кэш и перезагружает. */
+  fetchKey?: string | number;
   refetchInterval?: number;
+  /** Загрузить пустой запрос при монтировании (результат кэшируется). */
   fetchOnMount?: boolean;
   minQueryLength?: number;
+  /** `false` — стратегия ничего не загружает. */
+  enabled?: boolean;
+  /** Строка поиска в триггере (по умолчанию включена). */
+  search?: boolean;
 }
 
+/** Серверный поиск по открытию и вводу с debounce. */
 export const useAsyncOptions = <TData, V extends SelectValue>({
   fetch,
   getOption,
   debounce = 300,
   loadOnce = false,
-  deps = [],
+  fetchKey,
   refetchInterval,
   fetchOnMount = false,
   minQueryLength = 0,
+  enabled = true,
+  search = true,
 }: UseAsyncOptionsConfig<TData, V>): SelectDataProps<V> => {
-  const [options, setOptions] = React.useState<SelectOption<V>[]>([]);
-  const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
 
-  const fetchRef = React.useRef(fetch);
-  const getOptionRef = React.useRef(getOption);
-  const loadedRef = React.useRef(false);
-  const mountedRef = React.useRef(false);
+  const request = useOptionsRequest<TData, V>(getOption);
+  const { run, cancel, setOptions } = request;
+  const fetchRef = useLatestRef(fetch);
+  const cacheEmpty = loadOnce || fetchOnMount;
+  const emptyQueryCacheRef = React.useRef<SelectOption<V>[] | null>(null);
 
-  fetchRef.current = fetch;
-  getOptionRef.current = getOption;
-
-  const doFetch = React.useCallback(
-    async (q: string, signal: AbortSignal, keepOptions?: boolean) => {
-      if (!keepOptions) setOptions([]);
-
-      setLoading(true);
-      try {
-        const data = await fetchRef.current(q, signal);
-
-        if (!signal.aborted) {
-          setOptions(data.map(item => getOptionRef.current(item)));
-          loadedRef.current = true;
+  const load = React.useCallback(
+    (q: string) =>
+      run(signal => fetchRef.current(q, signal)).then(result => {
+        if (result && q === "" && cacheEmpty) {
+          emptyQueryCacheRef.current = result;
         }
-      } catch {
-        if (!signal.aborted) setOptions([]);
-      } finally {
-        if (!signal.aborted) setLoading(false);
-      }
-    },
-    [],
+      }),
+    [run, fetchRef, cacheEmpty],
   );
 
-  // Сброс loadedRef при изменении deps
+  // fetchOnMount / смена fetchKey — не зависит от open
   React.useEffect(() => {
-    loadedRef.current = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+    emptyQueryCacheRef.current = null;
 
-  // fetchOnMount — отдельный эффект, не зависит от open
+    if (!enabled || !fetchOnMount) return;
+
+    void load("");
+
+    return cancel;
+  }, [enabled, fetchOnMount, fetchKey, load, cancel]);
+
+  // open / query — основной fetch
   React.useEffect(() => {
-    if (!fetchOnMount) return;
+    if (!enabled || !open) return;
 
-    const ctrl = new AbortController();
+    if (query === "" && emptyQueryCacheRef.current) {
+      setOptions(emptyQueryCacheRef.current);
 
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      doFetch("", ctrl.signal, true);
+      return;
     }
 
-    return () => {
-      ctrl.abort();
-      setLoading(false);
-      mountedRef.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchOnMount, ...deps]);
+    if (query.length < minQueryLength) {
+      // Ниже порога результаты прошлого (длинного) запроса неактуальны.
+      if (!emptyQueryCacheRef.current) setOptions([]);
 
-  // Open / query — основной fetch
-  React.useEffect(() => {
-    if (!open) return;
+      return;
+    }
 
-    // Если fetchOnMount уже загрузил данные, не фетчим при открытии
-    if (fetchOnMount && loadedRef.current && query === "") return;
-
-    // loadOnce — кеш, не перезапрашиваем
-    if (loadOnce && loadedRef.current && query === "") return;
-
-    // minQueryLength — не фетчить пока недостаточно символов
-    if (query.length < minQueryLength) return;
-
-    const ctrl = new AbortController();
-    const timer = setTimeout(
-      () => doFetch(query, ctrl.signal),
-      query ? debounce : 0,
-    );
+    const timer = setTimeout(() => void load(query), query ? debounce : 0);
 
     return () => {
       clearTimeout(timer);
-      ctrl.abort();
-      // прерванный fetch пропускает setLoading(false) в finally
-      setLoading(false);
+      cancel();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, query, debounce, loadOnce, minQueryLength, doFetch, fetchOnMount, ...deps]);
+  }, [
+    enabled,
+    open,
+    query,
+    debounce,
+    minQueryLength,
+    load,
+    cancel,
+    setOptions,
+  ]);
 
   // refetchInterval — поллинг пока открыт
   React.useEffect(() => {
-    if (!refetchInterval || !open) return;
+    if (!enabled || !refetchInterval || !open) return;
 
-    const id = setInterval(() => {
-      const ctrl = new AbortController();
-
-      doFetch(query, ctrl.signal);
-    }, refetchInterval);
+    const id = setInterval(() => void load(query), refetchInterval);
 
     return () => clearInterval(id);
-  }, [refetchInterval, open, query, doFetch]);
+  }, [enabled, refetchInterval, open, query, load]);
 
   return {
-    options,
-    loading,
-    search: true,
+    options: request.options,
+    loading: request.loading,
+    error: request.error,
+    search,
     searchValue: query,
     onSearch: setQuery,
     onOpenChange: setOpen,

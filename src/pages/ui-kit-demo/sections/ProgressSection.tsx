@@ -49,24 +49,27 @@ export const ProgressSection: FC = () => {
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">Цвета</p>
-          <Progress value={0.75} color="brand" />
-          <Progress value={0.75} color="success" />
-          <Progress value={0.75} color="destructive" />
+          <p className="text-xs text-muted-foreground">Варианты</p>
+          <Progress value={0.75} variant="primary" />
+          <Progress value={0.75} variant="success" />
+          <Progress value={0.75} variant="destructive" />
         </div>
 
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
             Неопределённый — когда доля неизвестна
           </p>
-          <Progress value={0} indeterminate />
+          <Progress indeterminate />
         </div>
 
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
             Живой: {Math.round(value * 100)}%
           </p>
-          <Progress value={value} color={value >= 1 ? "success" : "brand"} />
+          <Progress
+            value={value}
+            variant={value >= 1 ? "success" : "primary"}
+          />
           <div className="flex gap-2">
             <Button
               size="sm"

@@ -1,85 +1,47 @@
+import { useControllableState } from "@shared/lib/hooks";
 import {
   getPaginationRowModel,
   type PaginationState,
 } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
-import { useControllableState } from "./shared";
-import type { TableFeatureResult } from "./types";
-
-const DEFAULT_PAGE_SIZE = 20;
-
-export type PaginationFeatureMode = "pagination" | "infiniteScroll";
-
-export interface PaginationFeatureMeta {
-  pageSizeOptions: number[];
-  mode: PaginationFeatureMode;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  onLoadMore: () => void;
-  rootMargin?: string;
-}
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_OPTIONS } from "../../constants";
+import type { TableFeatureOf } from "./types";
 
 export interface PaginationFeatureOptions {
   enabled?: boolean;
-  pageIndex?: number;
-  pageSize?: number;
+  paginationState?: PaginationState;
+  defaultPagination?: Partial<PaginationState>;
+  onPaginationChange?: (state: PaginationState) => void;
   pageCount?: number;
   rowCount?: number;
-  pageSizeOptions?: number[];
-  onPaginationChange?: (state: PaginationState) => void;
+  pageSizeOptions?: readonly number[];
   manualPagination?: boolean;
   autoResetPageIndex?: boolean;
-
-  hasNextPage?: boolean;
-  isFetchingNextPage?: boolean;
-  onLoadMore?: () => void;
-  rootMargin?: string;
 }
 
-export const usePaginationFeature = <TData>(
+export const usePaginationFeature = <TData = unknown>(
   options: PaginationFeatureOptions = {},
-): TableFeatureResult<TData, PaginationFeatureMeta> => {
+): TableFeatureOf<TData, "pagination"> => {
   const {
     enabled = true,
-    pageIndex,
-    pageSize,
+    paginationState,
+    defaultPagination,
+    onPaginationChange,
     pageCount,
     rowCount,
-    pageSizeOptions = [10, 20, 50, 100],
-    onPaginationChange,
+    pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
     manualPagination,
     autoResetPageIndex,
-    hasNextPage = false,
-    isFetchingNextPage = false,
-    onLoadMore,
-    rootMargin,
   } = options;
 
-  const infiniteScroll = enabled && !!onLoadMore;
-
-  const isControlled = !!onPaginationChange;
-
-  const controlledValue = useMemo<PaginationState | undefined>(() => {
-    if (!isControlled) return undefined;
-
-    return {
-      pageIndex: pageIndex ?? 0,
-      pageSize: pageSize ?? DEFAULT_PAGE_SIZE,
-    };
-  }, [isControlled, pageIndex, pageSize]);
-
-  const defaultValue = useMemo<PaginationState>(
-    () => ({
-      pageIndex: pageIndex ?? 0,
-      pageSize: pageSize ?? DEFAULT_PAGE_SIZE,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const [defaultValue] = useState<PaginationState>(() => ({
+    pageIndex: defaultPagination?.pageIndex ?? 0,
+    pageSize: defaultPagination?.pageSize ?? DEFAULT_PAGE_SIZE,
+  }));
 
   const [state, setState] = useControllableState<PaginationState>({
-    value: controlledValue,
+    value: paginationState,
     defaultValue,
     onChange: onPaginationChange,
   });
@@ -87,32 +49,22 @@ export const usePaginationFeature = <TData>(
   return useMemo(
     () => ({
       kind: "pagination" as const,
-      state: enabled && !infiniteScroll ? { pagination: state } : {},
-      options: infiniteScroll
-        ? {}
-        : {
-            manualPagination,
-            autoResetPageIndex,
-            pageCount,
-            rowCount,
-            onPaginationChange: enabled ? setState : undefined,
-            getPaginationRowModel:
-              enabled && !manualPagination
-                ? getPaginationRowModel()
-                : undefined,
-          },
-      meta: {
-        pageSizeOptions,
-        mode: infiniteScroll ? "infiniteScroll" : "pagination",
-        hasNextPage: infiniteScroll && hasNextPage,
-        isFetchingNextPage: infiniteScroll && isFetchingNextPage,
-        onLoadMore: onLoadMore ?? (() => {}),
-        rootMargin,
+      state: { pagination: state },
+      options: {
+        manualPagination,
+        autoResetPageIndex,
+        pageCount,
+        rowCount,
+        onPaginationChange: enabled ? setState : undefined,
+        getPaginationRowModel:
+          enabled && !manualPagination
+            ? getPaginationRowModel<TData>()
+            : undefined,
       },
+      meta: { pageSizeOptions },
     }),
     [
       enabled,
-      infiniteScroll,
       state,
       setState,
       manualPagination,
@@ -120,10 +72,6 @@ export const usePaginationFeature = <TData>(
       pageCount,
       rowCount,
       pageSizeOptions,
-      hasNextPage,
-      isFetchingNextPage,
-      onLoadMore,
-      rootMargin,
     ],
   );
 };

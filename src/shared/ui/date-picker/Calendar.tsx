@@ -1,56 +1,60 @@
-import * as React from "react";
-
 import { CalendarLayout } from "./CalendarLayout";
-import { useCalendarNavigation, useDayCellInteraction } from "./hooks";
+import { useCalendarNavigation, useSingleCalendarDays } from "./hooks";
+import type { CalendarLocaleProps, DateBoundsProps } from "./types";
+import { DATE_LOCALE, resolveWeekStartsOn } from "./utils";
 
-export interface CalendarProps {
+export interface CalendarProps extends CalendarLocaleProps, DateBoundsProps {
   selected?: Date;
-  onSelect?: (date: Date | undefined) => void;
-  disableDate?: (date: Date) => boolean;
+  onSelect?: (date: Date) => void;
   onDateHover?: (date: Date | undefined) => void;
+  /** Стартовый месяц/год (по умолчанию — месяц `selected` или текущий). */
+  defaultMonth?: number;
+  defaultYear?: number;
   className?: string;
 }
 
-export const Calendar = React.memo(
-  ({
+export const Calendar = ({
+  selected,
+  onSelect,
+  onDateHover,
+  defaultMonth,
+  defaultYear,
+  className,
+  locale = DATE_LOCALE,
+  weekStartsOn: weekStartsOnProp,
+  minDate,
+  maxDate,
+  disableDate,
+}: CalendarProps) => {
+  const weekStartsOn = resolveWeekStartsOn(locale, weekStartsOnProp);
+
+  const nav = useCalendarNavigation({
+    locale,
+    defaultMonth: defaultMonth ?? selected?.getMonth(),
+    defaultYear: defaultYear ?? selected?.getFullYear(),
+    minDate,
+    maxDate,
+  });
+
+  const days = useSingleCalendarDays({
     selected,
     onSelect,
+    minDate,
+    maxDate,
     disableDate,
-    onDateHover,
-    className,
-  }: CalendarProps) => {
-    const nav = useCalendarNavigation({
-      initialMonth: selected?.getMonth(),
-      initialYear: selected?.getFullYear(),
-    });
+  });
 
-    const dayInteraction = useDayCellInteraction({
-      currentMonth: nav.currentMonth,
-      currentYear: nav.currentYear,
-      selected,
-      onSelect,
-      disableDate,
-    });
-
-    return (
-      <CalendarLayout
-        headerText={nav.headerText}
-        viewMode={nav.viewMode}
-        currentMonth={nav.currentMonth}
-        currentYear={nav.currentYear}
-        className={className}
-        onPrevious={nav.handlePrevious}
-        onNext={nav.handleNext}
-        onHeaderClick={nav.handleHeaderClick}
-        onMonthSelect={nav.handleMonthSelect}
-        onYearSelect={nav.handleYearSelect}
-        onDaySelect={dayInteraction.handleDaySelect}
-        getDayClassName={dayInteraction.getDayClassName}
-        isDayDisabled={dayInteraction.isDayDisabled}
-        onDateHover={onDateHover}
-      />
-    );
-  },
-);
-
-Calendar.displayName = "Calendar";
+  return (
+    <CalendarLayout
+      nav={nav}
+      locale={locale}
+      weekStartsOn={weekStartsOn}
+      selected={selected}
+      className={className}
+      getDayFlags={days.getDayFlags}
+      isDayDisabled={days.isDisabled}
+      onDaySelect={days.handleDaySelect}
+      onDateHover={onDateHover}
+    />
+  );
+};

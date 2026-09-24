@@ -2,25 +2,46 @@ import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
+import { useDrawerDirection } from "./drawer-context";
+import { DRAWER_HANDLE_CLASS, drawerContentVariants } from "./drawer-variants";
 import { DrawerOverlay } from "./DrawerOverlay";
 
-export const DrawerContent = React.forwardRef<
+export interface DrawerContentProps extends React.ComponentPropsWithoutRef<
+  typeof DrawerPrimitive.Content
+> {
+  /** Скрыть ручку свайпа у вертикальной панели. */
+  hideHandle?: boolean;
+}
+
+const DrawerContent = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DrawerPrimitive.Portal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-xl border bg-background transition-all duration-300",
-        className,
-      )}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-24 rounded-full bg-muted" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPrimitive.Portal>
-));
+  DrawerContentProps
+>(({ className, children, hideHandle, ...props }, ref) => {
+  const direction = useDrawerDirection();
+  const handleClass =
+    direction === "top" || direction === "bottom"
+      ? DRAWER_HANDLE_CLASS[direction]
+      : undefined;
+  const handleNode =
+    handleClass && !hideHandle ? (
+      <div aria-hidden className={handleClass} />
+    ) : null;
+
+  return (
+    <DrawerPrimitive.Portal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        className={cn(drawerContentVariants({ direction }), className)}
+        {...props}
+      >
+        {handleNode}
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPrimitive.Portal>
+  );
+});
+
 DrawerContent.displayName = "DrawerContent";
+
+export { DrawerContent };

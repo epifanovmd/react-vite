@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import {
@@ -6,69 +7,44 @@ import {
 } from "../../date-picker";
 import { FormField } from "../primitives/FormField";
 import type { FormAdapterProps } from "../types";
-import { resolveFieldVariant } from "./form-field-utils";
+import { composeHandlers } from "./compose-handlers";
+import { resolveFieldVariant } from "./resolve-field-variant";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 export type MaskedDatePickerFormFieldProps<
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, Date | undefined>,
 > = FormAdapterProps<TFormData, TName> &
-  Omit<MaskedDatePickerProps, "disabled" | "id" | "name" | "value">;
+  Omit<MaskedDatePickerProps, ManagedControlProps>;
 
-/** @example <MaskedDatePickerFormField<TForm> name="date" label="Date" /> */
+/** @example <MaskedDatePickerFormField<TForm> name="date" label="Дата" /> */
 export const MaskedDatePickerFormField = <
   TFormData extends FieldValues,
   TName extends FieldPathByValue<TFormData, Date | undefined> =
     FieldPathByValue<TFormData, Date | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  onChange,
-  onBlur,
-  variant,
-  ...pickerProps
-}: MaskedDatePickerFormFieldProps<TFormData, TName>): React.ReactElement => {
+>(
+  props: MaskedDatePickerFormFieldProps<TFormData, TName>,
+): ReactElement => {
+  const {
+    formFieldProps,
+    controlProps: { onChange, onBlur, variant, ...pickerProps },
+  } = splitFormAdapterProps(props);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
+      {...formFieldProps}
       render={({ field, fieldState, controlProps }) => (
         <MaskedDatePicker
           {...pickerProps}
           {...controlProps}
           ref={field.ref}
-          disabled={field.disabled}
           value={field.value}
           variant={resolveFieldVariant(variant, fieldState.invalid)}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onChange={value => {
-            field.onChange(value);
-            onChange?.(value);
-          }}
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onChange={composeHandlers(field.onChange, onChange)}
         />
       )}
     />

@@ -10,7 +10,7 @@ export const usePaginationExample = () => {
   const data = useMemo(() => ORDERS, []);
 
   const pagination = usePaginationFeature<Order>({
-    pageSize: 10,
+    defaultPagination: { pageSize: 10 },
     pageSizeOptions: PAGE_SIZE_OPTIONS,
   });
 

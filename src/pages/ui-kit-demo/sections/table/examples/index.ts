@@ -24,7 +24,7 @@ export interface TableExample {
   Component: FC;
 }
 
-/** One tab per Table usage scenario — every example shares the same dataset and columns (see `../shared`). */
+/** Вкладка на каждый сценарий Table; все примеры используют общие данные и колонки (см. `../shared`). */
 export const TABLE_EXAMPLES: TableExample[] = [
   { value: "basic", label: "Базовый", Component: BasicExample },
   { value: "sorting", label: "Сортировка", Component: SortingExample },
@@ -77,7 +77,7 @@ export const TABLE_EXAMPLES: TableExample[] = [
   { value: "grouping", label: "Группировка", Component: GroupingExample },
   {
     value: "sticky",
-    label: "Sticky header/footer",
+    label: "Липкие шапка и подвал",
     Component: StickyExample,
   },
   {

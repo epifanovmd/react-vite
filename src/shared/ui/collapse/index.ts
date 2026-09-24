@@ -1,3 +1,10 @@
 export { Collapse } from "./Collapse";
-export * from "./components";
-export * from "./hooks";
+export type {
+  CollapseContentProps,
+  CollapseProps,
+  CollapseSize,
+  CollapseTriggerProps,
+  CollapseVariant,
+} from "./components";
+export type { UseCollapseOptions, UseCollapseResult } from "./hooks";
+export { useCollapse } from "./hooks";

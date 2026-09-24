@@ -1,95 +1,82 @@
 import { cn } from "@shared/lib/utils/cn";
-import {
-  flexRender,
-  type Row,
-  type VisibilityState,
-} from "@tanstack/react-table";
-import { memo, MouseEvent, useCallback } from "react";
+import type { Cell, ColumnSizingState, Row } from "@tanstack/react-table";
+import * as React from "react";
 
-import { getPinningStyle } from "../utils";
-import { TableCell, TableRow } from "./TablePrimitive";
+import type { TableProps, TableRowClickHandler } from "../table.types";
+import { TableRow } from "./primitives";
+import { TableDataCell } from "./TableDataCell";
 
-interface TableDataRowProps<TData = unknown> {
+interface TableDataRowProps<TData> {
   row: Row<TData>;
+  /** `row.getVisibleCells()` — меняет identity при смене порядка/видимости/закрепления колонок. */
+  cells: Cell<TData, unknown>[];
+  /** Состояние ширин: `cells` на resize не меняются, поэтому нужен отдельный ключ. */
+  columnSizing: ColumnSizingState;
   isSelected: boolean;
-  onRowClick?: (original: TData, e: MouseEvent<HTMLTableRowElement>) => void;
-  onRowDoubleClick?: (
-    original: TData,
-    e: MouseEvent<HTMLTableRowElement>,
-  ) => void;
+  /** `row.getIsExpanded()` — сбрасывает memo, чтобы переключатель раскрытия не устаревал. */
+  isExpanded: boolean;
+  onRowClick?: TableRowClickHandler<TData>;
+  onRowDoubleClick?: TableRowClickHandler<TData>;
   className?: string | ((row: TData) => string);
+  getRowProps?: TableProps<TData>["getRowProps"];
   resizable?: boolean;
-  columnVisibility?: VisibilityState;
 }
 
-const TableDataRowInner = <TData = unknown,>({
+const isActivationKey = (key: string) => key === "Enter" || key === " ";
+
+const TableDataRowInner = <TData,>({
   row,
+  cells,
   isSelected,
   onRowClick,
   onRowDoubleClick,
   className,
+  getRowProps,
   resizable,
 }: TableDataRowProps<TData>) => {
   const resolvedClassName =
     typeof className === "function" ? className(row.original) : className;
+  const rowProps = getRowProps?.(row);
+  const clickable = !!onRowClick;
 
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLTableRowElement>) => onRowClick?.(row.original, e),
-    [onRowClick, row.original],
-  );
+  const handleClick = (event: React.MouseEvent<HTMLTableRowElement>) =>
+    onRowClick?.(row.original, event);
 
-  const handleDoubleClick = useCallback(
-    (e: MouseEvent<HTMLTableRowElement>) => onRowDoubleClick?.(row.original, e),
-    [onRowDoubleClick, row.original],
-  );
+  const handleDoubleClick = (event: React.MouseEvent<HTMLTableRowElement>) =>
+    onRowDoubleClick?.(row.original, event);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+    if (event.target !== event.currentTarget || !isActivationKey(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    onRowClick?.(row.original, event);
+  };
 
   return (
     <TableRow
+      {...rowProps}
       selected={isSelected}
-      onClick={onRowClick ? handleClick : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={clickable ? handleClick : undefined}
+      onKeyDown={clickable ? handleKeyDown : undefined}
       onDoubleClick={onRowDoubleClick ? handleDoubleClick : undefined}
-      className={cn(onRowClick && "cursor-pointer", resolvedClassName)}
+      className={cn(
+        "group/row",
+        clickable &&
+          "cursor-pointer focus-visible:outline-none focus-visible:bg-muted/50",
+        resolvedClassName,
+        rowProps?.className,
+      )}
     >
-      {row.getVisibleCells().map(cell => {
-        const colWidth = resizable
-          ? cell.column.getSize()
-          : cell.column.columnDef.size;
-        const { style: pinStyle, className: pinClassName } = getPinningStyle(
-          cell.column,
-        );
-
-        return (
-          <TableCell
-            key={cell.id}
-            className={pinClassName}
-            style={{
-              ...(colWidth != null
-                ? { width: colWidth, minWidth: colWidth, maxWidth: colWidth }
-                : undefined),
-              ...pinStyle,
-            }}
-          >
-            {cell.getIsPlaceholder() ? null : cell.getIsGrouped() ? (
-              <span className="inline-flex items-center gap-1.5">
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                <span className="text-xs text-muted-foreground">
-                  ({row.subRows.length})
-                </span>
-              </span>
-            ) : cell.getIsAggregated() ? (
-              flexRender(
-                cell.column.columnDef.aggregatedCell ??
-                  cell.column.columnDef.cell,
-                cell.getContext(),
-              )
-            ) : (
-              flexRender(cell.column.columnDef.cell, cell.getContext())
-            )}
-          </TableCell>
-        );
-      })}
+      {cells.map(cell => (
+        <TableDataCell key={cell.id} cell={cell} resizable={resizable} />
+      ))}
     </TableRow>
   );
 };
 
-export const TableDataRow = memo(TableDataRowInner) as typeof TableDataRowInner;
+export const TableDataRow = React.memo(
+  TableDataRowInner,
+) as typeof TableDataRowInner;

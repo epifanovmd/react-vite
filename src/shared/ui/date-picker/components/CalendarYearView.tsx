@@ -1,40 +1,46 @@
 import { cn } from "@shared/lib/utils/cn";
-import * as React from "react";
 
-import { getDecadeStart } from "../utils";
+import { getYearPageStart, YEARS_PER_PAGE } from "../utils";
 
-interface CalendarYearViewProps {
+export interface CalendarYearViewProps {
   currentYear: number;
+  /** Год выбранной даты. */
+  selectedYear?: number;
   onYearSelect: (year: number) => void;
 }
 
-export const CalendarYearView = React.memo(
-  ({ currentYear, onYearSelect }: CalendarYearViewProps) => {
-    const startYear = getDecadeStart(currentYear);
-    const years = Array.from({ length: 12 }, (_, i) => startYear + i);
+const YEAR_BUTTON_CLASS =
+  "py-3 px-4 rounded-md text-sm transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground";
 
-    return (
-      <div className="p-3">
-        <div className="grid grid-cols-3 gap-2">
-          {years.map(year => (
-            <button
-              key={year}
-              type="button"
-              onClick={() => onYearSelect(year)}
-              className={cn(
-                "py-3 px-4 rounded-md text-sm transition-colors cursor-pointer",
-                "hover:bg-accent hover:text-accent-foreground",
-                currentYear === year &&
-                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-              )}
-            >
-              {year}
-            </button>
-          ))}
-        </div>
+const SELECTED_CLASS =
+  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground";
+
+export const CalendarYearView = ({
+  currentYear,
+  selectedYear,
+  onYearSelect,
+}: CalendarYearViewProps) => {
+  const startYear = getYearPageStart(currentYear);
+  const years = Array.from({ length: YEARS_PER_PAGE }, (_, i) => startYear + i);
+
+  return (
+    <div className="p-3">
+      <div className="grid grid-cols-3 gap-2">
+        {years.map(year => (
+          <button
+            key={year}
+            type="button"
+            aria-pressed={selectedYear === year}
+            onClick={() => onYearSelect(year)}
+            className={cn(
+              YEAR_BUTTON_CLASS,
+              selectedYear === year && SELECTED_CLASS,
+            )}
+          >
+            {year}
+          </button>
+        ))}
       </div>
-    );
-  },
-);
-
-CalendarYearView.displayName = "CalendarYearView";
+    </div>
+  );
+};

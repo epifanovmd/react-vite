@@ -1,11 +1,30 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-export interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
-  orientation?: "horizontal" | "vertical";
+interface SeparatorBaseProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Декоративный разделитель скрыт от вспомогательных технологий. */
   decorative?: boolean;
+}
+
+interface HorizontalSeparatorProps extends SeparatorBaseProps {
+  orientation?: "horizontal";
+  /** Подпись посередине линии. */
   label?: React.ReactNode;
 }
+
+interface VerticalSeparatorProps extends SeparatorBaseProps {
+  orientation: "vertical";
+  label?: never;
+}
+
+export type SeparatorProps = HorizontalSeparatorProps | VerticalSeparatorProps;
+
+const LINE_CLASS: Record<"horizontal" | "vertical", string> = {
+  horizontal: "h-px w-full",
+  vertical: "h-full w-px self-stretch",
+};
+
+const LABELED_CLASS = "flex items-center gap-3 text-xs text-muted-foreground";
 
 const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
   (
@@ -18,14 +37,16 @@ const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
     },
     ref,
   ) => {
-    if (label && orientation === "horizontal") {
+    const ariaProps = decorative
+      ? { role: "none" }
+      : { role: "separator", "aria-orientation": orientation };
+
+    if (label !== undefined) {
       return (
         <div
           ref={ref}
-          className={cn(
-            "flex items-center gap-3 text-xs text-muted-foreground",
-            className,
-          )}
+          className={cn(LABELED_CLASS, className)}
+          {...ariaProps}
           {...props}
         >
           <span className="h-px flex-1 bg-border" />
@@ -38,13 +59,8 @@ const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
     return (
       <div
         ref={ref}
-        role={decorative ? "none" : "separator"}
-        aria-orientation={decorative ? undefined : orientation}
-        className={cn(
-          "shrink-0 bg-border",
-          orientation === "horizontal" ? "h-px w-full" : "w-px self-stretch",
-          className,
-        )}
+        className={cn("shrink-0 bg-border", LINE_CLASS[orientation], className)}
+        {...ariaProps}
         {...props}
       />
     );
@@ -54,4 +70,3 @@ const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
 Separator.displayName = "Separator";
 
 export { Separator };
-export const Divider = Separator;

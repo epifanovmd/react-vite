@@ -1,12 +1,24 @@
 import * as React from "react";
 
-/**
- * Открыто ли окно. Radix держит это у себя и наружу не отдаёт, а содержимому
- * знать нужно: пока играет анимация закрытия, оно рисует замороженную копию
- * (см. `ModalContent`). `undefined` — окно неуправляемое, морозить нечего.
- */
-export const ModalOpenContext = React.createContext<boolean | undefined>(
-  undefined,
-);
+export interface ModalOpenContextValue {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
 
-export const useModalOpen = () => React.useContext(ModalOpenContext);
+/**
+ * Состояние окна, которым владеет `ModalRoot`. Содержимому оно нужно, чтобы
+ * закрыть окно из кнопок подтверждения и заморозить последний кадр на время
+ * анимации закрытия (см. `ModalContent`).
+ */
+export const ModalOpenContext =
+  React.createContext<ModalOpenContextValue | null>(null);
+
+export const useModalOpen = (): ModalOpenContextValue => {
+  const ctx = React.useContext(ModalOpenContext);
+
+  if (!ctx) {
+    throw new Error("Modal compound components must be used within <Modal>");
+  }
+
+  return ctx;
+};

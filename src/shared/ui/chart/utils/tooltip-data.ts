@@ -1,23 +1,31 @@
-import type { ChartTooltipData, ChartXValue } from "../chart.types";
-import type { ChartModel } from "../hooks/use-chart-model";
+import type {
+  ChartResolvedSeries,
+  ChartTooltipData,
+  ChartTooltipEntry,
+  ChartXValue,
+} from "../chart.types";
 import { formatChartX } from "./format";
 
 export interface BuildTooltipDataOptions<Datum> {
-  model: ChartModel<Datum>;
   data: Datum[];
+  xValues: ChartXValue[];
+  series: ChartResolvedSeries<Datum>[];
   index: number;
   formatX?: (x: ChartXValue, datum: Datum, index: number) => string;
+  formatTotal: (value: number) => string;
 }
 
 /**
  * Один тултип на всю позицию X: курсору не нужно попадать в конкретную
- * линию или заливку, чтобы получить значение.
+ * линию или заливку, чтобы получить значения всех серий.
  */
 export const buildTooltipData = <Datum>({
-  model,
   data,
+  xValues,
+  series,
   index,
   formatX,
+  formatTotal,
 }: BuildTooltipDataOptions<Datum>): ChartTooltipData<Datum> | null => {
   const datum = data[index];
 
@@ -25,26 +33,25 @@ export const buildTooltipData = <Datum>({
     return null;
   }
 
-  const x = model.xValues[index];
+  const x = xValues[index];
 
-  const entries = model.drawn
-    .map(series => {
-      const point = series.points[index];
+  const entries = series.flatMap<ChartTooltipEntry>(item => {
+    const value = item.points[index]?.value;
 
-      if (!point || point.value === null) {
-        return null;
-      }
+    if (value === undefined || value === null) {
+      return [];
+    }
 
-      return {
-        key: series.key,
-        label: series.label,
-        color: series.color,
-        value: point.value,
-        formatted: series.format(point.value),
-        series: series.source,
-      };
-    })
-    .filter(entry => entry !== null);
+    return {
+      key: item.key,
+      label: item.label,
+      color: item.color,
+      value,
+      formatted: item.format(value),
+    };
+  });
+
+  const total = entries.reduce((sum, entry) => sum + entry.value, 0);
 
   return {
     index,
@@ -52,6 +59,7 @@ export const buildTooltipData = <Datum>({
     x,
     label: formatX ? formatX(x, datum, index) : formatChartX(x),
     entries,
-    total: entries.reduce((sum, entry) => sum + entry.value, 0),
+    total,
+    formattedTotal: formatTotal(total),
   };
 };

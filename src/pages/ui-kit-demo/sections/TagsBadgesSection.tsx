@@ -2,44 +2,62 @@ import {
   Avatar,
   Badge,
   BadgeAnchor,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Chips,
+  Button,
+  Chip,
+  type ChipProps,
+  CodeChip,
   IconButton,
+  Kbd,
+  Separator,
 } from "@shared/ui";
-import { Bell } from "lucide-react";
-import { type FC, type ReactNode } from "react";
+import { Bell, Check } from "lucide-react";
+import { type FC, useState } from "react";
 
-const Row = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-wrap gap-2 items-center">{children}</div>
-);
+import { DemoBlock, DemoCard, DemoInline } from "./shared";
 
-export const TagsBadgesSection: FC = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-base">Tags & Badges</CardTitle>
-      <CardDescription className="text-xs">
-        Badge и Chips — общая палитра вариантов
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="flex flex-col gap-4">
-      <div>
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Badge — счётчик / индикатор (без remove)
-        </p>
-        <Row>
+type ChipVariant = NonNullable<ChipProps["variant"]>;
+
+const CHIP_VARIANTS: ChipVariant[] = [
+  "default",
+  "primary",
+  "secondary",
+  "success",
+  "warning",
+  "destructive",
+  "info",
+  "outline",
+  "muted",
+];
+
+const FILTERS = ["Все", "Активные", "Архив"];
+
+const DEFAULT_TAGS = ["React", "MobX", "Vite"];
+
+const noop = () => {};
+
+export const TagsBadgesSection: FC = () => {
+  const [filter, setFilter] = useState(FILTERS[0]);
+  const [tags, setTags] = useState(DEFAULT_TAGS);
+
+  const removeTag = (tag: string) =>
+    setTags(current => current.filter(item => item !== tag));
+
+  const restoreTags = () => setTags(DEFAULT_TAGS);
+
+  return (
+    <DemoCard
+      title="Tags & Badges"
+      description="Badge, Chip, Kbd, CodeChip — общая палитра вариантов"
+    >
+      <DemoBlock title="Badge — счётчик / индикатор">
+        <DemoInline>
           <Badge>Default</Badge>
           <Badge variant="primary">Primary</Badge>
           <Badge variant="secondary">Secondary</Badge>
           <Badge variant="success">Success</Badge>
           <Badge variant="warning">Warning</Badge>
           <Badge variant="destructive">Destructive</Badge>
-          <Badge variant="danger">Danger</Badge>
           <Badge variant="info">Info</Badge>
-          <Badge variant="gray">Gray</Badge>
           <Badge variant="purple">Purple</Badge>
           <Badge variant="outline">Outline</Badge>
           <Badge variant="muted">Muted</Badge>
@@ -49,111 +67,123 @@ export const TagsBadgesSection: FC = () => (
           <Badge variant="success" dot>
             Online
           </Badge>
-        </Row>
-      </div>
+        </DemoInline>
+      </DemoBlock>
 
-      <hr className="border-border" />
-
-      <div>
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-          BadgeAnchor — счётчик / точка поверх элемента
-        </p>
-        <Row>
+      <DemoBlock title="BadgeAnchor — счётчик / точка поверх элемента">
+        <DemoInline>
           <BadgeAnchor content={3}>
-            <IconButton aria-label="Уведомления" variant="default">
-              <Bell className="h-4 w-4" />
+            <IconButton aria-label="Уведомления">
+              <Bell aria-hidden className="h-4 w-4" />
             </IconButton>
           </BadgeAnchor>
           <BadgeAnchor content={150} max={99} variant="destructive">
-            <IconButton aria-label="Уведомления" variant="default">
-              <Bell className="h-4 w-4" />
+            <IconButton aria-label="Уведомления">
+              <Bell aria-hidden className="h-4 w-4" />
             </IconButton>
           </BadgeAnchor>
           <BadgeAnchor content={0}>
-            <IconButton aria-label="Уведомления" variant="default">
-              <Bell className="h-4 w-4" />
+            <IconButton aria-label="Уведомления">
+              <Bell aria-hidden className="h-4 w-4" />
             </IconButton>
           </BadgeAnchor>
           <BadgeAnchor content={5} variant="info" placement="top-left">
-            <IconButton aria-label="Уведомления" variant="default">
-              <Bell className="h-4 w-4" />
+            <IconButton aria-label="Уведомления">
+              <Bell aria-hidden className="h-4 w-4" />
             </IconButton>
           </BadgeAnchor>
-          <BadgeAnchor dot variant="success">
+          <BadgeAnchor dot variant="success" label="В сети">
             <Avatar name="Alex Doe" />
           </BadgeAnchor>
-        </Row>
-      </div>
+        </DemoInline>
+      </DemoBlock>
 
-      <hr className="border-border" />
+      <Separator />
 
-      <div>
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Chips — active (active=true, default)
-        </p>
-        <Row>
-          <Chips>Default</Chips>
-          <Chips variant="primary">Primary</Chips>
-          <Chips variant="secondary">Secondary</Chips>
-          <Chips variant="success">Success</Chips>
-          <Chips variant="warning">Warning</Chips>
-          <Chips variant="destructive">Destructive</Chips>
-          <Chips variant="danger">Danger</Chips>
-          <Chips variant="info">Info</Chips>
-          <Chips variant="gray">Gray</Chips>
-          <Chips variant="outline">Outline</Chips>
-          <Chips variant="muted">Muted</Chips>
-          <Chips onRemove={() => {}}>Removable</Chips>
-          <Chips variant="primary" onRemove={() => {}}>
-            Primary ×
-          </Chips>
-          <Chips variant="success" leftIcon={<span>✓</span>}>
+      <DemoBlock title="Chip — active (по умолчанию)">
+        <DemoInline>
+          {CHIP_VARIANTS.map(variant => (
+            <Chip key={variant} variant={variant}>
+              {variant}
+            </Chip>
+          ))}
+        </DemoInline>
+      </DemoBlock>
+
+      <DemoBlock title="Chip — inactive">
+        <DemoInline>
+          {CHIP_VARIANTS.map(variant => (
+            <Chip key={variant} variant={variant} active={false}>
+              {variant}
+            </Chip>
+          ))}
+        </DemoInline>
+      </DemoBlock>
+
+      <DemoBlock title="Chip — размеры, иконка, аватар, disabled">
+        <DemoInline>
+          <Chip size="sm" variant="primary">
+            sm
+          </Chip>
+          <Chip size="md" variant="primary">
+            md
+          </Chip>
+          <Chip
+            variant="success"
+            leftIcon={<Check aria-hidden className="h-3 w-3" />}
+          >
             Icon
-          </Chips>
-        </Row>
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-2 mb-2">
-          Chips — inactive (active=false)
-        </p>
-        <Row>
-          <Chips active={false}>Default</Chips>
-          <Chips variant="primary" active={false}>
-            Primary
-          </Chips>
-          <Chips variant="secondary" active={false}>
-            Secondary
-          </Chips>
-          <Chips variant="success" active={false}>
-            Success
-          </Chips>
-          <Chips variant="warning" active={false}>
-            Warning
-          </Chips>
-          <Chips variant="destructive" active={false}>
-            Destructive
-          </Chips>
-          <Chips variant="danger" active={false}>
-            Danger
-          </Chips>
-          <Chips variant="info" active={false}>
-            Info
-          </Chips>
-          <Chips variant="gray" active={false}>
-            Gray
-          </Chips>
-          <Chips variant="outline" active={false}>
-            Outline
-          </Chips>
-          <Chips variant="muted" active={false}>
-            Muted
-          </Chips>
-          <Chips onRemove={() => {}} active={false}>
-            Removable
-          </Chips>
-          <Chips variant="primary" onRemove={() => {}} active={false}>
-            Primary ×
-          </Chips>
-        </Row>
-      </div>
-    </CardContent>
-  </Card>
-);
+          </Chip>
+          <Chip variant="info" avatar={<Avatar size="xs" name="A D" />}>
+            Avatar
+          </Chip>
+          <Chip disabled onRemove={noop}>
+            Disabled
+          </Chip>
+        </DemoInline>
+      </DemoBlock>
+
+      <DemoBlock title="Chip — фильтр (clickable)">
+        <DemoInline>
+          {FILTERS.map(item => (
+            <Chip
+              key={item}
+              variant="primary"
+              active={filter === item}
+              onClick={() => setFilter(item)}
+            >
+              {item}
+            </Chip>
+          ))}
+        </DemoInline>
+      </DemoBlock>
+
+      <DemoBlock title="Chip — теги (removable)">
+        <DemoInline>
+          {tags.map(tag => (
+            <Chip key={tag} variant="secondary" onRemove={() => removeTag(tag)}>
+              {tag}
+            </Chip>
+          ))}
+          {tags.length === 0 && (
+            <Button variant="link" size="sm" onClick={restoreTags}>
+              Вернуть теги
+            </Button>
+          )}
+        </DemoInline>
+      </DemoBlock>
+
+      <Separator />
+
+      <DemoBlock title="Kbd и CodeChip">
+        <DemoInline>
+          <span className="text-xs text-muted-foreground">
+            Сохранить: <Kbd>⌘</Kbd> + <Kbd>S</Kbd>
+          </span>
+          <CodeChip>gpt-4o-mini</CodeChip>
+          <CodeChip muted>legacy-v1</CodeChip>
+        </DemoInline>
+      </DemoBlock>
+    </DemoCard>
+  );
+};

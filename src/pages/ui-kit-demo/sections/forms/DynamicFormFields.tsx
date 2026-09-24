@@ -8,6 +8,16 @@ import {
 
 import { type DynamicFormValues, isInnRequired } from "./dynamic-form-schema";
 
+const CUSTOMER_TYPE_OPTIONS = [
+  { value: "person", label: "Физлицо" },
+  { value: "company", label: "Компания" },
+];
+
+const COUNTRY_OPTIONS = [
+  { value: "RU", label: "Россия" },
+  { value: "KZ", label: "Казахстан" },
+];
+
 export const DynamicFormFields = () => {
   const customerType = useFormValue<DynamicFormValues, "customerType">(
     "customerType",
@@ -23,18 +33,12 @@ export const DynamicFormFields = () => {
       <SegmentedFormField<DynamicFormValues>
         name="customerType"
         label="Тип клиента"
-        options={[
-          { value: "person", label: "Физлицо" },
-          { value: "company", label: "Компания" },
-        ]}
+        options={CUSTOMER_TYPE_OPTIONS}
       />
       <SelectFormField<DynamicFormValues>
         name="country"
         label="Страна"
-        options={[
-          { value: "RU", label: "Россия" },
-          { value: "KZ", label: "Казахстан" },
-        ]}
+        options={COUNTRY_OPTIONS}
       />
       {showInn && (
         <InputFormField<DynamicFormValues>

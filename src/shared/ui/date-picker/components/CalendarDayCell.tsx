@@ -1,55 +1,108 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-interface CalendarDayCellProps {
-  day: number | null;
-  wrapperClassName?: string;
-  buttonClassName?: string;
+import type { DayFlags } from "../types";
+import {
+  dayCellVariants,
+  dayRangeVariants,
+  resolveDayTone,
+  resolvePreviewSpan,
+  resolveRangeSpan,
+} from "./calendar-day-variants";
+
+export interface CalendarDayCellProps {
+  date: Date;
+  /** Ключ для `data-date` (фокус из клавиатурной навигации). */
+  dateKey: string;
+  /** Полная дата для `aria-label`. */
+  label: string;
+  flags: DayFlags;
   disabled: boolean;
-  onSelect: (day: number) => void;
-  onHover: (day: number | null, disabled: boolean) => void;
+  /** Roving tabindex: только одна ячейка в Tab-порядке. */
+  focusable: boolean;
+  onSelect: (date: Date) => void;
+  onHover: (date: Date | undefined) => void;
+  onFocus: (date: Date) => void;
 }
 
-export const CalendarDayCell = React.memo(
-  ({
-    day,
-    wrapperClassName,
-    buttonClassName,
-    disabled,
-    onSelect,
-    onHover,
-  }: CalendarDayCellProps) => (
+const BUTTON_CLASS =
+  "group relative z-10 inline-flex h-full w-full items-center justify-center text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+const CalendarDayCellInner = ({
+  date,
+  dateKey,
+  label,
+  flags,
+  disabled,
+  focusable,
+  onSelect,
+  onHover,
+  onFocus,
+}: CalendarDayCellProps) => {
+  const handleMouseEnter = () => onHover(disabled ? undefined : date);
+  const handleClick = () => onSelect(date);
+  const handleFocus = () => onFocus(date);
+
+  const rangeSpan = resolveRangeSpan(flags);
+  const previewSpan = resolvePreviewSpan(flags);
+
+  return (
     <div
-      className="relative h-9 flex items-center justify-center"
-      onMouseEnter={() => onHover(day, disabled)}
+      role="gridcell"
+      aria-selected={flags.selected || undefined}
+      className="relative flex h-9 items-center justify-center"
+      onMouseEnter={handleMouseEnter}
     >
-      {wrapperClassName && <div className={wrapperClassName} />}
-      {day !== null && (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onSelect(day)}
-          className={cn(
-            "group relative z-10 h-full w-full text-sm",
-            "inline-flex items-center justify-center",
-            disabled ? "cursor-not-allowed" : "cursor-pointer",
-          )}
-        >
-          <span
-            className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-full",
-              disabled
-                ? "opacity-40"
-                : "group-hover:bg-accent group-hover:text-accent-foreground",
-              buttonClassName,
-            )}
-          >
-            {day}
-          </span>
-        </button>
+      {rangeSpan !== "none" && (
+        <div className={dayRangeVariants({ span: rangeSpan })} />
       )}
+      {previewSpan !== "none" && (
+        <div
+          className={dayRangeVariants({ span: previewSpan, preview: true })}
+        />
+      )}
+      <button
+        type="button"
+        data-date={dateKey}
+        tabIndex={focusable ? 0 : -1}
+        disabled={disabled}
+        aria-label={label}
+        aria-current={flags.today ? "date" : undefined}
+        onClick={handleClick}
+        onFocus={handleFocus}
+        className={cn(
+          BUTTON_CLASS,
+          disabled ? "cursor-not-allowed" : "cursor-pointer",
+        )}
+      >
+        <span
+          className={dayCellVariants({ tone: resolveDayTone(flags), disabled })}
+        >
+          {date.getDate()}
+        </span>
+      </button>
     </div>
-  ),
-);
+  );
+};
+
+const areFlagsEqual = (a: DayFlags, b: DayFlags): boolean =>
+  (Object.keys(a) as (keyof DayFlags)[]).every(key => a[key] === b[key]);
+
+const arePropsEqual = (
+  prev: CalendarDayCellProps,
+  next: CalendarDayCellProps,
+): boolean =>
+  prev.dateKey === next.dateKey &&
+  prev.label === next.label &&
+  prev.disabled === next.disabled &&
+  prev.focusable === next.focusable &&
+  prev.onSelect === next.onSelect &&
+  prev.onHover === next.onHover &&
+  prev.onFocus === next.onFocus &&
+  areFlagsEqual(prev.flags, next.flags);
+
+/** 42 ячейки перерисовываются на каждый hover — memo оправдан;
+ *  `flags` пересоздаются на каждый рендер, поэтому сравниваются по полям. */
+export const CalendarDayCell = React.memo(CalendarDayCellInner, arePropsEqual);
 
 CalendarDayCell.displayName = "CalendarDayCell";

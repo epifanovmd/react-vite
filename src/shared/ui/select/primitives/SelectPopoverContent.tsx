@@ -3,118 +3,88 @@ import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
 import { selectContentClasses } from "../select-variants";
-import type {
-  DropdownAlign,
-  DropdownCollisionPadding,
-  DropdownMaxWidth,
-  DropdownSide,
-  DropdownWidth,
-} from "../types";
+import type { DropdownMaxWidth, DropdownWidth } from "../types";
 
-export interface SelectPopoverContentProps
-  extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {
+export interface SelectPopoverContentProps extends React.ComponentPropsWithoutRef<
+  typeof PopoverPrimitive.Content
+> {
   children?: React.ReactNode;
-  dropdownSide?: DropdownSide;
-  dropdownAlign?: DropdownAlign;
-  dropdownSideOffset?: number;
-  dropdownAlignOffset?: number;
-  dropdownAvoidCollisions?: boolean;
-  dropdownCollisionPadding?: DropdownCollisionPadding;
-  dropdownWidth?: DropdownWidth;
-  dropdownMaxWidth?: DropdownMaxWidth;
-  dropdownContainer?: HTMLElement | null;
+  width?: DropdownWidth;
+  maxWidth?: DropdownMaxWidth;
+  /** Контейнер портала; `null` — рендер без портала. */
+  container?: HTMLElement | null;
 }
+
+const TRIGGER_WIDTH_CLASS = "w-[var(--radix-popover-trigger-width)]";
+const TRIGGER_MIN_WIDTH_CLASS = "min-w-[var(--radix-popover-trigger-width)]";
+const TRIGGER_MAX_WIDTH_CLASS = "max-w-[var(--radix-popover-trigger-width)]";
+
+const resolveWidthClass = (
+  width: DropdownWidth,
+  hasNumericMaxWidth: boolean,
+): string | undefined => {
+  if (width === "trigger") return TRIGGER_WIDTH_CLASS;
+  if (width === "auto" && !hasNumericMaxWidth) return TRIGGER_MIN_WIDTH_CLASS;
+
+  return undefined;
+};
 
 export const SelectPopoverContent = ({
   className,
   children,
   sideOffset = 4,
   align = "start",
-  side: sideProp,
-  alignOffset,
-  avoidCollisions,
-  collisionPadding,
-  dropdownSide,
-  dropdownAlign,
-  dropdownSideOffset,
-  dropdownAlignOffset,
-  dropdownAvoidCollisions,
-  dropdownCollisionPadding,
-  dropdownWidth = "trigger",
-  dropdownMaxWidth,
-  dropdownContainer,
+  avoidCollisions = true,
+  width = "trigger",
+  maxWidth,
+  container,
   onOpenAutoFocus,
   ...props
 }: SelectPopoverContentProps) => {
-  const resolvedSide = dropdownSide ?? sideProp;
-  const resolvedAlign = dropdownAlign ?? align;
-  const resolvedSideOffset = dropdownSideOffset ?? sideOffset;
-  const resolvedAlignOffset = dropdownAlignOffset ?? alignOffset;
-  const resolvedAvoidCollisions =
-    dropdownAvoidCollisions ?? avoidCollisions ?? true;
-  const resolvedCollisionPadding =
-    dropdownCollisionPadding ?? (collisionPadding as DropdownCollisionPadding);
+  const hasNumericMaxWidth = typeof maxWidth === "number";
 
-  const hasMaxWidth = dropdownMaxWidth != null && dropdownMaxWidth !== "trigger";
-  const hasWidth = dropdownWidth != null;
+  const style = React.useMemo<React.CSSProperties | undefined>(() => {
+    if (typeof width !== "number" && typeof maxWidth !== "number") {
+      return undefined;
+    }
 
-  const widthClass =
-    dropdownWidth === "trigger"
-      ? "w-[var(--radix-popover-trigger-width)]"
-      : dropdownWidth === "auto"
-        ? hasMaxWidth
-          ? undefined
-          : "min-w-[var(--radix-popover-trigger-width)]"
-        : undefined;
+    return {
+      width: typeof width === "number" ? width : undefined,
+      maxWidth: typeof maxWidth === "number" ? maxWidth : undefined,
+    };
+  }, [width, maxWidth]);
 
-  const maxWidthClass =
-    dropdownMaxWidth === "trigger"
-      ? "max-w-[var(--radix-popover-trigger-width)]"
-      : undefined;
-
-  const widthStyle: React.CSSProperties | undefined =
-    typeof dropdownWidth === "number"
-      ? { width: dropdownWidth }
-      : undefined;
-
-  const maxWidthStyle: React.CSSProperties | undefined =
-    typeof dropdownMaxWidth === "number"
-      ? { maxWidth: dropdownMaxWidth }
-      : undefined;
+  // Фокус остаётся в триггере (инпут/кнопка): список управляется через
+  // aria-activedescendant.
+  const handleOpenAutoFocus = (event: Event) => {
+    event.preventDefault();
+    onOpenAutoFocus?.(event);
+  };
 
   const content = (
     <PopoverPrimitive.Content
-      side={resolvedSide}
-      align={resolvedAlign}
-      sideOffset={resolvedSideOffset}
-      alignOffset={resolvedAlignOffset}
-      avoidCollisions={resolvedAvoidCollisions}
-      collisionPadding={resolvedCollisionPadding}
-      onOpenAutoFocus={e => {
-        e.preventDefault();
-        onOpenAutoFocus?.(e);
-      }}
+      sideOffset={sideOffset}
+      align={align}
+      avoidCollisions={avoidCollisions}
+      onOpenAutoFocus={handleOpenAutoFocus}
       className={cn(
         selectContentClasses,
-        widthClass,
-        maxWidthClass,
-        "max-h-60",
+        resolveWidthClass(width, hasNumericMaxWidth),
+        maxWidth === "trigger" && TRIGGER_MAX_WIDTH_CLASS,
         className,
       )}
-      style={{ ...widthStyle, ...maxWidthStyle } as React.CSSProperties}
+      style={style}
       {...props}
     >
       {children}
     </PopoverPrimitive.Content>
   );
 
-  if (dropdownContainer === null) return content;
+  if (container === null) return content;
 
   return (
-    <PopoverPrimitive.Portal container={dropdownContainer ?? undefined}>
+    <PopoverPrimitive.Portal container={container}>
       {content}
     </PopoverPrimitive.Portal>
   );
 };
-
-SelectPopoverContent.displayName = "SelectPopoverContent";

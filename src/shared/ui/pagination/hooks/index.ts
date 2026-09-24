@@ -3,4 +3,4 @@ export type {
   UsePaginationOptions,
   UsePaginationResult,
 } from "./use-pagination";
-export { usePagination } from "./use-pagination";
+export { buildPageItems, usePagination } from "./use-pagination";

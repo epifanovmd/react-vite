@@ -1,222 +1,175 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import * as React from "react";
-import { beforeEach, vi } from "vitest";
-
-const mocks = vi.hoisted(() => ({
-  clear: vi.fn(),
-  removeTag: vi.fn(),
-  select: vi.fn(),
-  setQuery: vi.fn(),
-  useDropdownPlacement: vi.fn(),
-  useLabelCache: vi.fn(),
-  useLabelInValueBridge: vi.fn(),
-  useSearchInput: vi.fn(),
-  useSearchQuery: vi.fn(),
-  useSelectEngine: vi.fn(),
-}));
-
-vi.mock("../hooks", () => ({
-  useDropdownPlacement: mocks.useDropdownPlacement,
-  useLabelCache: mocks.useLabelCache,
-  useLabelInValueBridge: mocks.useLabelInValueBridge,
-  useSearchInput: mocks.useSearchInput,
-  useSearchQuery: mocks.useSearchQuery,
-  useSelectEngine: mocks.useSelectEngine,
-}));
-
-vi.mock("../primitives", () => ({
-  OptionsList: ({
-    onSelect,
-    options,
-  }: {
-    onSelect: (value: string) => void;
-    options: { value: string; label: string }[];
-  }) => (
-    <div role="listbox">
-      {options.map(option => (
-        <button
-          key={option.value}
-          onClick={() => onSelect(option.value)}
-          type="button"
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  ),
-  SelectDropdown: ({
-    children,
-    disabled,
-    hidden,
-    open,
-    trigger,
-  }: {
-    children: React.ReactNode;
-    disabled?: boolean;
-    hidden?: boolean;
-    open: boolean;
-    trigger: React.ReactNode;
-  }) => (
-    <section
-      data-disabled={disabled || undefined}
-      data-hidden={hidden || undefined}
-      data-open={open}
-      data-testid="dropdown"
-    >
-      {trigger}
-      {!hidden && children}
-    </section>
-  ),
-  SelectTriggerBase: React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement> & {
-      onClear?: () => void;
-      showClear?: boolean;
-    }
-  >(({ children, onClear, showClear, ...props }, ref) => (
-    <div ref={ref} {...props}>
-      {children}
-      {showClear && (
-        <button aria-label="clear" onClick={onClear} type="button">
-          clear
-        </button>
-      )}
-    </div>
-  )),
-  SelectTriggerContent: ({
-    multi,
-    onRemoveTag,
-    selectedValues,
-  }: {
-    multi: boolean;
-    onRemoveTag: (value: string) => void;
-    selectedValues: string[];
-  }) => (
-    <div data-multi={multi} data-testid="trigger-content">
-      {selectedValues.map(value => (
-        <button key={value} onClick={() => onRemoveTag(value)} type="button">
-          remove {value}
-        </button>
-      ))}
-    </div>
-  ),
-}));
 
 import { Select } from "../Select";
+import { useAsyncOptions } from "../strategies/use-async-options";
+import type { SelectOption, SelectProps } from "../types";
 
-const options = [
-  { value: "one", label: "First" },
-  { value: "two", label: "Second" },
+const OPTIONS: SelectOption<string>[] = [
+  { value: "ru", label: "Россия" },
+  { value: "kz", label: "Казахстан", disabled: true },
+  { value: "by", label: "Беларусь" },
 ];
 
-const engine = {
-  clear: mocks.clear,
-  focusedIndex: -1,
-  handleKeyDown: vi.fn(),
-  handleOpen: vi.fn(),
-  handleScroll: vi.fn(),
-  hasValue: true,
-  inputRef: React.createRef<HTMLInputElement>(),
-  isSelected: vi.fn(),
-  listRef: React.createRef<HTMLDivElement>(),
-  onInteractOutside: vi.fn(),
-  open: false,
-  removeTag: mocks.removeTag,
-  select: mocks.select,
-  selectedValues: ["one"],
-  setFocusedIndex: vi.fn(),
-  triggerRef: React.createRef<HTMLDivElement>(),
+const renderSelect = (props: Partial<SelectProps<string>> = {}) => {
+  const onChange = vi.fn();
+
+  render(
+    <Select
+      aria-label="Страна"
+      onChange={onChange}
+      {...({ options: OPTIONS, ...props } as SelectProps<string>)}
+    />,
+  );
+
+  return {
+    onChange,
+    trigger: screen.getByRole("combobox", { name: "Страна" }),
+  };
 };
 
 describe("Select", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.useDropdownPlacement.mockReturnValue({ dropdownSide: "top" });
-    mocks.useLabelCache.mockReturnValue({
-      getLabel: (value: string) => value,
-      seedCache: vi.fn(),
-      updateCache: vi.fn(),
-    });
-    mocks.useLabelInValueBridge.mockReturnValue({
-      normalizedValue: "normalized",
-      wrappedOnChange: vi.fn(),
-    });
-    mocks.useSearchInput.mockReturnValue({ searchInputProps: {} });
-    mocks.useSearchQuery.mockReturnValue({
-      query: "query",
-      setQuery: mocks.setQuery,
-    });
-    mocks.useSelectEngine.mockReturnValue(engine);
+  it("открывается с клавиатуры и связывает активную опцию через aria-activedescendant", () => {
+    const { trigger } = renderSelect();
+
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+
+    const listbox = screen.getByRole("listbox");
+
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(trigger).toHaveAttribute("aria-controls", listbox.id);
+    expect(trigger.getAttribute("aria-activedescendant")).toBe(
+      within(listbox).getAllByRole("option")[0].id,
+    );
   });
 
-  it("configures a default single non-searchable select", () => {
+  it("стрелки пропускают disabled-опцию, Enter выбирает", () => {
+    const { trigger, onChange } = renderSelect();
+
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    fireEvent.keyDown(trigger, { key: "Enter" });
+
+    expect(onChange).toHaveBeenCalledWith("by");
+  });
+
+  it("не вызывает onDeselect при повторном выборе в single-режиме", () => {
+    const onDeselect = vi.fn();
+    const onSelect = vi.fn();
+
+    renderSelect({ value: "ru", onSelect, onDeselect });
+    fireEvent.click(screen.getByRole("combobox", { name: "Страна" }));
+    fireEvent.click(screen.getByRole("option", { name: "Россия" }));
+
+    expect(onDeselect).not.toHaveBeenCalled();
+    expect(onSelect).toHaveBeenCalledWith("ru", OPTIONS[0]);
+  });
+
+  it("очищает значение и прячет очистку у disabled", () => {
+    const { onChange } = renderSelect({ value: "ru", clearable: true });
+
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
+    expect(onChange).toHaveBeenCalledWith(null);
+  });
+
+  it("не показывает очистку у disabled", () => {
+    renderSelect({ value: "ru", clearable: true, disabled: true });
+
+    expect(screen.queryByRole("button", { name: "Очистить" })).toBeNull();
+  });
+
+  it("удаляет тег в multi-режиме", () => {
     const onChange = vi.fn();
 
-    render(<Select onChange={onChange} options={options} value="one" />);
-
-    expect(mocks.useSelectEngine).toHaveBeenCalledWith(
-      expect.objectContaining({
-        multi: false,
-        onChange,
-        options,
-        searchable: false,
-        value: "one",
-      }),
-    );
-    const trigger = screen.getByTestId("trigger-content").parentElement;
-
-    expect(trigger).toHaveAttribute("tabindex", "0");
-    fireEvent.keyDown(trigger as HTMLElement, { key: "ArrowDown" });
-    expect(engine.handleKeyDown).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole("button", { name: "Second" }));
-    expect(mocks.select).toHaveBeenCalledWith("two");
-  });
-
-  it("bridges labeled multi values and supports clear and tag removal", () => {
     render(
-      <Select
-        clearable
-        labelInValue
+      <Select<string>
+        aria-label="Страны"
         multi
-        options={options}
-        value={[{ value: "one" }]}
+        options={OPTIONS}
+        value={["ru", "by"]}
+        onChange={onChange}
       />,
     );
 
-    expect(mocks.useSelectEngine).toHaveBeenCalledWith(
-      expect.objectContaining({
-        multi: true,
-        value: "normalized",
-      }),
-    );
-    expect(screen.getByTestId("trigger-content")).toHaveAttribute(
-      "data-multi",
-      "true",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "clear" }));
-    expect(mocks.clear).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole("button", { name: "remove one" }));
-    expect(mocks.removeTag).toHaveBeenCalledWith("one");
+    fireEvent.click(screen.getByRole("button", { name: "Удалить Россия" }));
+    expect(onChange).toHaveBeenCalledWith(["by"]);
   });
 
-  it("hides an empty disabled dropdown and resets search through the engine", () => {
-    render(<Select disabled hideEmpty options={[]} search />);
+  it("не вкладывает кнопки удаления тегов в кнопку-триггер", () => {
+    render(
+      <Select<string>
+        aria-label="Страны"
+        multi
+        options={OPTIONS}
+        value={["ru", "by"]}
+      />,
+    );
 
-    expect(screen.getByTestId("dropdown")).toHaveAttribute(
-      "data-hidden",
-      "true",
+    const trigger = screen.getByRole("combobox", { name: "Страны" });
+
+    expect(trigger.querySelector("button")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Удалить Россия" }),
+    ).toBeInTheDocument();
+  });
+
+  it("возвращает label вместе со значением при labelInValue", () => {
+    const onChange = vi.fn();
+
+    render(
+      <Select<string>
+        aria-label="Страна"
+        labelInValue
+        options={OPTIONS}
+        onChange={onChange}
+      />,
     );
-    expect(screen.getByTestId("dropdown")).toHaveAttribute(
-      "data-disabled",
-      "true",
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Страна" }));
+    fireEvent.click(screen.getByRole("option", { name: "Беларусь" }));
+
+    expect(onChange).toHaveBeenCalledWith({ value: "by", label: "Беларусь" });
+  });
+
+  it("рендерит скрытые input'ы для нативной формы", () => {
+    const { container } = render(
+      <Select<string>
+        aria-label="Страна"
+        name="country"
+        options={OPTIONS}
+        value="ru"
+      />,
     );
-    const engineOptions = mocks.useSelectEngine.mock.calls[0][0] as {
-      onSearchReset: () => void;
-      searchable: boolean;
+
+    expect(
+      container.querySelector('input[type="hidden"][name="country"]'),
+    ).toHaveValue("ru");
+  });
+
+  it("показывает спиннер при async-загрузке даже с hideEmpty", async () => {
+    let resolve: (items: string[]) => void = () => {};
+    const fetchOptions = () =>
+      new Promise<string[]>(done => {
+        resolve = done;
+      });
+
+    const AsyncSelect = () => {
+      const data = useAsyncOptions<string, string>({
+        fetch: fetchOptions,
+        getOption: item => ({ value: item, label: item }),
+      });
+
+      return <Select<string> aria-label="Город" hideEmpty {...data} />;
     };
 
-    expect(engineOptions.searchable).toBe(true);
-    engineOptions.onSearchReset();
-    expect(mocks.setQuery).toHaveBeenCalledWith("");
+    render(<AsyncSelect />);
+    fireEvent.click(screen.getByRole("combobox", { name: "Город" }));
+
+    const listbox = await screen.findByRole("listbox");
+
+    expect(within(listbox).getByRole("status")).toHaveTextContent("Загрузка…");
+
+    await act(async () => resolve(["Минск"]));
+    expect(screen.getByRole("option", { name: "Минск" })).toBeInTheDocument();
   });
 });

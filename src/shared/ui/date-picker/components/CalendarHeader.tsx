@@ -1,53 +1,72 @@
 import { cn } from "@shared/lib/utils/cn";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import * as React from "react";
 
 import type { ViewMode } from "../types";
 
-interface CalendarHeaderProps {
+export interface CalendarHeaderProps {
   headerText: string;
   viewMode: ViewMode;
+  canGoPrevious: boolean;
+  canGoNext: boolean;
   onPrevious: () => void;
   onNext: () => void;
   onHeaderClick: () => void;
 }
 
-export const CalendarHeader = React.memo(
-  ({
-    headerText,
-    viewMode,
-    onPrevious,
-    onNext,
-    onHeaderClick,
-  }: CalendarHeaderProps) => (
-    <div className="flex items-center justify-between p-3 border-b">
-      <button
-        type="button"
-        onClick={onPrevious}
-        className="h-7 w-7 p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md transition-opacity cursor-pointer"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-      <button
-        type="button"
-        onClick={onHeaderClick}
-        disabled={viewMode === "year"}
-        className={cn(
-          "text-sm font-medium hover:bg-accent px-3 py-1 rounded-md transition-colors cursor-pointer",
-          viewMode === "year" && "cursor-default pointer-events-none",
-        )}
-      >
-        {headerText}
-      </button>
-      <button
-        type="button"
-        onClick={onNext}
-        className="h-7 w-7 p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md transition-opacity cursor-pointer"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </button>
-    </div>
-  ),
-);
+const NAV_BUTTON_CLASS =
+  "h-7 w-7 p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md transition-opacity cursor-pointer disabled:cursor-not-allowed disabled:opacity-20";
 
-CalendarHeader.displayName = "CalendarHeader";
+const TITLE_CLASS =
+  "text-sm font-medium hover:bg-accent px-3 py-1 rounded-md transition-colors cursor-pointer disabled:cursor-default disabled:hover:bg-transparent";
+
+const PREVIOUS_LABEL: Record<ViewMode, string> = {
+  day: "Предыдущий месяц",
+  month: "Предыдущий год",
+  year: "Предыдущие годы",
+};
+
+const NEXT_LABEL: Record<ViewMode, string> = {
+  day: "Следующий месяц",
+  month: "Следующий год",
+  year: "Следующие годы",
+};
+
+export const CalendarHeader = ({
+  headerText,
+  viewMode,
+  canGoPrevious,
+  canGoNext,
+  onPrevious,
+  onNext,
+  onHeaderClick,
+}: CalendarHeaderProps) => (
+  <div className="flex items-center justify-between p-3 border-b">
+    <button
+      type="button"
+      aria-label={PREVIOUS_LABEL[viewMode]}
+      disabled={!canGoPrevious}
+      onClick={onPrevious}
+      className={NAV_BUTTON_CLASS}
+    >
+      <ChevronLeft aria-hidden className="h-4 w-4" />
+    </button>
+    <button
+      type="button"
+      aria-live="polite"
+      disabled={viewMode === "year"}
+      onClick={onHeaderClick}
+      className={cn(TITLE_CLASS)}
+    >
+      {headerText}
+    </button>
+    <button
+      type="button"
+      aria-label={NEXT_LABEL[viewMode]}
+      disabled={!canGoNext}
+      onClick={onNext}
+      className={NAV_BUTTON_CLASS}
+    >
+      <ChevronRight aria-hidden className="h-4 w-4" />
+    </button>
+  </div>
+);

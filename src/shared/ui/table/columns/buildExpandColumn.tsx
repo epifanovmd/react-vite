@@ -1,10 +1,23 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type ColumnDef, type Row } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import { ChevronRight } from "lucide-react";
 import type { MouseEvent } from "react";
 
-export const buildExpandColumn = <TData,>(): ColumnDef<TData> => ({
-  id: "__expand__",
+import { tableIconButtonVariants } from "../components/table-variants";
+import type { TableLabels } from "../constants";
+
+export interface ExpandColumnOptions {
+  labels: Pick<TableLabels, "expandRow" | "collapseRow">;
+}
+
+const DEPTH_INDENT_PX = 16;
+
+export const EXPAND_COLUMN_ID = "__expand__";
+
+export const buildExpandColumn = <TData,>({
+  labels,
+}: ExpandColumnOptions): ColumnDef<TData> => ({
+  id: EXPAND_COLUMN_ID,
   size: 32,
   maxSize: 32,
   enableSorting: false,
@@ -14,23 +27,26 @@ export const buildExpandColumn = <TData,>(): ColumnDef<TData> => ({
   cell: ({ row }: { row: Row<TData> }) => {
     if (!row.getCanExpand()) return null;
 
+    const expanded = row.getIsExpanded();
+
+    const handleClick = (event: MouseEvent) => {
+      event.stopPropagation();
+      row.getToggleExpandedHandler()();
+    };
+
     return (
       <button
         type="button"
-        aria-label={
-          row.getIsExpanded() ? "Свернуть строку" : "Развернуть строку"
-        }
-        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
-        style={{ marginLeft: row.depth * 16 }}
-        onClick={(e: MouseEvent) => {
-          e.stopPropagation();
-          row.getToggleExpandedHandler()();
-        }}
+        aria-label={expanded ? labels.collapseRow : labels.expandRow}
+        aria-expanded={expanded}
+        className={tableIconButtonVariants()}
+        style={{ marginLeft: row.depth * DEPTH_INDENT_PX }}
+        onClick={handleClick}
       >
         <ChevronRight
           className={cn(
             "h-3.5 w-3.5 transition-transform",
-            row.getIsExpanded() && "rotate-90",
+            expanded && "rotate-90",
           )}
         />
       </button>

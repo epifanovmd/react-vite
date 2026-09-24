@@ -1,3 +1,3 @@
 export type { AlertProps } from "./Alert";
 export { Alert } from "./Alert";
-export { alertVariants } from "./alert-variants";
+export type { AlertVariant } from "./alert-variants";

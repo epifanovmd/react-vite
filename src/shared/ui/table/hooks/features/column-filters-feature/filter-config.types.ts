@@ -1,5 +1,6 @@
 import type { DateRange } from "../../../../date-picker";
-import type { ColumnFilterConfig, LabeledValue } from "../../../table.types";
+import type { LabeledValue } from "../../../../select";
+import type { ColumnFilterConfig } from "../../../table.types";
 
 type UnwrapArray<T> = T extends (infer U)[] ? U : T;
 
@@ -15,8 +16,8 @@ type IsArrayField<TQuery, K extends keyof TQuery> =
 type IsDateField<TQuery, K extends keyof TQuery> =
   NonNullable<TQuery[K]> extends Date ? true : false;
 
-// Checked only once `IsDateField` is ruled out: `DateRange`'s fields are all
-// optional, so a plain `Date` would otherwise structurally match it too.
+// Проверяется только после `IsDateField`: у `DateRange` все поля опциональны,
+// иначе обычный `Date` структурно подошёл бы и под него.
 type IsDateRangeField<TQuery, K extends keyof TQuery> =
   NonNullable<TQuery[K]> extends DateRange ? true : false;
 
@@ -32,6 +33,8 @@ type LabelInValueFlag<Labeled extends boolean> = Labeled extends true
   : { labelInValue?: false };
 
 type TextConfig = Extract<ColumnFilterConfig, { type: "text" }>;
+
+type FacetedConfig = Extract<ColumnFilterConfig, { type: "faceted" }>;
 
 type SelectConfig<T> = Omit<
   Extract<ColumnFilterConfig<T>, { type: "select" }>,
@@ -49,13 +52,14 @@ type DateRangeConfig = Extract<ColumnFilterConfig, { type: "daterange" }>;
 
 type ScalarFilterConfig<T, Labeled extends boolean> = Labeled extends true
   ? SelectConfig<T> & { labelInValue: true }
-  : TextConfig | (SelectConfig<T> & { labelInValue?: false });
+  : TextConfig | FacetedConfig | (SelectConfig<T> & { labelInValue?: false });
 
 type ArrayFilterConfig<T, Labeled extends boolean> = MultiSelectConfig<T> &
   LabelInValueFlag<Labeled>;
 
 type AnyFilterConfig<T> =
   | TextConfig
+  | FacetedConfig
   | (SelectConfig<T> & { labelInValue?: boolean })
   | (MultiSelectConfig<T> & { labelInValue?: boolean })
   | DateConfig

@@ -2,14 +2,19 @@ import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { cn } from "@shared/lib/utils/cn";
 import { useMemo } from "react";
 
-import { KanbanColumn } from "./components";
-import { useKanbanBoard } from "./hooks";
+import { KanbanCardOverlay, KanbanColumn } from "./components";
+import { KANBAN_LABELS } from "./constants";
+import { resolveDropState, useKanbanBoard } from "./hooks";
 import type {
   KanbanCardData,
   KanbanColumnData,
   KanbanProps,
 } from "./kanban.types";
-import { kanbanBoardVariants, kanbanCardVariants } from "./kanban-variants";
+import { KanbanLabelsContext } from "./kanban-context";
+import { kanbanBoardVariants } from "./kanban-variants";
+
+/** Стабильный пустой список: не сбрасывает мемоизацию колонки без карточек. */
+const EMPTY_CARDS: never[] = [];
 
 export const Kanban = <
   TCard extends KanbanCardData,
@@ -30,14 +35,20 @@ export const Kanban = <
     highlightOnDragStart,
     renderCard,
     renderColumnHeader,
+    renderColumnFooter,
     renderColumnEmpty,
+    labels: labelsOverride,
+    "aria-label": ariaLabel,
     className,
     columnClassName,
     cardClassName,
     disabled,
   } = props;
 
-  const columnIds = useMemo(() => columns.map(column => column.id), [columns]);
+  const labels = useMemo(
+    () => ({ ...KANBAN_LABELS, ...labelsOverride }),
+    [labelsOverride],
+  );
 
   const {
     items,
@@ -55,58 +66,58 @@ export const Kanban = <
     onCardDrop,
     canDropCard,
     workflow,
-    columnIds,
+    columns,
     highlightOnDragStart,
     disabled,
   });
 
-  const cardOverlayMeta = useMemo(
-    () => ({ dragHandleRef: () => {}, isDragging: true }),
-    [],
-  );
-
   return (
-    <DragDropProvider
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-    >
-      <div className={cn(kanbanBoardVariants(), className)}>
-        {columns.map(column => (
-          <KanbanColumn
-            key={column.id}
-            column={column}
-            cards={items[column.id] ?? []}
-            isOver={hoverColumnId === column.id}
-            isInvalidTarget={invalidDropColumnId === column.id}
-            isPreviewValid={columnValidity?.[column.id] === true}
-            isPreviewInvalid={columnValidity?.[column.id] === false}
-            isCardDraggable={isCardDraggable}
-            onCardClick={onCardClick}
-            renderCard={renderCard}
-            renderHeader={renderColumnHeader}
-            renderEmpty={renderColumnEmpty}
-            className={columnClassName}
-            cardClassName={cardClassName}
-            disabled={disabled}
-          />
-        ))}
-      </div>
+    <KanbanLabelsContext.Provider value={labels}>
+      <DragDropProvider
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+      >
+        <div
+          role="region"
+          aria-label={ariaLabel ?? labels.board}
+          className={cn(kanbanBoardVariants(), className)}
+        >
+          {columns.map(column => (
+            <KanbanColumn
+              key={column.id}
+              column={column}
+              cards={items[column.id] ?? EMPTY_CARDS}
+              dropState={resolveDropState({
+                columnId: column.id,
+                hoverColumnId,
+                invalidDropColumnId,
+                columnValidity,
+              })}
+              isCardDraggable={isCardDraggable}
+              onCardClick={onCardClick}
+              renderCard={renderCard}
+              renderHeader={renderColumnHeader}
+              renderFooter={renderColumnFooter}
+              renderEmpty={renderColumnEmpty}
+              className={columnClassName}
+              cardClassName={cardClassName}
+              disabled={disabled}
+            />
+          ))}
+        </div>
 
-      <DragOverlay>
-        {activeCard && (
-          <div
-            className={cn(
-              kanbanCardVariants(),
-              "cursor-grabbing shadow-xl",
-              invalidDropColumnId && "ring-2 ring-destructive/70",
-              cardClassName,
-            )}
-          >
-            {renderCard(activeCard, cardOverlayMeta)}
-          </div>
-        )}
-      </DragOverlay>
-    </DragDropProvider>
+        <DragOverlay>
+          {activeCard && (
+            <KanbanCardOverlay
+              card={activeCard}
+              invalid={invalidDropColumnId != null}
+              className={cardClassName}
+              renderCard={renderCard}
+            />
+          )}
+        </DragOverlay>
+      </DragDropProvider>
+    </KanbanLabelsContext.Provider>
   );
 };

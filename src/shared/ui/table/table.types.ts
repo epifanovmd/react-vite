@@ -4,57 +4,95 @@ import type {
   Table as TanstackTable,
   TableOptions,
 } from "@tanstack/react-table";
+import type { VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
-import type { LabeledValue } from "../select";
 import type {
   ColumnFilterConfig,
   ColumnFilterOption,
 } from "./components/table-head-filter";
-import type { TableFeatureResult } from "./hooks";
+import type {
+  tableHeadVariants,
+  tableVariants,
+} from "./components/table-variants";
+import type { TableLabels } from "./constants";
+import type {
+  InfiniteScrollFeatureMeta,
+  TableFeatureResult,
+} from "./hooks/features/types";
 
-export type { ColumnFilterConfig, ColumnFilterOption, LabeledValue };
+export type { ColumnFilterConfig, ColumnFilterOption };
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
     filter?: ColumnFilterConfig<TValue>;
+    /** Текстовое имя колонки для aria-label и списка видимости, если `header` — не строка. */
+    label?: string;
+    /** Выравнивание заголовка, ячеек и футера колонки (числа — `right`). */
+    align?: TableColumnAlign;
   }
 }
 
-export type SelectionMode = boolean | "single" | "multi";
+export type TableColumnAlign = "left" | "center" | "right";
+
+export type TableSize = NonNullable<
+  VariantProps<typeof tableHeadVariants>["size"]
+>;
+
+export type TableVariant = NonNullable<
+  VariantProps<typeof tableVariants>["variant"]
+>;
+
+export type TableRowEvent = React.SyntheticEvent<HTMLTableRowElement>;
+
+export type TableRowClickHandler<TData> = (
+  row: TData,
+  event: TableRowEvent,
+) => void;
+
+/** Атрибуты строки: стандартные HTML + произвольные `data-*`. */
+export type TableRowAttributes = React.HTMLAttributes<HTMLTableRowElement> & {
+  [key: `data-${string}`]: string | number | boolean | undefined;
+};
 
 export interface TableProps<TData> {
   data: TData[];
   columns: ColumnDef<TData, any>[];
-  features?: TableFeatureResult<any, any>[];
+  features?: TableFeatureResult<TData>[];
 
-  variant?: "default" | "striped" | "bordered";
-  size?: "sm" | "md" | "lg";
+  variant?: TableVariant;
+  size?: TableSize;
   stickyHeader?: boolean;
   stickyFooter?: boolean;
-  className?: string;
-  containerClassName?: string;
 
+  /** Корневой контейнер (тулбар + скролл + пагинация). */
+  className?: string;
+  /** Скролл-контейнер вокруг `<table>`. */
+  containerClassName?: string;
+  /** Сам элемент `<table>`. */
   tableClassName?: string;
   headerClassName?: string;
   bodyClassName?: string;
   footerClassName?: string;
   rowClassName?: string | ((row: TData) => string);
 
+  /** Слот слева над таблицей (поиск, кнопки действий). */
+  toolbar?: React.ReactNode;
   showColumnVisibility?: boolean;
+  labels?: Partial<TableLabels>;
+  caption?: React.ReactNode;
+  "aria-label"?: string;
 
   loading?: boolean;
   refreshing?: boolean;
+  /** Ошибка загрузки: `true` — текст по умолчанию, иначе — переданный узел. */
+  error?: React.ReactNode;
   empty?: React.ReactNode;
 
-  onRowClick?: (
-    row: TData,
-    event: React.MouseEvent<HTMLTableRowElement>,
-  ) => void;
-  onRowDoubleClick?: (
-    row: TData,
-    event: React.MouseEvent<HTMLTableRowElement>,
-  ) => void;
+  onRowClick?: TableRowClickHandler<TData>;
+  onRowDoubleClick?: TableRowClickHandler<TData>;
+  /** Произвольные атрибуты строки (data-*, aria-*, title). */
+  getRowProps?: (row: Row<TData>) => TableRowAttributes | undefined;
   getRowId?: (originalRow: TData, index: number, parent?: Row<TData>) => string;
 
   tableOptions?: Partial<TableOptions<TData>>;
@@ -71,13 +109,10 @@ export interface TableInstanceResult<TData = unknown> {
   resizingEnabled: boolean;
   pinningEnabled: boolean;
   groupingEnabled: boolean;
-  expandingEnabled: boolean;
+  selectionEnabled: boolean;
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode;
-  pageSizeOptions?: number[];
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  onLoadMore: () => void;
-  infiniteScrollRootMargin?: string;
+  pageSizeOptions?: readonly number[];
+  infiniteScroll?: InfiniteScrollFeatureMeta;
 }
 
 export type { TanstackTable };

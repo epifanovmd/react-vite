@@ -5,7 +5,10 @@ export type { UseControlledOptionsConfig } from "./use-controlled-options";
 export { useControlledOptions } from "./use-controlled-options";
 export type { UseDependentOptionsConfig } from "./use-dependent-options";
 export { useDependentOptions } from "./use-dependent-options";
-export type { UseEagerOptionsConfig } from "./use-eager-options";
+export type {
+  UseEagerOptionsConfig,
+  UseEagerOptionsResult,
+} from "./use-eager-options";
 export { useEagerOptions } from "./use-eager-options";
 export type { UseInfiniteOptionsConfig } from "./use-infinite-options";
 export { useInfiniteOptions } from "./use-infinite-options";

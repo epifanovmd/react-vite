@@ -62,5 +62,5 @@ const generateOrders = (count: number): Order[] => {
   });
 };
 
-/** Deterministic mock dataset shared by every Table example. */
+/** Детерминированный мок-набор данных, общий для всех примеров Table. */
 export const ORDERS: Order[] = generateOrders(47);

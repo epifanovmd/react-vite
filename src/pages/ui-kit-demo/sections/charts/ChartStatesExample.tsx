@@ -1,11 +1,12 @@
-import type { ChartSeries } from "@shared/ui";
+import type { ChartSeries, ChartTooltipData } from "@shared/ui";
 import {
+  AreaChart,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Chart,
+  LineChart,
 } from "@shared/ui";
 import { format } from "date-fns";
 import { FC, useMemo } from "react";
@@ -19,6 +20,39 @@ const money = new Intl.NumberFormat("ru-RU", {
   notation: "compact",
 });
 
+const formatMoney = (value: number) => money.format(value);
+
+const formatMonth = (value: Date | number | string) =>
+  format(value as Date, "LLLL yyyy");
+
+const renderRevenueTooltip = ({
+  index,
+  datum,
+  label,
+}: ChartTooltipData<RevenuePoint>) => {
+  const previous = REVENUE[index - 1]?.subscriptions;
+
+  const delta = previous
+    ? Math.round(((datum.subscriptions - previous) / previous) * 100)
+    : 0;
+
+  const deltaClassName =
+    delta >= 0 ? "text-xs text-success" : "text-xs text-destructive";
+
+  return (
+    <div className="space-y-1">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums">
+        {money.format(datum.subscriptions)}
+      </p>
+      <p className={deltaClassName}>
+        {delta >= 0 ? "+" : ""}
+        {delta}% к прошлому месяцу
+      </p>
+    </div>
+  );
+};
+
 export const ChartStatesExample: FC = () => {
   const series = useMemo<ChartSeries<RevenuePoint>[]>(
     () => [
@@ -26,7 +60,6 @@ export const ChartStatesExample: FC = () => {
         key: "subscriptions",
         label: "Подписки",
         value: point => point.subscriptions,
-        points: true,
       },
     ],
     [],
@@ -45,11 +78,10 @@ export const ChartStatesExample: FC = () => {
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Загрузка</p>
-            <Chart
+            <AreaChart
               data={REVENUE}
               series={series}
               x={point => point.month}
-              type="area"
               height={200}
               loading
             />
@@ -57,11 +89,10 @@ export const ChartStatesExample: FC = () => {
 
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Нет данных</p>
-            <Chart
+            <AreaChart
               data={[]}
               series={series}
               x={point => point.month}
-              type="area"
               height={200}
               emptyText="За период нет продаж"
             />
@@ -69,43 +100,15 @@ export const ChartStatesExample: FC = () => {
 
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Свой тултип</p>
-            <Chart
+            <LineChart
               data={REVENUE}
               series={series}
               x={point => point.month}
               height={200}
-              formatX={value => format(value as Date, "LLLL yyyy")}
-              yAxis={{ tickFormat: value => money.format(value) }}
-              renderTooltip={data => {
-                const previous = REVENUE[data.index - 1]?.subscriptions;
-
-                const delta = previous
-                  ? Math.round(
-                      ((data.datum.subscriptions - previous) / previous) * 100,
-                    )
-                  : 0;
-
-                return (
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">
-                      {data.label}
-                    </p>
-                    <p className="text-sm font-semibold tabular-nums">
-                      {money.format(data.datum.subscriptions)}
-                    </p>
-                    <p
-                      className={
-                        delta >= 0
-                          ? "text-xs text-success"
-                          : "text-xs text-destructive"
-                      }
-                    >
-                      {delta >= 0 ? "+" : ""}
-                      {delta}% к прошлому месяцу
-                    </p>
-                  </div>
-                );
-              }}
+              showPoints
+              formatX={formatMonth}
+              yAxis={{ tickFormat: formatMoney }}
+              renderTooltip={renderRevenueTooltip}
             />
           </div>
         </div>

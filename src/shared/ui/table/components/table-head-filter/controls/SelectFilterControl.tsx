@@ -1,49 +1,40 @@
 import type { LabeledValue } from "../../../../select";
 import { Select } from "../../../../select";
-import { useAsyncOptions, useStaticOptions } from "../../../../select/strategies";
-import type { ColumnFilterOption } from "./column-filter-option";
+import { useTableContext } from "../../table-context";
+import type { BaseFilterConfig, ColumnFilterOption } from "./filter-config";
 import type { FilterControlProps } from "./filter-control-props";
+import { useFilterOptions } from "./use-filter-options";
 
-export interface SelectFilterConfig<T = string> {
+export interface SelectFilterConfig<T = string> extends BaseFilterConfig {
   type: "select";
   options?: ColumnFilterOption<T>[];
   fetchOptions?: (query: string) => Promise<ColumnFilterOption<T>[]>;
-  placeholder?: string;
-  queryKey?: string;
   labelInValue?: boolean;
+  faceted?: boolean;
 }
 
-export const SelectFilterControl = <TData,>({
+export const SelectFilterControl = ({
   config,
   column,
-}: FilterControlProps<SelectFilterConfig, TData>) => {
-  const { options, fetchOptions, placeholder, labelInValue } = config;
-
-  const searchable = useStaticOptions(options ?? [], { search: !fetchOptions });
-  const asyncSearchable = useAsyncOptions({
-    fetch: async query => {
-      if (fetchOptions) {
-        return await fetchOptions(query);
-      }
-
-      return [];
-    },
-    getOption: item => item,
-    debounce: 300,
-    minQueryLength: 2,
-    fetchOnMount: true,
+}: FilterControlProps<SelectFilterConfig>) => {
+  const { labels } = useTableContext();
+  const { options, fetchOptions, placeholder, labelInValue, faceted } = config;
+  const dataProps = useFilterOptions({
+    column,
+    options,
+    fetchOptions,
+    faceted,
   });
-
-  const props = fetchOptions ? asyncSearchable : searchable;
+  const resolvedPlaceholder = placeholder ?? labels.filterAll;
 
   if (labelInValue) {
     return (
       <Select<string>
-        {...props}
+        {...dataProps}
         clearable
         labelInValue
         size="sm"
-        placeholder={placeholder ?? "Все"}
+        placeholder={resolvedPlaceholder}
         value={
           (column.getFilterValue() as LabeledValue | null | undefined) ?? null
         }
@@ -54,10 +45,10 @@ export const SelectFilterControl = <TData,>({
 
   return (
     <Select
-      {...props}
+      {...dataProps}
       clearable
       size="sm"
-      placeholder={placeholder ?? "Все"}
+      placeholder={resolvedPlaceholder}
       value={(column.getFilterValue() as string | null | undefined) ?? null}
       onChange={(v: string | null) => column.setFilterValue(v)}
     />

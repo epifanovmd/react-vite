@@ -11,8 +11,8 @@ export const useRowSelectionExample = () => {
   const data = useMemo(() => ORDERS.slice(0, 10), []);
 
   const selection = useRowSelectionFeature<Order>({
-    selection: "multi",
-    rowSelection,
+    mode: "multi",
+    rowSelectionState: rowSelection,
     onRowSelectionChange: setRowSelection,
   });
 

@@ -19,9 +19,9 @@ interface UseInputResult {
   hasValue: boolean;
   inputRef: React.RefCallback<HTMLInputElement>;
   inputType: React.HTMLInputTypeAttribute;
+  isControlled: boolean;
   isPassword: boolean;
   isPasswordVisible: boolean;
-  handleActionPointerDown: React.PointerEventHandler<HTMLButtonElement>;
   handleChange: React.ChangeEventHandler<HTMLInputElement>;
   handleClear: () => void;
   handlePasswordToggle: () => void;
@@ -30,6 +30,7 @@ interface UseInputResult {
 const valueIsPresent = (value: InputValue): boolean =>
   value != null && String(value).length > 0;
 
+/** Пишет значение через нативный сеттер, чтобы React увидел последующий `input`. */
 const setNativeInputValue = (input: HTMLInputElement, value: string): void => {
   const valueSetter = Object.getOwnPropertyDescriptor(
     HTMLInputElement.prototype,
@@ -40,6 +41,10 @@ const setNativeInputValue = (input: HTMLInputElement, value: string): void => {
   else input.value = value;
 };
 
+/**
+ * Внутренняя логика Input: наличие значения (controlled/uncontrolled/внешний
+ * `hasValue`), очистка через нативное событие и видимость пароля.
+ */
 export const useInput = ({
   defaultValue,
   disabled,
@@ -55,31 +60,30 @@ export const useInput = ({
   const inputRef = useMergedRef(forwardedRef, innerRef);
   const isControlled = value !== undefined;
   const isPassword = type === "password";
+  const tracksOwnValue = !isControlled && hasValueProp === undefined;
 
   const [hasUncontrolledValue, setHasUncontrolledValue] = React.useState(() =>
     valueIsPresent(defaultValue),
   );
-  const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
+  const [isPasswordShown, setIsPasswordShown] = React.useState(false);
 
   const hasValue =
     hasValueProp ??
     (isControlled ? valueIsPresent(value) : hasUncontrolledValue);
-
-  React.useEffect(() => {
-    if (!isPassword || !hasValue) setIsPasswordVisible(false);
-  }, [hasValue, isPassword]);
+  const isPasswordVisible = isPasswordShown && isPassword && hasValue;
 
   const handleChange = React.useCallback<
     React.ChangeEventHandler<HTMLInputElement>
   >(
     event => {
-      if (!isControlled && hasValueProp === undefined) {
-        setHasUncontrolledValue(event.currentTarget.value.length > 0);
-      }
+      const isEmpty = event.currentTarget.value.length === 0;
+
+      if (tracksOwnValue) setHasUncontrolledValue(!isEmpty);
+      if (isEmpty) setIsPasswordShown(false);
 
       onChange?.(event);
     },
-    [hasValueProp, isControlled, onChange],
+    [onChange, tracksOwnValue],
   );
 
   const handleClear = React.useCallback(() => {
@@ -93,34 +97,26 @@ export const useInput = ({
       input.focus({ preventScroll: true });
     }
 
-    if (!isControlled && hasValueProp === undefined) {
-      setHasUncontrolledValue(false);
-    }
+    if (tracksOwnValue) setHasUncontrolledValue(false);
 
-    setIsPasswordVisible(false);
+    setIsPasswordShown(false);
     onClear?.();
-  }, [disabled, hasValueProp, isControlled, onClear, readOnly]);
+  }, [disabled, onClear, readOnly, tracksOwnValue]);
 
   const handlePasswordToggle = React.useCallback(() => {
     if (disabled) return;
-    setIsPasswordVisible(isVisible => !isVisible);
+    setIsPasswordShown(isShown => !isShown);
   }, [disabled]);
 
-  const handleActionPointerDown = React.useCallback<
-    React.PointerEventHandler<HTMLButtonElement>
-  >(event => {
-    event.preventDefault();
-  }, []);
-
-  const inputType = isPassword && isPasswordVisible ? "text" : type;
+  const inputType = isPasswordVisible ? "text" : type;
 
   return {
     hasValue,
     inputRef,
     inputType,
+    isControlled,
     isPassword,
     isPasswordVisible,
-    handleActionPointerDown,
     handleChange,
     handleClear,
     handlePasswordToggle,

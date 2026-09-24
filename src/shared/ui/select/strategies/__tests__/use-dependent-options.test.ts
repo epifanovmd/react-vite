@@ -19,7 +19,7 @@ describe("useDependentOptions", () => {
 
     expect(hook.result.current.loading).toBe(true);
     await waitFor(() => expect(hook.result.current.loading).toBe(false));
-    expect(fetch).toHaveBeenCalledWith("parent");
+    expect(fetch).toHaveBeenCalledWith("parent", expect.any(AbortSignal));
 
     act(() => hook.result.current.onSearch?.("two"));
     expect(hook.result.current.options).toEqual([
@@ -30,7 +30,7 @@ describe("useDependentOptions", () => {
     expect(hook.result.current.options).toEqual([]);
   });
 
-  it("shows placeholder options while loading and recovers from errors", async () => {
+  it("shows placeholder options only while loading and exposes the error", async () => {
     let rejectFetch: ((reason?: unknown) => void) | undefined;
     const fetch = vi.fn(
       () =>
@@ -48,10 +48,14 @@ describe("useDependentOptions", () => {
       }),
     );
 
-    expect(result.current.options).toEqual(placeholderOptions);
-    expect(result.current.loading).toBe(true);
-    await act(async () => rejectFetch?.(new Error("failure")));
+    // Пока грузится, placeholder-опции показываются вместо спиннера.
     expect(result.current.options).toEqual(placeholderOptions);
     expect(result.current.loading).toBe(false);
+    const failure = new Error("failure");
+
+    await act(async () => rejectFetch?.(failure));
+    expect(result.current.options).toEqual([]);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBe(failure);
   });
 });

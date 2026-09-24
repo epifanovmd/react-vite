@@ -1,12 +1,15 @@
 import {
+  getExpandedRowModel,
   getGroupedRowModel,
   type GroupingState,
-  type OnChangeFn,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
+import {
+  type TableFeatureSpec,
+  useTableFeatureState,
+} from "./create-table-feature";
+import type { TableFeatureOf } from "./types";
 
 export interface GroupingFeatureOptions {
   enabled?: boolean;
@@ -15,9 +18,16 @@ export interface GroupingFeatureOptions {
   onGroupingChange?: (state: GroupingState) => void;
 }
 
-export const useGroupingFeature = <TData>(
+const SPEC: TableFeatureSpec<"grouping", "grouping"> = {
+  kind: "grouping",
+  stateKey: "grouping",
+  fallback: [],
+  changeOption: "onGroupingChange",
+};
+
+export const useGroupingFeature = <TData = unknown>(
   options: GroupingFeatureOptions = {},
-): TableFeatureResult<TData> => {
+): TableFeatureOf<TData, "grouping"> => {
   const {
     enabled = true,
     groupingState,
@@ -25,22 +35,23 @@ export const useGroupingFeature = <TData>(
     onGroupingChange,
   } = options;
 
-  const [state, setState] = useControllableState<GroupingState>({
-    value: groupingState,
-    defaultValue: defaultGrouping ?? [],
-    onChange: onGroupingChange,
-  });
-
-  return useMemo(
+  const extraOptions = useMemo(
     () => ({
-      kind: "grouping" as const,
-      state: { grouping: state },
-      options: {
-        enableGrouping: enabled,
-        onGroupingChange: enabled ? setState : undefined,
-        getGroupedRowModel: enabled ? getGroupedRowModel() : undefined,
-      },
+      enableGrouping: enabled,
+      getGroupedRowModel: enabled ? getGroupedRowModel<TData>() : undefined,
+      getExpandedRowModel: enabled ? getExpandedRowModel<TData>() : undefined,
     }),
-    [state, setState, enabled],
+    [enabled],
+  );
+
+  return useTableFeatureState<TData, "grouping", "grouping">(
+    SPEC,
+    {
+      enabled,
+      value: groupingState,
+      defaultValue: defaultGrouping,
+      onChange: onGroupingChange,
+    },
+    extraOptions,
   );
 };

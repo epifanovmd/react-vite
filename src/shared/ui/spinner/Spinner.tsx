@@ -1,31 +1,54 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 
 import { spinnerVariants } from "./spinner-variants";
 
 export interface SpinnerProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof spinnerVariants> {
-  label?: string;
+  /** Видимая подпись рядом с иконкой. */
+  label?: React.ReactNode;
+  /** Текст для скринридера, когда видимой подписи нет. */
+  srLabel?: string;
+  /** Классы иконки; `className` идёт на обёртку. */
+  iconClassName?: string;
 }
 
-const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
-  ({ className, size, variant, label, ...props }, ref) => {
+const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(
+  (
+    {
+      className,
+      iconClassName,
+      size,
+      variant,
+      label,
+      srLabel = "Загрузка…",
+      ...props
+    },
+    ref,
+  ) => {
+    const hasLabel = label !== undefined && label !== null && label !== "";
+
     return (
-      <div
+      <span
         ref={ref}
         role="status"
         className={cn("inline-flex items-center gap-2", className)}
         {...props}
       >
-        <Loader2 className={cn(spinnerVariants({ size, variant }))} />
-        {label && (
+        <Loader2
+          aria-hidden
+          className={cn(spinnerVariants({ size, variant }), iconClassName)}
+        />
+        {hasLabel ? (
           <span className="text-sm text-muted-foreground">{label}</span>
+        ) : (
+          <span className="sr-only">{srLabel}</span>
         )}
-        <span className="sr-only">Loading...</span>
-      </div>
+      </span>
     );
   },
 );

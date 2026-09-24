@@ -1,4 +1,9 @@
-import type { FilterOptionPredicate, SelectOption, SelectValue } from "../types";
+import type {
+  FilterOptionPredicate,
+  SelectOption,
+  SelectValue,
+} from "../types";
+import { getOptionText } from "../utils/get-option-text";
 
 export const filterByLabel = <V extends SelectValue>(
   list: SelectOption<V>[],
@@ -13,5 +18,5 @@ export const filterByLabel = <V extends SelectValue>(
 
   const q = query.toLowerCase();
 
-  return list.filter(o => String(o.label).toLowerCase().includes(q));
+  return list.filter(o => getOptionText(o).toLowerCase().includes(q));
 };

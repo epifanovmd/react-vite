@@ -1,9 +1,11 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useLatestRef } from "@shared/lib/hooks";
+import { useCallback, useMemo, useState } from "react";
 
 export interface ModalConfig {
   defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Ключи окон, которые скрываются, пока открыто это. */
   suspends?: string[];
 }
 
@@ -23,14 +25,23 @@ export interface ModalController<Keys extends string> {
   isOpen: (key: Keys) => boolean;
 }
 
+const KEY_SEPARATOR = "\u0000";
+
+/**
+ * Набор связанных окон с одним состоянием: стек, `suspends` для скрытия
+ * родителя, `closeAll`. Конфиг может быть inline-объектом — набор ключей
+ * сравнивается по содержимому, а не по identity.
+ */
 export const useModalController = <Keys extends string>(
   config: Record<Keys, ModalConfig>,
 ): ModalController<Keys> => {
-  const configRef = useRef(config);
+  const configRef = useLatestRef(config);
 
-  configRef.current = config;
-
-  const keys = useMemo(() => Object.keys(config) as Keys[], [config]);
+  const keysSignature = Object.keys(config).join(KEY_SEPARATOR);
+  const keys = useMemo(
+    () => (keysSignature ? (keysSignature.split(KEY_SEPARATOR) as Keys[]) : []),
+    [keysSignature],
+  );
 
   const [intent, setIntent] = useState<Record<Keys, boolean>>(() =>
     keys.reduce(
@@ -47,21 +58,26 @@ export const useModalController = <Keys extends string>(
     (key: Keys): boolean => {
       const cfg = configRef.current[key];
 
-      return cfg?.open !== undefined ? cfg.open : intent[key];
+      return cfg?.open !== undefined ? cfg.open : Boolean(intent[key]);
     },
-    [intent],
+    [configRef, intent],
   );
 
-  const setIntentForKey = useCallback((key: Keys, value: boolean) => {
-    const cfg = configRef.current[key];
+  const setIntentForKey = useCallback(
+    (key: Keys, value: boolean) => {
+      const cfg = configRef.current[key];
 
-    if (cfg?.open !== undefined) {
-      cfg.onOpenChange?.(value);
+      if (cfg?.open !== undefined) {
+        cfg.onOpenChange?.(value);
 
-      return;
-    }
-    setIntent(prev => (prev[key] === value ? prev : { ...prev, [key]: value }));
-  }, []);
+        return;
+      }
+      setIntent(prev =>
+        prev[key] === value ? prev : { ...prev, [key]: value },
+      );
+    },
+    [configRef],
+  );
 
   const openModal = useCallback(
     (key: Keys) => setIntentForKey(key, true),
@@ -74,14 +90,8 @@ export const useModalController = <Keys extends string>(
   );
 
   const toggleModal = useCallback(
-    (key: Keys) => {
-      if (resolveIntent(key)) {
-        closeModal(key);
-      } else {
-        openModal(key);
-      }
-    },
-    [resolveIntent, openModal, closeModal],
+    (key: Keys) => setIntentForKey(key, !resolveIntent(key)),
+    [resolveIntent, setIntentForKey],
   );
 
   const closeAll = useCallback(() => {
@@ -99,7 +109,7 @@ export const useModalController = <Keys extends string>(
           (configRef.current[other]?.suspends ?? []).includes(key),
       );
     },
-    [keys, resolveIntent],
+    [configRef, keys, resolveIntent],
   );
 
   const modals = useMemo(

@@ -1,17 +1,16 @@
 import type { DateRange } from "../../../../date-picker";
 import { DateRangePicker } from "../../../../date-picker";
+import type { BaseFilterConfig } from "./filter-config";
 import type { FilterControlProps } from "./filter-control-props";
 
-export interface DateRangeFilterConfig {
+export interface DateRangeFilterConfig extends BaseFilterConfig {
   type: "daterange";
-  placeholder?: string;
-  queryKey?: string;
 }
 
-export const DateRangeFilterControl = <TData,>({
+export const DateRangeFilterControl = ({
   config,
   column,
-}: FilterControlProps<DateRangeFilterConfig, TData>) => (
+}: FilterControlProps<DateRangeFilterConfig>) => (
   <DateRangePicker
     size="sm"
     clearable

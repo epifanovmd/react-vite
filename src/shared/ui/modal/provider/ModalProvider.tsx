@@ -1,23 +1,46 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
-import { ModalContent } from "../components/ModalContent";
-import { Modal } from "../Modal";
 import {
-  type ConfirmOptions,
   ModalContext,
   type ModalContextValue,
   type ModalEntry,
   type ModalOptions,
-  type ModalRenderProps,
 } from "./modal-context";
+import { ProviderModal } from "./ProviderModal";
 
+/** Длительность анимации закрытия из `modalContentVariants` (duration-200). */
 const CLOSE_ANIMATION_DURATION = 200;
 
 const generateId = () =>
   `modal-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
+export interface ModalProviderProps {
+  children: React.ReactNode;
+}
+
+export const ModalProvider = ({ children }: ModalProviderProps) => {
   const [modals, setModals] = React.useState<ModalEntry[]>([]);
+  const modalsRef = useLatestRef(modals);
+  const timersRef = React.useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  React.useEffect(() => {
+    const timers = timersRef.current;
+
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.clear();
+    };
+  }, []);
+
+  const scheduleRemoval = React.useCallback((id: string) => {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      setModals(prev => prev.filter(m => m.id !== id));
+    }, CLOSE_ANIMATION_DURATION);
+
+    timersRef.current.add(timer);
+  }, []);
 
   const openModal = React.useCallback((options: ModalOptions): string => {
     const id = generateId();
@@ -27,33 +50,46 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     return id;
   }, []);
 
-  const closeModal = React.useCallback((id: string) => {
-    setModals(prev => prev.map(m => (m.id === id ? { ...m, open: false } : m)));
-    setTimeout(() => {
-      setModals(prev => prev.filter(m => m.id !== id));
-    }, CLOSE_ANIMATION_DURATION);
-  }, []);
+  const closeModal = React.useCallback(
+    (id: string) => {
+      const entry = modalsRef.current.find(m => m.id === id);
+
+      if (!entry?.open) return;
+
+      setModals(prev =>
+        prev.map(m => (m.id === id ? { ...m, open: false } : m)),
+      );
+      entry.options.onClose?.();
+      scheduleRemoval(id);
+    },
+    [modalsRef, scheduleRemoval],
+  );
 
   const closeAll = React.useCallback(() => {
-    setModals(prev => prev.map(m => ({ ...m, open: false })));
-    setTimeout(() => setModals([]), CLOSE_ANIMATION_DURATION);
-  }, []);
+    modalsRef.current.forEach(m => closeModal(m.id));
+  }, [modalsRef, closeModal]);
 
-  const confirm = React.useCallback(
-    (options: ConfirmOptions) => {
-      openModal({
-        size: options.size ?? "sm",
-        disableInteractOutside: true,
-        hideCloseButton: true,
-        title: options.title,
-        description: options.description,
-        onConfirm: options.onConfirm,
-        confirmLabel: options.confirmLabel,
-        confirmVariant: options.confirmVariant,
-        onCancel: options.onCancel,
-        cancelLabel: options.cancelLabel,
-      });
-    },
+  const confirm = React.useCallback<ModalContextValue["confirm"]>(
+    options =>
+      new Promise<boolean>(resolve => {
+        openModal({
+          size: options.size ?? "sm",
+          disableInteractOutside: true,
+          hideCloseButton: true,
+          title: options.title,
+          description: options.description,
+          confirmLabel: options.confirmLabel,
+          confirmVariant: options.confirmVariant,
+          cancelLabel: options.cancelLabel,
+          onConfirmError: options.onConfirmError,
+          onConfirm: async () => {
+            await options.onConfirm?.();
+            resolve(true);
+          },
+          onCancel: () => resolve(false),
+          onClose: () => resolve(false),
+        });
+      }),
     [openModal],
   );
 
@@ -65,46 +101,9 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ModalContext.Provider value={value}>
       {children}
-      {modals.map(({ id, open, options }) => {
-        const renderProps: ModalRenderProps = {
-          id,
-          onClose: () => closeModal(id),
-        };
-        const content =
-          typeof options.content === "function"
-            ? options.content(renderProps)
-            : options.content;
-
-        return (
-          <Modal
-            key={id}
-            open={open}
-            onOpenChange={isOpen => {
-              if (!isOpen) {
-                options.onClose?.();
-                closeModal(id);
-              }
-            }}
-          >
-            <ModalContent
-              size={options.size}
-              position={options.position}
-              disableInteractOutside={options.disableInteractOutside}
-              hideCloseButton={options.hideCloseButton}
-              title={options.title}
-              description={options.description}
-              footer={options.footer}
-              onConfirm={options.onConfirm}
-              confirmLabel={options.confirmLabel}
-              confirmVariant={options.confirmVariant}
-              onCancel={options.onCancel}
-              cancelLabel={options.cancelLabel}
-            >
-              {content}
-            </ModalContent>
-          </Modal>
-        );
-      })}
+      {modals.map(entry => (
+        <ProviderModal key={entry.id} entry={entry} onClose={closeModal} />
+      ))}
     </ModalContext.Provider>
   );
 };

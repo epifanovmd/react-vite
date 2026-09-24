@@ -29,7 +29,7 @@ export const AlertsSection: FC = () => {
         <Alert variant="warning" title="Внимание">
           Срок действия токена истекает через 3 дня.
         </Alert>
-        <Alert variant="error" title="Ошибка">
+        <Alert variant="destructive" title="Ошибка">
           Не удалось загрузить данные. Попробуйте ещё раз.
         </Alert>
         <Alert variant="default">

@@ -1,22 +1,24 @@
 import { AxisBottom, AxisLeft } from "@visx/axis";
 
 import type {
-  ChartAxisConfig,
   ChartMargin,
+  ChartXAxisConfig,
   ChartXValue,
   ChartYAxisConfig,
 } from "../chart.types";
-import type { ChartModel } from "../hooks/use-chart-model";
-import { formatAxisValue } from "../utils/format";
+import { useChartScales } from "../hooks/chart-scales-context";
+import {
+  DEFAULT_X_TICK_COUNT,
+  DEFAULT_Y_TICK_COUNT,
+} from "../utils/chart-constants";
+import { createYTickFormat } from "../utils/format";
 
-export interface ChartAxesProps<Datum> {
-  model: ChartModel<Datum>;
-  innerWidth: number;
-  innerHeight: number;
+export interface ChartAxesProps {
   margin: ChartMargin;
-  xAxis: ChartAxisConfig | false;
+  xAxis: ChartXAxisConfig | false;
   yAxis: ChartYAxisConfig | false;
-  formatXTick: (value: ChartXValue, index: number) => string;
+  tickToX: (tick: unknown) => ChartXValue;
+  formatXTick: (value: ChartXValue) => string;
 }
 
 const TICK_LABEL = {
@@ -25,64 +27,64 @@ const TICK_LABEL = {
   fontFamily: "inherit",
 } as const;
 
-const AXIS_LABEL = {
-  fill: "var(--muted-foreground)",
-  fontSize: 11,
-  fontFamily: "inherit",
-  textAnchor: "middle",
+const AXIS_LABEL = { ...TICK_LABEL, textAnchor: "middle" } as const;
+
+const X_TICK_LABEL = { ...TICK_LABEL, textAnchor: "middle", dy: 2 } as const;
+
+const Y_TICK_LABEL = {
+  ...TICK_LABEL,
+  textAnchor: "end",
+  dx: -6,
+  dy: 3,
 } as const;
 
-export const ChartAxes = <Datum,>({
-  model,
-  innerWidth,
-  innerHeight,
+const AXIS_STROKE = "var(--border)";
+
+/** Оси рисуются вне области графика, поэтому получают отступы явно. */
+export const ChartAxes = ({
   margin,
   xAxis,
   yAxis,
+  tickToX,
   formatXTick,
-}: ChartAxesProps<Datum>) => {
-  const showX = xAxis !== false && !xAxis?.hide;
-  const showY = yAxis !== false && !yAxis?.hide;
+}: ChartAxesProps) => {
+  const { xScale, yScale, innerHeight } = useChartScales();
+
+  const formatX = (tick: unknown) => formatXTick(tickToX(tick));
+
+  const formatYValue = createYTickFormat(yAxis);
+  const formatY = (tick: unknown) => formatYValue(Number(tick));
 
   return (
     <>
-      {showY && (
+      {yAxis !== false && (
         <AxisLeft
-          scale={model.yScale}
+          scale={yScale}
           left={margin.left}
           top={margin.top}
-          numTicks={yAxis.tickCount ?? model.yTickCount}
-          hideAxisLine
-          hideTicks
+          numTicks={yAxis.tickCount ?? DEFAULT_Y_TICK_COUNT}
+          tickFormat={formatY}
           label={yAxis.label}
           labelProps={AXIS_LABEL}
-          tickLabelProps={{ ...TICK_LABEL, textAnchor: "end", dx: -6, dy: 3 }}
-          tickFormat={(value, index) =>
-            yAxis.tickFormat
-              ? yAxis.tickFormat(Number(value), index)
-              : formatAxisValue(Number(value))
-          }
+          tickLabelProps={Y_TICK_LABEL}
+          hideAxisLine
+          hideTicks
         />
       )}
 
-      {showX && (
+      {xAxis !== false && (
         <AxisBottom
-          scale={model.xScale}
-          top={margin.top + innerHeight}
+          scale={xScale}
           left={margin.left}
-          stroke="var(--border)"
-          tickStroke="var(--border)"
-          tickLength={4}
-          numTicks={xAxis.tickCount ?? Math.max(2, Math.floor(innerWidth / 96))}
-          tickValues={model.bandTicks}
+          top={margin.top + innerHeight}
+          numTicks={xAxis.tickCount ?? DEFAULT_X_TICK_COUNT}
+          tickFormat={formatX}
           label={xAxis.label}
           labelProps={AXIS_LABEL}
-          tickLabelProps={{ ...TICK_LABEL, textAnchor: "middle", dy: 2 }}
-          tickFormat={(value, index) =>
-            model.xScaleType === "band"
-              ? formatXTick(model.xValues[Number(value)], Number(value))
-              : formatXTick(value as ChartXValue, index)
-          }
+          tickLabelProps={X_TICK_LABEL}
+          stroke={AXIS_STROKE}
+          tickStroke={AXIS_STROKE}
+          tickLength={4}
         />
       )}
     </>

@@ -1,36 +1,31 @@
-import { type OnChangeFn, type VisibilityState } from "@tanstack/react-table";
-import { useMemo } from "react";
+import type { VisibilityState } from "@tanstack/react-table";
 
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
+import {
+  type TableFeatureSpec,
+  useTableFeatureState,
+} from "./create-table-feature";
+import type { TableFeatureOf } from "./types";
 
 export interface ColumnVisibilityFeatureOptions {
+  enabled?: boolean;
   columnVisibilityState?: VisibilityState;
   defaultColumnVisibility?: VisibilityState;
   onColumnVisibilityChange?: (state: VisibilityState) => void;
 }
 
-export const useColumnVisibilityFeature = <TData>(
-  options: ColumnVisibilityFeatureOptions = {},
-): TableFeatureResult<TData> => {
-  const {
-    columnVisibilityState,
-    defaultColumnVisibility,
-    onColumnVisibilityChange,
-  } = options;
-
-  const [state, setState] = useControllableState<VisibilityState>({
-    value: columnVisibilityState,
-    defaultValue: defaultColumnVisibility ?? {},
-    onChange: onColumnVisibilityChange,
-  });
-
-  return useMemo(
-    () => ({
-      kind: "columnVisibility" as const,
-      state: { columnVisibility: state },
-      options: { onColumnVisibilityChange: setState },
-    }),
-    [state, setState],
-  );
+const SPEC: TableFeatureSpec<"columnVisibility", "columnVisibility"> = {
+  kind: "columnVisibility",
+  stateKey: "columnVisibility",
+  fallback: {},
+  changeOption: "onColumnVisibilityChange",
 };
+
+export const useColumnVisibilityFeature = <TData = unknown>(
+  options: ColumnVisibilityFeatureOptions = {},
+): TableFeatureOf<TData, "columnVisibility"> =>
+  useTableFeatureState<TData, "columnVisibility", "columnVisibility">(SPEC, {
+    enabled: options.enabled,
+    value: options.columnVisibilityState,
+    defaultValue: options.defaultColumnVisibility,
+    onChange: options.onColumnVisibilityChange,
+  });

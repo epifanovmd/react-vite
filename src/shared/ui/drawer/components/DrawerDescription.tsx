@@ -2,14 +2,23 @@ import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
-export const DrawerDescription = React.forwardRef<
+import { DIALOG_DESCRIPTION_CLASS } from "../../foundation/dialog-parts";
+
+export type DrawerDescriptionProps = React.ComponentPropsWithoutRef<
+  typeof DrawerPrimitive.Description
+>;
+
+const DrawerDescription = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
+  DrawerDescriptionProps
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn(DIALOG_DESCRIPTION_CLASS, className)}
     {...props}
   />
 ));
-DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
+
+DrawerDescription.displayName = "DrawerDescription";
+
+export { DrawerDescription };

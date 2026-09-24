@@ -1,35 +1,48 @@
 import { useMergedRef } from "@mantine/hooks";
 import * as React from "react";
 
+type TextareaValue = React.TextareaHTMLAttributes<HTMLTextAreaElement>["value"];
+
 interface UseTextareaOptions {
   ref: React.ForwardedRef<HTMLTextAreaElement>;
-  value: React.TextareaHTMLAttributes<HTMLTextAreaElement>["value"];
+  value: TextareaValue;
   defaultValue: React.TextareaHTMLAttributes<HTMLTextAreaElement>["defaultValue"];
   autoResize: boolean;
   maxRows: number;
   maxLength: number | undefined;
-  showCount: boolean;
-  onChange: React.TextareaHTMLAttributes<HTMLTextAreaElement>["onChange"];
-  onInput: React.TextareaHTMLAttributes<HTMLTextAreaElement>["onInput"];
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement> | undefined;
 }
 
-interface UseTextareaReturn {
+interface UseTextareaResult {
   setRef: (el: HTMLTextAreaElement | null) => void;
   charCount: number;
-  counterClass: string;
+  counterTone: string;
+  hasValue: boolean;
+  isControlled: boolean;
   handleChange: React.ChangeEventHandler<HTMLTextAreaElement>;
-  handleInput: React.FormEventHandler<HTMLTextAreaElement>;
 }
 
-const getLength = (
-  v: React.TextareaHTMLAttributes<HTMLTextAreaElement>["value"],
-): number =>
-  typeof v === "string"
-    ? v.length
-    : typeof v === "number"
-      ? String(v).length
-      : 0;
+/** Доля лимита, после которой счётчик подсвечивается как предупреждение. */
+const COUNTER_WARN_RATIO = 0.8;
+const FALLBACK_LINE_HEIGHT = 20;
 
+const getLength = (value: TextareaValue): number => String(value ?? "").length;
+
+const getCounterTone = (
+  charCount: number,
+  maxLength: number | undefined,
+): string => {
+  if (maxLength === undefined) return "text-muted-foreground";
+  if (charCount >= maxLength) return "text-destructive";
+  if (charCount >= maxLength * COUNTER_WARN_RATIO) return "text-warning";
+
+  return "text-muted-foreground";
+};
+
+/**
+ * Внутренняя логика Textarea: автоподбор высоты до `maxRows`, счётчик символов
+ * для controlled и uncontrolled режима.
+ */
 export const useTextarea = ({
   ref,
   value,
@@ -37,30 +50,17 @@ export const useTextarea = ({
   autoResize,
   maxRows,
   maxLength,
-  showCount,
   onChange,
-  onInput,
-}: UseTextareaOptions): UseTextareaReturn => {
+}: UseTextareaOptions): UseTextareaResult => {
   const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
-
   const setRef = useMergedRef(ref, innerRef);
+  const isControlled = value !== undefined;
 
-  const [charCount, setCharCount] = React.useState(() =>
-    value !== undefined ? getLength(value) : getLength(defaultValue),
+  const [uncontrolledCount, setUncontrolledCount] = React.useState(() =>
+    getLength(defaultValue),
   );
-
-  React.useEffect(() => {
-    if (value !== undefined) setCharCount(getLength(value));
-  }, [value]);
-
-  const counterClass =
-    maxLength === undefined
-      ? "text-muted-foreground"
-      : charCount >= maxLength
-        ? "text-destructive"
-        : charCount >= maxLength * 0.8
-          ? "text-warning"
-          : "text-muted-foreground";
+  const charCount = isControlled ? getLength(value) : uncontrolledCount;
+  const counterTone = getCounterTone(charCount, maxLength);
 
   const adjustHeight = React.useCallback(() => {
     const el = innerRef.current;
@@ -71,10 +71,10 @@ export const useTextarea = ({
 
     const scrollHeight = el.scrollHeight;
     const style = window.getComputedStyle(el);
-    const lineHeight = parseFloat(style.lineHeight) || 20;
-    const pt = parseFloat(style.paddingTop);
-    const pb = parseFloat(style.paddingBottom);
-    const maxHeight = lineHeight * maxRows + pt + pb;
+    const lineHeight = parseFloat(style.lineHeight) || FALLBACK_LINE_HEIGHT;
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    const paddingBottom = parseFloat(style.paddingBottom) || 0;
+    const maxHeight = lineHeight * maxRows + paddingTop + paddingBottom;
 
     if (scrollHeight > maxHeight) {
       el.style.height = `${maxHeight}px`;
@@ -92,13 +92,13 @@ export const useTextarea = ({
   React.useEffect(() => {
     if (!autoResize) return;
 
-    const el = innerRef.current;
+    const parent = innerRef.current?.parentElement;
 
-    if (!el?.parentElement) return;
+    if (!parent) return;
 
-    let prevWidth = el.parentElement.offsetWidth;
+    let prevWidth = parent.offsetWidth;
 
-    const ro = new ResizeObserver(entries => {
+    const observer = new ResizeObserver(entries => {
       const width = entries[0].contentRect.width;
 
       if (width !== prevWidth) {
@@ -107,31 +107,28 @@ export const useTextarea = ({
       }
     });
 
-    ro.observe(el.parentElement);
+    observer.observe(parent);
 
-    return () => ro.disconnect();
+    return () => observer.disconnect();
   }, [autoResize, adjustHeight]);
 
   const handleChange = React.useCallback<
     React.ChangeEventHandler<HTMLTextAreaElement>
   >(
-    e => {
-      onChange?.(e);
-    },
-    [onChange],
-  );
-
-  const handleInput = React.useCallback<
-    React.FormEventHandler<HTMLTextAreaElement>
-  >(
-    e => {
+    event => {
       if (autoResize) adjustHeight();
-      if (showCount || maxLength !== undefined)
-        setCharCount(e.currentTarget.value.length);
-      onInput?.(e as any);
+      if (!isControlled) setUncontrolledCount(event.currentTarget.value.length);
+      onChange?.(event);
     },
-    [autoResize, adjustHeight, showCount, maxLength, onInput],
+    [adjustHeight, autoResize, isControlled, onChange],
   );
 
-  return { setRef, charCount, counterClass, handleChange, handleInput };
+  return {
+    setRef,
+    charCount,
+    counterTone,
+    hasValue: charCount > 0,
+    isControlled,
+    handleChange,
+  };
 };

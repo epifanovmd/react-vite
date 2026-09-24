@@ -1,3 +1,4 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
 import type {
@@ -6,7 +7,7 @@ import type {
   SelectOption,
   SelectValue,
 } from "../types";
-import { filterByLabel } from "./filter-by-label";
+import { useClientSearch } from "./use-client-search";
 
 export interface UseControlledOptionsConfig<TData, V extends SelectValue> {
   data: TData[] | undefined;
@@ -16,6 +17,7 @@ export interface UseControlledOptionsConfig<TData, V extends SelectValue> {
   filterOption?: boolean | FilterOptionPredicate<V>;
 }
 
+/** Данные и loading приходят снаружи; хук только маппит и ищет. */
 export const useControlledOptions = <TData, V extends SelectValue>({
   data,
   getOption,
@@ -23,30 +25,14 @@ export const useControlledOptions = <TData, V extends SelectValue>({
   search,
   filterOption,
 }: UseControlledOptionsConfig<TData, V>): SelectDataProps<V> => {
-  const [query, setQuery] = React.useState("");
+  const getOptionRef = useLatestRef(getOption);
 
   const all = React.useMemo(
-    () => (data ?? []).map(getOption),
-    [data, getOption],
+    () => (data ?? []).map(item => getOptionRef.current(item)),
+    [data, getOptionRef],
   );
 
-  const doFilter = search && filterOption !== false;
+  const client = useClientSearch(all, { search, filterOption });
 
-  const predicate =
-    typeof filterOption === "function" ? filterOption : undefined;
-
-  const filtered = React.useMemo(
-    () => (doFilter ? filterByLabel(all, query, predicate) : all),
-    [all, query, doFilter, predicate],
-  );
-
-  if (!search) return { options: all, loading };
-
-  return {
-    options: filtered,
-    loading,
-    search: true,
-    searchValue: query,
-    onSearch: setQuery,
-  };
+  return { ...client, loading };
 };

@@ -5,31 +5,20 @@ export const kanbanBoardVariants = cva(
 );
 
 export const kanbanColumnVariants = cva(
-  "flex h-full min-h-40 w-72 shrink-0 flex-col overflow-hidden rounded-2xl border-2 border-transparent bg-surface-1 transition-colors duration-200",
+  "flex h-full min-h-40 w-72 shrink-0 flex-col overflow-hidden rounded-2xl border-2 bg-surface-1 transition-colors duration-200",
   {
     variants: {
-      previewValid: {
-        true: "bg-success/5",
-        false: "",
-      },
-      previewInvalid: {
-        true: "bg-destructive/5",
-        false: "",
-      },
-      isOver: {
-        true: "border-dashed border-primary/60 bg-primary/5",
-        false: "border-solid border-border/60",
-      },
-      isInvalid: {
-        true: "cursor-not-allowed border-dashed border-destructive/60 bg-destructive/5",
-        false: "",
+      dropState: {
+        idle: "border-solid border-border/60",
+        over: "border-dashed border-primary/60 bg-primary/5",
+        invalid:
+          "cursor-not-allowed border-dashed border-destructive/60 bg-destructive/5",
+        previewValid: "border-solid border-border/60 bg-success/5",
+        previewInvalid: "border-solid border-border/60 bg-destructive/5",
       },
     },
     defaultVariants: {
-      previewValid: false,
-      previewInvalid: false,
-      isOver: false,
-      isInvalid: false,
+      dropState: "idle",
     },
   },
 );

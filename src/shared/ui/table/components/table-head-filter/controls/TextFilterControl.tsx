@@ -1,71 +1,68 @@
-import type { Column } from "@tanstack/react-table";
+import { useLatestRef } from "@shared/lib/hooks";
 import { Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import * as React from "react";
 
 import { Input } from "../../../../input";
-import { FacetedFilterControl } from "./FacetedFilterControl";
+import { FILTER_DEBOUNCE_MS } from "../../../constants";
+import { useTableContext } from "../../table-context";
+import type { BaseFilterConfig } from "./filter-config";
 import type { FilterControlProps } from "./filter-control-props";
 
-const TEXT_DEBOUNCE_MS = 300;
-
-export interface TextFilterConfig {
+export interface TextFilterConfig extends BaseFilterConfig {
   type: "text";
-  placeholder?: string;
-  faceted?: boolean;
-  queryKey?: string;
 }
 
-export const TextFilterControl = <TData,>({
-  config,
-  column,
-}: FilterControlProps<TextFilterConfig, TData>) => {
-  if (config.faceted) return <FacetedFilterControl column={column} />;
+const SEARCH_ICON = <Search className="h-3.5 w-3.5" />;
 
-  return <PlainTextControl column={column} placeholder={config.placeholder} />;
+const normalize = (value: string): string | undefined => {
+  const trimmed = value.trim();
+
+  return trimmed.length ? trimmed : undefined;
 };
 
-interface PlainTextControlProps<TData> {
-  column: Column<TData, unknown>;
-  placeholder?: string;
-}
-
-const PlainTextControl = <TData,>({
+export const TextFilterControl = ({
+  config,
   column,
-  placeholder,
-}: PlainTextControlProps<TData>) => {
-  const [value, setValue] = useState(
-    () => (column.getFilterValue() as string | undefined) ?? "",
-  );
-  const columnRef = useRef(column);
+}: FilterControlProps<TextFilterConfig>) => {
+  const { labels } = useTableContext();
+  const external = (column.getFilterValue() as string | undefined) ?? "";
+  const [value, setValue] = React.useState(external);
+  const columnRef = useLatestRef(column);
+  const committedRef = React.useRef(external);
+  const timerRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  columnRef.current = column;
-  const isFirstRun = useRef(true);
+  // Внешний сброс (resetColumnFilters, controlled-значение) — синхронизируем
+  // инпут; собственные коммиты пропускаем, чтобы не терять ввод пользователя.
+  React.useEffect(() => {
+    if (external === committedRef.current) return;
 
-  useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
+    committedRef.current = external;
+    clearTimeout(timerRef.current);
+    setValue(external);
+  }, [external]);
 
-      return;
-    }
+  React.useEffect(() => () => clearTimeout(timerRef.current), []);
 
-    const timer = setTimeout(() => {
-      const next = value.trim();
+  const commit = (next: string) => {
+    setValue(next);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      const normalized = normalize(next);
 
-      columnRef.current.setFilterValue(next.length ? next : undefined);
-    }, TEXT_DEBOUNCE_MS);
-
-    return () => clearTimeout(timer);
-  }, [value]);
+      committedRef.current = normalized ?? "";
+      columnRef.current.setFilterValue(normalized);
+    }, FILTER_DEBOUNCE_MS);
+  };
 
   return (
     <Input
       size="sm"
       clearable
-      leftIcon={<Search className="h-3.5 w-3.5" />}
-      placeholder={placeholder ?? "Поиск…"}
+      leftIcon={SEARCH_ICON}
+      placeholder={config.placeholder ?? labels.filterSearch}
       value={value}
-      onChange={e => setValue(e.target.value)}
-      onClear={() => setValue("")}
+      onChange={e => commit(e.target.value)}
+      onClear={() => commit("")}
     />
   );
 };

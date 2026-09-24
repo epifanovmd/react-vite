@@ -13,7 +13,7 @@ const toJson = (value: unknown): string =>
     2,
   ) ?? "undefined";
 
-/** Two-column demo layout with live values and React Hook Form state. */
+/** Двухколоночный демо-макет: форма и живые значения/состояние React Hook Form. */
 export const FormExampleLayout = ({
   children,
   submittedValues,

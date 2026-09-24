@@ -1,13 +1,12 @@
 import { cva } from "class-variance-authority";
 
-import { CONTROL_HEIGHT } from "../foundation/control-size";
+import { CONTROL_HEIGHT } from "../foundation";
 
-export const tabsMotionVariants = cva("absolute z-0", {
+export const tabsIndicatorVariants = cva("absolute left-0 z-0", {
   variants: {
     variant: {
-      default: "inset-1 bg-background shadow-sm rounded-md",
-      underline:
-        "bottom-0 border-b-2 border-primary top-auto h-0.5 rounded-none",
+      default: "inset-y-1 rounded-md bg-background shadow-sm",
+      underline: "bottom-0 h-0.5 rounded-none border-b-2 border-primary",
     },
   },
   defaultVariants: {
@@ -16,7 +15,7 @@ export const tabsMotionVariants = cva("absolute z-0", {
 });
 
 export const tabsListVariants = cva(
-  "flex items-center justify-start rounded-lg p-1 text-muted-foreground overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+  "relative flex items-center justify-start rounded-lg p-1 text-muted-foreground overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
   {
     variants: {
       variant: {
@@ -37,7 +36,7 @@ export const tabsListVariants = cva(
 );
 
 export const tabsTriggerVariants = cva(
-  "flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer relative",
+  "relative flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
   {
     variants: {
       variant: {

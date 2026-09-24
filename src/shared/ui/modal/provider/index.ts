@@ -1,9 +1,10 @@
 export type {
-  ConfirmOptions,
+  ModalConfirmOptions,
+  ModalContentOptions,
+  ModalContentRenderer,
   ModalContextValue,
-  ModalEntry,
   ModalOptions,
   ModalRenderProps,
 } from "./modal-context";
-export { ModalContext } from "./modal-context";
+export type { ModalProviderProps } from "./ModalProvider";
 export { ModalProvider } from "./ModalProvider";

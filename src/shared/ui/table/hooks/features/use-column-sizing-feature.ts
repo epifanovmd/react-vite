@@ -1,13 +1,15 @@
-import {
-  type ColumnResizeDirection,
-  type ColumnResizeMode,
-  type ColumnSizingState,
-  type OnChangeFn,
+import type {
+  ColumnResizeDirection,
+  ColumnResizeMode,
+  ColumnSizingState,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
+import {
+  type TableFeatureSpec,
+  useTableFeatureState,
+} from "./create-table-feature";
+import type { TableFeatureOf } from "./types";
 
 export interface ColumnSizingFeatureOptions {
   enabled?: boolean;
@@ -18,35 +20,42 @@ export interface ColumnSizingFeatureOptions {
   columnResizeDirection?: ColumnResizeDirection;
 }
 
-export const useColumnSizingFeature = <TData>(
+const SPEC: TableFeatureSpec<"columnSizing", "columnSizing"> = {
+  kind: "columnSizing",
+  stateKey: "columnSizing",
+  fallback: {},
+  changeOption: "onColumnSizingChange",
+};
+
+export const useColumnSizingFeature = <TData = unknown>(
   options: ColumnSizingFeatureOptions = {},
-): TableFeatureResult<TData> => {
+): TableFeatureOf<TData, "columnSizing"> => {
   const {
     enabled = true,
     columnSizingState,
     defaultColumnSizing,
     onColumnSizingChange,
-    columnResizeMode,
+    columnResizeMode = "onChange",
     columnResizeDirection,
   } = options;
 
-  const [state, setState] = useControllableState<ColumnSizingState>({
-    value: columnSizingState,
-    defaultValue: defaultColumnSizing ?? {},
-    onChange: onColumnSizingChange,
-  });
-
-  return useMemo(
+  const extraOptions = useMemo(
     () => ({
-      kind: "columnSizing" as const,
-      state: { columnSizing: state },
-      options: {
-        enableColumnResizing: enabled,
-        onColumnSizingChange: enabled ? setState : undefined,
-        columnResizeMode: columnResizeMode ?? "onChange",
-        columnResizeDirection,
-      },
+      enableColumnResizing: enabled,
+      columnResizeMode,
+      columnResizeDirection,
     }),
-    [state, setState, enabled, columnResizeMode, columnResizeDirection],
+    [enabled, columnResizeMode, columnResizeDirection],
+  );
+
+  return useTableFeatureState<TData, "columnSizing", "columnSizing">(
+    SPEC,
+    {
+      enabled,
+      value: columnSizingState,
+      defaultValue: defaultColumnSizing,
+      onChange: onColumnSizingChange,
+    },
+    extraOptions,
   );
 };

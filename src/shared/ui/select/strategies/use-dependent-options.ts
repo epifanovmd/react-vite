@@ -1,3 +1,4 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
 import type {
@@ -6,93 +7,79 @@ import type {
   SelectOption,
   SelectValue,
 } from "../types";
-import { filterByLabel } from "./filter-by-label";
+import { useClientSearch } from "./use-client-search";
+import { useOptionsRequest } from "./use-options-request";
 
-export interface UseDependentOptionsConfig<TData, V extends SelectValue> {
-  /** Значение, от которого зависят опции. При изменении — перезагрузка. */
-  dependsOn: any;
+export interface UseDependentOptionsConfig<
+  TData,
+  V extends SelectValue,
+  TDep = unknown,
+> {
+  /** Значение, от которого зависят опции. При изменении — перезагрузка;
+   *  `null`/`undefined` — список пуст. */
+  dependsOn: TDep | null | undefined;
   /** Загрузчик, принимает текущее `dependsOn`. */
-  fetch: (dep: any) => Promise<TData[]>;
+  fetch: (dep: TDep, signal: AbortSignal) => Promise<TData[]>;
   /** Маппер элемента в SelectOption. */
   getOption: (item: TData) => SelectOption<V>;
   /** Включить строку поиска. */
   search?: boolean;
   /** Фильтр опций. */
   filterOption?: boolean | FilterOptionPredicate<V>;
-  /** Дефолтные опции (пока грузятся, показать их). */
+  /** Опции, которые показываются вместо спиннера, пока идёт загрузка. */
   placeholderOptions?: SelectOption<V>[];
+  enabled?: boolean;
 }
 
 /**
- * Каскадные / зависимые опции.
- * Автоматически перезагружает список при изменении `dependsOn`.
- * Пока грузятся новые данные — показывает `placeholderOptions` (если передан).
+ * Каскадные / зависимые опции: перезагружает список при изменении
+ * `dependsOn`, пока грузится — показывает `placeholderOptions` (если есть).
  */
-export const useDependentOptions = <TData, V extends SelectValue>({
+export const useDependentOptions = <
+  TData,
+  V extends SelectValue,
+  TDep = unknown,
+>({
   dependsOn,
   fetch,
   getOption,
   search,
   filterOption,
   placeholderOptions,
-}: UseDependentOptionsConfig<TData, V>): SelectDataProps<V> => {
-  const [data, setData] = React.useState<TData[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [query, setQuery] = React.useState("");
+  enabled = true,
+}: UseDependentOptionsConfig<TData, V, TDep>): SelectDataProps<V> => {
+  // Первый рендер уже «грузится», иначе список мигает пустым до эффекта.
+  const request = useOptionsRequest<TData, V>(
+    getOption,
+    enabled && dependsOn != null,
+  );
+  const fetchRef = useLatestRef(fetch);
+  const { run, cancel, setOptions } = request;
 
   React.useEffect(() => {
+    if (!enabled) return;
+
     if (dependsOn == null) {
-      setData([]);
+      cancel();
+      setOptions([]);
 
       return;
     }
 
-    let cancelled = false;
+    void run(signal => fetchRef.current(dependsOn, signal));
 
-    setLoading(true);
-    fetch(dependsOn)
-      .then(d => {
-        if (!cancelled) setData(d);
-      })
-      .catch(() => {
-        if (!cancelled) setData([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    return cancel;
+  }, [enabled, dependsOn, run, cancel, setOptions, fetchRef]);
 
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dependsOn]);
+  const placeholder = request.loading ? placeholderOptions : undefined;
+  const showPlaceholder = placeholder !== undefined;
+  const source = placeholder ?? request.options;
 
-  const all = React.useMemo(
-    () => (data.length > 0 ? data.map(getOption) : placeholderOptions ?? []),
-    [data, getOption, placeholderOptions],
-  );
-
-  const doFilter = search && filterOption !== false;
-
-  const predicate =
-    typeof filterOption === "function" ? filterOption : undefined;
-
-  const filtered = React.useMemo(
-    () => (doFilter ? filterByLabel(all, query, predicate) : all),
-    [all, query, doFilter, predicate],
-  );
-
-  const isEmpty = data.length === 0 && !placeholderOptions;
-  const showLoading = loading && isEmpty;
-
-  if (!search)
-    return { options: showLoading ? [] : all, loading: showLoading || loading };
+  const client = useClientSearch(source, { search, filterOption });
 
   return {
-    options: showLoading ? [] : filtered,
-    loading: showLoading || loading,
-    search: true,
-    searchValue: query,
-    onSearch: setQuery,
+    ...client,
+    loading: request.loading && !showPlaceholder,
+    error: request.error,
   };
 };

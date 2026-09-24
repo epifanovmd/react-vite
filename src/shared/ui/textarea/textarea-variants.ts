@@ -4,7 +4,7 @@ import {
   FIELD_SIZE_TYPO,
   type FieldVariantProps,
   fieldVariants,
-} from "../foundation/field-variants";
+} from "../foundation";
 
 export const textareaVariants = ({
   size,

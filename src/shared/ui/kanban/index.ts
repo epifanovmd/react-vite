@@ -1,16 +1,7 @@
-export type {
-  KanbanCardItemProps,
-  KanbanColumnHeaderCellProps,
-  KanbanColumnHeaderProps,
-  KanbanColumnProps,
-} from "./components";
-export {
-  KanbanCardItem,
-  KanbanColumn,
-  KanbanColumnEmpty,
-  KanbanColumnHeader,
-  KanbanColumnHeaderCell,
-} from "./components";
+export type { KanbanColumnHeaderProps } from "./components";
+export { KanbanColumnHeader } from "./components";
+export type { KanbanLabels } from "./constants";
+export { KANBAN_LABELS } from "./constants";
 export type {
   UseKanbanBoardOptions,
   UseKanbanBoardResult,
@@ -28,12 +19,8 @@ export type {
   KanbanCardDropEvent,
   KanbanCardRenderMeta,
   KanbanColumnData,
+  KanbanDropState,
   KanbanItems,
   KanbanProps,
   KanbanWorkflow,
 } from "./kanban.types";
-export {
-  kanbanBoardVariants,
-  kanbanCardVariants,
-  kanbanColumnVariants,
-} from "./kanban-variants";

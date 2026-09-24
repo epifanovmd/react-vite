@@ -1,47 +1,22 @@
-import { ChevronDown, X } from "lucide-react";
-import * as React from "react";
+import { ChevronDown } from "lucide-react";
 
 import { Spinner } from "../../spinner";
 
 export interface SelectTriggerIconProps {
   loading?: boolean;
-  showClear?: boolean;
-  onClear?: () => void;
-  /** Не показывать шеврон, когда нет loading/clear. */
+  /** Не показывать шеврон, когда нет loading. */
   hideChevron?: boolean;
 }
 
 export const SelectTriggerIcon = ({
   loading,
-  showClear,
-  onClear,
   hideChevron,
 }: SelectTriggerIconProps) => {
   if (loading) {
     return <Spinner size="sm" className="h-4 w-4 opacity-50 shrink-0" />;
   }
 
-  if (showClear) {
-    return (
-      <span
-        role="button"
-        tabIndex={-1}
-        onPointerDown={e => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        onClick={e => {
-          e.stopPropagation();
-          onClear?.();
-        }}
-        className="shrink-0 opacity-50 hover:opacity-100 transition-opacity cursor-pointer inline-flex items-center justify-center"
-      >
-        <X className="h-4 w-4" />
-      </span>
-    );
-  }
-
   if (hideChevron) return null;
 
-  return <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />;
+  return <ChevronDown aria-hidden className="h-4 w-4 opacity-50 shrink-0" />;
 };

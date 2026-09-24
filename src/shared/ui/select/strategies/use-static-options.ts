@@ -1,40 +1,14 @@
-import * as React from "react";
+import type { SelectDataProps, SelectOption, SelectValue } from "../types";
+import {
+  useClientSearch,
+  type UseClientSearchConfig,
+} from "./use-client-search";
 
-import type {
-  FilterOptionPredicate,
-  SelectDataProps,
-  SelectOption,
-  SelectValue,
-} from "../types";
-import { filterByLabel } from "./filter-by-label";
+export type UseStaticOptionsConfig<V extends SelectValue = string> =
+  UseClientSearchConfig<V>;
 
-export interface UseStaticOptionsConfig<V extends SelectValue = string> {
-  search?: boolean;
-  filterOption?: boolean | FilterOptionPredicate<V>;
-}
-
+/** Статический список с опциональным клиентским поиском. */
 export const useStaticOptions = <V extends SelectValue>(
   options: SelectOption<V>[],
-  { search, filterOption }: UseStaticOptionsConfig<V> = {},
-): SelectDataProps<V> => {
-  const [query, setQuery] = React.useState("");
-
-  const doFilter = search && filterOption !== false;
-
-  const predicate =
-    typeof filterOption === "function" ? filterOption : undefined;
-
-  const filtered = React.useMemo(
-    () => (doFilter ? filterByLabel(options, query, predicate) : options),
-    [options, query, doFilter, predicate],
-  );
-
-  if (!search) return { options };
-
-  return {
-    options: filtered,
-    search: true,
-    searchValue: query,
-    onSearch: setQuery,
-  };
-};
+  config: UseStaticOptionsConfig<V> = {},
+): SelectDataProps<V> => useClientSearch(options, config);

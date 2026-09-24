@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
   Drawer,
+  DrawerBody,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -20,583 +21,403 @@ import {
   ModalTitle,
   useModal,
 } from "@shared/ui";
-import { useModalController } from "@shared/ui";
-import { FC, useState } from "react";
 
-const StackedModals: FC = () => {
-  const modal = useModalController({
-    list: {},
-    create: {},
-    confirm: {},
+import {
+  ConfirmDemo,
+  ControlledModals,
+  StackedModals,
+  SuspendedModals,
+} from "./modals";
+
+const wait = (ms: number) =>
+  new Promise<void>(resolve => {
+    setTimeout(resolve, ms);
   });
 
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Button size="sm" onClick={modal.modals.list.onOpen}>
-        Open List
-      </Button>
+const LONG_PARAGRAPHS = Array.from({ length: 20 }, (_, i) => i + 1);
 
-      <Modal
-        open={modal.modals.list.open}
-        onOpenChange={open => !open && modal.modals.list.onClose()}
-      >
-        <ModalContent
-          size="md"
-          title="Rules"
-          description="Select or create a rule"
-          footer={
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={modal.modals.list.onClose}
-              >
-                Cancel
-              </Button>
-              <Button size="sm" onClick={modal.modals.create.onOpen}>
-                Create Rule
-              </Button>
-            </>
-          }
-        >
-          <ModalBody>
-            <p className="text-sm text-muted-foreground">Rule list here...</p>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        open={modal.modals.create.open}
-        onOpenChange={open => !open && modal.modals.create.onClose()}
-      >
-        <ModalContent
-          size="sm"
-          title="Create Rule"
-          description="Fill in the rule details"
-          footer={
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={modal.modals.create.onClose}
-              >
-                Back
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={modal.modals.confirm.onOpen}
-              >
-                Delete
-              </Button>
-            </>
-          }
-        >
-          <ModalBody>
-            <p className="text-sm text-muted-foreground">Form fields here...</p>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        open={modal.modals.confirm.open}
-        onOpenChange={open => !open && modal.modals.confirm.onClose()}
-      >
-        <ModalContent
-          size="sm"
-          title="Delete rule?"
-          description="This action cannot be undone."
-          confirmLabel="Delete"
-          confirmVariant="destructive"
-          onConfirm={() => modal.closeAll()}
-          onCancel={modal.modals.confirm.onClose}
-        />
-      </Modal>
-    </div>
-  );
-};
-
-const SuspendedModals: FC = () => {
-  const modal = useModalController({
-    list: {},
-    create: { suspends: ["list"] },
-    confirm: { suspends: ["create"] },
-  });
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="warning" onClick={modal.modals.list.onOpen}>
-        Open List
-      </Button>
-
-      <Modal
-        open={modal.modals.list.open}
-        onOpenChange={open => !open && modal.modals.list.onClose()}
-      >
-        <ModalContent
-          size="md"
-          title="Rules"
-          description="Select or create a rule"
-          footer={
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={modal.modals.list.onClose}
-              >
-                Cancel
-              </Button>
-              <Button size="sm" onClick={modal.modals.create.onOpen}>
-                Create Rule
-              </Button>
-            </>
-          }
-        >
-          <ModalBody>
-            <p className="text-sm text-muted-foreground">Rule list here...</p>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        open={modal.modals.create.open}
-        onOpenChange={open => !open && modal.modals.create.onClose()}
-      >
-        <ModalContent
-          size="sm"
-          title="Create Rule"
-          description="Fill in the rule details"
-          footer={
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={modal.modals.create.onClose}
-              >
-                Back
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={modal.modals.confirm.onOpen}
-              >
-                Delete
-              </Button>
-            </>
-          }
-        >
-          <ModalBody>
-            <p className="text-sm text-muted-foreground">Form fields here...</p>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        open={modal.modals.confirm.open}
-        onOpenChange={open => !open && modal.modals.confirm.onClose()}
-      >
-        <ModalContent
-          size="sm"
-          title="Delete rule?"
-          description="This action cannot be undone."
-          confirmLabel="Delete"
-          confirmVariant="destructive"
-          onConfirm={() => modal.closeAll()}
-          onCancel={modal.modals.confirm.onClose}
-        />
-      </Modal>
-    </div>
-  );
-};
-
-const ControlledModals: FC = () => {
-  const [open, setOpen] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const modal = useModalController({
-    list: { open, onOpenChange: setOpen },
-    confirm: { open: confirmOpen, onOpenChange: setConfirmOpen },
-  });
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Button size="sm" variant="info" onClick={() => setOpen(true)}>
-        Open Controlled
-      </Button>
-      <span className="text-xs text-muted-foreground self-center">
-        open={String(open)}, confirm={String(confirmOpen)}
-      </span>
-
-      <Modal
-        open={modal.modals.list.open}
-        onOpenChange={open => !open && setOpen(false)}
-      >
-        <ModalContent
-          size="sm"
-          title="Controlled List"
-          description="Managed by external state"
-          footer={
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => setConfirmOpen(true)}
-              >
-                Delete
-              </Button>
-            </>
-          }
-        >
-          <ModalBody>
-            <p className="text-sm text-muted-foreground">
-              Controlled by parent useState. Both modals stay open
-              simultaneously.
-            </p>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        open={modal.modals.confirm.open}
-        onOpenChange={open => !open && setConfirmOpen(false)}
-      >
-        <ModalContent
-          size="sm"
-          title="Confirm Delete"
-          description="Are you sure?"
-          confirmLabel="Yes"
-          confirmVariant="destructive"
-          onConfirm={() => modal.closeAll()}
-          onCancel={() => setConfirmOpen(false)}
-        />
-      </Modal>
-    </div>
-  );
-};
-
-export const ModalsSection: FC = () => {
+export const ModalsSection = () => {
   const modal = useModal();
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Modal & Drawer</CardTitle>
-        <CardDescription className="text-xs">
-          Модальные окна и панели
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex gap-2 flex-wrap">
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm">Default</Button>
-          </Modal.Trigger>
-          <ModalContent>
-            <ModalHeader>
-              <ModalTitle>Default Modal</ModalTitle>
-              <ModalDescription>
-                Standard modal with close on overlay
-              </ModalDescription>
-            </ModalHeader>
-            <div className="px-6 py-4">
-              <p className="text-sm text-muted-foreground">
-                Click outside or press ESC to close
-              </p>
-            </div>
-            <ModalFooter>
-              <Button variant="outline" size="sm">
-                Cancel
-              </Button>
-              <Button size="sm">Confirm</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+  const openGlobalSkeleton = () =>
+    modal.openModal({
+      title: "Опубликовать изменения?",
+      description: "Изменения увидят все пользователи.",
+      confirmLabel: "Опубликовать",
+      confirmVariant: "warning",
+      onConfirm: () => wait(800),
+      onCancel: () => {},
+    });
 
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm" variant="secondary">
-              No Close
-            </Button>
-          </Modal.Trigger>
-          <ModalContent disableInteractOutside>
-            <ModalHeader>
-              <ModalTitle>Required Action</ModalTitle>
-              <ModalDescription>
-                Cannot be dismissed with overlay or ESC
-              </ModalDescription>
-            </ModalHeader>
-            <div className="px-6 py-4">
-              <p className="text-sm text-muted-foreground">
-                This modal cannot be closed by clicking overlay or ESC key
-              </p>
-            </div>
-            <ModalFooter>
-              <Modal.Close asChild>
-                <Button size="sm">Close</Button>
-              </Modal.Close>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm" variant="info">
-              Scrollable
-            </Button>
-          </Modal.Trigger>
-          <ModalContent size="lg">
-            <ModalHeader>
-              <ModalTitle>Long Content</ModalTitle>
-              <ModalDescription>Scroll through the content</ModalDescription>
-            </ModalHeader>
-            <ModalBody className="space-y-4">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <p key={i} className="text-sm text-muted-foreground">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Paragraph {i + 1}.
-                </p>
-              ))}
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="outline" size="sm">
-                Cancel
-              </Button>
-              <Button size="sm">Confirm</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm" variant="success">
-              Top
-            </Button>
-          </Modal.Trigger>
-          <ModalContent position="top" size="sm">
-            <ModalHeader>
-              <ModalTitle>Top Modal</ModalTitle>
-              <ModalDescription>Positioned at the top</ModalDescription>
-            </ModalHeader>
-            <div className="px-6 py-4">
-              <p className="text-sm text-muted-foreground">
-                This modal slides from the top
-              </p>
-            </div>
-            <ModalFooter>
-              <Button size="sm">OK</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm" variant="warning">
-              Bottom
-            </Button>
-          </Modal.Trigger>
-          <ModalContent position="bottom" size="sm">
-            <ModalHeader>
-              <ModalTitle>Bottom Modal</ModalTitle>
-              <ModalDescription>Positioned at the bottom</ModalDescription>
-            </ModalHeader>
-            <div className="px-6 py-4">
-              <p className="text-sm text-muted-foreground">
-                This modal slides from the bottom
-              </p>
-            </div>
-            <ModalFooter>
-              <Button size="sm">OK</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm" variant="destructive">
-              Skeleton Delete
-            </Button>
-          </Modal.Trigger>
-          <Modal.Content
-            title="Delete item?"
-            description="This action cannot be undone."
-            confirmLabel="Delete"
-            confirmVariant="destructive"
-            onConfirm={() => new Promise(res => setTimeout(res, 1000))}
-            onCancel={() => {}}
-          />
-        </Modal>
-
-        <Modal>
-          <Modal.Trigger asChild>
-            <Button size="sm" variant="primary">
-              Skeleton with body
-            </Button>
-          </Modal.Trigger>
-          <Modal.Content
-            title="Edit profile"
-            description="Update your account information."
-            size="md"
-            confirmLabel="Save"
-            onConfirm={() => new Promise(res => setTimeout(res, 800))}
-            onCancel={() => {}}
-          >
+  const openGlobalRenderProp = () =>
+    modal.openModal({
+      size: "md",
+      content: ({ onClose }) => (
+        <>
+          <ModalHeader>
+            <ModalTitle>Произвольное окно</ModalTitle>
+          </ModalHeader>
+          <ModalBody className="py-4">
             <p className="text-sm text-muted-foreground">
-              Form fields would go here as children.
+              Полный контроль через render prop —{" "}
+              <code className="rounded bg-muted px-1">
+                content: ({"{ onClose }"}) =&gt; …
+              </code>
             </p>
-          </Modal.Content>
-        </Modal>
-
-        <Button
-          size="sm"
-          variant="warning"
-          onClick={() =>
-            modal.openModal({
-              title: "Publish changes?",
-              description: "Your changes will be visible to all users.",
-              confirmLabel: "Publish",
-              confirmVariant: "warning",
-              onConfirm: () => new Promise(res => setTimeout(res, 800)),
-              onCancel: () => {},
-            })
-          }
-        >
-          Global skeleton
-        </Button>
-
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={() =>
-            modal.openModal({
-              size: "md",
-              content: ({ onClose }) => (
-                <>
-                  <ModalHeader>
-                    <ModalTitle>Custom Modal</ModalTitle>
-                  </ModalHeader>
-                  <ModalBody className="py-4">
-                    <p className="text-sm text-muted-foreground">
-                      Full control via render prop —{" "}
-                      <code className="rounded bg-muted px-1">
-                        content: ({"{ onClose }"}) =&gt; ...
-                      </code>
-                    </p>
-                  </ModalBody>
-                  <ModalFooter>
-                    <Button variant="outline" size="sm" onClick={onClose}>
-                      Close
-                    </Button>
-                  </ModalFooter>
-                </>
-              ),
-            })
-          }
-        >
-          Global render prop
-        </Button>
-
-        <Drawer>
-          <Drawer.Trigger asChild>
-            <Button variant="outline" size="sm">
-              Default Drawer
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Закрыть
             </Button>
-          </Drawer.Trigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Default Drawer</DrawerTitle>
-              <DrawerDescription>
-                Swipe down or click outside to close
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground">
-                Drawer content with smooth slide animation.
-              </p>
-            </div>
-            <DrawerFooter>
-              <Drawer.Close asChild>
-                <Button variant="outline" size="sm">
-                  Cancel
-                </Button>
-              </Drawer.Close>
-              <Button size="sm">Submit</Button>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+          </ModalFooter>
+        </>
+      ),
+    });
 
-        <Drawer>
-          <Drawer.Trigger asChild>
-            <Button variant="outline" size="sm">
-              Scrollable Drawer
-            </Button>
-          </Drawer.Trigger>
-          <DrawerContent className="max-h-[80vh]">
-            <DrawerHeader>
-              <DrawerTitle>Long Content</DrawerTitle>
-              <DrawerDescription>Scrollable drawer content</DrawerDescription>
-            </DrawerHeader>
-            <div className="p-4 space-y-4 overflow-y-auto flex-1">
-              {Array.from({ length: 30 }).map((_, i) => (
-                <p key={i} className="text-sm text-muted-foreground">
-                  Content item {i + 1}. Lorem ipsum dolor sit amet.
+  return (
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Modal</CardTitle>
+          <CardDescription className="text-xs">
+            Составное окно, режим подтверждения и глобальный ModalProvider
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm">Обычное</Button>
+            </Modal.Trigger>
+            <ModalContent>
+              <ModalHeader>
+                <ModalTitle>Обычное окно</ModalTitle>
+                <ModalDescription>
+                  Закрывается по клику вне окна и по ESC
+                </ModalDescription>
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-sm text-muted-foreground">
+                  Кликните снаружи или нажмите ESC
                 </p>
-              ))}
-            </div>
-            <DrawerFooter>
-              <Drawer.Close asChild>
-                <Button variant="outline" size="sm">
-                  Close
-                </Button>
-              </Drawer.Close>
-              <Button size="sm">Submit</Button>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </CardContent>
+              </ModalBody>
+              <ModalFooter>
+                <Modal.Close asChild>
+                  <Button variant="outline" size="sm">
+                    Отмена
+                  </Button>
+                </Modal.Close>
+                <Modal.Close asChild>
+                  <Button size="sm">Готово</Button>
+                </Modal.Close>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
 
-      <CardHeader className="pb-0">
-        <CardTitle className="text-base">
-          useModalController — stacked
-        </CardTitle>
-        <CardDescription className="text-xs">
-          Все модалки открыты одновременно. Radix стакает оверлеи — для диалогов
-          с одинаковым оверлеем. closeAll закрывает всю цепочку.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <StackedModals />
-      </CardContent>
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm" variant="secondary">
+                Без закрытия снаружи
+              </Button>
+            </Modal.Trigger>
+            <ModalContent disableInteractOutside>
+              <ModalHeader>
+                <ModalTitle>Обязательное действие</ModalTitle>
+                <ModalDescription>
+                  Не закрывается кликом вне окна и по ESC
+                </ModalDescription>
+              </ModalHeader>
+              <ModalFooter>
+                <Modal.Close asChild>
+                  <Button size="sm">Закрыть</Button>
+                </Modal.Close>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
 
-      <CardHeader className="pb-0">
-        <CardTitle className="text-base">
-          useModalController — suspended
-        </CardTitle>
-        <CardDescription className="text-xs">
-          suspends скрывает родительскую модалку при открытии дочерней. Подходит
-          для drawer-ов или когда родитель должен быть виден за оверлеем.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <SuspendedModals />
-      </CardContent>
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm" variant="info">
+                С прокруткой
+              </Button>
+            </Modal.Trigger>
+            <ModalContent size="lg">
+              <ModalHeader>
+                <ModalTitle>Длинное содержимое</ModalTitle>
+                <ModalDescription>Тело окна прокручивается</ModalDescription>
+              </ModalHeader>
+              <ModalBody className="space-y-4">
+                {LONG_PARAGRAPHS.map(i => (
+                  <p key={i} className="text-sm text-muted-foreground">
+                    Абзац {i}. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing elit.
+                  </p>
+                ))}
+              </ModalBody>
+              <ModalFooter>
+                <Modal.Close asChild>
+                  <Button size="sm">Закрыть</Button>
+                </Modal.Close>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
 
-      <CardHeader className="pb-0">
-        <CardTitle className="text-base">
-          useModalController — controlled
-        </CardTitle>
-        <CardDescription className="text-xs">
-          Управляется внешним useState. Обе модалки открыты одновременно.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ControlledModals />
-      </CardContent>
-    </Card>
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm" variant="success">
+                Сверху
+              </Button>
+            </Modal.Trigger>
+            <ModalContent
+              position="top"
+              size="sm"
+              title="Окно сверху"
+              description="Выезжает от верхнего края"
+            />
+          </Modal>
+
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm" variant="warning">
+                Снизу
+              </Button>
+            </Modal.Trigger>
+            <ModalContent
+              position="bottom"
+              size="sm"
+              title="Окно снизу"
+              description="Выезжает от нижнего края"
+            />
+          </Modal>
+
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm" variant="destructive">
+                Подтверждение
+              </Button>
+            </Modal.Trigger>
+            <Modal.Content
+              title="Удалить элемент?"
+              description="Это действие нельзя отменить."
+              confirmLabel="Удалить"
+              confirmVariant="destructive"
+              onConfirm={() => wait(1000)}
+              onCancel={() => {}}
+            />
+          </Modal>
+
+          <Modal>
+            <Modal.Trigger asChild>
+              <Button size="sm" variant="primary">
+                Подтверждение с телом
+              </Button>
+            </Modal.Trigger>
+            <Modal.Content
+              title="Редактирование профиля"
+              description="Обновите данные аккаунта."
+              size="md"
+              confirmLabel="Сохранить"
+              onConfirm={() => wait(800)}
+              onCancel={() => {}}
+            >
+              <p className="text-sm text-muted-foreground">
+                Здесь могли бы быть поля формы.
+              </p>
+            </Modal.Content>
+          </Modal>
+
+          <Button size="sm" variant="warning" onClick={openGlobalSkeleton}>
+            Глобальное окно
+          </Button>
+
+          <Button size="sm" variant="secondary" onClick={openGlobalRenderProp}>
+            Глобальное с render prop
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">useConfirm</CardTitle>
+          <CardDescription className="text-xs">
+            Промис разрешается true после подтверждения и false при любом
+            закрытии, включая closeAll
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ConfirmDemo />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Drawer</CardTitle>
+          <CardDescription className="text-xs">
+            Панель на vaul: направление, ручка свайпа у вертикальных, тело с
+            прокруткой
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <Drawer>
+            <Drawer.Trigger asChild>
+              <Button variant="outline" size="sm">
+                Снизу
+              </Button>
+            </Drawer.Trigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Панель снизу</DrawerTitle>
+                <DrawerDescription>
+                  Потяните вниз или кликните снаружи, чтобы закрыть
+                </DrawerDescription>
+              </DrawerHeader>
+              <DrawerBody>
+                <p className="text-sm text-muted-foreground">
+                  Содержимое панели.
+                </p>
+              </DrawerBody>
+              <DrawerFooter>
+                <Drawer.Close asChild>
+                  <Button variant="outline" size="sm">
+                    Отмена
+                  </Button>
+                </Drawer.Close>
+                <Button size="sm">Отправить</Button>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+
+          <Drawer>
+            <Drawer.Trigger asChild>
+              <Button variant="outline" size="sm">
+                С прокруткой
+              </Button>
+            </Drawer.Trigger>
+            <DrawerContent className="max-h-[80vh]">
+              <DrawerHeader>
+                <DrawerTitle>Длинное содержимое</DrawerTitle>
+                <DrawerDescription>DrawerBody прокручивается</DrawerDescription>
+              </DrawerHeader>
+              <DrawerBody className="space-y-4">
+                {LONG_PARAGRAPHS.map(i => (
+                  <p key={i} className="text-sm text-muted-foreground">
+                    Элемент {i}. Lorem ipsum dolor sit amet.
+                  </p>
+                ))}
+              </DrawerBody>
+              <DrawerFooter>
+                <Drawer.Close asChild>
+                  <Button variant="outline" size="sm">
+                    Закрыть
+                  </Button>
+                </Drawer.Close>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+
+          <Drawer direction="top">
+            <Drawer.Trigger asChild>
+              <Button variant="outline" size="sm">
+                Сверху
+              </Button>
+            </Drawer.Trigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Панель сверху</DrawerTitle>
+                <DrawerDescription>Ручка снизу</DrawerDescription>
+              </DrawerHeader>
+              <DrawerBody>
+                <p className="text-sm text-muted-foreground">
+                  Уведомление или быстрые действия.
+                </p>
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
+
+          <Drawer direction="left">
+            <Drawer.Trigger asChild>
+              <Button variant="outline" size="sm">
+                Слева
+              </Button>
+            </Drawer.Trigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Навигация</DrawerTitle>
+                <DrawerDescription>Боковая панель без ручки</DrawerDescription>
+              </DrawerHeader>
+              <DrawerBody>
+                <p className="text-sm text-muted-foreground">Пункты меню…</p>
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
+
+          <Drawer direction="right">
+            <Drawer.Trigger asChild>
+              <Button variant="outline" size="sm">
+                Справа
+              </Button>
+            </Drawer.Trigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Детали</DrawerTitle>
+                <DrawerDescription>Боковая панель справа</DrawerDescription>
+              </DrawerHeader>
+              <DrawerBody>
+                <p className="text-sm text-muted-foreground">
+                  Карточка объекта…
+                </p>
+              </DrawerBody>
+              <DrawerFooter>
+                <Drawer.Close asChild>
+                  <Button variant="outline" size="sm">
+                    Закрыть
+                  </Button>
+                </Drawer.Close>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">useModalController — стек</CardTitle>
+          <CardDescription className="text-xs">
+            Все окна открыты одновременно, Radix стакает оверлеи. closeAll
+            закрывает всю цепочку.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StackedModals />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            useModalController — suspends
+          </CardTitle>
+          <CardDescription className="text-xs">
+            suspends скрывает родительское окно, пока открыто дочернее.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SuspendedModals />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            useModalController — управляемый
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Состояние во внешнем useState, оба окна открыты одновременно.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ControlledModals />
+        </CardContent>
+      </Card>
+    </div>
   );
 };

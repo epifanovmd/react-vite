@@ -1,3 +1,4 @@
+import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
 import type {
@@ -6,77 +7,57 @@ import type {
   SelectOption,
   SelectValue,
 } from "../types";
-import { filterByLabel } from "./filter-by-label";
+import { useClientSearch } from "./use-client-search";
+import { useOptionsRequest } from "./use-options-request";
 
 export interface UseEagerOptionsConfig<TData, V extends SelectValue> {
   fetch: (signal: AbortSignal) => Promise<TData[]>;
   getOption: (item: TData) => SelectOption<V>;
   search?: boolean;
+  /** Смена ключа перезагружает список. */
   fetchKey?: string | number;
   filterOption?: boolean | FilterOptionPredicate<V>;
+  /** `false` — не загружать (и не показывать loading). */
+  enabled?: boolean;
 }
 
+export interface UseEagerOptionsResult<
+  V extends SelectValue,
+> extends SelectDataProps<V> {
+  refetch: () => void;
+}
+
+/** Загружает весь список один раз (и при смене `fetchKey`). */
 export const useEagerOptions = <TData, V extends SelectValue>({
   fetch,
   getOption,
   search,
   fetchKey,
   filterOption,
-}: UseEagerOptionsConfig<TData, V>): SelectDataProps<V> => {
-  const [data, setData] = React.useState<TData[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [query, setQuery] = React.useState("");
+  enabled = true,
+}: UseEagerOptionsConfig<TData, V>): UseEagerOptionsResult<V> => {
+  const request = useOptionsRequest<TData, V>(getOption, enabled);
+  const fetchRef = useLatestRef(fetch);
+  const { run, cancel } = request;
 
-  const fetchRef = React.useRef(fetch);
-  const getOptionRef = React.useRef(getOption);
-
-  fetchRef.current = fetch;
-  getOptionRef.current = getOption;
+  const refetch = React.useCallback(() => {
+    void run(signal => fetchRef.current(signal));
+  }, [run, fetchRef]);
 
   React.useEffect(() => {
-    const ctrl = new AbortController();
+    if (!enabled) return;
 
-    setLoading(true);
-    setData([]);
+    refetch();
 
-    fetchRef
-      .current(ctrl.signal)
-      .then(d => {
-        if (!ctrl.signal.aborted) setData(d);
-      })
-      .catch(() => {
-        if (!ctrl.signal.aborted) setData([]);
-      })
-      .finally(() => {
-        if (!ctrl.signal.aborted) setLoading(false);
-      });
+    return cancel;
+  }, [enabled, fetchKey, refetch, cancel]);
 
-    return () => ctrl.abort();
-     
-  }, [fetchKey]);
-
-  const all = React.useMemo(
-    () => data.map(item => getOptionRef.current(item)),
-    [data],
-  );
-
-  const doFilter = search && filterOption !== false;
-
-  const predicate =
-    typeof filterOption === "function" ? filterOption : undefined;
-
-  const filtered = React.useMemo(
-    () => (doFilter ? filterByLabel(all, query, predicate) : all),
-    [all, query, doFilter, predicate],
-  );
-
-  if (!search) return { options: all, loading };
+  const client = useClientSearch(request.options, { search, filterOption });
 
   return {
-    options: filtered,
-    loading,
-    search: true,
-    searchValue: query,
-    onSearch: setQuery,
+    ...client,
+    loading: request.loading,
+    error: request.error,
+    refetch,
   };
 };

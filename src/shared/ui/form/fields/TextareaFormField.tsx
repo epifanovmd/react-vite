@@ -1,75 +1,49 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { Textarea, type TextareaProps } from "../../textarea";
 import { FormField } from "../primitives/FormField";
-import type { FormAdapterProps } from "../types";
-import { resolveFieldVariant } from "./form-field-utils";
+import type { FloatingFormAdapterProps, TextFieldValue } from "../types";
+import { composeHandlers } from "./compose-handlers";
+import { resolveFieldVariant } from "./resolve-field-variant";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 export type TextareaFormFieldProps<
   TFormData extends FieldValues,
-  TName extends FieldPathByValue<TFormData, string | undefined>,
-> = FormAdapterProps<TFormData, TName> &
-  Omit<
-    TextareaProps,
-    "defaultValue" | "disabled" | "id" | "name" | "required" | "value"
-  >;
+  TName extends FieldPathByValue<TFormData, TextFieldValue>,
+> = FloatingFormAdapterProps<TFormData, TName> &
+  Omit<TextareaProps, ManagedControlProps>;
 
-/** @example <TextareaFormField<TForm> name="comment" label="Comment" /> */
+/** @example <TextareaFormField<TForm> name="comment" label="Комментарий" /> */
 export const TextareaFormField = <
   TFormData extends FieldValues,
-  TName extends FieldPathByValue<TFormData, string | undefined> =
-    FieldPathByValue<TFormData, string | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  onChange,
-  onBlur,
-  variant,
-  ...textareaProps
-}: TextareaFormFieldProps<TFormData, TName>): React.ReactElement => {
+  TName extends FieldPathByValue<TFormData, TextFieldValue> = FieldPathByValue<
+    TFormData,
+    TextFieldValue
+  >,
+>(
+  props: TextareaFormFieldProps<TFormData, TName>,
+): ReactElement => {
+  const {
+    formFieldProps,
+    controlProps: { onChange, onBlur, variant, ...textareaProps },
+  } = splitFormAdapterProps(props);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
+      {...formFieldProps}
       render={({ field, fieldState, controlProps }) => (
         <Textarea
           {...textareaProps}
           {...controlProps}
           ref={field.ref}
-          disabled={field.disabled}
-          required={required}
-          value={String(field.value ?? "")}
+          value={field.value ?? ""}
           variant={resolveFieldVariant(variant, fieldState.invalid)}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onChange={event => {
-            field.onChange(event.target.value);
-            onChange?.(event);
-          }}
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onChange={composeHandlers(field.onChange, onChange)}
         />
       )}
     />

@@ -7,64 +7,76 @@ import {
   CardTitle,
   Empty,
 } from "@shared/ui";
-import { FC } from "react";
+import { Sparkles } from "lucide-react";
 
-export const EmptySection: FC = () => (
+export const EmptySection = () => (
   <div className="flex flex-col gap-4">
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Empty State</CardTitle>
+        <CardTitle className="text-base">Empty</CardTitle>
         <CardDescription className="text-xs">
-          Состояния пустых данных
+          Пустое состояние с иконкой, описанием и действием
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Empty
           size="sm"
           icon="inbox"
-          title="No messages"
-          description="Start a conversation to see messages here"
-          action={<Button size="sm">New Message</Button>}
+          title="Сообщений нет"
+          description="Начните диалог, и сообщения появятся здесь"
+          action={<Button size="sm">Новое сообщение</Button>}
         />
       </CardContent>
     </Card>
 
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Empty Variants</CardTitle>
+        <CardTitle className="text-base">Варианты</CardTitle>
         <CardDescription className="text-xs">
-          Разные варианты пустых состояний
+          Именованные иконки и произвольный элемент
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border rounded-lg">
+      <CardContent>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="rounded-lg border">
             <Empty
               size="sm"
               icon="search"
-              title="No results"
-              description="Try adjusting your search"
+              title="Ничего не найдено"
+              description="Попробуйте изменить запрос"
             />
           </div>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <Empty
               size="sm"
               icon="package"
-              title="No orders"
-              description="Your order history is empty"
+              title="Заказов нет"
+              description="История заказов пуста"
               action={
                 <Button size="sm" variant="primary">
-                  Shop Now
+                  В каталог
                 </Button>
               }
             />
           </div>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <Empty
               size="sm"
-              icon="database"
-              title="No data"
-              description="Database is empty"
+              icon="error"
+              title="Не удалось загрузить"
+              description="Проверьте соединение"
+            />
+          </div>
+          <div className="rounded-lg border">
+            <Empty
+              size="sm"
+              icon={<Sparkles aria-hidden className="h-8 w-8 text-brand" />}
+              title="Свой значок"
+              description={
+                <>
+                  Любой <code className="rounded bg-muted px-1">ReactNode</code>
+                </>
+              }
             />
           </div>
         </div>

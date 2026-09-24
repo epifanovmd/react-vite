@@ -6,6 +6,7 @@ export * from "./flatten";
 export * from "./format-bytes";
 export * from "./format-duration";
 export * from "./formatter";
+export * from "./join-ids";
 export * from "./lambda-value";
 export * from "./noop";
 export * from "./pluralize";

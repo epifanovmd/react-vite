@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import * as React from "react";
 import {
   type FieldValues,
@@ -20,36 +21,52 @@ export interface FormProps<
   onInvalid?: SubmitErrorHandler<TFormData>;
 }
 
+const FormInner = <
+  TFormData extends FieldValues,
+  TContext = unknown,
+  TOutput extends FieldValues = TFormData,
+>(
+  {
+    form,
+    onSubmit,
+    onInvalid,
+    noValidate = true,
+    children,
+    ...props
+  }: FormProps<TFormData, TContext, TOutput>,
+  ref: React.ForwardedRef<HTMLFormElement>,
+) => (
+  <FormProvider {...form}>
+    <form
+      ref={ref}
+      noValidate={noValidate}
+      onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+      {...props}
+    >
+      {children}
+    </form>
+  </FormProvider>
+);
+
+const FormComponent = React.forwardRef(FormInner);
+
+FormComponent.displayName = "Form";
+
 /**
- * Native form combined with React Hook Form context.
+ * Нативная форма с контекстом React Hook Form.
  *
  * @example
  * <Form form={form} onSubmit={save}>
  *   <InputFormField name="email" label="Email" />
- *   <FormSubmit>Save</FormSubmit>
+ *   <FormSubmit>Сохранить</FormSubmit>
  * </Form>
  */
-export const Form = <
+export const Form = FormComponent as <
   TFormData extends FieldValues,
   TContext = unknown,
   TOutput extends FieldValues = TFormData,
->({
-  form,
-  onSubmit,
-  onInvalid,
-  noValidate = true,
-  children,
-  ...props
-}: FormProps<TFormData, TContext, TOutput>): React.ReactElement => {
-  return (
-    <FormProvider {...form}>
-      <form
-        noValidate={noValidate}
-        onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-        {...props}
-      >
-        {children}
-      </form>
-    </FormProvider>
-  );
-};
+>(
+  props: FormProps<TFormData, TContext, TOutput> & {
+    ref?: React.Ref<HTMLFormElement>;
+  },
+) => ReactElement;

@@ -85,6 +85,7 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-border: var(--border);
+  --color-overlay: var(--overlay);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);
@@ -260,5 +261,16 @@
   input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+  }
+}
+
+/** Бегущая полоса неопределённого прогресса (`Progress indeterminate`). */
+@keyframes progress-indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(300%);
   }
 }

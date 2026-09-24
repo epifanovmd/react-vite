@@ -1,16 +1,14 @@
 import { cva } from "class-variance-authority";
 
-import { CONTROL_HEIGHT } from "../foundation/control-size";
-import { INTENT_SOLID } from "../foundation/intent";
+import { CONTROL_HEIGHT, INTENT_SOLID } from "../foundation";
 
 const ELEVATED = "shadow-sm hover:shadow-md";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
+  "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
   {
     variants: {
       variant: {
-        default: `${INTENT_SOLID.primary} hover:bg-primary/90 ${ELEVATED}`,
         primary: `${INTENT_SOLID.primary} hover:bg-primary/90 ${ELEVATED}`,
         secondary: `${INTENT_SOLID.secondary} hover:bg-secondary/80 hover:shadow-sm`,
         destructive: `${INTENT_SOLID.destructive} hover:bg-destructive/90 ${ELEVATED}`,
@@ -24,12 +22,13 @@ export const buttonVariants = cva(
       },
       size: {
         sm: `${CONTROL_HEIGHT.sm} px-3 text-sm`,
-        md: `${CONTROL_HEIGHT.md} px-4`,
-        lg: `${CONTROL_HEIGHT.lg} px-6 text-lg`,
+        md: `${CONTROL_HEIGHT.md} px-4 text-sm`,
+        lg: `${CONTROL_HEIGHT.lg} px-6 text-base`,
       },
     },
+    compoundVariants: [{ variant: "link", className: "h-auto px-0" }],
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "md",
     },
   },

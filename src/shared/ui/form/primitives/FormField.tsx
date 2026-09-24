@@ -1,3 +1,5 @@
+import { joinIds } from "@shared/lib/utils/join-ids";
+import type { ReactElement, ReactNode } from "react";
 import * as React from "react";
 import {
   type FieldPath,
@@ -5,18 +7,21 @@ import {
   useController,
 } from "react-hook-form";
 
-import type { FormAdapterProps, FormFieldRenderProps } from "../types";
+import type { FloatingFormAdapterProps, FormFieldRenderProps } from "../types";
 import { Field } from "./Field";
 
 export interface FormFieldProps<
   TFormData extends FieldValues,
   TName extends FieldPath<TFormData> = FieldPath<TFormData>,
-> extends FormAdapterProps<TFormData, TName> {
-  render: (props: FormFieldRenderProps<TFormData, TName>) => React.ReactNode;
+> extends FloatingFormAdapterProps<TFormData, TName> {
+  render: (props: FormFieldRenderProps<TFormData, TName>) => ReactNode;
 }
 
 /**
- * Headless RHF field with shared label, error and accessibility wiring.
+ * Headless-поле RHF с общей подписью, ошибкой и ARIA-связками.
+ *
+ * `disabled` блокирует только контрол (через `controlProps.disabled`) и не
+ * передаётся в `useController`: RHF иначе исключает значение из данных submit.
  *
  * @example
  * <FormField name="email" label="Email" render={({ field, controlProps }) => (
@@ -41,7 +46,7 @@ export const FormField = <
   required,
   fieldClassName,
   render,
-}: FormFieldProps<TFormData, TName>): React.ReactElement => {
+}: FormFieldProps<TFormData, TName>): ReactElement => {
   const generatedId = React.useId();
   const controlId = id ?? `${generatedId}-control`;
   const labelId = label !== undefined ? `${generatedId}-label` : undefined;
@@ -53,10 +58,9 @@ export const FormField = <
     rules,
     shouldUnregister,
     defaultValue,
-    disabled,
   });
   const errorId = fieldState.error ? `${generatedId}-error` : undefined;
-  const describedBy = [descriptionId, errorId].filter(Boolean).join(" ");
+  const isDisabled = disabled || field.disabled || undefined;
 
   return (
     <Field
@@ -70,7 +74,7 @@ export const FormField = <
       required={required}
       htmlFor={controlId}
       labelId={labelId}
-      fieldClassName={fieldClassName}
+      className={fieldClassName}
     >
       {render({
         field,
@@ -79,7 +83,8 @@ export const FormField = <
         controlProps: {
           id: controlId,
           name: field.name,
-          "aria-describedby": describedBy || undefined,
+          disabled: isDisabled,
+          "aria-describedby": joinIds(descriptionId, errorId),
           "aria-invalid": fieldState.invalid || undefined,
           "aria-labelledby": labelId,
           "aria-required": required || undefined,

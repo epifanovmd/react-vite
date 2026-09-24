@@ -1,9 +1,11 @@
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import { joinIds } from "@shared/lib/utils/join-ids";
+import type { VariantProps } from "class-variance-authority";
 import { Check, Minus } from "lucide-react";
 import * as React from "react";
 
+import { ChoiceLabel } from "../foundation";
 import { checkboxVariants } from "./checkbox-variants";
 
 export interface CheckboxProps
@@ -12,8 +14,19 @@ export interface CheckboxProps
     VariantProps<typeof checkboxVariants> {
   indeterminate?: boolean;
   label?: React.ReactNode;
-  description?: string;
+  description?: React.ReactNode;
 }
+
+type CheckboxSize = NonNullable<CheckboxProps["size"]>;
+
+const CHECKBOX_ICON_SIZE: Record<CheckboxSize, string> = {
+  sm: "h-3 w-3",
+  md: "h-4 w-4",
+  lg: "h-5 w-5",
+};
+
+const INDICATOR_CLASS =
+  "flex items-center justify-center text-current [&_svg]:stroke-[3]";
 
 const Checkbox = React.forwardRef<
   React.ComponentRef<typeof CheckboxPrimitive.Root>,
@@ -28,78 +41,54 @@ const Checkbox = React.forwardRef<
       label,
       description,
       id,
+      checked,
+      disabled,
+      "aria-describedby": ariaDescribedBy,
       ...props
     },
     ref,
   ) => {
     const generatedId = React.useId();
-    const checkboxId = id ?? (label ? generatedId : undefined);
+    const hasLabel = label !== undefined || description !== undefined;
+    const checkboxId = id ?? generatedId;
+    const descriptionId =
+      description !== undefined ? `${checkboxId}-description` : undefined;
+    const Icon = indeterminate ? Minus : Check;
 
-    const checkboxEl = (
+    const control = (
       <CheckboxPrimitive.Root
         ref={ref}
         id={checkboxId}
-        className={cn(checkboxVariants({ size, variant, className }))}
+        disabled={disabled}
+        aria-describedby={joinIds(ariaDescribedBy, descriptionId)}
+        className={cn(checkboxVariants({ size, variant }), className)}
         {...props}
-        checked={indeterminate ? "indeterminate" : props.checked}
+        checked={indeterminate ? "indeterminate" : checked}
       >
-        <CheckboxPrimitive.Indicator
-          className={cn(
-            "flex items-center justify-center text-current [&_svg]:stroke-[3]",
-          )}
-        >
-          {indeterminate ? (
-            <Minus
-              className={cn(
-                size === "sm"
-                  ? "h-3 w-3"
-                  : size === "lg"
-                    ? "h-5 w-5"
-                    : "h-4 w-4",
-              )}
-            />
-          ) : (
-            <Check
-              className={cn(
-                size === "sm"
-                  ? "h-3 w-3"
-                  : size === "lg"
-                    ? "h-5 w-5"
-                    : "h-4 w-4",
-              )}
-            />
-          )}
+        <CheckboxPrimitive.Indicator className={INDICATOR_CLASS}>
+          <Icon className={CHECKBOX_ICON_SIZE[size ?? "md"]} />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
     );
 
-    if (label || description) {
-      return (
-        <div className="flex items-start gap-2.5 cursor-pointer">
-          <div className="mt-0.5">{checkboxEl}</div>
-          <div className="flex flex-col">
-            {label && (
-              <label
-                htmlFor={checkboxId}
-                className="text-sm font-medium text-foreground leading-snug cursor-pointer select-none"
-              >
-                {label}
-              </label>
-            )}
-            {description && (
-              <span className="text-xs text-muted-foreground mt-0.5">
-                {description}
-              </span>
-            )}
-          </div>
-        </div>
-      );
+    if (!hasLabel) {
+      return control;
     }
 
-    return checkboxEl;
+    return (
+      <ChoiceLabel
+        htmlFor={checkboxId}
+        label={label}
+        description={description}
+        descriptionId={descriptionId}
+        disabled={disabled}
+      >
+        {control}
+      </ChoiceLabel>
+    );
   },
 );
 
-Checkbox.displayName = CheckboxPrimitive.Root.displayName;
+Checkbox.displayName = "Checkbox";
 
 export { Checkbox };

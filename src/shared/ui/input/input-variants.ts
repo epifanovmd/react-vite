@@ -1,9 +1,6 @@
 import { cn } from "@shared/lib/utils/cn";
 
-import {
-  type FieldVariantProps,
-  fieldVariants,
-} from "../foundation/field-variants";
+import { type FieldVariantProps, fieldVariants } from "../foundation";
 
 export const inputVariants = ({ size, variant }: InputVariantProps = {}) =>
   cn(

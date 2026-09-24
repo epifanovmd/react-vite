@@ -1,8 +1,10 @@
+import { useControllableState } from "@shared/lib/hooks";
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
 import {
   RadioGroupContext,
+  type RadioGroupContextValue,
   type RadioSize,
   type RadioVariant,
 } from "./radio-group-context";
@@ -13,69 +15,76 @@ export interface RadioGroupProps extends Omit<
 > {
   value?: string;
   defaultValue?: string;
-  onChange?: (value: string) => void;
+  onValueChange?: (value: string) => void;
   name?: string;
   size?: RadioSize;
   variant?: RadioVariant;
   disabled?: boolean;
   orientation?: "vertical" | "horizontal";
-  className?: string;
 }
 
-export const RadioGroup: React.FC<RadioGroupProps> = ({
-  value,
-  defaultValue,
-  onChange,
-  name,
-  size,
-  variant,
-  disabled,
-  orientation = "vertical",
-  className,
-  children,
-  ...props
-}) => {
-  const generatedName = React.useId();
-  const isControlled = value !== undefined;
-  const [internal, setInternal] = React.useState(defaultValue);
-  const current = isControlled ? value : internal;
+const ORIENTATION_CLASS: Record<
+  NonNullable<RadioGroupProps["orientation"]>,
+  string
+> = {
+  vertical: "flex-col gap-2.5",
+  horizontal: "flex-row flex-wrap gap-4",
+};
 
-  const handleChange = React.useCallback(
-    (v: string) => {
-      if (!isControlled) setInternal(v);
-      onChange?.(v);
-    },
-    [isControlled, onChange],
-  );
-
-  const ctx = React.useMemo(
-    () => ({
-      name: name ?? generatedName,
-      value: current,
-      onChange: handleChange,
+const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
+  (
+    {
+      value,
+      defaultValue,
+      onValueChange,
+      name,
       size,
       variant,
       disabled,
-    }),
-    [name, generatedName, current, handleChange, size, variant, disabled],
-  );
+      orientation = "vertical",
+      className,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const generatedName = React.useId();
+    const [current, setCurrent] = useControllableState<string | undefined>({
+      value,
+      defaultValue,
+      onChange: next => {
+        if (next !== undefined) onValueChange?.(next);
+      },
+    });
 
-  return (
-    <RadioGroupContext.Provider value={ctx}>
-      <div
-        role="radiogroup"
-        aria-orientation={orientation}
-        className={cn(
-          "flex",
-          orientation === "vertical"
-            ? "flex-col gap-2.5"
-            : "flex-row flex-wrap gap-4",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    </RadioGroupContext.Provider>
-  );
-};
+    const ctx = React.useMemo<RadioGroupContextValue>(
+      () => ({
+        name: name ?? generatedName,
+        value: current,
+        onChange: setCurrent,
+        size,
+        variant,
+        disabled,
+      }),
+      [name, generatedName, current, setCurrent, size, variant, disabled],
+    );
+
+    return (
+      <RadioGroupContext.Provider value={ctx}>
+        <div
+          ref={ref}
+          role="radiogroup"
+          aria-orientation={orientation}
+          className={cn("flex", ORIENTATION_CLASS[orientation], className)}
+          {...props}
+        >
+          {children}
+        </div>
+      </RadioGroupContext.Provider>
+    );
+  },
+);
+
+RadioGroup.displayName = "RadioGroup";
+
+export { RadioGroup };

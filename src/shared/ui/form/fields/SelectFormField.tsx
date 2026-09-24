@@ -1,18 +1,18 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { Select, type SelectProps, type SelectValue } from "../../select";
 import { FormField } from "../primitives/FormField";
 import type { FormAdapterProps } from "../types";
-import { resolveFieldVariant } from "./form-field-utils";
+import { composeHandlers } from "./compose-handlers";
+import { resolveFieldVariant } from "./resolve-field-variant";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 type ManagedSelectProps =
-  | "clearable"
-  | "disabled"
-  | "id"
-  | "labelInValue"
-  | "multi"
-  | "onChange"
-  | "value";
+  ManagedControlProps | "clearable" | "labelInValue" | "multi" | "onChange";
 
 export type SelectFormFieldProps<
   TFormData extends FieldValues,
@@ -20,80 +20,63 @@ export type SelectFormFieldProps<
   TName extends FieldPathByValue<TFormData, TValue | null | undefined>,
 > = FormAdapterProps<TFormData, TName> &
   Omit<SelectProps<TValue>, ManagedSelectProps> & {
-    clearable?: true;
+    /** Кнопка очистки (по умолчанию включена); `false` для обязательных полей. */
+    clearable?: boolean;
     onValueChange?: (value: TValue | null) => void;
   };
 
+/** Подбирает ветку union-пропсов Select: `null` допустим только с кнопкой очистки. */
+const getSingleValueProps = <TValue extends SelectValue>(
+  clearable: boolean,
+  value: TValue | null | undefined,
+) =>
+  clearable
+    ? { clearable: true as const, value: value ?? null }
+    : { clearable: false as const, value: value ?? undefined };
+
 /**
- * Type-safe single Select adapter. Use MultiSelectFormField for array values.
+ * Типобезопасный одиночный Select. Для массивов — MultiSelectFormField.
  *
  * @example
- * <SelectFormField<TForm> name="country" label="Country" options={options} />
+ * <SelectFormField<TForm> name="country" label="Страна" options={options} />
  */
 export const SelectFormField = <
   TFormData extends FieldValues,
   TValue extends SelectValue = string,
   TName extends FieldPathByValue<TFormData, TValue | null | undefined> =
     FieldPathByValue<TFormData, TValue | null | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  clearable = true,
-  onValueChange,
-  onBlur,
-  onOpenChange,
-  variant,
-  ...selectProps
-}: SelectFormFieldProps<TFormData, TValue, TName>): React.ReactElement => {
+>(
+  props: SelectFormFieldProps<TFormData, TValue, TName>,
+): ReactElement => {
+  const {
+    formFieldProps,
+    controlProps: {
+      clearable = true,
+      onValueChange,
+      onBlur,
+      onOpenChange,
+      variant,
+      ...selectProps
+    },
+  } = splitFormAdapterProps(props);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
+      {...formFieldProps}
       render={({ field, fieldState, controlProps }) => (
         <Select<TValue>
           {...selectProps}
           {...controlProps}
+          {...getSingleValueProps<TValue>(clearable, field.value)}
           ref={field.ref}
           multi={false}
           labelInValue={false}
-          clearable={clearable}
-          disabled={field.disabled}
-          value={(field.value ?? null) as TValue | null}
           variant={resolveFieldVariant(variant, fieldState.invalid)}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onOpenChange={open => {
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onOpenChange={composeHandlers((open: boolean) => {
             if (!open) field.onBlur();
-            onOpenChange?.(open);
-          }}
-          onChange={(value: TValue | null) => {
-            field.onChange(value);
-            onValueChange?.(value);
-          }}
+          }, onOpenChange)}
+          onChange={composeHandlers(field.onChange, onValueChange)}
         />
       )}
     />

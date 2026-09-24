@@ -11,16 +11,22 @@ export const SelectListGroup = ({
   label,
   className,
   children,
-}: SelectListGroupProps) => (
-  <div role="group" className={cn("py-1", className)}>
-    <div
-      className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
-      role="presentation"
-    >
-      {label}
-    </div>
-    {children}
-  </div>
-);
+}: SelectListGroupProps) => {
+  const labelId = React.useId();
 
-SelectListGroup.displayName = "SelectListGroup";
+  return (
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      className={cn("py-1", className)}
+    >
+      <div
+        id={labelId}
+        className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+      >
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+};

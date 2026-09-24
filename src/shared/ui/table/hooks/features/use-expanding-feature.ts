@@ -1,18 +1,13 @@
+import { useControllableState } from "@shared/lib/hooks";
 import {
   type ExpandedState,
   getExpandedRowModel,
-  type OnChangeFn,
   type Row,
 } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
-
-export interface ExpandingFeatureMeta<TData> {
-  renderSubComponent?: (props: { row: Row<TData> }) => ReactNode;
-}
+import type { TableFeatureOf } from "./types";
 
 export interface ExpandingFeatureOptions<TData> {
   enabled?: boolean;
@@ -24,9 +19,14 @@ export interface ExpandingFeatureOptions<TData> {
   renderSubComponent?: (props: { row: Row<TData> }) => ReactNode;
 }
 
-export const useExpandingFeature = <TData>(
+const DEFAULT_EXPANDED: ExpandedState = {};
+
+const hasSubRows = <TData>(row: Row<TData>) => row.subRows.length > 0;
+const always = () => true;
+
+export const useExpandingFeature = <TData = unknown>(
   options: ExpandingFeatureOptions<TData> = {},
-): TableFeatureResult<TData, ExpandingFeatureMeta<TData>> => {
+): TableFeatureOf<TData, "expanding"> => {
   const {
     enabled = true,
     expandedState,
@@ -39,14 +39,14 @@ export const useExpandingFeature = <TData>(
 
   const [state, setState] = useControllableState<ExpandedState>({
     value: expandedState,
-    defaultValue: defaultExpanded ?? {},
+    defaultValue: defaultExpanded ?? DEFAULT_EXPANDED,
     onChange: onExpandedChange,
   });
 
   const resolvedGetRowCanExpand = useMemo(() => {
     if (getRowCanExpand) return getRowCanExpand;
-    if (getSubRows) return (row: Row<TData>) => row.subRows.length > 0;
-    if (renderSubComponent) return () => true;
+    if (getSubRows) return hasSubRows<TData>;
+    if (renderSubComponent) return always;
 
     return undefined;
   }, [getRowCanExpand, getSubRows, renderSubComponent]);
@@ -57,7 +57,7 @@ export const useExpandingFeature = <TData>(
       state: { expanded: state },
       options: {
         onExpandedChange: enabled ? setState : undefined,
-        getExpandedRowModel: enabled ? getExpandedRowModel() : undefined,
+        getExpandedRowModel: enabled ? getExpandedRowModel<TData>() : undefined,
         getRowCanExpand: enabled ? resolvedGetRowCanExpand : undefined,
         getSubRows: enabled ? getSubRows : undefined,
       },

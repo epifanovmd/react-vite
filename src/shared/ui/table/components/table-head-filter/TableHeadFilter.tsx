@@ -1,9 +1,12 @@
+import { cn } from "@shared/lib/utils/cn";
 import type { Column } from "@tanstack/react-table";
 import { Filter } from "lucide-react";
-import { useState } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "../../../popover";
-import type { ColumnFilterConfig } from "./filter-registry";
+import { getColumnLabel, stopPropagation } from "../../utils";
+import { useTableContext } from "../table-context";
+import { tableIconButtonVariants } from "../table-variants";
+import type { ColumnFilterConfig, FilterControl } from "./filter-registry";
 import { FILTER_CONTROLS } from "./filter-registry";
 
 interface TableHeadFilterProps<TData> {
@@ -20,26 +23,33 @@ const isFilterActive = (value: unknown): boolean => {
 export const TableHeadFilter = <TData,>({
   column,
 }: TableHeadFilterProps<TData>) => {
-  const [open, setOpen] = useState(false);
+  const { labels } = useTableContext();
   const config = column.columnDef.meta?.filter as
     ColumnFilterConfig | undefined;
 
   if (!config) return null;
 
   const active = isFilterActive(column.getFilterValue());
-  const Control = FILTER_CONTROLS[config.type];
+  // Реестр типизирован по `type`, но TS не сужает пару «компонент + config» из union.
+  const Control = FILTER_CONTROLS[
+    config.type
+  ] as FilterControl<ColumnFilterConfig>;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover>
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="Фильтр колонки"
-          className="relative inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          onClick={e => e.stopPropagation()}
+          aria-label={labels.columnFilter(getColumnLabel(column))}
+          aria-pressed={active}
+          className={cn(tableIconButtonVariants({ active }), "relative")}
+          onClick={stopPropagation}
         >
           <Filter
-            className={`h-3.5 w-3.5 transition-opacity ${!active ? "opacity-40" : ""}`}
+            className={cn(
+              "h-3.5 w-3.5 transition-opacity",
+              !active && "opacity-40",
+            )}
           />
           {active && (
             <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-primary" />

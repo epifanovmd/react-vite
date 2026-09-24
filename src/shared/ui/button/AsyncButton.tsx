@@ -1,40 +1,32 @@
-import React, { forwardRef, useCallback, useState } from "react";
+import * as React from "react";
 
-import { Button, ButtonProps } from "./Button";
+import { type AsyncClickHandler, useAsyncClick } from "../foundation";
+import { Button, type ButtonProps } from "./Button";
 
 export interface AsyncButtonProps extends Omit<ButtonProps, "onClick"> {
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void> | void;
+  /** Пока промис не завершится, кнопка в состоянии `loading`. */
+  onClick?: AsyncClickHandler;
 }
 
-export const AsyncButton = forwardRef<HTMLButtonElement, AsyncButtonProps>(
-  ({ onClick, children, ...props }, ref) => {
-    const [loading, setLoading] = useState(false);
-    const disabled = props.disabled || loading || props.loading;
-
-    const handleClick = useCallback(
-      async (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (onClick && !disabled) {
-          setLoading(true);
-          try {
-            await onClick(e);
-          } finally {
-            setLoading(false);
-          }
-        }
-      },
-      [disabled, onClick],
+const AsyncButton = React.forwardRef<HTMLButtonElement, AsyncButtonProps>(
+  ({ onClick, disabled = false, loading = false, ...props }, ref) => {
+    const { loading: pending, handleClick } = useAsyncClick(
+      onClick,
+      disabled || loading,
     );
 
     return (
       <Button
         ref={ref}
         onClick={handleClick}
-        {...props}
         disabled={disabled}
-        loading={loading || props.loading}
-      >
-        {children}
-      </Button>
+        loading={loading || pending}
+        {...props}
+      />
     );
   },
 );
+
+AsyncButton.displayName = "AsyncButton";
+
+export { AsyncButton };

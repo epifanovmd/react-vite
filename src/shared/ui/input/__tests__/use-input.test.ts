@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import * as React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { vi } from "vitest";
 
 import { useInput } from "../use-input";
 
@@ -167,16 +167,14 @@ describe("useInput", () => {
     expect(result.current.inputType).toBe("email");
   });
 
-  it("prevents pointer down on the action button", () => {
-    const { result } = renderHook(() => useInput(createOptions()));
-    const preventDefault = vi.fn();
+  it("reports whether the value is controlled", () => {
+    const { result, rerender } = renderHook(props => useInput(props), {
+      initialProps: createOptions(),
+    });
 
-    act(() =>
-      result.current.handleActionPointerDown({
-        preventDefault,
-      } as unknown as React.PointerEvent<HTMLButtonElement>),
-    );
+    expect(result.current.isControlled).toBe(false);
 
-    expect(preventDefault).toHaveBeenCalledOnce();
+    rerender(createOptions({ value: "" }));
+    expect(result.current.isControlled).toBe(true);
   });
 });

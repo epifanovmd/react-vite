@@ -1,32 +1,35 @@
 import * as React from "react";
 
 import { Button } from "../button";
+import { type PaginationSize } from "./pagination.types";
 
-interface PaginationButtonProps {
+export interface PaginationButtonProps {
   page: number;
   isActive: boolean;
-  size: "sm" | "md" | "lg";
+  size: PaginationSize;
+  disabled?: boolean;
   onClick: (page: number) => void;
 }
 
 export const PaginationButton = React.memo(
-  ({ page, isActive, size, onClick }: PaginationButtonProps) => (
-    <Button
-      variant={isActive ? "default" : "outline"}
-      size={size}
-      onClick={() => onClick(page)}
-      aria-label={`Go to page ${page}`}
-      aria-current={isActive ? "page" : undefined}
-      className="min-w-10"
-    >
-      {page}
-    </Button>
-  ),
-  (prev, next) =>
-    prev.page === next.page &&
-    prev.isActive === next.isActive &&
-    prev.size === next.size &&
-    prev.onClick === next.onClick,
+  ({ page, isActive, size, disabled, onClick }: PaginationButtonProps) => {
+    const handleClick = () => onClick(page);
+
+    return (
+      <Button
+        type="button"
+        variant={isActive ? "primary" : "outline"}
+        size={size}
+        disabled={disabled}
+        onClick={handleClick}
+        aria-label={`Перейти на страницу ${page}`}
+        aria-current={isActive ? "page" : undefined}
+        className="min-w-10"
+      >
+        {page}
+      </Button>
+    );
+  },
 );
 
 PaginationButton.displayName = "PaginationButton";

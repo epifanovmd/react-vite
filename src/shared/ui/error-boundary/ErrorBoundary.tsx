@@ -1,14 +1,29 @@
-import { Component, ErrorInfo, ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
+
+import { ErrorFallback } from "./ErrorFallback";
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode);
+  /** Без обработчика ошибка логируется в консоль. */
   onError?: (error: Error, info: ErrorInfo) => void;
+  /** Изменение любого ключа сбрасывает ошибку — например, путь при навигации. */
+  resetKeys?: unknown[];
 }
 
 interface ErrorBoundaryState {
   error: Error | null;
 }
+
+const haveResetKeysChanged = (
+  prev: unknown[] | undefined,
+  next: unknown[] | undefined,
+): boolean => {
+  if (prev === next) return false;
+  if (!prev || !next || prev.length !== next.length) return true;
+
+  return prev.some((value, index) => !Object.is(value, next[index]));
+};
 
 export class ErrorBoundary extends Component<
   ErrorBoundaryProps,
@@ -21,12 +36,28 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    const { onError } = this.props;
+
+    if (onError) {
+      onError(error, info);
+
+      return;
+    }
+
     console.error(
       "[ErrorBoundary] Uncaught error:",
       error,
       info.componentStack,
     );
-    this.props.onError?.(error, info);
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (
+      this.state.error &&
+      haveResetKeysChanged(prevProps.resetKeys, this.props.resetKeys)
+    ) {
+      this.reset();
+    }
   }
 
   reset = () => {
@@ -37,33 +68,12 @@ export class ErrorBoundary extends Component<
     const { error } = this.state;
     const { fallback, children } = this.props;
 
-    if (error) {
-      if (typeof fallback === "function") {
-        return fallback(error, this.reset);
-      }
+    if (!error) return children;
 
-      if (fallback) {
-        return fallback;
-      }
+    if (typeof fallback === "function") return fallback(error, this.reset);
 
-      return (
-        <div className="flex flex-col items-center justify-center p-8 gap-4 text-center">
-          <div className="text-destructive font-medium text-base">
-            Что-то пошло не так
-          </div>
-          <p className="text-sm text-muted-foreground max-w-md">
-            {error.message}
-          </p>
-          <button
-            className="text-sm underline text-muted-foreground hover:text-foreground transition-colors"
-            onClick={this.reset}
-          >
-            Попробовать снова
-          </button>
-        </div>
-      );
-    }
+    if (fallback) return fallback;
 
-    return children;
+    return <ErrorFallback error={error} onReset={this.reset} />;
   }
 }

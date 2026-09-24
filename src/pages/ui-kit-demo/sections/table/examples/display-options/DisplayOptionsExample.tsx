@@ -1,25 +1,30 @@
+import type { SegmentedOption, TableSize, TableVariant } from "@shared/ui";
 import { Segmented, Table } from "@shared/ui";
 import type { FC } from "react";
 
 import { ExampleCard } from "../../shared";
-import { useDisplayOptionsExample } from "./useDisplayOptionsExample";
+import {
+  type DisplayState,
+  useDisplayOptionsExample,
+} from "./useDisplayOptionsExample";
 
-const VARIANT_OPTIONS = [
-  { label: "Default", value: "default" },
-  { label: "Striped", value: "striped" },
-  { label: "Bordered", value: "bordered" },
+const VARIANT_OPTIONS: SegmentedOption<TableVariant>[] = [
+  { label: "Обычный", value: "default" },
+  { label: "Полосы", value: "striped" },
+  { label: "Рамки", value: "bordered" },
 ];
 
-const SIZE_OPTIONS = [
+const SIZE_OPTIONS: SegmentedOption<TableSize>[] = [
   { label: "S", value: "sm" },
   { label: "M", value: "md" },
   { label: "L", value: "lg" },
 ];
 
-const DISPLAY_OPTIONS = [
+const DISPLAY_OPTIONS: SegmentedOption<DisplayState>[] = [
   { label: "Данные", value: "data" },
-  { label: "Loading", value: "loading" },
-  { label: "Empty", value: "empty" },
+  { label: "Загрузка", value: "loading" },
+  { label: "Пусто", value: "empty" },
+  { label: "Ошибка", value: "error" },
 ];
 
 export const DisplayOptionsExample: FC = () => {
@@ -33,31 +38,32 @@ export const DisplayOptionsExample: FC = () => {
     display,
     setDisplay,
     loading,
+    error,
   } = useDisplayOptionsExample();
 
   return (
     <ExampleCard
       title="Варианты отображения"
-      description="variant, size, loading и empty state — управляются обычными пропами Table."
+      description="variant, size, loading, empty и error state — управляются обычными пропами Table."
     >
       <div className="flex flex-wrap items-center gap-2">
         <Segmented
           size="sm"
           options={VARIANT_OPTIONS}
           value={variant}
-          onChange={v => setVariant(v as typeof variant)}
+          onValueChange={setVariant}
         />
         <Segmented
           size="sm"
           options={SIZE_OPTIONS}
           value={size}
-          onChange={v => setSize(v as typeof size)}
+          onValueChange={setSize}
         />
         <Segmented
           size="sm"
           options={DISPLAY_OPTIONS}
           value={display}
-          onChange={v => setDisplay(v as typeof display)}
+          onValueChange={setDisplay}
         />
       </div>
       <Table
@@ -66,6 +72,7 @@ export const DisplayOptionsExample: FC = () => {
         variant={variant}
         size={size}
         loading={loading}
+        error={error}
       />
     </ExampleCard>
   );

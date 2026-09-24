@@ -1,7 +1,12 @@
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-export type RadioSize = "sm" | "md" | "lg";
-export type RadioVariant = "default" | "error" | "success";
+import type { radioVariants } from "./radio-variants";
+
+export type RadioSize = NonNullable<VariantProps<typeof radioVariants>["size"]>;
+export type RadioVariant = NonNullable<
+  VariantProps<typeof radioVariants>["variant"]
+>;
 
 export interface RadioGroupContextValue {
   name: string;

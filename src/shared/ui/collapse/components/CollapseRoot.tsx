@@ -1,19 +1,18 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { useCollapse, type UseCollapseOptions } from "../hooks/use-collapse";
 import {
   CollapseContext,
+  type CollapseContextValue,
   type CollapseSize,
   type CollapseVariant,
 } from "./collapse-context";
-import { collapseTriggerVariants } from "./collapse-variants";
 
 export interface CollapseProps
-  extends UseCollapseOptions, VariantProps<typeof collapseTriggerVariants> {
-  children: React.ReactNode;
-  className?: string;
+  extends UseCollapseOptions, React.HTMLAttributes<HTMLDivElement> {
+  variant?: CollapseVariant;
+  size?: CollapseSize;
 }
 
 export const CollapseRoot = React.forwardRef<HTMLDivElement, CollapseProps>(
@@ -27,30 +26,32 @@ export const CollapseRoot = React.forwardRef<HTMLDivElement, CollapseProps>(
       size = "md",
       children,
       className,
+      ...props
     },
     ref,
   ) => {
     const collapse = useCollapse({ open, defaultOpen, disabled, onOpenChange });
     const id = React.useId();
 
-    const ctx = React.useMemo(
+    const ctx = React.useMemo<CollapseContextValue>(
       () => ({
         ...collapse,
         triggerId: `collapse-trigger-${id}`,
         contentId: `collapse-content-${id}`,
-        variant: (variant ?? "ghost") as CollapseVariant,
-        size: (size ?? "md") as CollapseSize,
+        variant,
+        size,
       }),
       [collapse, id, variant, size],
     );
 
     return (
       <CollapseContext.Provider value={ctx}>
-        <div ref={ref} className={cn("w-full", className)}>
+        <div ref={ref} className={cn("w-full", className)} {...props}>
           {children}
         </div>
       </CollapseContext.Provider>
     );
   },
 );
+
 CollapseRoot.displayName = "Collapse";

@@ -6,7 +6,10 @@ export interface FormErrorProps extends React.HTMLAttributes<HTMLDivElement> {
   message?: React.ReactNode;
 }
 
-/** Displays an explicit message or the RHF `root` error. */
+const ROOT_CLASS =
+  "rounded-lg border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive";
+
+/** Показывает переданное сообщение или корневую ошибку RHF (`errors.root`). */
 export const FormError = React.forwardRef<HTMLDivElement, FormErrorProps>(
   ({ message, className, ...props }, ref) => {
     const { control } = useFormContext();
@@ -19,10 +22,7 @@ export const FormError = React.forwardRef<HTMLDivElement, FormErrorProps>(
       <div
         ref={ref}
         role="alert"
-        className={cn(
-          "rounded-lg border border-destructive bg-destructive/5 px-3 py-2 text-sm text-destructive",
-          className,
-        )}
+        className={cn(ROOT_CLASS, className)}
         {...props}
       >
         {content}

@@ -1,78 +1,70 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { Autocomplete, type AutocompleteProps } from "../../select";
 import { FormField } from "../primitives/FormField";
-import type { FormAdapterProps } from "../types";
-import { resolveFieldVariant } from "./form-field-utils";
+import type { FormAdapterProps, TextFieldValue } from "../types";
+import { composeHandlers } from "./compose-handlers";
+import { resolveFieldVariant } from "./resolve-field-variant";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 export type AutocompleteFormFieldProps<
   TFormData extends FieldValues,
-  TName extends FieldPathByValue<TFormData, string | undefined>,
+  TName extends FieldPathByValue<TFormData, TextFieldValue>,
 > = FormAdapterProps<TFormData, TName> &
-  Omit<AutocompleteProps, "disabled" | "id" | "onChange" | "value"> & {
+  Omit<AutocompleteProps, ManagedControlProps | "onChange"> & {
     onValueChange?: (value: string) => void;
   };
 
-/** @example <AutocompleteFormField<TForm> name="city" label="City" options={options} /> */
+/**
+ * Autocomplete, связанный с RHF. Контрол не принимает `name`, поэтому
+ * атрибут в DOM не попадает — значение живёт только в состоянии формы.
+ *
+ * @example
+ * <AutocompleteFormField<TForm> name="city" label="Город" options={options} />
+ */
 export const AutocompleteFormField = <
   TFormData extends FieldValues,
-  TName extends FieldPathByValue<TFormData, string | undefined> =
-    FieldPathByValue<TFormData, string | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  onValueChange,
-  onBlur,
-  onOpenChange,
-  variant,
-  ...autocompleteProps
-}: AutocompleteFormFieldProps<TFormData, TName>): React.ReactElement => {
+  TName extends FieldPathByValue<TFormData, TextFieldValue> = FieldPathByValue<
+    TFormData,
+    TextFieldValue
+  >,
+>(
+  props: AutocompleteFormFieldProps<TFormData, TName>,
+): ReactElement => {
+  const {
+    formFieldProps,
+    controlProps: {
+      onValueChange,
+      onBlur,
+      onOpenChange,
+      variant,
+      ...autocompleteProps
+    },
+  } = splitFormAdapterProps(props);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
-      render={({ field, fieldState, controlProps }) => (
+      {...formFieldProps}
+      render={({
+        field,
+        fieldState,
+        controlProps: { name, ...controlProps },
+      }) => (
         <Autocomplete
           {...autocompleteProps}
           {...controlProps}
           ref={field.ref}
-          disabled={field.disabled}
-          value={String(field.value ?? "")}
+          value={field.value ?? ""}
           variant={resolveFieldVariant(variant, fieldState.invalid)}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onOpenChange={open => {
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onOpenChange={composeHandlers((open: boolean) => {
             if (!open) field.onBlur();
-            onOpenChange?.(open);
-          }}
-          onChange={value => {
-            field.onChange(value);
-            onValueChange?.(value);
-          }}
+          }, onOpenChange)}
+          onChange={composeHandlers(field.onChange, onValueChange)}
         />
       )}
     />

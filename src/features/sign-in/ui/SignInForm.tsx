@@ -1,7 +1,11 @@
 import { IAuthStore } from "@entities/auth";
 import {
   Alert,
-  AuthFormCard,
+  Button,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormSubmit,
   InputFormField,
@@ -14,6 +18,9 @@ import { useSignInVM } from "../model/useSignInVM";
 import { TSignInForm } from "../model/validation";
 import { PasskeyLogin } from "./PasskeyLogin";
 import { TwoFactorPrompt } from "./TwoFactorPrompt";
+
+/** Текстовая ссылка формы в фирменном цвете. */
+const AUTH_LINK_CLASS = "text-brand";
 
 interface SignInFormProps {
   onSuccess: () => void;
@@ -30,12 +37,16 @@ export const SignInForm: FC<SignInFormProps> = observer(
     const passkeyError = passkey.error ?? (auth.error || null);
 
     return (
-      <AuthFormCard
-        title="Вход"
-        subtitle="Введите данные для входа в панель управления"
-      >
+      <Card className="p-6">
+        <CardHeader className="mb-6 p-0 md:p-0">
+          <CardTitle className="text-xl font-bold">Вход</CardTitle>
+          <CardDescription>
+            Введите данные для входа в панель управления
+          </CardDescription>
+        </CardHeader>
+
         {passkeyError && (
-          <Alert variant="error" className="mb-4">
+          <Alert variant="destructive" className="mb-4">
             {passkeyError}
           </Alert>
         )}
@@ -58,13 +69,14 @@ export const SignInForm: FC<SignInFormProps> = observer(
           />
 
           <div className="flex justify-end">
-            <button
-              type="button"
-              className="text-sm text-brand hover:underline"
+            <Button
+              variant="link"
+              size="sm"
+              className={AUTH_LINK_CLASS}
               onClick={onForgotPassword}
             >
               Забыли пароль?
-            </button>
+            </Button>
           </div>
 
           {auth.isTwoFactorRequired ? (
@@ -90,15 +102,16 @@ export const SignInForm: FC<SignInFormProps> = observer(
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Нет аккаунта?{" "}
-          <button
-            type="button"
-            className="text-brand hover:underline"
+          <Button
+            variant="link"
+            size="sm"
+            className={AUTH_LINK_CLASS}
             onClick={onSignUp}
           >
             Зарегистрироваться
-          </button>
+          </Button>
         </p>
-      </AuthFormCard>
+      </Card>
     );
   },
 );

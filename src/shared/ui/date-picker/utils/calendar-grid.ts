@@ -1,15 +1,25 @@
 import { getDay, getDaysInMonth, startOfMonth } from "date-fns";
 
-import { makeDate } from "./date-helpers";
+import type { WeekStartsOn } from "../types";
 
-export const getDaysInMonthCount = (month: number, year: number): number =>
-  getDaysInMonth(makeDate(year, month, 1));
+/**
+ * Ячейки сетки месяца по неделям: `null` — пустая ячейка до/после месяца.
+ * Длина кратна 7.
+ */
+export const buildCalendarCells = (
+  viewDate: Date,
+  weekStartsOn: WeekStartsOn,
+): (Date | null)[] => {
+  const monthStart = startOfMonth(viewDate);
+  const year = monthStart.getFullYear();
+  const month = monthStart.getMonth();
+  const daysInMonth = getDaysInMonth(monthStart);
+  const offset = (getDay(monthStart) - weekStartsOn + 7) % 7;
+  const totalCells = Math.ceil((offset + daysInMonth) / 7) * 7;
 
-export const getFirstDayOfMonthMondayBased = (
-  month: number,
-  year: number,
-): number => {
-  const dayOfWeek = getDay(startOfMonth(makeDate(year, month, 1)));
+  return Array.from({ length: totalCells }, (_, index) => {
+    const day = index - offset + 1;
 
-  return dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    return day >= 1 && day <= daysInMonth ? new Date(year, month, day) : null;
+  });
 };

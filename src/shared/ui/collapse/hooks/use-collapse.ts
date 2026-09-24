@@ -1,3 +1,4 @@
+import { useControllableState } from "@shared/lib/hooks";
 import * as React from "react";
 
 export interface UseCollapseOptions {
@@ -16,29 +17,37 @@ export interface UseCollapseResult {
   setOpen: (value: boolean) => void;
 }
 
+/** Состояние раскрытия (controlled/uncontrolled); результат мемоизирован. */
 export const useCollapse = ({
-  open: controlledOpen,
+  open: openProp,
   defaultOpen = false,
   disabled = false,
   onOpenChange,
 }: UseCollapseOptions = {}): UseCollapseResult => {
-  const isControlled = controlledOpen !== undefined;
-  const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
-
-  const isOpen = isControlled ? controlledOpen! : internalOpen;
+  const [isOpen, setOpenState] = useControllableState({
+    value: openProp,
+    defaultValue: defaultOpen,
+    onChange: onOpenChange,
+  });
 
   const setOpen = React.useCallback(
     (value: boolean) => {
       if (disabled) return;
-      if (!isControlled) setInternalOpen(value);
-      onOpenChange?.(value);
+      setOpenState(value);
     },
-    [disabled, isControlled, onOpenChange],
+    [disabled, setOpenState],
   );
 
-  const toggle = React.useCallback(() => setOpen(!isOpen), [isOpen, setOpen]);
+  const toggle = React.useCallback(() => {
+    if (disabled) return;
+    setOpenState(prev => !prev);
+  }, [disabled, setOpenState]);
+
   const open = React.useCallback(() => setOpen(true), [setOpen]);
   const close = React.useCallback(() => setOpen(false), [setOpen]);
 
-  return { isOpen, disabled, toggle, open, close, setOpen };
+  return React.useMemo(
+    () => ({ isOpen, disabled, toggle, open, close, setOpen }),
+    [isOpen, disabled, toggle, open, close, setOpen],
+  );
 };

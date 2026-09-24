@@ -1,5 +1,5 @@
 import { cn } from "@shared/lib/utils/cn";
-import * as React from "react";
+import type { Locale } from "date-fns";
 
 import {
   CalendarDayView,
@@ -7,74 +7,86 @@ import {
   CalendarMonthView,
   CalendarYearView,
 } from "./components";
-import type { DayState, ViewMode } from "./types";
+import type { UseCalendarNavigationResult } from "./hooks";
+import type { DayFlags, WeekStartsOn } from "./types";
 
 export interface CalendarLayoutProps {
-  headerText: string;
-  viewMode: ViewMode;
-  currentMonth: number;
-  currentYear: number;
+  nav: UseCalendarNavigationResult;
+  locale: Locale;
+  weekStartsOn: WeekStartsOn;
+  /** Выбранная дата: подсветка месяца/года и стартовый Tab-фокус в сетке. */
+  selected?: Date;
   className?: string;
-  onPrevious: () => void;
-  onNext: () => void;
-  onHeaderClick: () => void;
-  onMonthSelect: (month: number) => void;
-  onYearSelect: (year: number) => void;
-  onDaySelect: (day: number) => void;
-  getDayClassName: (day: number) => DayState | undefined;
-  isDayDisabled?: (day: number) => boolean;
+  getDayFlags: (date: Date) => DayFlags;
+  isDayDisabled: (date: Date) => boolean;
+  onDaySelect: (date: Date) => void;
   onDateHover?: (date: Date | undefined) => void;
 }
 
-export const CalendarLayout = React.memo(
-  ({
-    headerText,
-    viewMode,
-    currentMonth,
-    currentYear,
-    className,
-    onPrevious,
-    onNext,
-    onHeaderClick,
-    onMonthSelect,
-    onYearSelect,
-    onDaySelect,
-    getDayClassName,
-    isDayDisabled,
-    onDateHover,
-  }: CalendarLayoutProps) => (
+/** Общая раскладка календарей: заголовок + вид дней / месяцев / лет. */
+export const CalendarLayout = ({
+  nav,
+  locale,
+  weekStartsOn,
+  selected,
+  className,
+  getDayFlags,
+  isDayDisabled,
+  onDaySelect,
+  onDateHover,
+}: CalendarLayoutProps) => {
+  const selectedInViewYear =
+    selected && selected.getFullYear() === nav.currentYear
+      ? selected
+      : undefined;
+
+  const renderView = () => {
+    switch (nav.viewMode) {
+      case "day":
+        return (
+          <CalendarDayView
+            viewDate={nav.viewDate}
+            locale={locale}
+            weekStartsOn={weekStartsOn}
+            preferredDate={selected}
+            getDayFlags={getDayFlags}
+            isDayDisabled={isDayDisabled}
+            onDaySelect={onDaySelect}
+            onDateHover={onDateHover}
+            onViewDateChange={nav.showDate}
+          />
+        );
+      case "month":
+        return (
+          <CalendarMonthView
+            locale={locale}
+            selectedMonth={selectedInViewYear?.getMonth()}
+            onMonthSelect={nav.handleMonthSelect}
+          />
+        );
+      case "year":
+        return (
+          <CalendarYearView
+            currentYear={nav.currentYear}
+            selectedYear={selected?.getFullYear()}
+            onYearSelect={nav.handleYearSelect}
+          />
+        );
+    }
+  };
+
+  return (
     <div className={cn("w-[280px]", className)}>
       <CalendarHeader
-        headerText={headerText}
-        viewMode={viewMode}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        onHeaderClick={onHeaderClick}
+        headerText={nav.headerText}
+        viewMode={nav.viewMode}
+        canGoPrevious={nav.canGoPrevious}
+        canGoNext={nav.canGoNext}
+        onPrevious={nav.handlePrevious}
+        onNext={nav.handleNext}
+        onHeaderClick={nav.handleHeaderClick}
       />
-      {viewMode === "day" && (
-        <CalendarDayView
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          onDaySelect={onDaySelect}
-          getDayClassName={getDayClassName}
-          isDayDisabled={isDayDisabled}
-          onDateHover={onDateHover}
-        />
-      )}
-      {viewMode === "month" && (
-        <CalendarMonthView
-          currentMonth={currentMonth}
-          onMonthSelect={onMonthSelect}
-        />
-      )}
-      {viewMode === "year" && (
-        <CalendarYearView
-          currentYear={currentYear}
-          onYearSelect={onYearSelect}
-        />
-      )}
+      {renderView()}
     </div>
-  ),
-);
-
-CalendarLayout.displayName = "CalendarLayout";
+  );
+};

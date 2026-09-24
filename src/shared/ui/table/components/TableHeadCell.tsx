@@ -1,20 +1,16 @@
 import { cn } from "@shared/lib/utils/cn";
 import { flexRender, type Header } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, Group, Ungroup } from "lucide-react";
+import type { AriaAttributes } from "react";
 
-import { getPinningStyle } from "../utils";
+import { INHERIT_FONT_CLASS } from "../../foundation";
+import { getColumnAlign, getColumnWidthStyle, getPinningStyle } from "../utils";
+import { TableHead } from "./primitives";
+import { SortIcon } from "./SortIcon";
 import { TableHeadFilter } from "./table-head-filter";
-import { TableHead } from "./TablePrimitive";
+import { TableGroupToggle } from "./TableGroupToggle";
+import { TableResizeHandle } from "./TableResizeHandle";
 
-const SortIcon = ({ direction }: { direction: "asc" | "desc" | false }) => {
-  if (direction === "asc") return <ArrowUp className="h-3.5 w-3.5 shrink-0" />;
-  if (direction === "desc")
-    return <ArrowDown className="h-3.5 w-3.5 shrink-0" />;
-
-  return <ArrowUpDown className="h-3.5 w-3.5 shrink-0 opacity-40" />;
-};
-
-interface TableHeadCellProps<TData = unknown> {
+interface TableHeadCellProps<TData> {
   header: Header<TData, unknown>;
   sorting?: boolean;
   filtering?: boolean;
@@ -22,97 +18,77 @@ interface TableHeadCellProps<TData = unknown> {
   resizable?: boolean;
 }
 
-export const TableHeadCell = <TData = unknown,>({
+const ARIA_SORT: Record<"asc" | "desc" | "none", AriaAttributes["aria-sort"]> =
+  {
+    asc: "ascending",
+    desc: "descending",
+    none: "none",
+  };
+
+const HEADER_CONTENT_CLASS = "flex items-center gap-1";
+
+const SORT_BUTTON_CLASS = `${INHERIT_FONT_CLASS} inline-flex cursor-pointer items-center gap-1.5 transition-colors hover:text-foreground`;
+
+/**
+ * Заголовок колонки. Контент `header` при включённой сортировке оборачивается
+ * в `<button>`, поэтому должен быть phrasing content (текст, `span`).
+ */
+export const TableHeadCell = <TData,>({
   header,
   sorting,
   filtering,
   grouping,
   resizable,
 }: TableHeadCellProps<TData>) => {
+  const { column } = header;
+  const widthStyle = getColumnWidthStyle(column, resizable);
+  const pin = getPinningStyle(column);
+  const align = getColumnAlign(column);
+  // `relative` классом, а не inline: inline `position` перебивал бы sticky закреплённой колонки.
+  const className = cn("relative", pin.className);
+  const style = { ...widthStyle, ...pin.style };
+
   if (header.isPlaceholder) {
-    return <TableHead colSpan={header.colSpan} />;
+    return (
+      <TableHead colSpan={header.colSpan} className={className} style={style} />
+    );
   }
 
-  const content = flexRender(
-    header.column.columnDef.header,
-    header.getContext(),
-  );
-  const canSort = sorting && header.column.getCanSort();
-  const canGroup = grouping && header.column.getCanGroup();
-  const canFilter = filtering && !!header.column.columnDef.meta?.filter;
-  const { style: pinStyle, className: pinClassName } = getPinningStyle(
-    header.column,
-  );
+  const content = flexRender(column.columnDef.header, header.getContext());
+  const canSort = !!sorting && column.getCanSort();
+  const canGroup = !!grouping && column.getCanGroup();
+  const canFilter = !!filtering && !!column.columnDef.meta?.filter;
+  const canResize = !!resizable && column.getCanResize();
+  const sortDirection = column.getIsSorted();
+  const ariaSort = canSort ? ARIA_SORT[sortDirection || "none"] : undefined;
 
   const inner = canSort ? (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
-      onClick={header.column.getToggleSortingHandler()}
+      className={SORT_BUTTON_CLASS}
+      onClick={column.getToggleSortingHandler()}
     >
       {content}
-      <SortIcon direction={header.column.getIsSorted()} />
+      <SortIcon direction={sortDirection} />
     </button>
   ) : (
     content
   );
 
-  const colWidth = resizable ? header.getSize() : header.column.columnDef.size;
-  const widthStyle =
-    colWidth != null
-      ? { width: colWidth, minWidth: colWidth, maxWidth: colWidth }
-      : undefined;
-
   return (
     <TableHead
       colSpan={header.colSpan}
-      className={pinClassName}
-      style={{ ...widthStyle, ...pinStyle, position: "relative" }}
+      aria-sort={ariaSort}
+      className={className}
+      style={style}
     >
-      <div className="flex items-center gap-1">
-        {canFilter ? (
-          <>
-            {inner}
-            <TableHeadFilter column={header.column} />
-          </>
-        ) : (
-          inner
-        )}
-
-        {canGroup && (
-          <button
-            type="button"
-            aria-label={
-              header.column.getIsGrouped()
-                ? "Разгруппировать по колонке"
-                : "Группировать по колонке"
-            }
-            className={cn(
-              "inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-              header.column.getIsGrouped() && "text-primary",
-            )}
-            onClick={e => {
-              e.stopPropagation();
-              header.column.getToggleGroupingHandler()();
-            }}
-          >
-            {header.column.getIsGrouped() ? (
-              <Ungroup className="h-3.5 w-3.5" />
-            ) : (
-              <Group className="h-3.5 w-3.5" />
-            )}
-          </button>
-        )}
+      <div className={cn(HEADER_CONTENT_CLASS, align.header)}>
+        {inner}
+        {canFilter && <TableHeadFilter column={column} />}
+        {canGroup && <TableGroupToggle column={column} />}
       </div>
 
-      {resizable && header.column.getCanResize() && (
-        <div
-          className="absolute right-0 top-0 h-full w-1 cursor-col-resize bg-transparent hover:bg-primary/50 active:bg-primary transition-colors"
-          onMouseDown={header.getResizeHandler()}
-          onTouchStart={header.getResizeHandler()}
-          onClick={e => e.stopPropagation()}
-        />
-      )}
+      {canResize && <TableResizeHandle header={header} />}
     </TableHead>
   );
 };

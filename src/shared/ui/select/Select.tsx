@@ -1,49 +1,96 @@
+import { useControllableState, useEvent } from "@shared/lib/hooks";
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-import {
-  useDropdownPlacement,
-  useLabelCache,
-  useLabelInValueBridge,
-  useSearchInput,
-  useSearchQuery,
-  useSelectEngine,
-} from "./hooks";
+import { useLabelCache, useSelectEngine } from "./hooks";
 import {
   OptionsList,
   SelectDropdown,
+  SelectTagsValue,
   SelectTriggerBase,
+  SelectTriggerButton,
   SelectTriggerContent,
+  SelectTriggerIcon,
 } from "./primitives";
-import {
-  type ISelectRef,
-  type SelectOnChange,
-  type SelectProps,
-  type SelectValue,
+import type {
+  LabeledValue,
+  SelectProps,
+  SelectRef,
+  SelectValue,
 } from "./types";
+
+type RawValue<V extends SelectValue> =
+  V | V[] | LabeledValue<V> | LabeledValue<V>[] | null | undefined;
+
+const toLabeledArray = <V extends SelectValue>(
+  value: RawValue<V>,
+): LabeledValue<V>[] => {
+  if (value == null) return [];
+
+  return (Array.isArray(value) ? value : [value]) as LabeledValue<V>[];
+};
+
+const unwrapLabeled = <V extends SelectValue>(
+  value: RawValue<V>,
+  labelInValue: boolean,
+): V | V[] | null | undefined => {
+  if (!labelInValue || value == null)
+    return value as V | V[] | null | undefined;
+  if (Array.isArray(value))
+    return (value as LabeledValue<V>[]).map(v => v.value);
+
+  return (value as LabeledValue<V>).value;
+};
+
+/** Кнопка рядом с тегами: занимает остаток строки, шеврон прижат вправо. */
+const TAGS_TRIGGER_BUTTON_CLASS = "min-w-8 justify-end";
+
+/** Скрытые input'ы для нативной формы (по одному на значение). */
+const renderHiddenInputs = <V extends SelectValue>(
+  name: string,
+  values: V[],
+): React.ReactNode =>
+  values.length === 0 ? (
+    <input type="hidden" name={name} value="" />
+  ) : (
+    values.map(value => (
+      <input
+        key={String(value)}
+        type="hidden"
+        name={name}
+        value={String(value)}
+      />
+    ))
+  );
 
 const SelectInner = <V extends SelectValue = string>(
   props: SelectProps<V>,
-  ref: React.ForwardedRef<ISelectRef>,
+  ref: React.ForwardedRef<SelectRef>,
 ) => {
   const {
     options,
+    groups,
     loading,
     loadingMore,
+    hasMore,
+    error,
     search = false,
     searchValue,
     onSearch,
     onScrollEnd,
+    open: openProp,
     onOpenChange,
     disabled,
     placeholder,
     empty,
+    errorContent,
     size,
     variant,
     valid,
     className,
-    renderOptions,
     optionRender,
+    renderValue,
+    tagRender,
     hideEmpty,
     closeOnClear,
     closeOnTriggerClick,
@@ -52,149 +99,243 @@ const SelectInner = <V extends SelectValue = string>(
     onFocus,
     onBlur,
     id,
+    name,
+    listClassName,
+    maxHeight,
+    dropdownSide,
+    dropdownAlign,
+    dropdownSideOffset,
+    dropdownAlignOffset,
+    dropdownAvoidCollisions,
+    dropdownCollisionPadding,
+    dropdownWidth,
+    dropdownMaxWidth,
+    dropdownContainer,
+    "aria-label": ariaLabel,
     "aria-describedby": ariaDescribedBy,
     "aria-invalid": ariaInvalid,
     "aria-labelledby": ariaLabelledBy,
     "aria-required": ariaRequired,
   } = props;
 
-  const placement = useDropdownPlacement(props);
-
   const multi = props.multi === true;
   const clearable = props.clearable === true;
   const tagsDisplay = !multi || props.tagsDisplay !== false;
   const labelInValue = props.labelInValue === true;
-  const maxTagCount = (props as { maxTagCount?: number }).maxTagCount;
+  const maxTagCount = multi ? props.maxTagCount : undefined;
+  const rawValue = props.value as RawValue<V>;
+  const rawOnChange = props.onChange as ((value: unknown) => void) | undefined;
 
-  const rawOnChange = props.onChange as ((v: unknown) => void) | undefined;
-
-  const { query, setQuery } = useSearchQuery({ searchValue, onSearch });
-
-  const { updateCache, getLabel } = useLabelCache<V>();
-
-  React.useMemo(() => {
-    updateCache(options);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options]);
-
-  const { normalizedValue, wrappedOnChange } = useLabelInValueBridge<V>({
-    value: props.value,
-    onChange: rawOnChange,
-    multi,
-    labelInValue,
-    options,
-    getLabel: getLabel as (v: V) => string,
+  const [query, setQuery] = useControllableState({
+    value: searchValue,
+    defaultValue: "",
+    onChange: onSearch,
   });
 
-  const resolvedValue = labelInValue ? normalizedValue : props.value;
-  const resolvedOnChange = labelInValue ? wrappedOnChange : rawOnChange;
+  const { getLabel, toLabeled } = useLabelCache<V>(
+    options,
+    labelInValue ? toLabeledArray(rawValue) : undefined,
+  );
+
+  const resolvedValue = React.useMemo(
+    () => unwrapLabeled(rawValue, labelInValue),
+    [rawValue, labelInValue],
+  );
+
+  const handleChange = useEvent((next: V | V[] | null) => {
+    if (!labelInValue) {
+      rawOnChange?.(next);
+    } else if (Array.isArray(next)) {
+      rawOnChange?.(next.map(toLabeled));
+    } else {
+      rawOnChange?.(next == null ? null : toLabeled(next));
+    }
+  });
+
+  const resetQuery = React.useCallback(() => setQuery(""), [setQuery]);
 
   const engine = useSelectEngine<V>({
     ref,
     options,
     multi,
-    value: resolvedValue as V | V[] | null | undefined,
-    onChange: resolvedOnChange as SelectOnChange<V>,
+    value: resolvedValue,
+    onChange: handleChange,
     onSelect,
     onDeselect,
+    open: openProp,
     onOpenChange,
-    onScrollEnd,
     closeOnClear,
     searchable: search,
-    onSearchReset: () => setQuery(""),
+    onSearchReset: resetQuery,
   });
 
-  const { searchInputProps } = useSearchInput({
-    inputRef: engine.inputRef,
-    open: engine.open,
-    setQuery,
-    handleKeyDown: engine.handleKeyDown,
-  });
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setQuery(e.target.value);
 
-  const showClear = clearable && !loading && engine.hasValue;
+  const showClear = clearable && !loading && !disabled && engine.hasValue;
+  const hidden = hideEmpty && !loading && !error && options.length === 0;
+
+  const comboboxProps = {
+    id,
+    role: "combobox" as const,
+    disabled,
+    "aria-expanded": engine.open,
+    "aria-haspopup": "listbox" as const,
+    "aria-controls": engine.open ? engine.listboxId : undefined,
+    "aria-activedescendant": engine.activeDescendant,
+    "aria-label": ariaLabel,
+    "aria-describedby": ariaDescribedBy,
+    "aria-invalid": ariaInvalid,
+    "aria-labelledby": ariaLabelledBy,
+    "aria-required": ariaRequired,
+    onKeyDown: engine.handleKeyDown,
+  };
+
+  const content = (
+    <SelectTriggerContent<V>
+      multi={multi}
+      tagsDisplay={tagsDisplay}
+      search={search}
+      open={engine.open}
+      query={query}
+      placeholder={placeholder}
+      disabled={disabled}
+      selectedValues={engine.selectedValues}
+      getLabel={getLabel}
+      renderValue={renderValue}
+      tagRender={tagRender}
+      onRemoveTag={engine.removeTag}
+      maxTagCount={maxTagCount}
+      searchInputProps={
+        search
+          ? {
+              ...comboboxProps,
+              ref: engine.inputRef,
+              onChange: handleSearchChange,
+            }
+          : undefined
+      }
+    />
+  );
+
+  const triggerClassName = cn(className, multi && tagsDisplay && "h-auto");
+
+  // Теги с кнопками удаления не могут лежать внутри кнопки-триггера:
+  // в multi-режиме они стоят в строке рядом, а кнопка занимает остаток.
+  const tagsBesideButton = multi && tagsDisplay && engine.hasValue;
+
+  const triggerButton = (
+    <SelectTriggerButton
+      ref={engine.buttonRef}
+      open={engine.open}
+      closeOnTriggerClick={closeOnTriggerClick ?? true}
+      className={cn(tagsBesideButton && TAGS_TRIGGER_BUTTON_CLASS)}
+      {...comboboxProps}
+    >
+      {!tagsBesideButton && content}
+      {!showClear && <SelectTriggerIcon loading={loading} />}
+    </SelectTriggerButton>
+  );
+
+  const trigger = search ? (
+    <SelectTriggerBase
+      ref={engine.triggerRef}
+      size={size}
+      variant={variant}
+      valid={valid}
+      className={triggerClassName}
+      loading={loading}
+      showClear={showClear}
+      onClear={engine.clear}
+      disabled={disabled}
+      cursorText
+      onFocus={onFocus}
+      onBlur={onBlur}
+    >
+      {content}
+    </SelectTriggerBase>
+  ) : (
+    <SelectTriggerBase
+      ref={engine.triggerRef}
+      size={size}
+      variant={variant}
+      valid={valid}
+      className={triggerClassName}
+      showClear={showClear}
+      onClear={engine.clear}
+      disabled={disabled}
+      hideChevron
+      onFocus={onFocus}
+      onBlur={onBlur}
+    >
+      {tagsBesideButton ? (
+        <SelectTagsValue<V>
+          values={engine.selectedValues}
+          labels={engine.selectedValues.map(getLabel)}
+          disabled={disabled}
+          maxTagCount={maxTagCount}
+          tagRender={tagRender}
+          onRemoveTag={engine.removeTag}
+        >
+          {triggerButton}
+        </SelectTagsValue>
+      ) : (
+        triggerButton
+      )}
+    </SelectTriggerBase>
+  );
 
   return (
-    <SelectDropdown
-      open={engine.open}
-      onOpenChange={engine.handleOpen}
-      disabled={disabled}
-      hidden={hideEmpty && options.length === 0}
-      closeOnTriggerClick={closeOnTriggerClick ?? !search}
-      onInteractOutside={engine.onInteractOutside}
-      {...placement}
-      trigger={
-        <SelectTriggerBase
-          ref={engine.triggerRef}
-          id={search ? undefined : id}
-          aria-describedby={search ? undefined : ariaDescribedBy}
-          aria-invalid={search ? undefined : ariaInvalid}
-          aria-labelledby={search ? undefined : ariaLabelledBy}
-          aria-required={search ? undefined : ariaRequired}
-          role={search ? undefined : "combobox"}
-          aria-expanded={search ? undefined : engine.open}
-          size={size}
-          variant={variant}
-          valid={valid}
-          className={cn(className, multi && tagsDisplay && "h-auto")}
+    <>
+      {name && renderHiddenInputs(name, engine.selectedValues)}
+      <SelectDropdown
+        open={engine.open}
+        onOpenChange={engine.handleOpen}
+        hidden={hidden}
+        closeOnTriggerClick={closeOnTriggerClick ?? !search}
+        triggerMode={search ? "trigger" : "anchor"}
+        trigger={trigger}
+        dropdownSide={dropdownSide}
+        dropdownAlign={dropdownAlign}
+        dropdownSideOffset={dropdownSideOffset}
+        dropdownAlignOffset={dropdownAlignOffset}
+        dropdownAvoidCollisions={dropdownAvoidCollisions}
+        dropdownCollisionPadding={dropdownCollisionPadding}
+        dropdownWidth={dropdownWidth}
+        dropdownMaxWidth={dropdownMaxWidth}
+        dropdownContainer={dropdownContainer}
+      >
+        <OptionsList<V>
+          id={engine.listboxId}
           loading={loading}
-          showClear={showClear}
-          onClear={engine.clear}
-          cursorText={search}
-          tabIndex={!search ? 0 : undefined}
-          onKeyDown={!search ? engine.handleKeyDown : undefined}
-          onFocus={onFocus}
-          onBlur={onBlur}
-          data-disabled={disabled ? "" : undefined}
-          style={disabled ? { pointerEvents: "none", opacity: 0.5 } : undefined}
-        >
-          <SelectTriggerContent<V>
-            multi={multi}
-            tagsDisplay={tagsDisplay}
-            search={search}
-            open={engine.open}
-            query={query}
-            placeholder={placeholder}
-            disabled={disabled}
-            selectedValues={engine.selectedValues}
-            hasValue={engine.hasValue}
-            getLabel={getLabel}
-            searchInputProps={{
-              ...searchInputProps,
-              id: search ? id : undefined,
-              "aria-describedby": search ? ariaDescribedBy : undefined,
-              "aria-invalid": search ? ariaInvalid : undefined,
-              "aria-labelledby": search ? ariaLabelledBy : undefined,
-              "aria-required": search ? ariaRequired : undefined,
-              role: search ? "combobox" : undefined,
-              "aria-expanded": search ? engine.open : undefined,
-            }}
-            onRemoveTag={engine.removeTag}
-            maxTagCount={maxTagCount}
-          />
-        </SelectTriggerBase>
-      }
-    >
-      <OptionsList<V>
-        loading={loading}
-        loadingMore={loadingMore}
-        options={options}
-        multi={multi}
-        empty={empty}
-        renderOptions={renderOptions}
-        optionRender={optionRender}
-        focusedIndex={engine.focusedIndex}
-        setFocusedIndex={engine.setFocusedIndex}
-        isSelected={engine.isSelected}
-        onSelect={engine.select}
-        listRef={engine.listRef}
-        onScroll={onScrollEnd ? engine.handleScroll : undefined}
-      />
-    </SelectDropdown>
+          loadingMore={loadingMore}
+          hasMore={hasMore}
+          error={error}
+          options={options}
+          groups={groups}
+          multi={multi}
+          empty={empty}
+          errorContent={errorContent}
+          optionRender={optionRender}
+          focusedIndex={engine.focusedIndex}
+          setFocusedIndex={engine.setFocusedIndex}
+          isSelected={engine.isSelected}
+          onSelect={engine.select}
+          getOptionId={engine.getOptionId}
+          listRef={engine.listRef}
+          onScrollEnd={onScrollEnd}
+          className={listClassName}
+          maxHeight={maxHeight}
+        />
+      </SelectDropdown>
+    </>
   );
 };
 
-export const Select = React.forwardRef(SelectInner) as <
-  V extends SelectValue = string,
->(
-  props: SelectProps<V> & { ref?: React.Ref<ISelectRef> },
+const SelectForwarded = React.forwardRef(SelectInner);
+
+SelectForwarded.displayName = "Select";
+
+export const Select = SelectForwarded as <V extends SelectValue = string>(
+  props: SelectProps<V> & { ref?: React.Ref<SelectRef> },
 ) => React.ReactElement;

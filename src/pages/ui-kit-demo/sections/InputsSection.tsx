@@ -5,46 +5,20 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Field as FormField,
+  Field,
+  IconButton,
   Input,
   phoneMask,
+  Textarea,
   useAsyncOptions,
   useStaticOptions,
 } from "@shared/ui";
-import { Search } from "lucide-react";
-import { type FC, type ReactNode, useState } from "react";
+import { Calendar, Search, SlidersHorizontal } from "lucide-react";
+import { type FC, useState } from "react";
 
-const Row = ({ children }: { children: ReactNode }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start">
-    {children}
-  </div>
-);
+import { DemoBlock, DemoEmittedValue, DemoField, DemoRow } from "./shared";
 
-const Field = ({
-  label,
-  children,
-}: {
-  label?: string;
-  children: ReactNode;
-}) => (
-  <div className="flex flex-col gap-1.5">
-    {label && <p className="text-[10px] text-muted-foreground">{label}</p>}
-    {children}
-  </div>
-);
-
-const GroupTitle = ({ children }: { children: ReactNode }) => (
-  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-    {children}
-  </p>
-);
-
-// Реальное значение, которое отдаёт автокомплит через onChange
-const EmittedValue = ({ value }: { value: string }) => (
-  <p className="text-[10px] font-mono text-muted-foreground truncate">
-    value: {value === "" ? "—" : `«${value}»`}
-  </p>
-);
+const noop = () => {};
 
 const phoneOptions = [
   { value: "79161234567", label: "+7 (916) 123-45-67 — Иван" },
@@ -101,84 +75,136 @@ export const InputsSection: FC = () => {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {/* ── Базовые ──────────────────────────────────────────────────── */}
-        <div>
-          <GroupTitle>Базовые</GroupTitle>
-          <Row>
-            <Field label="Default">
-              <Input placeholder="Default input" />
-            </Field>
-            <Field label="С иконкой">
+        <DemoBlock title="Базовые">
+          <DemoRow>
+            <DemoField label="По умолчанию">
+              <Input placeholder="Обычное поле" />
+            </DemoField>
+            <DemoField label="С иконкой">
               <Input
-                placeholder="With left icon"
+                placeholder="С иконкой слева"
                 leftIcon={<Search className="h-4 w-4" />}
               />
-            </Field>
-            <Field label="Clearable">
-              <Input
-                placeholder="Clearable input"
-                clearable
-                onClear={() => {}}
-              />
-            </Field>
-          </Row>
-        </div>
+            </DemoField>
+            <DemoField label="clearable">
+              <Input placeholder="Поле с очисткой" clearable onClear={noop} />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
         {/* ── Варианты ────────────────────────────────────────────────── */}
-        <div>
-          <GroupTitle>Варианты</GroupTitle>
-          <Row>
-            <Field label="Filled">
-              <Input placeholder="Filled variant" variant="filled" />
-            </Field>
-            <Field label="Filled error">
-              <Input placeholder="Filled error" variant="filled-error" />
-            </Field>
-            <Field label="Filled success">
-              <Input placeholder="Filled success" variant="filled-success" />
-            </Field>
-          </Row>
-        </div>
+        <DemoBlock title="Варианты">
+          <DemoRow>
+            <DemoField label="filled">
+              <Input placeholder="Заливка" variant="filled" />
+            </DemoField>
+            <DemoField label="filled-error">
+              <Input placeholder="Заливка с ошибкой" variant="filled-error" />
+            </DemoField>
+            <DemoField label="filled-success">
+              <Input placeholder="Заливка, успешно" variant="filled-success" />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
         {/* ── Состояния ───────────────────────────────────────────────── */}
-        <div>
-          <GroupTitle>Состояния</GroupTitle>
-          <Row>
-            <Field label="Error">
-              <Input placeholder="Error state" variant="error" />
-            </Field>
-            <Field label="Success">
-              <Input placeholder="Success state" variant="success" />
-            </Field>
-            <Field label="Disabled">
-              <Input placeholder="Disabled" disabled />
-            </Field>
-          </Row>
-        </div>
+        <DemoBlock title="Состояния">
+          <DemoRow>
+            <DemoField label="error">
+              <Input placeholder="Ошибка" variant="error" />
+            </DemoField>
+            <DemoField label="success">
+              <Input placeholder="Успешно" variant="success" />
+            </DemoField>
+            <DemoField label="disabled">
+              <Input placeholder="Недоступно" disabled />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
         {/* ── Особые ──────────────────────────────────────────────────── */}
-        <div>
-          <GroupTitle>Особые</GroupTitle>
-          <Row>
-            <Field label="Password">
-              <Input type="password" placeholder="Password" />
-            </Field>
-            <Field label="Loading">
-              <Input placeholder="Loading..." loading />
-            </Field>
-          </Row>
-        </div>
+        <DemoBlock title="Особые">
+          <DemoRow>
+            <DemoField label="password">
+              <Input type="password" placeholder="Пароль" />
+            </DemoField>
+            <DemoField label="loading">
+              <Input placeholder="Загрузка..." loading />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
 
-        <div>
-          <GroupTitle>Floating label</GroupTitle>
-          <Row>
-            <FormField
+        <DemoBlock title="Интерактивные слоты">
+          <DemoRow>
+            <DemoField label="leftAddon">
+              <Input
+                placeholder="Открыть календарь"
+                leftAddon={
+                  <IconButton
+                    aria-label="Открыть календарь"
+                    size="xs"
+                    variant="ghost"
+                    onClick={noop}
+                  >
+                    <Calendar className="h-4 w-4" />
+                  </IconButton>
+                }
+              />
+            </DemoField>
+            <DemoField label="rightAddon + clearable">
+              <Input
+                placeholder="Фильтр"
+                clearable
+                defaultValue="запрос"
+                rightAddon={
+                  <IconButton
+                    aria-label="Настроить фильтр"
+                    size="xs"
+                    variant="ghost"
+                    onClick={noop}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </IconButton>
+                }
+              />
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
+
+        <DemoBlock title="Textarea">
+          <DemoRow>
+            <DemoField label="Autosize + счётчик">
+              <Textarea
+                placeholder="Расскажите о себе"
+                maxLength={120}
+                showCount
+              />
+            </DemoField>
+            <DemoField label="Фиксированная высота">
+              <Textarea autoResize={false} minRows={4} placeholder="resize-y" />
+            </DemoField>
+            <DemoField label="Floating label">
+              <Field
+                htmlFor="floating-bio"
+                label="Комментарий"
+                labelPlacement="floating"
+              >
+                <Textarea id="floating-bio" />
+              </Field>
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
+
+        <DemoBlock title="Floating label">
+          <DemoRow>
+            <Field
               htmlFor="floating-email"
               label="Email"
               labelPlacement="floating"
             >
               <Input id="floating-email" type="email" />
-            </FormField>
-            <FormField
+            </Field>
+            <Field
               description="Label остаётся сверху после заполнения"
               htmlFor="floating-name"
               label="Имя"
@@ -186,35 +212,34 @@ export const InputsSection: FC = () => {
               required
             >
               <Input id="floating-name" defaultValue="Андрей" />
-            </FormField>
-            <FormField
+            </Field>
+            <Field
               error="Поле заполнено неверно"
               htmlFor="floating-error"
               label="Телефон"
               labelPlacement="floating"
             >
               <Input id="floating-error" variant="error" />
-            </FormField>
-          </Row>
-        </div>
+            </Field>
+          </DemoRow>
+        </DemoBlock>
 
         <hr className="border-border" />
 
         {/* ── Autocomplete ────────────────────────────────────────────── */}
-        <div>
-          <GroupTitle>Autocomplete</GroupTitle>
-          <Row>
-            <Field label="useStaticOptions">
-              <EmittedValue value={autoCountry} />
+        <DemoBlock title="Autocomplete">
+          <DemoRow>
+            <DemoField label="useStaticOptions">
+              <DemoEmittedValue value={autoCountry} />
               <Autocomplete
                 {...staticCountryProps}
                 value={autoCountry}
                 onChange={setAutoCountry}
                 placeholder="Начните вводить..."
               />
-            </Field>
-            <Field label="useStaticOptions + phoneMask">
-              <EmittedValue value={autoPhone} />
+            </DemoField>
+            <DemoField label="useStaticOptions + phoneMask">
+              <DemoEmittedValue value={autoPhone} />
               <Autocomplete
                 {...staticPhoneProps}
                 mask={phoneMask}
@@ -222,18 +247,18 @@ export const InputsSection: FC = () => {
                 onChange={setAutoPhone}
                 placeholder="+7 (___) ___-__-__"
               />
-            </Field>
-            <Field label="useAsyncOptions">
-              <EmittedValue value={asyncCountry} />
+            </DemoField>
+            <DemoField label="useAsyncOptions">
+              <DemoEmittedValue value={asyncCountry} />
               <Autocomplete
                 {...asyncCountryProps}
                 value={asyncCountry}
                 onChange={setAsyncCountry}
                 placeholder="Серверный поиск..."
               />
-            </Field>
-          </Row>
-        </div>
+            </DemoField>
+          </DemoRow>
+        </DemoBlock>
       </CardContent>
     </Card>
   );

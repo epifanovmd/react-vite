@@ -1,11 +1,11 @@
-import {
-  type ColumnPinningState,
-  type OnChangeFn,
-} from "@tanstack/react-table";
+import type { ColumnPinningState } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared/use-controllable-state";
-import type { TableFeatureResult } from "./types";
+import {
+  type TableFeatureSpec,
+  useTableFeatureState,
+} from "./create-table-feature";
+import type { TableFeatureOf } from "./types";
 
 export interface ColumnPinningFeatureOptions {
   enabled?: boolean;
@@ -14,9 +14,16 @@ export interface ColumnPinningFeatureOptions {
   onColumnPinningChange?: (state: ColumnPinningState) => void;
 }
 
-export const useColumnPinningFeature = <TData>(
+const SPEC: TableFeatureSpec<"columnPinning", "columnPinning"> = {
+  kind: "columnPinning",
+  stateKey: "columnPinning",
+  fallback: { left: [], right: [] },
+  changeOption: "onColumnPinningChange",
+};
+
+export const useColumnPinningFeature = <TData = unknown>(
   options: ColumnPinningFeatureOptions = {},
-): TableFeatureResult<TData> => {
+): TableFeatureOf<TData, "columnPinning"> => {
   const {
     enabled = true,
     columnPinningState,
@@ -24,21 +31,19 @@ export const useColumnPinningFeature = <TData>(
     onColumnPinningChange,
   } = options;
 
-  const [state, setState] = useControllableState<ColumnPinningState>({
-    value: columnPinningState,
-    defaultValue: defaultColumnPinning ?? { left: [], right: [] },
-    onChange: onColumnPinningChange,
-  });
+  const extraOptions = useMemo(
+    () => ({ enableColumnPinning: enabled }),
+    [enabled],
+  );
 
-  return useMemo(
-    () => ({
-      kind: "columnPinning" as const,
-      state: { columnPinning: state },
-      options: {
-        enableColumnPinning: enabled,
-        onColumnPinningChange: enabled ? setState : undefined,
-      },
-    }),
-    [state, setState, enabled],
+  return useTableFeatureState<TData, "columnPinning", "columnPinning">(
+    SPEC,
+    {
+      enabled,
+      value: columnPinningState,
+      defaultValue: defaultColumnPinning,
+      onChange: onColumnPinningChange,
+    },
+    extraOptions,
   );
 };

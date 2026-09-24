@@ -1,7 +1,10 @@
 export type { TooltipProps } from "./Tooltip";
 export { Tooltip } from "./Tooltip";
-export { tooltipContentVariants } from "./tooltip-variants";
+export type { TooltipArrowProps } from "./TooltipArrow";
+export { TooltipArrow } from "./TooltipArrow";
 export type { TooltipContentProps } from "./TooltipContent";
 export { TooltipContent } from "./TooltipContent";
-export { TooltipProvider } from "./TooltipProvider";
-export { TooltipTrigger } from "./TooltipTrigger";
+export {
+  Provider as TooltipProvider,
+  Trigger as TooltipTrigger,
+} from "@radix-ui/react-tooltip";

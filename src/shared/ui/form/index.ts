@@ -35,13 +35,15 @@ export type {
   DynamicZodOutput,
   DynamicZodRefine,
 } from "./model";
-export { dynamicZodResolver } from "./model";
-export { normalizeEmptyString } from "./model";
-export { useFormValue } from "./model";
-export { useFormFieldArray } from "./model";
-export { useIsFieldValidating } from "./model";
-export { useZodForm } from "./model";
+export {
+  dynamicZodResolver,
+  normalizeEmptyString,
+  useFormValue,
+  useIsFieldValidating,
+  useZodForm,
+} from "./model";
 export type {
+  FieldElementProps,
   FieldProps,
   FormErrorProps,
   FormFieldProps,
@@ -59,10 +61,7 @@ export {
 } from "./primitives";
 export type {
   FormAdapterProps,
-  FormControllerOptions,
-  FormControlProps,
-  FormFieldBaseProps,
-  FormFieldLayoutProps,
   FormFieldRenderProps,
-  FieldProps as FormFieldWrapperProps,
+  LabelPlacement,
 } from "./types";
+export { useFieldArray } from "react-hook-form";

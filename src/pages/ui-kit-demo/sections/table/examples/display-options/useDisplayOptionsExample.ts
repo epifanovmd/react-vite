@@ -1,17 +1,15 @@
-import type { TableProps } from "@shared/ui";
+import type { TableSize, TableVariant } from "@shared/ui";
 import { useMemo, useState } from "react";
 
 import { createOrderColumns, ORDERS } from "../../shared";
 
-type Variant = NonNullable<TableProps<unknown>["variant"]>;
-type Size = NonNullable<TableProps<unknown>["size"]>;
-type DisplayState = "data" | "loading" | "empty";
+export type DisplayState = "data" | "loading" | "empty" | "error";
 
 export const useDisplayOptionsExample = () => {
   const columns = useMemo(() => createOrderColumns(), []);
 
-  const [variant, setVariant] = useState<Variant>("default");
-  const [size, setSize] = useState<Size>("md");
+  const [variant, setVariant] = useState<TableVariant>("default");
+  const [size, setSize] = useState<TableSize>("md");
   const [display, setDisplay] = useState<DisplayState>("data");
 
   const data = useMemo(
@@ -29,5 +27,6 @@ export const useDisplayOptionsExample = () => {
     display,
     setDisplay,
     loading: display === "loading",
+    error: display === "error",
   };
 };

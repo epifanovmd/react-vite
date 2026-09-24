@@ -1,71 +1,69 @@
-import * as React from "react";
-
 import { CalendarLayout } from "./CalendarLayout";
 import { useCalendarNavigation, useRangeCalendarDays } from "./hooks";
-import type { DateRange } from "./types";
+import type { CalendarLocaleProps, DateBoundsProps, DateRange } from "./types";
+import { DATE_LOCALE, resolveWeekStartsOn } from "./utils";
 
-export interface RangeCalendarProps {
+export interface RangeCalendarProps
+  extends CalendarLocaleProps, DateBoundsProps {
   selected?: DateRange;
   onSelect?: (range: DateRange | undefined) => void;
-  disableDate?: (date: Date) => boolean;
+  /** Дата под курсором — владелец состояния наведения пикер. */
+  hoverDate?: Date;
   onDateHover?: (date: Date | undefined) => void;
+  /** Подсвечивать будущий диапазон, пока выбрана только начальная дата. */
   showRangePreview?: boolean;
+  /** Стартовый месяц/год (по умолчанию — месяц начала диапазона или текущий). */
+  defaultMonth?: number;
+  defaultYear?: number;
   className?: string;
 }
 
-export const RangeCalendar = React.memo(
-  ({
+export const RangeCalendar = ({
+  selected,
+  onSelect,
+  hoverDate,
+  onDateHover,
+  showRangePreview = true,
+  defaultMonth,
+  defaultYear,
+  className,
+  locale = DATE_LOCALE,
+  weekStartsOn: weekStartsOnProp,
+  minDate,
+  maxDate,
+  disableDate,
+}: RangeCalendarProps) => {
+  const weekStartsOn = resolveWeekStartsOn(locale, weekStartsOnProp);
+
+  const nav = useCalendarNavigation({
+    locale,
+    defaultMonth: defaultMonth ?? selected?.from?.getMonth(),
+    defaultYear: defaultYear ?? selected?.from?.getFullYear(),
+    minDate,
+    maxDate,
+  });
+
+  const days = useRangeCalendarDays({
     selected,
     onSelect,
+    hoverDate,
+    showRangePreview,
+    minDate,
+    maxDate,
     disableDate,
-    onDateHover,
-    showRangePreview = true,
-    className,
-  }: RangeCalendarProps) => {
-    const nav = useCalendarNavigation({
-      initialMonth: selected?.from?.getMonth(),
-      initialYear: selected?.from?.getFullYear(),
-    });
+  });
 
-    const [hoveredDate, setHoveredDate] = React.useState<Date | undefined>();
-
-    const handleDateHover = React.useCallback(
-      (date: Date | undefined) => {
-        setHoveredDate(date);
-        onDateHover?.(date);
-      },
-      [onDateHover],
-    );
-
-    const dayInteraction = useRangeCalendarDays({
-      currentMonth: nav.currentMonth,
-      currentYear: nav.currentYear,
-      selected,
-      onSelect,
-      disableDate,
-      hoverDate: hoveredDate,
-      showRangePreview,
-    });
-
-    return (
-      <CalendarLayout
-        headerText={nav.headerText}
-        viewMode={nav.viewMode}
-        currentMonth={nav.currentMonth}
-        currentYear={nav.currentYear}
-        className={className}
-        onPrevious={nav.handlePrevious}
-        onNext={nav.handleNext}
-        onHeaderClick={nav.handleHeaderClick}
-        onMonthSelect={nav.handleMonthSelect}
-        onYearSelect={nav.handleYearSelect}
-        onDaySelect={dayInteraction.handleDaySelect}
-        getDayClassName={dayInteraction.getDayClassName}
-        isDayDisabled={dayInteraction.isDayDisabled}
-        onDateHover={handleDateHover}
-      />
-    );
-  },
-);
-
-RangeCalendar.displayName = "RangeCalendar";
+  return (
+    <CalendarLayout
+      nav={nav}
+      locale={locale}
+      weekStartsOn={weekStartsOn}
+      selected={selected?.from}
+      className={className}
+      getDayFlags={days.getDayFlags}
+      isDayDisabled={days.isDisabled}
+      onDaySelect={days.handleDaySelect}
+      onDateHover={onDateHover}
+    />
+  );
+};

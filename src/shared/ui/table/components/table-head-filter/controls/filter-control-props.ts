@@ -1,6 +1,12 @@
 import type { Column } from "@tanstack/react-table";
 
-export interface FilterControlProps<TConfig, TData = unknown> {
+/** Контролам нужны только методы фильтра — они не зависят от `TData`. */
+export type FilterColumn = Pick<
+  Column<unknown, unknown>,
+  "getFilterValue" | "setFilterValue" | "getFacetedUniqueValues"
+>;
+
+export interface FilterControlProps<TConfig> {
   config: TConfig;
-  column: Column<TData, unknown>;
+  column: FilterColumn;
 }

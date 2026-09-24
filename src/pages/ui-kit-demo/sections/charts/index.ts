@@ -1,6 +1,4 @@
-export { ChannelsBarsExample } from "./ChannelsBarsExample";
 export { ChartStatesExample } from "./ChartStatesExample";
-export { ComboChartExample } from "./ComboChartExample";
+export { CompactTrendExample } from "./CompactTrendExample";
 export { RevenueAreaExample } from "./RevenueAreaExample";
-export { SparklineExample } from "./SparklineExample";
-export { TrafficChartExample } from "./TrafficChartExample";
+export { TrafficLineExample } from "./TrafficLineExample";

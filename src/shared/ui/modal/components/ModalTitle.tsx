@@ -2,17 +2,23 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-export const ModalTitle = React.forwardRef<
+import { DIALOG_TITLE_CLASS } from "../../foundation/dialog-parts";
+
+export type ModalTitleProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Title
+>;
+
+const ModalTitle = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+  ModalTitleProps
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className,
-    )}
+    className={cn(DIALOG_TITLE_CLASS, className)}
     {...props}
   />
 ));
+
 ModalTitle.displayName = "ModalTitle";
+
+export { ModalTitle };

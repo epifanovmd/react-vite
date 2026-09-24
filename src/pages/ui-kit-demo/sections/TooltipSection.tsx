@@ -60,6 +60,11 @@ export const TooltipSection: FC = () => (
               Delayed
             </Button>
           </Tooltip>
+          <Tooltip content="Текстовый триггер оборачивается в фокусируемый span">
+            <span className="text-xs text-muted-foreground underline underline-offset-2">
+              Просто текст
+            </span>
+          </Tooltip>
         </div>
       </div>
       <div>
@@ -69,7 +74,7 @@ export const TooltipSection: FC = () => (
         <div className="flex items-center gap-3 flex-wrap">
           <Tooltip>
             <TooltipTrigger asChild>
-              <IconButton size="sm" variant="destructive">
+              <IconButton size="xs" variant="destructive" aria-label="Удалить">
                 <Trash2 size={14} />
               </IconButton>
             </TooltipTrigger>
@@ -77,7 +82,7 @@ export const TooltipSection: FC = () => (
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <IconButton size="sm" variant="primary">
+              <IconButton size="xs" variant="primary" aria-label="Скачать файл">
                 <Download size={14} />
               </IconButton>
             </TooltipTrigger>
@@ -85,7 +90,7 @@ export const TooltipSection: FC = () => (
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <IconButton size="sm" variant="enable">
+              <IconButton size="xs" variant="success" aria-label="Включить">
                 <Power size={14} />
               </IconButton>
             </TooltipTrigger>

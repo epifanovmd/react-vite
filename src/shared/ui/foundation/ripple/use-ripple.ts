@@ -7,28 +7,29 @@ export interface Ripple {
   size: number;
 }
 
-export interface UseRippleOptions {
+export interface UseRippleOptions<T extends HTMLElement = HTMLButtonElement> {
   disabled?: boolean;
-  onPointerDown?: (e: React.PointerEvent<HTMLButtonElement>) => void;
+  onPointerDown?: (e: React.PointerEvent<T>) => void;
 }
 
-export interface UseRippleResult {
-  buttonRef: React.RefObject<HTMLButtonElement | null>;
+export interface UseRippleResult<T extends HTMLElement = HTMLButtonElement> {
+  buttonRef: React.RefObject<T | null>;
   ripples: Ripple[];
-  handlePointerDown: (e: React.PointerEvent<HTMLButtonElement>) => void;
+  handlePointerDown: (e: React.PointerEvent<T>) => void;
   removeRipple: (id: number) => void;
 }
 
-export const useRipple = ({
+/** Волна от точки нажатия; элемент-хозяин задаётся дженериком. */
+export const useRipple = <T extends HTMLElement = HTMLButtonElement>({
   disabled = false,
   onPointerDown,
-}: UseRippleOptions = {}): UseRippleResult => {
-  const buttonRef = React.useRef<HTMLButtonElement>(null);
+}: UseRippleOptions<T> = {}): UseRippleResult<T> => {
+  const buttonRef = React.useRef<T>(null);
   const [ripples, setRipples] = React.useState<Ripple[]>([]);
   const nextRippleId = React.useRef(0);
 
   const handlePointerDown = React.useCallback(
-    (e: React.PointerEvent<HTMLButtonElement>) => {
+    (e: React.PointerEvent<T>) => {
       onPointerDown?.(e);
 
       if (disabled || e.button !== 0) return;

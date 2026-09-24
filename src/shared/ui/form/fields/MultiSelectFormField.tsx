@@ -1,12 +1,18 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { Select, type SelectProps, type SelectValue } from "../../select";
 import { FormField } from "../primitives/FormField";
 import type { FormAdapterProps } from "../types";
-import { resolveFieldVariant } from "./form-field-utils";
+import { composeHandlers } from "./compose-handlers";
+import { resolveFieldVariant } from "./resolve-field-variant";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 type ManagedSelectProps =
-  "disabled" | "id" | "labelInValue" | "multi" | "onChange" | "value";
+  ManagedControlProps | "labelInValue" | "multi" | "onChange";
 
 export type MultiSelectFormFieldProps<
   TFormData extends FieldValues,
@@ -17,47 +23,29 @@ export type MultiSelectFormFieldProps<
     onValueChange?: (value: TValue[]) => void;
   };
 
-/** @example <MultiSelectFormField<TForm> name="roles" label="Roles" options={options} /> */
+/** @example <MultiSelectFormField<TForm> name="roles" label="Роли" options={options} /> */
 export const MultiSelectFormField = <
   TFormData extends FieldValues,
   TValue extends SelectValue = string,
   TName extends FieldPathByValue<TFormData, TValue[] | undefined> =
     FieldPathByValue<TFormData, TValue[] | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  onValueChange,
-  onBlur,
-  onOpenChange,
-  variant,
-  ...selectProps
-}: MultiSelectFormFieldProps<TFormData, TValue, TName>): React.ReactElement => {
+>(
+  props: MultiSelectFormFieldProps<TFormData, TValue, TName>,
+): ReactElement => {
+  const {
+    formFieldProps,
+    controlProps: {
+      onValueChange,
+      onBlur,
+      onOpenChange,
+      variant,
+      ...selectProps
+    },
+  } = splitFormAdapterProps(props);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
+      {...formFieldProps}
       render={({ field, fieldState, controlProps }) => (
         <Select<TValue>
           {...selectProps}
@@ -65,21 +53,13 @@ export const MultiSelectFormField = <
           ref={field.ref}
           multi
           labelInValue={false}
-          disabled={field.disabled}
           value={(field.value ?? []) as TValue[]}
           variant={resolveFieldVariant(variant, fieldState.invalid)}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onOpenChange={open => {
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onOpenChange={composeHandlers((open: boolean) => {
             if (!open) field.onBlur();
-            onOpenChange?.(open);
-          }}
-          onChange={(value: TValue[]) => {
-            field.onChange(value);
-            onValueChange?.(value);
-          }}
+          }, onOpenChange)}
+          onChange={composeHandlers(field.onChange, onValueChange)}
         />
       )}
     />

@@ -6,6 +6,8 @@ import { useCallback } from "react";
 import { ExampleCard } from "../../shared";
 import { useGlobalFilterExample } from "./useGlobalFilterExample";
 
+const SEARCH_ICON = <Search className="h-4 w-4" />;
+
 export const GlobalFilterExample: FC = () => {
   const { data, columns, features, search, onSearchChange } =
     useGlobalFilterExample();
@@ -14,6 +16,8 @@ export const GlobalFilterExample: FC = () => {
     (e: ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value),
     [onSearchChange],
   );
+
+  const handleClear = useCallback(() => onSearchChange(""), [onSearchChange]);
 
   return (
     <ExampleCard
@@ -25,10 +29,10 @@ export const GlobalFilterExample: FC = () => {
         placeholder="Поиск по клиенту, статусу…"
         value={search}
         onChange={handleChange}
-        onClear={() => onSearchChange("")}
+        onClear={handleClear}
         clearable
         size="sm"
-        leftIcon={<Search className="h-4 w-4" />}
+        leftIcon={SEARCH_ICON}
       />
       <Table data={data} columns={columns} size="sm" features={features} />
     </ExampleCard>

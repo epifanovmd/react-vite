@@ -4,48 +4,59 @@ import {
 } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { useControllableState } from "./shared";
-import type { TableFeatureResult } from "./types";
+import {
+  type TableFeatureSpec,
+  useTableFeatureState,
+} from "./create-table-feature";
+import type { TableFeatureOf } from "./types";
 
-export interface GlobalFilterFeatureOptions {
+export interface GlobalFilterFeatureOptions<TData = unknown> {
   enabled?: boolean;
-  globalFilter?: string;
+  globalFilterState?: string;
   defaultGlobalFilter?: string;
   onGlobalFilterChange?: (state: string) => void;
-  globalFilterFn?: FilterFnOption<any>;
+  globalFilterFn?: FilterFnOption<TData>;
   manualFiltering?: boolean;
 }
 
-export const useGlobalFilterFeature = <TData>(
-  options: GlobalFilterFeatureOptions = {},
-): TableFeatureResult<TData> => {
+const SPEC: TableFeatureSpec<"globalFilter", "globalFilter"> = {
+  kind: "globalFilter",
+  stateKey: "globalFilter",
+  fallback: "",
+  changeOption: "onGlobalFilterChange",
+};
+
+export const useGlobalFilterFeature = <TData = unknown>(
+  options: GlobalFilterFeatureOptions<TData> = {},
+): TableFeatureOf<TData, "globalFilter"> => {
   const {
     enabled = true,
-    globalFilter,
+    globalFilterState,
     defaultGlobalFilter,
     onGlobalFilterChange,
     globalFilterFn,
     manualFiltering,
   } = options;
 
-  const [state, setState] = useControllableState<string>({
-    value: globalFilter,
-    defaultValue: defaultGlobalFilter ?? "",
-    onChange: onGlobalFilterChange,
-  });
-
-  return useMemo(
+  const extraOptions = useMemo(
     () => ({
-      kind: "globalFilter" as const,
-      state: { globalFilter: state },
-      options: {
-        enableGlobalFilter: enabled,
-        onGlobalFilterChange: enabled ? setState : undefined,
-        ...(globalFilterFn ? { globalFilterFn } : {}),
-        getFilteredRowModel:
-          enabled && !manualFiltering ? getFilteredRowModel() : undefined,
-      },
+      enableGlobalFilter: enabled,
+      globalFilterFn,
+      manualFiltering,
+      getFilteredRowModel:
+        enabled && !manualFiltering ? getFilteredRowModel<TData>() : undefined,
     }),
-    [state, setState, enabled, globalFilterFn, manualFiltering],
+    [enabled, globalFilterFn, manualFiltering],
+  );
+
+  return useTableFeatureState<TData, "globalFilter", "globalFilter">(
+    SPEC,
+    {
+      enabled,
+      value: globalFilterState,
+      defaultValue: defaultGlobalFilter,
+      onChange: onGlobalFilterChange,
+    },
+    extraOptions,
   );
 };

@@ -180,7 +180,7 @@ export const SegmentedSection: FC = () => {
             </p>
             <Segmented
               value={view}
-              onChange={setView}
+              onValueChange={setView}
               size="sm"
               options={[
                 {
@@ -208,7 +208,7 @@ export const SegmentedSection: FC = () => {
             </p>
             <Segmented
               value={month}
-              onChange={setMonth}
+              onValueChange={setMonth}
               size="sm"
               variant="outline"
               options={monthOptions}

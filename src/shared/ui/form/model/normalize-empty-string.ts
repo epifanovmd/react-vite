@@ -1,5 +1,5 @@
 /**
- * Converts an empty HTML control value to `undefined` for Zod preprocessors.
+ * Превращает пустое значение HTML-контрола в `undefined` для Zod-препроцессоров.
  *
  * @example
  * z.preprocess(normalizeEmptyString, z.string().email().optional())

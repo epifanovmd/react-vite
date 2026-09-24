@@ -1,21 +1,24 @@
+import type { ReactElement } from "react";
 import type { FieldPathByValue, FieldValues } from "react-hook-form";
 
 import { Input, type InputProps } from "../../input";
 import { FormField } from "../primitives/FormField";
-import type { FormAdapterProps } from "../types";
-import { resolveFieldVariant } from "./form-field-utils";
+import type { FloatingFormAdapterProps, TextFieldValue } from "../types";
+import { composeHandlers } from "./compose-handlers";
+import { resolveFieldVariant } from "./resolve-field-variant";
+import {
+  type ManagedControlProps,
+  splitFormAdapterProps,
+} from "./split-form-adapter-props";
 
 export type InputFormFieldProps<
   TFormData extends FieldValues,
-  TName extends FieldPathByValue<TFormData, string | undefined>,
-> = FormAdapterProps<TFormData, TName> &
-  Omit<
-    InputProps,
-    "defaultValue" | "disabled" | "id" | "name" | "required" | "value"
-  >;
+  TName extends FieldPathByValue<TFormData, TextFieldValue>,
+> = FloatingFormAdapterProps<TFormData, TName> &
+  Omit<InputProps, ManagedControlProps>;
 
 /**
- * String input connected to RHF.
+ * Строковый Input, связанный с RHF.
  *
  * @example
  * <InputFormField<TForm>
@@ -27,64 +30,31 @@ export type InputFormFieldProps<
  */
 export const InputFormField = <
   TFormData extends FieldValues,
-  TName extends FieldPathByValue<TFormData, string | undefined> =
-    FieldPathByValue<TFormData, string | undefined>,
->({
-  name,
-  control,
-  rules,
-  shouldUnregister,
-  defaultValue,
-  disabled,
-  id,
-  label,
-  labelPlacement,
-  hint,
-  description,
-  required,
-  fieldClassName,
-  onChange,
-  onBlur,
-  onClear,
-  variant,
-  ...inputProps
-}: InputFormFieldProps<TFormData, TName>): React.ReactElement => {
+  TName extends FieldPathByValue<TFormData, TextFieldValue> = FieldPathByValue<
+    TFormData,
+    TextFieldValue
+  >,
+>(
+  props: InputFormFieldProps<TFormData, TName>,
+): ReactElement => {
+  const {
+    formFieldProps,
+    controlProps: { onChange, onBlur, onClear, variant, ...inputProps },
+  } = splitFormAdapterProps(props);
+
   return (
     <FormField
-      name={name}
-      control={control}
-      rules={rules}
-      shouldUnregister={shouldUnregister}
-      defaultValue={defaultValue}
-      disabled={disabled}
-      id={id}
-      label={label}
-      labelPlacement={labelPlacement}
-      hint={hint}
-      description={description}
-      required={required}
-      fieldClassName={fieldClassName}
+      {...formFieldProps}
       render={({ field, fieldState, controlProps }) => (
         <Input
           {...inputProps}
           {...controlProps}
           ref={field.ref}
-          disabled={field.disabled}
-          required={required}
-          value={String(field.value ?? "")}
+          value={field.value ?? ""}
           variant={resolveFieldVariant(variant, fieldState.invalid)}
-          onBlur={event => {
-            field.onBlur();
-            onBlur?.(event);
-          }}
-          onChange={event => {
-            field.onChange(event.target.value);
-            onChange?.(event);
-          }}
-          onClear={() => {
-            field.onChange("");
-            onClear?.();
-          }}
+          onBlur={composeHandlers(field.onBlur, onBlur)}
+          onChange={composeHandlers(field.onChange, onChange)}
+          onClear={composeHandlers(() => field.onChange(""), onClear)}
         />
       )}
     />

@@ -1,26 +1,45 @@
-import type { TableOptions, TableState } from "@tanstack/react-table";
+import type { TableState } from "@tanstack/react-table";
 
-import type { TableFeatureKind, TableFeatureResult } from "./types";
+import type {
+  TableFeatureKind,
+  TableFeatureOf,
+  TableFeatureOptions,
+  TableFeatureResult,
+} from "./types";
+
+export type TableFeaturesByKind<TData> = {
+  [K in TableFeatureKind]?: TableFeatureOf<TData, K>;
+};
 
 export interface MergedTableFeatures<TData> {
   state: Partial<TableState>;
-  options: Partial<Omit<TableOptions<TData>, "data" | "columns" | "state">>;
-  byKind: Map<TableFeatureKind, TableFeatureResult<TData>>;
+  options: TableFeatureOptions<TData>;
+  byKind: TableFeaturesByKind<TData>;
 }
+
+/** Копирует только заданные значения: фича с `manualFiltering: undefined` не должна затирать соседнюю. */
+const assignDefined = <T extends object>(target: T, source: Partial<T>) => {
+  for (const key of Object.keys(source) as (keyof T)[]) {
+    const value = source[key];
+
+    if (value !== undefined) target[key] = value as T[keyof T];
+  }
+};
 
 export const mergeTableFeatures = <TData>(
   features: TableFeatureResult<TData>[],
 ): MergedTableFeatures<TData> => {
   const state: Partial<TableState> = {};
-  const options: Partial<
-    Omit<TableOptions<TData>, "data" | "columns" | "state">
-  > = {};
-  const byKind = new Map<TableFeatureKind, TableFeatureResult<TData>>();
+  const options: TableFeatureOptions<TData> = {};
+  const byKind: TableFeaturesByKind<TData> = {};
 
   for (const feature of features) {
-    Object.assign(state, feature.state);
-    Object.assign(options, feature.options);
-    byKind.set(feature.kind, feature);
+    assignDefined(state, feature.state);
+    assignDefined(options, feature.options);
+    // TS не сужает объединение по `kind` при индексной записи — связь kind↔тип гарантирует TableFeatureResult.
+    (byKind as Record<TableFeatureKind, TableFeatureResult<TData>>)[
+      feature.kind
+    ] = feature;
   }
 
   return { state, options, byKind };

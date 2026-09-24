@@ -142,7 +142,10 @@ export const NotificationsSection: FC = () => {
               onClick={() => {
                 const id = toast.loading("Загрузка данных…");
 
-                setTimeout(() => toast.success("Данные загружены", { id }), 1800);
+                setTimeout(
+                  () => toast.success("Данные загружены", { id }),
+                  1800,
+                );
               }}
             >
               loading → success
@@ -210,11 +213,7 @@ export const NotificationsSection: FC = () => {
             >
               показать несколько
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toast.dismiss()}
-            >
+            <Button variant="ghost" size="sm" onClick={() => toast.dismiss()}>
               закрыть все
             </Button>
           </div>

@@ -1,3 +1,7 @@
+export type { ComputeColumnValidityInput } from "./compute-column-validity";
+export { computeColumnValidity } from "./compute-column-validity";
+export type { ResolveDropStateInput } from "./resolve-drop-state";
+export { resolveDropState } from "./resolve-drop-state";
 export type {
   UseKanbanBoardOptions,
   UseKanbanBoardResult,

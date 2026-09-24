@@ -1,66 +1,69 @@
-import type { DateRange } from "../types";
+import { isAfter, isBefore, isSameDay, startOfDay } from "date-fns";
 
-export interface DayClassification {
-  isToday: boolean;
-  isStart: boolean;
-  isEnd: boolean;
-  isInRange: boolean;
-  isSingle: boolean;
-}
+import type { DateRange, DayFlags } from "../types";
+import { getPreviewRange } from "./date-helpers";
 
-export interface PreviewClassification {
-  active: boolean;
-  isStart: boolean;
-  isEnd: boolean;
-  isInRange: boolean;
-}
+const isStrictlyBetween = (date: Date, from: Date, to: Date): boolean => {
+  const day = startOfDay(date);
 
-export const classifyDay = (
-  date: Date,
-  today: Date,
-  selected?: DateRange,
-): DayClassification => {
-  const isToday =
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate();
-
-  const isStart =
-    !!selected?.from && date.getTime() === selected.from.getTime();
-  const isEnd = !!selected?.to && date.getTime() === selected.to.getTime();
-  const isSingle = isStart && isEnd;
-  const hasRange = !!selected?.from && !!selected?.to;
-  const isInRange = hasRange && date > selected.from! && date < selected.to!;
-
-  return { isToday, isStart, isEnd, isInRange, isSingle };
+  return isAfter(day, startOfDay(from)) && isBefore(day, startOfDay(to));
 };
 
-export const classifyPreview = (
+const EMPTY_FLAGS: DayFlags = {
+  today: false,
+  selected: false,
+  rangeStart: false,
+  rangeEnd: false,
+  inRange: false,
+  previewStart: false,
+  previewEnd: false,
+  previewInRange: false,
+};
+
+/** Флаги ячейки для одиночного выбора. */
+export const classifySingleDay = (
   date: Date,
-  hoverDate: Date | undefined,
+  today: Date,
+  selected: Date | undefined,
+): DayFlags => ({
+  ...EMPTY_FLAGS,
+  today: isSameDay(date, today),
+  selected: !!selected && isSameDay(date, selected),
+});
+
+/** Флаги ячейки для диапазона (сравнение по дням — время в значении не мешает). */
+export const classifyRangeDay = (
+  date: Date,
+  today: Date,
   selected: DateRange | undefined,
+  hoverDate: Date | undefined,
   showPreview: boolean,
-): PreviewClassification => {
-  const active =
-    showPreview &&
+): DayFlags => {
+  const rangeStart = !!selected?.from && isSameDay(date, selected.from);
+  const rangeEnd = !!selected?.to && isSameDay(date, selected.to);
+  const inRange =
     !!selected?.from &&
-    !selected?.to &&
-    !!hoverDate &&
-    hoverDate.getTime() !== selected.from.getTime();
+    !!selected.to &&
+    isStrictlyBetween(date, selected.from, selected.to);
 
-  if (!active) {
-    return { active: false, isStart: false, isEnd: false, isInRange: false };
-  }
-
-  const [from, to] =
-    hoverDate! < selected!.from!
-      ? [hoverDate!, selected!.from!]
-      : [selected!.from!, hoverDate!];
+  const preview = showPreview
+    ? getPreviewRange(selected, hoverDate)
+    : undefined;
+  const previewStart = !!preview?.from && isSameDay(date, preview.from);
+  const previewEnd = !!preview?.to && isSameDay(date, preview.to);
+  const previewInRange =
+    !!preview?.from &&
+    !!preview.to &&
+    isStrictlyBetween(date, preview.from, preview.to);
 
   return {
-    active: true,
-    isStart: date.getTime() === from.getTime(),
-    isEnd: date.getTime() === to.getTime(),
-    isInRange: date > from && date < to,
+    today: isSameDay(date, today),
+    selected: rangeStart || rangeEnd,
+    rangeStart,
+    rangeEnd,
+    inRange,
+    previewStart,
+    previewEnd,
+    previewInRange,
   };
 };

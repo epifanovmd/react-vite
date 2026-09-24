@@ -3,14 +3,21 @@ import type { FactoryOpts } from "imask";
 import * as React from "react";
 
 import { Input, type InputProps } from "../input";
-import { type MaskedInputChangeInfo, useMaskedInput } from "./hooks";
+import {
+  type MaskedInputChangeInfo,
+  type MaskedValueMode,
+  useMaskedInput,
+} from "./hooks";
 
 export interface MaskedInputProps<
   Opts extends FactoryOpts = FactoryOpts,
 > extends Omit<InputProps, "value" | "defaultValue" | "onChange" | "type"> {
+  /** Опции imask; должны быть стабильны по identity (`useMemo`/константа). */
   mask: Opts;
   value?: string;
   defaultValue?: string;
+  /** В какой форме приходит `value`: маскированной или «сырой». */
+  valueMode?: MaskedValueMode;
   onChange?: (info: MaskedInputChangeInfo<Opts>) => void;
   onComplete?: (info: MaskedInputChangeInfo<Opts>) => void;
 }
@@ -20,6 +27,7 @@ const MaskedInputInner = <Opts extends FactoryOpts>(
     mask,
     value,
     defaultValue,
+    valueMode,
     onChange,
     onComplete,
     disabled,
@@ -35,6 +43,7 @@ const MaskedInputInner = <Opts extends FactoryOpts>(
   } = useMaskedInput<Opts>({
     mask,
     value: value ?? defaultValue,
+    valueMode,
     disabled,
     onChange,
     onComplete,
@@ -42,26 +51,32 @@ const MaskedInputInner = <Opts extends FactoryOpts>(
 
   const mergedRef = useMergedRef(forwardedRef, ref);
 
+  const handleClear = () => {
+    clear();
+    onClear?.();
+  };
+
+  // Стартовое значение в DOM до инициализации imask — только в masked-форме.
+  const initialValue =
+    valueMode === "unmasked" ? undefined : (value ?? defaultValue);
+
   return (
     <Input
       ref={mergedRef}
       disabled={disabled}
-      defaultValue={value ?? defaultValue}
+      defaultValue={initialValue}
       hasValue={maskedValue.length > 0}
-      onClear={() => {
-        clear();
-        onClear?.();
-      }}
+      onClear={handleClear}
       {...props}
     />
   );
 };
 
-const MaskedInputComponent = React.forwardRef(MaskedInputInner);
+const MaskedInputForwarded = React.forwardRef(MaskedInputInner);
 
-MaskedInputComponent.displayName = "MaskedInput";
+MaskedInputForwarded.displayName = "MaskedInput";
 
-export const MaskedInput = MaskedInputComponent as <
+export const MaskedInput = MaskedInputForwarded as <
   Opts extends FactoryOpts = FactoryOpts,
 >(
   props: MaskedInputProps<Opts> & { ref?: React.Ref<HTMLInputElement> },

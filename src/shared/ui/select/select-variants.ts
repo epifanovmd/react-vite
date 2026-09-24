@@ -3,17 +3,16 @@ import { cn } from "@shared/lib/utils/cn";
 import {
   type FieldVariantProps,
   fieldVariants,
-} from "../foundation/field-variants";
+  INHERIT_FONT_CLASS,
+} from "../foundation";
+import { popoverContentVariants } from "../popover";
 
-export const selectContentClasses = [
-  // Тень и кольцо: на тёмной теме список почти сливался с панелью под ним.
-  "z-50 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-xl ring-1 ring-black/10 dark:ring-white/10",
-  "data-[state=open]:animate-in data-[state=closed]:animate-out",
-  "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-  "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-  "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
-  "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-].join(" ");
+/** Контент дропдауна: анимации из Popover + плотный список без паддинга.
+ *  Тень и кольцо: на тёмной теме список почти сливался с панелью под ним. */
+export const selectContentClasses = cn(
+  popoverContentVariants({ variant: "default", size: "auto" }),
+  "overflow-hidden p-0 shadow-xl ring-1 ring-black/10 dark:ring-white/10",
+);
 
 export const selectItemClasses = [
   "relative flex w-full cursor-pointer select-none items-center rounded-md",
@@ -22,8 +21,7 @@ export const selectItemClasses = [
 
 export const selectItemHighlightedClasses = "bg-accent text-accent-foreground";
 
-export const selectSearchInputClasses =
-  "flex-1 min-w-0 bg-transparent outline-none text-inherit placeholder:text-muted-foreground cursor-text";
+export const selectSearchInputClasses = `flex-1 min-w-0 bg-transparent outline-none ${INHERIT_FONT_CLASS} text-inherit placeholder:text-muted-foreground cursor-text`;
 
 const resolveValidationVariant = (
   variant: FieldVariantProps["variant"],

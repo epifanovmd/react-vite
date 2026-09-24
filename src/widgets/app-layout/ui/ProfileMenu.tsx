@@ -1,5 +1,6 @@
 import { SignOutButton } from "@features/sign-out";
-import { Popover, ThemeToggle } from "@shared/ui";
+import { ThemeToggle } from "@features/toggle-theme";
+import { Popover } from "@shared/ui";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, User } from "lucide-react";
 import { FC } from "react";
@@ -34,7 +35,7 @@ export const ProfileMenu: FC<ProfileMenuProps> = ({
       </button>
     </Popover.Trigger>
 
-    <Popover.Content size="sm" align="end" className="p-0">
+    <Popover.Content size="none" align="end" className="w-48">
       <div className="flex items-center gap-3 border-b border-border p-3">
         <ProfileAvatar initials={initials} size="md" />
         <div className="min-w-0">

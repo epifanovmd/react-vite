@@ -1,6 +1,9 @@
 import {
   Alert,
-  AuthFormCard,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormSubmit,
   InputFormField,
@@ -25,9 +28,14 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
   });
 
   return (
-    <AuthFormCard title="Сброс пароля" subtitle="Введите новый пароль">
+    <Card className="p-6">
+      <CardHeader className="mb-6 p-0 md:p-0">
+        <CardTitle className="text-xl font-bold">Сброс пароля</CardTitle>
+        <CardDescription>Введите новый пароль</CardDescription>
+      </CardHeader>
+
       {error && (
-        <Alert variant="error" className="mb-4">
+        <Alert variant="destructive" className="mb-4">
           {error}
         </Alert>
       )}
@@ -48,6 +56,6 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
         />
         <FormSubmit className="w-full">Установить пароль</FormSubmit>
       </Form>
-    </AuthFormCard>
+    </Card>
   );
 };

@@ -1,25 +1,17 @@
 import type { ReactNode } from "react";
 
-/** Тип отрисовки серии; в одном графике типы можно смешивать. */
-export type ChartSeriesType = "line" | "area" | "bar";
-
-export type ChartCurveType =
-  "linear" | "monotone" | "natural" | "step" | "stepAfter" | "stepBefore";
-
 export type ChartXValue = Date | number | string;
 
 /**
- * `auto` — band, если есть столбцы; иначе time для дат, linear для чисел
- * и band для строковых категорий.
+ * `auto` — time для дат, linear для чисел, point для строковых категорий.
  */
-export type ChartXScaleType = "auto" | "band" | "time" | "linear";
+export type ChartXScaleType = "auto" | "time" | "linear" | "point";
+
+export type ChartCurveType = "linear" | "monotone" | "step";
 
 export type ChartGridMode = "none" | "x" | "y" | "both";
 
 export type ChartLegendPlacement = "top" | "bottom";
-
-/** Таблица с теми же значениями: `sr-only` — только для скринридеров. */
-export type ChartDataTableMode = "sr-only" | "visible" | "none";
 
 export interface ChartMargin {
   top: number;
@@ -32,81 +24,59 @@ export interface ChartSeries<Datum> {
   /** Идентификатор серии: ключ React, легенда, тултип, видимость. */
   key: string;
   label?: string;
-  type?: ChartSeriesType;
-  value: (datum: Datum, index: number) => number | null | undefined;
   /** CSS-цвет. По умолчанию — слот палитры по порядку объявления серии. */
   color?: string;
-  curve?: ChartCurveType;
-  /** Серии с одинаковым `stackId` складываются друг на друга. */
-  stackId?: string;
-  /** Непрозрачность заливки area: по умолчанию лёгкая вода, а не плотный блок. */
-  fillOpacity?: number;
-  strokeWidth?: number;
-  dashed?: boolean;
-  /** Показывать точки всегда, а не только под курсором. */
-  points?: boolean;
+  /** `null`/`undefined` — пропуск: линия рвётся, в стеке считается нулём. */
+  value: (datum: Datum, index: number) => number | null | undefined;
+  /** Форматирование значения этой серии в тултипе; перекрывает `formatValue`. */
   format?: (value: number) => string;
   /** Скрыта на первом рендере; легенда может вернуть её обратно. */
   hidden?: boolean;
 }
 
-export interface ChartAxisConfig {
-  hide?: boolean;
+export interface ChartXAxisConfig {
   label?: string;
   tickCount?: number;
-  tickFormat?: (value: ChartXValue, index: number) => string;
-  /** Место под ось: высота для X, ширина для Y. */
-  size?: number;
+  tickFormat?: (value: ChartXValue) => string;
 }
 
-export interface ChartYAxisConfig extends Omit<ChartAxisConfig, "tickFormat"> {
-  tickFormat?: (value: number, index: number) => string;
+export interface ChartYAxisConfig {
+  label?: string;
+  tickCount?: number;
+  tickFormat?: (value: number) => string;
+  /** Фиксированный домен; по умолчанию считается по данным и округляется. */
   domain?: [number, number];
-  /** Включать 0 в домен; по умолчанию да, если есть столбцы или области. */
+  /** Включать 0 в домен; по умолчанию да для областей и нет для линий. */
   zero?: boolean;
 }
 
-export interface ChartReferenceLine {
-  /** Горизонтальная линия по значению оси Y. */
-  y?: number;
-  /** Вертикальная линия по позиции точки в данных. */
-  xIndex?: number;
-  label?: string;
-  color?: string;
-  dashed?: boolean;
-}
-
+/** Точка серии в единицах оси Y. `value` = null — пропуск. */
 export interface ChartPoint<Datum> {
   index: number;
   datum: Datum;
-  /** `null` — пропуск: линия рвётся, столбец не рисуется. */
+  x: ChartXValue;
   value: number | null;
-  /** Низ сегмента в единицах оси Y (для стека — накопленная сумма). */
+  /** Низ сегмента: 0 без стека, накопленная сумма — в стеке. */
   y0: number;
-  /** Верх сегмента в единицах оси Y. */
+  /** Верх сегмента: само значение без стека. */
   y1: number;
-  /** Верхний сегмент стека на этой позиции — только ему скругляем торец. */
-  stackTop: boolean;
 }
 
 export interface ChartResolvedSeries<Datum> {
-  source: ChartSeries<Datum>;
   key: string;
   label: string;
   color: string;
-  type: ChartSeriesType;
   hidden: boolean;
   points: ChartPoint<Datum>[];
   format: (value: number) => string;
 }
 
-export interface ChartTooltipEntry<Datum> {
+export interface ChartTooltipEntry {
   key: string;
   label: string;
   color: string;
   value: number;
   formatted: string;
-  series: ChartSeries<Datum>;
 }
 
 export interface ChartTooltipData<Datum> {
@@ -114,46 +84,51 @@ export interface ChartTooltipData<Datum> {
   datum: Datum;
   x: ChartXValue;
   label: string;
-  entries: ChartTooltipEntry<Datum>[];
+  entries: ChartTooltipEntry[];
   /** Сумма видимых значений — осмысленна для стека. */
   total: number;
+  formattedTotal: string;
 }
 
-export interface ChartProps<Datum> {
+export interface ChartBaseProps<Datum> {
   data: Datum[];
   series: ChartSeries<Datum>[];
   x: (datum: Datum, index: number) => ChartXValue;
-  /** Тип серий по умолчанию, если он не задан в самой серии. */
-  type?: ChartSeriesType;
   xScale?: ChartXScaleType;
-  /** Сложить все серии в один стек, не проставляя `stackId` каждой. */
-  stacked?: boolean;
+  curve?: ChartCurveType;
   height?: number;
   /** Фиксированная ширина; по умолчанию график меряет контейнер сам. */
   width?: number;
   margin?: Partial<ChartMargin>;
   grid?: ChartGridMode;
-  xAxis?: ChartAxisConfig | false;
+  xAxis?: ChartXAxisConfig | false;
   yAxis?: ChartYAxisConfig | false;
   legend?: ChartLegendPlacement | false;
   /** Клик по легенде скрывает и возвращает серию. */
   legendToggle?: boolean;
   tooltip?: boolean;
+  /** Заменяет содержимое блока значений; подпись X под графиком остаётся. */
   renderTooltip?: (data: ChartTooltipData<Datum>) => ReactNode;
-  crosshair?: boolean;
   formatValue?: (value: number) => string;
+  /** Подпись позиции X в тултипе. */
   formatX?: (x: ChartXValue, datum: Datum, index: number) => string;
-  referenceLines?: ChartReferenceLine[];
-  /** Предельная толщина столбца; остаток слота остаётся воздухом. */
-  barSize?: number;
-  barPadding?: number;
-  onActiveIndexChange?: (index: number | null) => void;
   onPointClick?: (data: ChartTooltipData<Datum>) => void;
   loading?: boolean;
   emptyText?: ReactNode;
-  dataTable?: ChartDataTableMode;
-  /** Цвет поверхности под графиком: им рисуются зазоры и кольца точек. */
-  surface?: string;
   ariaLabel?: string;
   className?: string;
+}
+
+export interface LineChartProps<Datum> extends ChartBaseProps<Datum> {
+  /** Показывать точки всегда, а не только под курсором. */
+  showPoints?: boolean;
+  strokeWidth?: number;
+}
+
+export interface AreaChartProps<Datum> extends ChartBaseProps<Datum> {
+  /** Сложить серии друг на друга; тултип показывает и сумму. */
+  stacked?: boolean;
+  /** Непрозрачность заливки у линии; к низу градиент сходит на нет. */
+  fillOpacity?: number;
+  strokeWidth?: number;
 }

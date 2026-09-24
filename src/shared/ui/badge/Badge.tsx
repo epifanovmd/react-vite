@@ -1,15 +1,16 @@
 import { cn } from "@shared/lib/utils/cn";
-import { type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { badgeVariants } from "./badge-variants";
 
 export interface BadgeProps
   extends
-    React.HTMLAttributes<HTMLDivElement>,
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {
+  /** Точка-индикатор перед контентом. */
   dot?: boolean;
-  /** When `children` is a number greater than `max`, renders `${max}+` instead. */
+  /** Число больше `max` показывается как `${max}+`. */
   max?: number;
 }
 
@@ -21,27 +22,30 @@ const formatContent = (
     ? `${max}+`
     : children;
 
-const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+const isTextContent = (children: React.ReactNode): boolean =>
+  typeof children === "string" || typeof children === "number";
+
+const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className, variant, dot, max, children, ...props }, ref) => {
+    const content = formatContent(children, max);
+
     return (
-      <div
-        className={cn(badgeVariants({ variant, className }))}
+      <span
         ref={ref}
+        className={cn(badgeVariants({ variant }), className)}
         {...props}
       >
         {dot && (
-          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80 flex-shrink-0" />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-80" />
         )}
         {/* Текст обрезается, разметка с иконками рендерится как есть —
             иначе иконка и подпись попадают в один truncate-span и съезжают. */}
-        {typeof children === "string" || typeof children === "number" ? (
-          <span className="truncate min-w-0">
-            {formatContent(children, max)}
-          </span>
+        {isTextContent(children) ? (
+          <span className="min-w-0 truncate">{content}</span>
         ) : (
-          formatContent(children, max)
+          content
         )}
-      </div>
+      </span>
     );
   },
 );

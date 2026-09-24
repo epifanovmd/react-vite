@@ -4,11 +4,12 @@ import { type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import * as React from "react";
 
-import { Button, type ButtonProps } from "../../button";
+import { type ButtonProps } from "../../button";
 import { IconButton } from "../../icon-button";
 import { useModalOpen } from "../modal-open-context";
 import { modalContentVariants } from "./modal-variants";
 import { ModalBody } from "./ModalBody";
+import { ModalConfirmFooter } from "./ModalConfirmFooter";
 import { ModalDescription } from "./ModalDescription";
 import { ModalFooter } from "./ModalFooter";
 import { ModalHeader } from "./ModalHeader";
@@ -23,6 +24,7 @@ type ContentProps = Omit<
 type ModalVariantProps = VariantProps<typeof modalContentVariants>;
 
 export interface ModalContentProps extends ContentProps, ModalVariantProps {
+  /** Запрещает закрывать окно по ESC и клику вне его. */
   disableInteractOutside?: boolean;
   hideCloseButton?: boolean;
 
@@ -30,15 +32,26 @@ export interface ModalContentProps extends ContentProps, ModalVariantProps {
   description?: React.ReactNode;
   footer?: React.ReactNode;
 
+  /**
+   * Режим подтверждения: пока промис не завершится, кнопка показывает
+   * ожидание; после успеха окно закрывается. Если промис отклонён, окно
+   * остаётся открытым, ошибка уходит в `onConfirmError`, а без него —
+   * пробрасывается дальше.
+   */
   onConfirm?: () => void | Promise<void>;
+  onConfirmError?: (error: unknown) => void;
   confirmLabel?: string;
   confirmVariant?: ButtonProps["variant"];
+  /**
+   * В режиме подтверждения вызывается при любом закрытии без подтверждения:
+   * «Отмена», крестик, ESC, клик по оверлею.
+   */
   onCancel?: () => void;
   cancelLabel?: string;
   cancelVariant?: ButtonProps["variant"];
 }
 
-export const ModalContent = React.forwardRef<
+const ModalContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   ModalContentProps
 >(
@@ -54,17 +67,20 @@ export const ModalContent = React.forwardRef<
       description,
       footer,
       onConfirm,
-      confirmLabel = "Confirm",
+      onConfirmError,
+      confirmLabel = "Подтвердить",
       confirmVariant = "primary",
       onCancel,
-      cancelLabel = "Cancel",
+      cancelLabel = "Отмена",
       cancelVariant = "outline",
+      onEscapeKeyDown,
+      onPointerDownOutside,
       ...props
     },
     ref,
   ) => {
+    const { open, setOpen } = useModalOpen();
     const [confirmLoading, setConfirmLoading] = React.useState(false);
-    const closeRef = React.useRef<HTMLButtonElement>(null);
 
     /**
      * Пока играет анимация закрытия, Radix держит окно смонтированным, а
@@ -72,25 +88,25 @@ export const ModalContent = React.forwardRef<
      * дают пустое окно на две десятых секунды. Поэтому на время закрытия
      * содержимое замораживается — последний виденный кадр и доигрывает.
      */
-    const open = useModalOpen();
     const view = { children, title, description, footer };
     const frozen = React.useRef(view);
 
-    if (open !== false) frozen.current = view;
+    if (open) frozen.current = view;
 
-    const shown = open === false ? frozen.current : view;
+    const shown = open ? view : frozen.current;
 
+    const isConfirmMode = onConfirm !== undefined || onCancel !== undefined;
     const isSkeletonMode =
-      shown.title !== undefined ||
-      shown.footer !== undefined ||
-      onConfirm !== undefined ||
-      onCancel !== undefined;
+      shown.title !== undefined || shown.footer !== undefined || isConfirmMode;
 
     const handleConfirm = async () => {
       setConfirmLoading(true);
       try {
         await onConfirm?.();
-        closeRef.current?.click();
+        setOpen(false);
+      } catch (error) {
+        if (!onConfirmError) throw error;
+        onConfirmError(error);
       } finally {
         setConfirmLoading(false);
       }
@@ -98,33 +114,79 @@ export const ModalContent = React.forwardRef<
 
     const handleCancel = () => {
       onCancel?.();
-      closeRef.current?.click();
+      setOpen(false);
     };
 
-    const resolvedFooter =
-      shown.footer ??
-      (onConfirm !== undefined || onCancel !== undefined ? (
-        <>
-          {onCancel !== undefined && (
-            <Button
-              variant={cancelVariant}
-              onClick={handleCancel}
-              disabled={confirmLoading}
-            >
-              {cancelLabel}
-            </Button>
+    const handleDismiss = () => {
+      if (isConfirmMode) onCancel?.();
+      setOpen(false);
+    };
+
+    const handleEscapeKeyDown = (event: KeyboardEvent) => {
+      onEscapeKeyDown?.(event);
+
+      if (disableInteractOutside) {
+        event.preventDefault();
+
+        return;
+      }
+
+      if (isConfirmMode && !event.defaultPrevented) onCancel?.();
+    };
+
+    const handlePointerDownOutside: ContentProps["onPointerDownOutside"] =
+      event => {
+        onPointerDownOutside?.(event);
+
+        if (disableInteractOutside) {
+          event.preventDefault();
+
+          return;
+        }
+
+        if (isConfirmMode && !event.defaultPrevented) onCancel?.();
+      };
+
+    const customFooter =
+      shown.footer !== undefined ? (
+        <ModalFooter>{shown.footer}</ModalFooter>
+      ) : null;
+
+    const confirmFooter = isConfirmMode ? (
+      <ModalConfirmFooter
+        showCancel={onCancel !== undefined}
+        showConfirm={onConfirm !== undefined}
+        cancelLabel={cancelLabel}
+        cancelVariant={cancelVariant}
+        confirmLabel={confirmLabel}
+        confirmVariant={confirmVariant}
+        loading={confirmLoading}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+      />
+    ) : null;
+
+    const footerNode = customFooter ?? confirmFooter;
+
+    const headerNode =
+      shown.title !== undefined ? (
+        <ModalHeader>
+          <ModalTitle>{shown.title}</ModalTitle>
+          {shown.description && (
+            <ModalDescription>{shown.description}</ModalDescription>
           )}
-          {onConfirm !== undefined && (
-            <Button
-              variant={confirmVariant}
-              onClick={handleConfirm}
-              loading={confirmLoading}
-            >
-              {confirmLabel}
-            </Button>
-          )}
-        </>
-      ) : null);
+        </ModalHeader>
+      ) : null;
+
+    const bodyNode = isSkeletonMode ? (
+      <>
+        {headerNode}
+        {shown.children && <ModalBody>{shown.children}</ModalBody>}
+        {footerNode}
+      </>
+    ) : (
+      shown.children
+    );
 
     return (
       <DialogPrimitive.Portal>
@@ -133,54 +195,32 @@ export const ModalContent = React.forwardRef<
           ref={ref}
           className={cn(
             modalContentVariants({ position, size }),
-            "flex max-h-[85vh] flex-col",
+            "flex max-h-[85vh] flex-col focus:outline-none",
             className,
           )}
-          onPointerDownOutside={e => {
-            if (disableInteractOutside) e.preventDefault();
-          }}
-          onEscapeKeyDown={e => {
-            if (disableInteractOutside) e.preventDefault();
-          }}
+          onEscapeKeyDown={handleEscapeKeyDown}
+          onPointerDownOutside={handlePointerDownOutside}
           {...props}
         >
-          {isSkeletonMode ? (
-            <>
-              {shown.title !== undefined && (
-                <ModalHeader>
-                  <ModalTitle>{shown.title}</ModalTitle>
-                  {shown.description && (
-                    <ModalDescription>{shown.description}</ModalDescription>
-                  )}
-                </ModalHeader>
-              )}
-              {shown.children && <ModalBody>{shown.children}</ModalBody>}
-              {resolvedFooter && <ModalFooter>{resolvedFooter}</ModalFooter>}
-            </>
-          ) : (
-            shown.children
-          )}
+          {bodyNode}
 
           {!hideCloseButton && (
-            <DialogPrimitive.Close asChild>
-              <IconButton
-                size="sm"
-                aria-label="Close"
-                className="absolute right-3 top-3"
-              >
-                <X size={14} />
-              </IconButton>
-            </DialogPrimitive.Close>
+            <IconButton
+              type="button"
+              size="xs"
+              aria-label="Закрыть"
+              className="absolute right-3 top-3"
+              onClick={handleDismiss}
+            >
+              <X size={14} aria-hidden />
+            </IconButton>
           )}
-
-          <DialogPrimitive.Close
-            ref={closeRef}
-            className="sr-only"
-            tabIndex={-1}
-          />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     );
   },
 );
+
 ModalContent.displayName = "ModalContent";
+
+export { ModalContent };

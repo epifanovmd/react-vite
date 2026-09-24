@@ -1,4 +1,4 @@
-import { Alert } from "@shared/ui/alert";
+import { Alert, type AlertVariant } from "@shared/ui/alert";
 import { Button, type ButtonProps } from "@shared/ui/button";
 import { clsx } from "clsx";
 import { Loader2 } from "lucide-react";
@@ -27,6 +27,14 @@ export interface CustomToastProps {
 
 const SPINNER = <Loader2 className="h-4 w-4 animate-spin" />;
 
+const ALERT_VARIANT: Record<ToastVariant, AlertVariant> = {
+  success: "success",
+  error: "destructive",
+  warning: "warning",
+  info: "info",
+  loading: "info",
+};
+
 export const NotificationToast: React.FC<CustomToastProps> = ({
   id,
   variant,
@@ -51,7 +59,7 @@ export const NotificationToast: React.FC<CustomToastProps> = ({
       )}
     >
       <Alert
-        variant={isLoading ? "info" : variant}
+        variant={ALERT_VARIANT[variant]}
         title={title}
         icon={isLoading ? SPINNER : undefined}
         onClose={dismissible ? () => toast.dismiss(id) : undefined}

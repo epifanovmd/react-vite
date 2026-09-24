@@ -1,13 +1,13 @@
+import { useControllableState } from "@shared/lib/hooks";
 import {
   type ColumnDef,
   type ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { ColumnFilterConfig } from "../../../table.types";
-import { useControllableState } from "../shared";
-import type { TableFeatureResult } from "../types";
+import type { TableFeatureOf } from "../types";
 import type { TableFiltersConfig } from "./filter-config.types";
 import { toColumnFiltersState, toFilterMap } from "./filter-state";
 import { mergeFiltersIntoColumns } from "./merge-filters-into-columns";
@@ -22,9 +22,10 @@ export interface ColumnFiltersFeatureOptions<TData, TFilter> {
   manualFiltering?: boolean;
 }
 
-export interface ColumnFiltersFeatureResult<TData, TFilter> {
+export interface ColumnFiltersFeatureResult<TData> {
+  /** Колонки с вшитыми `meta.filter` — передавать в `Table` вместо исходных. */
   columns: ColumnDef<TData, any>[];
-  feature: TableFeatureResult<TData>;
+  feature: TableFeatureOf<TData, "columnFilters">;
 }
 
 export const useColumnFiltersFeature = <
@@ -32,7 +33,7 @@ export const useColumnFiltersFeature = <
   TFilter = Record<string, unknown>,
 >(
   options: ColumnFiltersFeatureOptions<TData, TFilter>,
-): ColumnFiltersFeatureResult<TData, TFilter> => {
+): ColumnFiltersFeatureResult<TData> => {
   const {
     enabled = true,
     columns,
@@ -54,10 +55,8 @@ export const useColumnFiltersFeature = <
     [columns, filters],
   );
 
-  const defaultValue = useMemo(
-    () => toColumnFiltersState(filteredColumns, defaultColumnFilters),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+  const [defaultValue] = useState(() =>
+    toColumnFiltersState(filteredColumns, defaultColumnFilters),
   );
 
   const controlledValue = useMemo(
@@ -80,16 +79,18 @@ export const useColumnFiltersFeature = <
     onChange: handleChange,
   });
 
-  const feature = useMemo<TableFeatureResult<TData>>(
+  const feature = useMemo<TableFeatureOf<TData, "columnFilters">>(
     () => ({
-      kind: "columnFilters" as const,
+      kind: "columnFilters",
       state: { columnFilters: state },
       options: {
         enableColumnFilters: enabled,
         onColumnFiltersChange: enabled ? setState : undefined,
         manualFiltering,
         getFilteredRowModel:
-          enabled && !manualFiltering ? getFilteredRowModel() : undefined,
+          enabled && !manualFiltering
+            ? getFilteredRowModel<TData>()
+            : undefined,
       },
     }),
     [state, setState, enabled, manualFiltering],

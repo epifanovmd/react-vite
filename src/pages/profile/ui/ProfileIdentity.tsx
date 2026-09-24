@@ -27,7 +27,7 @@ export const ProfileIdentity: FC<ProfileIdentityProps> = ({
       <div className="flex flex-wrap items-center gap-1.5">
         {roleLabel && <Badge variant="secondary">{roleLabel}</Badge>}
         {emailVerified !== undefined && (
-          <Badge variant={emailVerified ? "success" : "gray"} dot>
+          <Badge variant={emailVerified ? "success" : "secondary"} dot>
             {emailVerified ? "Email подтверждён" : "Email не подтверждён"}
           </Badge>
         )}

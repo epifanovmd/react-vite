@@ -9,24 +9,26 @@ export const DEFAULT_CHART_MARGIN: ChartMargin = {
   left: 48,
 };
 
-/** Столбец не заполняет слот целиком — остаток слота остаётся воздухом. */
-export const MAX_BAR_SIZE = 24;
+/** Отступ под скрытой осью: место нужно только под кольцо точки. */
+export const HIDDEN_AXIS_MARGIN = 8;
 
-export const DEFAULT_BAND_PADDING = 0.24;
+/** Дополнительное место под подпись оси. */
+export const AXIS_LABEL_MARGIN = 18;
 
-/**
- * Соприкасающиеся марки разделяет не обводка, а зазор цвета поверхности:
- * между сегментами стека и между соседними столбцами он одинаковый.
- */
-export const SURFACE_GAP = 2;
+export const DEFAULT_X_TICK_COUNT = 6;
 
-/** Кольцо цвета поверхности вокруг точки — чтобы она читалась поверх линии. */
+export const DEFAULT_Y_TICK_COUNT = 5;
+
+export const LINE_WIDTH = 2;
+
+export const AREA_FILL_OPACITY = 0.4;
+
 export const POINT_RADIUS = 4;
 
 export const POINT_RING = 2;
 
-export const LINE_WIDTH = 2;
+/** Сдвиг блока значений от точки, чтобы он не закрывал её. */
+export const TOOLTIP_OFFSET = 12;
 
-export const AREA_FILL_OPACITY = 0.1;
-
-export const BAR_RADIUS = 4;
+/** Подпись X прижимается к нижнему краю области графика. */
+export const TOOLTIP_LABEL_OFFSET = 14;
