@@ -59,6 +59,7 @@ Barrel `shared/ui/index.ts` — только явные именованные �
 - `date-picker/` — TimePicker; DatePicker/MaskedDatePicker `withTime` + `timeStep`.
 - `form/` — адаптеры OtpInput/NumberInput/Slider/TimePicker FormField.
 - Расширения: select `creatable`/`virtual`; avatar `status`; table `bulkActions`, `useTableSettings` + `createLocalStorageTableSettings`, `virtual`; file-drop `maxSize`/`maxFiles`, `FileDropList`, `useFileList`, `validateFiles`; chart `referenceLines`/`bands`; modal `fullScreenOnMobile`, `size="full"`.
+- Gotcha: `type="search"` рисует нативный крестик (WebKit) — `Input` скрывает его всегда (`[&::-webkit-search-cancel-button]:appearance-none`), очистка только через `clearable`.
 - Gotcha tailwind-merge: `max-h-none` и `max-h-[85vh]` конфликтуют — последний класс побеждает, порядок в `cn` важен.
 - `useModalController` в управляемом режиме выводит состояние из текущего конфига по сигнатурам (не из ref в рендере) — регрессионные тесты есть.
 

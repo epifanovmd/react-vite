@@ -65,6 +65,9 @@ const ACTION_ICON_CLASS = "h-4 w-4";
 const AFFIX_CLASS =
   "pointer-events-none whitespace-nowrap text-muted-foreground select-none";
 const PREFIX_POSITION_CLASS = "absolute top-1/2 flex -translate-y-1/2";
+/** Нативный крестик `type="search"` скрыт: очисткой управляет `clearable`. */
+const NATIVE_SEARCH_CANCEL_CLASS =
+  "[&::-webkit-search-cancel-button]:appearance-none";
 const AFFIX_SIZE_CLASS = { sm: "text-sm", md: "text-sm", lg: "text-base" };
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -199,6 +202,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={inputType}
           className={cn(
             inputVariants({ size, variant }),
+            NATIVE_SEARCH_CANCEL_CLASS,
             hasLeftContent && "pl-10",
             hasRightContent && "pr-10",
             inputClassName,
