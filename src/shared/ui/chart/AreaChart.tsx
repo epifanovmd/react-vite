@@ -1,6 +1,7 @@
 import type { AreaChartProps } from "./chart.types";
 import { ChartAreaSeries } from "./components/ChartAreaSeries";
 import { ChartBands } from "./components/ChartBands";
+import { ChartPlotArea } from "./components/ChartPlotArea";
 import { ChartReferenceLines } from "./components/ChartReferenceLines";
 import { ChartRoot } from "./components/ChartRoot";
 import { useChart } from "./hooks/use-chart";
@@ -49,15 +50,17 @@ export const AreaChart = <Datum,>({
     >
       {bands && <ChartBands bands={bands} />}
 
-      {model.visibleSeries.map(item => (
-        <ChartAreaSeries
-          key={item.key}
-          series={item}
-          curve={curve}
-          fillOpacity={fillOpacity}
-          strokeWidth={strokeWidth}
-        />
-      ))}
+      <ChartPlotArea>
+        {model.visibleSeries.map(item => (
+          <ChartAreaSeries
+            key={item.key}
+            series={item}
+            curve={curve}
+            fillOpacity={fillOpacity}
+            strokeWidth={strokeWidth}
+          />
+        ))}
+      </ChartPlotArea>
 
       {referenceLines && <ChartReferenceLines lines={referenceLines} />}
     </ChartRoot>

@@ -1,4 +1,5 @@
 import { IUserStore } from "@entities/user";
+import { useLeaveConfirmation } from "@shared/lib/navigation";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { parseISO } from "date-fns";
@@ -20,6 +21,13 @@ export const useEditProfileVM = ({
 
   const form = useZodForm(profileFormValidationSchema, {
     defaultValues: {},
+  });
+
+  const { isDirty } = form.formState;
+
+  useLeaveConfirmation({
+    when: open && isDirty,
+    dialog: { description: "Изменения профиля не сохранены и пропадут." },
   });
 
   useEffect(() => {

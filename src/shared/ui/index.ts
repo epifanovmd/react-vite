@@ -432,8 +432,12 @@ export type {
 export { OtpInput, OtpInputCell, useOtpInput } from "./otp-input";
 export type { PageHeaderHeading, PageHeaderProps } from "./page-header";
 export { PageHeader } from "./page-header";
-export type { PageLayoutProps } from "./page-layout";
-export { PAGE_CONTAINER_CLASS, PageLayout } from "./page-layout";
+export type { PageLayoutProps, PageLayoutToolbarProps } from "./page-layout";
+export {
+  PAGE_CONTAINER_CLASS,
+  PageLayout,
+  PageLayoutToolbar,
+} from "./page-layout";
 export type {
   PageEmptyProps,
   PageLoaderProps,
@@ -639,7 +643,7 @@ export type {
   TabsTriggerProps,
 } from "./tabs";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
-export type { TextareaProps } from "./textarea";
+export type { TextareaProps, TextareaResize } from "./textarea";
 export { Textarea, textareaVariants } from "./textarea";
 export type { ThemeToggleButtonProps } from "./theme-toggle";
 export { ThemeToggleButton } from "./theme-toggle";

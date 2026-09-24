@@ -121,8 +121,14 @@ describe("Textarea", () => {
       <Textarea
         aria-label="Auto"
         defaultValue=""
+        minRows={1}
         maxRows={2}
-        style={{ lineHeight: "20px", paddingTop: "8px", paddingBottom: "8px" }}
+        style={{
+          boxSizing: "border-box",
+          lineHeight: "20px",
+          paddingTop: "8px",
+          paddingBottom: "8px",
+        }}
       />,
     );
 
@@ -143,5 +149,157 @@ describe("Textarea", () => {
     fireEvent.input(textarea, { target: { value: "one\ntwo\nthree\nfour" } });
     expect(textarea.style.height).toBe("56px");
     expect(textarea.style.overflowY).toBe("auto");
+  });
+
+  describe("авторост", () => {
+    const setScrollHeight = (element: HTMLElement, value: number) =>
+      Object.defineProperty(element, "scrollHeight", {
+        configurable: true,
+        value,
+      });
+
+    const BOX_STYLE = {
+      boxSizing: "border-box",
+      lineHeight: "20px",
+      paddingTop: "8px",
+      paddingBottom: "8px",
+      borderTopWidth: "1px",
+      borderBottomWidth: "1px",
+      borderStyle: "solid",
+    } as const;
+
+    it("учитывает рамку при border-box: без лишнего скролла на последней строке", () => {
+      render(
+        <Textarea
+          aria-label="Box"
+          defaultValue=""
+          minRows={1}
+          maxRows={4}
+          style={BOX_STYLE}
+        />,
+      );
+
+      const textarea = screen.getByRole("textbox", { name: "Box" });
+
+      setScrollHeight(textarea, 56);
+      fireEvent.input(textarea, { target: { value: "one\ntwo" } });
+
+      expect(textarea.style.height).toBe("58px");
+      expect(textarea.style.overflowY).toBe("hidden");
+
+      setScrollHeight(textarea, 200);
+      fireEvent.input(textarea, { target: { value: "много строк" } });
+
+      // 4 строки по 20px + отступы 16px + рамка 2px
+      expect(textarea.style.height).toBe("98px");
+      expect(textarea.style.overflowY).toBe("auto");
+    });
+
+    it("не становится ниже minRows", () => {
+      render(
+        <Textarea
+          aria-label="Min"
+          defaultValue=""
+          minRows={3}
+          maxRows={6}
+          style={BOX_STYLE}
+        />,
+      );
+
+      const textarea = screen.getByRole("textbox", { name: "Min" });
+
+      setScrollHeight(textarea, 20);
+      fireEvent.input(textarea, { target: { value: "a" } });
+
+      // 3 строки по 20px + отступы 16px + рамка 2px
+      expect(textarea.style.height).toBe("78px");
+    });
+
+    it("maxRows={Infinity} растёт без ограничения и без скролла", () => {
+      render(
+        <Textarea
+          aria-label="Unbounded"
+          defaultValue=""
+          maxRows={Infinity}
+          style={BOX_STYLE}
+        />,
+      );
+
+      const textarea = screen.getByRole("textbox", { name: "Unbounded" });
+
+      setScrollHeight(textarea, 1000);
+      fireEvent.input(textarea, { target: { value: "очень много" } });
+
+      expect(textarea.style.height).toBe("1002px");
+      expect(textarea.style.overflowY).toBe("hidden");
+    });
+  });
+
+  it('resize="vertical" разрешает ручное растягивание и при авторосте', () => {
+    render(<Textarea aria-label="Resizable" resize="vertical" />);
+
+    expect(screen.getByRole("textbox", { name: "Resizable" })).toHaveClass(
+      "resize-y",
+    );
+  });
+
+  it("clearable очищает значение, возвращает фокус и зовёт onChange и onClear", () => {
+    const onChange = vi.fn();
+    const onClear = vi.fn();
+
+    render(
+      <Textarea
+        aria-label="Clear"
+        defaultValue="текст"
+        clearable
+        onChange={onChange}
+        onClear={onClear}
+      />,
+    );
+
+    const textarea = screen.getByRole("textbox", { name: "Clear" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Очистить" }));
+
+    expect(textarea).toHaveValue("");
+    expect(textarea).toHaveFocus();
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: "Очистить" })).toBeNull();
+  });
+
+  it("без значения, при disabled и readOnly кнопки очистки нет", () => {
+    const { rerender } = render(
+      <Textarea aria-label="Empty" defaultValue="" clearable />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Очистить" })).toBeNull();
+
+    rerender(<Textarea aria-label="Empty" value="x" clearable readOnly />);
+    expect(screen.queryByRole("button", { name: "Очистить" })).toBeNull();
+  });
+
+  it("onSubmitShortcut срабатывает на Ctrl/Cmd+Enter, а Enter переносит строку", () => {
+    const onSubmit = vi.fn();
+    const onKeyDown = vi.fn();
+
+    render(
+      <Textarea
+        aria-label="Submit"
+        onSubmitShortcut={onSubmit}
+        onKeyDown={onKeyDown}
+      />,
+    );
+
+    const textarea = screen.getByRole("textbox", { name: "Submit" });
+
+    fireEvent.keyDown(textarea, { key: "Enter" });
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(textarea, { key: "Enter", ctrlKey: true });
+    fireEvent.keyDown(textarea, { key: "Enter", metaKey: true });
+
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+    expect(onKeyDown).toHaveBeenCalledTimes(3);
   });
 });

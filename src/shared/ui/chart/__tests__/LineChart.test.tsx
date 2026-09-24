@@ -170,4 +170,20 @@ describe("LineChart", () => {
 
     expect(left).toBeGreaterThan(48);
   });
+
+  it("обрезает линии по области графика: выбросы за фиксированным доменом не вылезают на оси", () => {
+    const { container } = renderChart({ yAxis: { domain: [0, 12] } });
+
+    const clipped = [...container.querySelectorAll("path.visx-linepath")].map(
+      path => path.closest("g[clip-path]"),
+    );
+
+    expect(clipped).toHaveLength(2);
+    clipped.forEach(group => {
+      const id = group?.getAttribute("clip-path")?.match(/#([^)]+)/)?.[1];
+
+      expect(id).toBeTruthy();
+      expect(container.querySelector(`clipPath[id="${id}"]`)).not.toBeNull();
+    });
+  });
 });

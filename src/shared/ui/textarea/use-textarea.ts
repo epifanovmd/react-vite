@@ -1,16 +1,27 @@
 import { useMergedRef } from "@mantine/hooks";
+import { getHotkeyHandler } from "@shared/lib/hotkeys";
 import * as React from "react";
 
+import { clearNativeField } from "../foundation";
+import { measureAutosize } from "./textarea-autosize";
+
 type TextareaValue = React.TextareaHTMLAttributes<HTMLTextAreaElement>["value"];
+type TextareaKeyboardEvent = React.KeyboardEvent<HTMLTextAreaElement>;
 
 interface UseTextareaOptions {
   ref: React.ForwardedRef<HTMLTextAreaElement>;
   value: TextareaValue;
   defaultValue: React.TextareaHTMLAttributes<HTMLTextAreaElement>["defaultValue"];
   autoResize: boolean;
+  minRows: number;
   maxRows: number;
   maxLength: number | undefined;
+  disabled: boolean;
+  readOnly: boolean;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement> | undefined;
+  onClear: (() => void) | undefined;
+  onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> | undefined;
+  onSubmitShortcut: ((event: TextareaKeyboardEvent) => void) | undefined;
 }
 
 interface UseTextareaResult {
@@ -20,11 +31,13 @@ interface UseTextareaResult {
   hasValue: boolean;
   isControlled: boolean;
   handleChange: React.ChangeEventHandler<HTMLTextAreaElement>;
+  handleClear: () => void;
+  handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement>;
 }
 
 /** Доля лимита, после которой счётчик подсвечивается как предупреждение. */
 const COUNTER_WARN_RATIO = 0.8;
-const FALLBACK_LINE_HEIGHT = 20;
+const SUBMIT_HOTKEY = "mod+enter";
 
 const getLength = (value: TextareaValue): number => String(value ?? "").length;
 
@@ -40,17 +53,23 @@ const getCounterTone = (
 };
 
 /**
- * Внутренняя логика Textarea: автоподбор высоты до `maxRows`, счётчик символов
- * для controlled и uncontrolled режима.
+ * Внутренняя логика Textarea: высота по содержимому в пределах
+ * `[minRows, maxRows]`, счётчик символов, очистка и отправка по Ctrl/Cmd+Enter.
  */
 export const useTextarea = ({
   ref,
   value,
   defaultValue,
   autoResize,
+  minRows,
   maxRows,
   maxLength,
+  disabled,
+  readOnly,
   onChange,
+  onClear,
+  onKeyDown,
+  onSubmitShortcut,
 }: UseTextareaOptions): UseTextareaResult => {
   const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
   const setRef = useMergedRef(ref, innerRef);
@@ -69,34 +88,26 @@ export const useTextarea = ({
 
     el.style.height = "auto";
 
-    const scrollHeight = el.scrollHeight;
-    const style = window.getComputedStyle(el);
-    const lineHeight = parseFloat(style.lineHeight) || FALLBACK_LINE_HEIGHT;
-    const paddingTop = parseFloat(style.paddingTop) || 0;
-    const paddingBottom = parseFloat(style.paddingBottom) || 0;
-    const maxHeight = lineHeight * maxRows + paddingTop + paddingBottom;
+    const { height, overflow } = measureAutosize(el, minRows, maxRows);
 
-    if (scrollHeight > maxHeight) {
-      el.style.height = `${maxHeight}px`;
-      el.style.overflowY = "auto";
-    } else {
-      el.style.height = `${scrollHeight}px`;
-      el.style.overflowY = "hidden";
-    }
-  }, [maxRows]);
+    el.style.height = `${height}px`;
+    el.style.overflowY = overflow ? "auto" : "hidden";
+  }, [minRows, maxRows]);
 
   React.useLayoutEffect(() => {
     if (autoResize) adjustHeight();
   }, [autoResize, adjustHeight, value]);
 
+  // Ширина меняет перенос строк, а шрифт после загрузки — высоту строки.
   React.useEffect(() => {
-    if (!autoResize) return;
+    if (!autoResize) return undefined;
 
     const parent = innerRef.current?.parentElement;
 
-    if (!parent) return;
+    if (!parent) return undefined;
 
     let prevWidth = parent.offsetWidth;
+    let active = true;
 
     const observer = new ResizeObserver(entries => {
       const width = entries[0].contentRect.width;
@@ -108,8 +119,14 @@ export const useTextarea = ({
     });
 
     observer.observe(parent);
+    void document.fonts?.ready.then(() => {
+      if (active) adjustHeight();
+    });
 
-    return () => observer.disconnect();
+    return () => {
+      active = false;
+      observer.disconnect();
+    };
   }, [autoResize, adjustHeight]);
 
   const handleChange = React.useCallback<
@@ -123,6 +140,35 @@ export const useTextarea = ({
     [adjustHeight, autoResize, isControlled, onChange],
   );
 
+  const handleClear = React.useCallback(() => {
+    const el = innerRef.current;
+
+    if (!el || disabled || readOnly) return;
+
+    clearNativeField(el);
+    onClear?.();
+  }, [disabled, onClear, readOnly]);
+
+  const submitHandler = React.useMemo(
+    () =>
+      onSubmitShortcut
+        ? getHotkeyHandler<TextareaKeyboardEvent>([
+            [SUBMIT_HOTKEY, onSubmitShortcut],
+          ])
+        : undefined,
+    [onSubmitShortcut],
+  );
+
+  const handleKeyDown = React.useCallback<
+    React.KeyboardEventHandler<HTMLTextAreaElement>
+  >(
+    event => {
+      onKeyDown?.(event);
+      if (!event.defaultPrevented) submitHandler?.(event);
+    },
+    [onKeyDown, submitHandler],
+  );
+
   return {
     setRef,
     charCount,
@@ -130,5 +176,7 @@ export const useTextarea = ({
     hasValue: charCount > 0,
     isControlled,
     handleChange,
+    handleClear,
+    handleKeyDown,
   };
 };

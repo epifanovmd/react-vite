@@ -1,6 +1,8 @@
 import { useMergedRef } from "@mantine/hooks";
 import * as React from "react";
 
+import { clearNativeField } from "../foundation";
+
 type InputValue = React.InputHTMLAttributes<HTMLInputElement>["value"];
 
 interface UseInputOptions {
@@ -31,16 +33,6 @@ const valueIsPresent = (value: InputValue): boolean =>
   value != null && String(value).length > 0;
 
 /** Пишет значение через нативный сеттер, чтобы React увидел последующий `input`. */
-const setNativeInputValue = (input: HTMLInputElement, value: string): void => {
-  const valueSetter = Object.getOwnPropertyDescriptor(
-    HTMLInputElement.prototype,
-    "value",
-  )?.set;
-
-  if (valueSetter) valueSetter.call(input, value);
-  else input.value = value;
-};
-
 /**
  * Внутренняя логика Input: наличие значения (controlled/uncontrolled/внешний
  * `hasValue`), очистка через нативное событие и видимость пароля.
@@ -92,9 +84,7 @@ export const useInput = ({
     const input = innerRef.current;
 
     if (input) {
-      setNativeInputValue(input, "");
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.focus({ preventScroll: true });
+      clearNativeField(input);
     }
 
     if (tracksOwnValue) setHasUncontrolledValue(false);

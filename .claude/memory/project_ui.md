@@ -67,6 +67,16 @@ UI-примитивы построены на Radix UI + `class-variance-authori
 Общие хуки — в `shared/lib/hooks`: `useControllableState`, `useLatestRef`/`useEvent`,
 `useMergedCallback`, `useInfiniteScrollSentinel`.
 
+### Общая база с ml-labeling-web
+
+`src/shared` в `ml-labeling-web` — та же база; правки shared переносить туда и держать идентичными.
+
+- `PageLayout` — `header?`, `lead?`, `actions?` (`PageLayoutToolbar`), `contentClassName`; контент с `gap-3`.
+- `@shared/lib/navigation` — `useLeaveConfirmation({ when, dialog, confirm, onConfirm, shouldBlock, blockSamePath, beforeUnload, disabled })` → `{ withoutConfirmation }`. Применён в `features/edit-profile`. В тестах переходы через `router.history.push` без `act`.
+- `Textarea` — авторост `[minRows, maxRows]`, учёт рамки при border-box, `resize`, `clearable`, `onSubmitShortcut` (Mod+Enter). Очистка полей — `foundation/clearNativeField`.
+- Графики: серии обрезаются по области (`ChartPlotArea`); подписи вертикальных `referenceLines` у правого края — слева от линии, вне обрезки.
+- Gotcha `Card`: `contentClassName` работает только в режиме шортката; без него — `<CardContent>`.
+
 ## Tailwind CSS 4 — CSS-first config
 
 Точка входа — `src/app/styles/index.css`:

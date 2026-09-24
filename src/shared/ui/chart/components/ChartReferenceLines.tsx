@@ -1,10 +1,9 @@
 import { Line } from "@visx/shape";
-import { useId } from "react";
 
 import type { ChartReferenceLine } from "../chart.types";
 import { useChartScales } from "../hooks/chart-scales-context";
 import { ANNOTATION_COLOR } from "../utils/annotations";
-import { ChartPlotClip } from "./ChartPlotClip";
+import { ChartPlotArea } from "./ChartPlotArea";
 
 export interface ChartReferenceLinesProps {
   lines: ChartReferenceLine[];
@@ -35,10 +34,21 @@ const LABEL_STYLE = { fontSize: 11, fontFamily: "inherit" } as const;
 const labelYFor = (y: number) =>
   y < LABEL_TOP + LABEL_OFFSET ? y + LABEL_TOP : y - LABEL_OFFSET;
 
-/** Опорные линии поверх серий; подпись — у правого края или у верха линии. */
+/**
+ * Подпись вертикальной линии — со стороны, где больше места: в правой
+ * половине области она встаёт слева от линии, иначе ушла бы за край.
+ */
+const xLabelPlacement = (x: number, innerWidth: number) =>
+  x > innerWidth / 2
+    ? { labelX: x - LABEL_OFFSET, anchor: "end" as const }
+    : { labelX: x + LABEL_OFFSET, anchor: "start" as const };
+
+/**
+ * Опорные линии поверх серий; подпись — у правого края или у верха линии.
+ * Линии обрезаются по области графика, подписи — нет: им можно выйти на поля.
+ */
 export const ChartReferenceLines = ({ lines }: ChartReferenceLinesProps) => {
   const { yScale, xToPosition, innerWidth, innerHeight } = useChartScales();
-  const clipId = useId();
 
   const resolved = lines.flatMap<ResolvedLine>((line, index) => {
     const color = ANNOTATION_COLOR[line.variant ?? "default"];
@@ -74,9 +84,8 @@ export const ChartReferenceLines = ({ lines }: ChartReferenceLinesProps) => {
         from: { x, y: 0 },
         to: { x, y: innerHeight },
         label: line.label,
-        labelX: x + LABEL_OFFSET,
+        ...xLabelPlacement(x, innerWidth),
         labelY: LABEL_TOP,
-        anchor: "start",
         color,
         dashed,
       },
@@ -85,10 +94,11 @@ export const ChartReferenceLines = ({ lines }: ChartReferenceLinesProps) => {
 
   if (resolved.length === 0) return null;
 
+  const labelled = resolved.filter(item => item.label !== undefined);
+
   return (
-    <g pointerEvents="none">
-      <ChartPlotClip id={clipId} />
-      <g clipPath={`url(#${clipId})`}>
+    <>
+      <ChartPlotArea pointerEvents="none">
         {resolved.map(item => (
           <g key={item.key} data-chart-reference={item.axis}>
             <Line
@@ -98,20 +108,23 @@ export const ChartReferenceLines = ({ lines }: ChartReferenceLinesProps) => {
               strokeWidth={1.5}
               strokeDasharray={item.dashed ? DASH : undefined}
             />
-            {item.label !== undefined && (
-              <text
-                x={item.labelX}
-                y={item.labelY}
-                textAnchor={item.anchor}
-                fill={item.color}
-                style={LABEL_STYLE}
-              >
-                {item.label}
-              </text>
-            )}
           </g>
         ))}
+      </ChartPlotArea>
+      <g pointerEvents="none">
+        {labelled.map(item => (
+          <text
+            key={item.key}
+            x={item.labelX}
+            y={item.labelY}
+            textAnchor={item.anchor}
+            fill={item.color}
+            style={LABEL_STYLE}
+          >
+            {item.label}
+          </text>
+        ))}
       </g>
-    </g>
+    </>
   );
 };

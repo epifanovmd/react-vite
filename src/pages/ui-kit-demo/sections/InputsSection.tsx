@@ -17,6 +17,7 @@ import { Calendar, Search, SlidersHorizontal } from "lucide-react";
 import { type FC, useState } from "react";
 
 import { DemoBlock, DemoEmittedValue, DemoField, DemoRow } from "./shared";
+import { TextareaSubmitDemo } from "./textarea";
 
 const noop = () => {};
 
@@ -205,8 +206,29 @@ export const InputsSection: FC = () => {
                 showCount
               />
             </DemoField>
+            <DemoField label="С одной строки до 5, очистка">
+              <Textarea
+                minRows={1}
+                maxRows={5}
+                clearable
+                placeholder="Растёт по мере ввода"
+              />
+            </DemoField>
+            <DemoField label="Отправка по Ctrl/Cmd+Enter">
+              <TextareaSubmitDemo />
+            </DemoField>
+          </DemoRow>
+          <DemoRow>
             <DemoField label="Фиксированная высота">
               <Textarea autoResize={false} minRows={4} placeholder="resize-y" />
+            </DemoField>
+            <DemoField label="Авторост + ручное растягивание">
+              <Textarea
+                minRows={2}
+                maxRows={Infinity}
+                resize="vertical"
+                placeholder="maxRows={Infinity}, resize=vertical"
+              />
             </DemoField>
             <DemoField label="Floating label">
               <Field

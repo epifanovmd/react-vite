@@ -1,6 +1,7 @@
 import type { LineChartProps } from "./chart.types";
 import { ChartBands } from "./components/ChartBands";
 import { ChartLineSeries } from "./components/ChartLineSeries";
+import { ChartPlotArea } from "./components/ChartPlotArea";
 import { ChartReferenceLines } from "./components/ChartReferenceLines";
 import { ChartRoot } from "./components/ChartRoot";
 import { useChart } from "./hooks/use-chart";
@@ -42,15 +43,17 @@ export const LineChart = <Datum,>({
     <ChartRoot model={model} legendShape="line" {...rootProps}>
       {bands && <ChartBands bands={bands} />}
 
-      {model.visibleSeries.map(item => (
-        <ChartLineSeries
-          key={item.key}
-          series={item}
-          curve={curve}
-          strokeWidth={strokeWidth}
-          showPoints={showPoints}
-        />
-      ))}
+      <ChartPlotArea>
+        {model.visibleSeries.map(item => (
+          <ChartLineSeries
+            key={item.key}
+            series={item}
+            curve={curve}
+            strokeWidth={strokeWidth}
+            showPoints={showPoints}
+          />
+        ))}
+      </ChartPlotArea>
 
       {referenceLines && <ChartReferenceLines lines={referenceLines} />}
     </ChartRoot>

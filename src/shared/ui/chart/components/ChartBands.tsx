@@ -1,9 +1,7 @@
-import { useId } from "react";
-
 import type { ChartBand } from "../chart.types";
 import { useChartScales } from "../hooks/chart-scales-context";
 import { ANNOTATION_COLOR } from "../utils/annotations";
-import { ChartPlotClip } from "./ChartPlotClip";
+import { ChartPlotArea } from "./ChartPlotArea";
 
 export interface ChartBandsProps {
   bands: ChartBand[];
@@ -20,7 +18,6 @@ const LABEL_STYLE = { fontSize: 11, fontFamily: "inherit" } as const;
 /** Горизонтальные полосы под сериями (целевая зона, допустимый диапазон). */
 export const ChartBands = ({ bands }: ChartBandsProps) => {
   const { yScale, innerWidth } = useChartScales();
-  const clipId = useId();
 
   if (bands.length === 0) return null;
 
@@ -38,32 +35,29 @@ export const ChartBands = ({ bands }: ChartBandsProps) => {
   });
 
   return (
-    <g pointerEvents="none">
-      <ChartPlotClip id={clipId} />
-      <g clipPath={`url(#${clipId})`}>
-        {resolved.map(item => (
-          <g key={item.key} data-chart-band="">
-            <rect
-              x={0}
-              y={item.top}
-              width={innerWidth}
-              height={item.height}
+    <ChartPlotArea pointerEvents="none">
+      {resolved.map(item => (
+        <g key={item.key} data-chart-band="">
+          <rect
+            x={0}
+            y={item.top}
+            width={innerWidth}
+            height={item.height}
+            fill={item.color}
+            fillOpacity={BAND_OPACITY}
+          />
+          {item.label !== undefined && (
+            <text
+              x={LABEL_OFFSET}
+              y={item.top + LABEL_LINE}
               fill={item.color}
-              fillOpacity={BAND_OPACITY}
-            />
-            {item.label !== undefined && (
-              <text
-                x={LABEL_OFFSET}
-                y={item.top + LABEL_LINE}
-                fill={item.color}
-                style={LABEL_STYLE}
-              >
-                {item.label}
-              </text>
-            )}
-          </g>
-        ))}
-      </g>
-    </g>
+              style={LABEL_STYLE}
+            >
+              {item.label}
+            </text>
+          )}
+        </g>
+      ))}
+    </ChartPlotArea>
   );
 };

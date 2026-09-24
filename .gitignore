@@ -23,3 +23,6 @@ logs/
 
 # Others
 local.properties
+
+# vitest --coverage
+coverage

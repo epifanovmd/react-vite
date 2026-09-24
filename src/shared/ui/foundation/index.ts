@@ -43,6 +43,7 @@ export {
   type MenuItemVariantProps,
   menuItemVariants,
 } from "./menu-parts";
+export { clearNativeField, setNativeFieldValue } from "./native-field-value";
 export { RippleLayer, type RippleLayerProps } from "./ripple/RippleLayer";
 export {
   type Ripple,

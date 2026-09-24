@@ -123,4 +123,32 @@ describe("Chart annotations", () => {
 
     expect(yTickLabels(container)).not.toContain("100");
   });
+
+  it("подпись вертикальной линии у правого края встаёт слева от линии и не обрезается", () => {
+    const { container } = render(
+      <LineChart
+        data={DATA}
+        series={SERIES}
+        x={getX}
+        width={600}
+        height={240}
+        referenceLines={[
+          { x: "Пн", label: "Старт" },
+          { x: "Ср", label: "Финиш" },
+        ]}
+      />,
+    );
+
+    const start = screen.getByText("Старт");
+    const finish = screen.getByText("Финиш");
+
+    expect(start).toHaveAttribute("text-anchor", "start");
+    expect(finish).toHaveAttribute("text-anchor", "end");
+    expect(finish.closest("g[clip-path]")).toBeNull();
+    expect(
+      container
+        .querySelector("[data-chart-reference] line")
+        ?.closest("g[clip-path]"),
+    ).not.toBeNull();
+  });
 });
