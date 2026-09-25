@@ -1,6 +1,9 @@
 import type { IFileDto } from "./iFileDto.ts";
 import type { UserDto } from "./userDto.ts";
 
+/**
+ * Профиль владельца; ссылки на аватар — из карты подписей `files`.
+ */
 export interface ProfileDto {
   id: string;
   userId: string;
@@ -13,9 +16,12 @@ export interface ProfileDto {
   /** @nullable */
   gender: string | null;
   /** @nullable */
+  locale: string | null;
+  /** @nullable */
   lastOnline: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Аватар с подписанными ссылками; нет аватара или связь не загружена — поля нет. */
   avatar?: IFileDto;
   user?: UserDto;
 }

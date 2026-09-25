@@ -1,5 +1,5 @@
-import type { TPermission } from "./tPermission.ts";
+import type { PermissionName } from "./permissionName.ts";
 
 export interface IRolePermissionsRequestDto {
-  permissions: TPermission[];
+  permissions: PermissionName[];
 }

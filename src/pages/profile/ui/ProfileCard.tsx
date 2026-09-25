@@ -9,6 +9,7 @@ import { ProfileMeta } from "./ProfileMeta";
 
 export const ProfileCard: FC<ProfileCardProps> = ({
   name,
+  avatar,
   login,
   roleLabel,
   emailVerified,
@@ -22,6 +23,7 @@ export const ProfileCard: FC<ProfileCardProps> = ({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <ProfileIdentity
           name={name}
+          avatar={avatar}
           login={login}
           roleLabel={roleLabel}
           emailVerified={emailVerified}

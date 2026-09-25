@@ -1,5 +1,5 @@
-import type { TRole } from "./tRole.ts";
+import type { RoleName } from "./roleName.ts";
 
 export interface ICreateRoleRequestDto {
-  name: TRole;
+  name: RoleName;
 }

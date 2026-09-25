@@ -1,6 +1,14 @@
+import { ChangeAvatar } from "@features/change-avatar";
+import { PrivacySettings } from "@features/edit-privacy";
 import { EditProfileModal } from "@features/edit-profile";
 import { RequestEmailVerificationButton } from "@features/request-email-verification";
-import { InfoFieldProps, PageHeader, PageLayout, PageLoader } from "@shared/ui";
+import {
+  Card,
+  InfoFieldProps,
+  PageHeader,
+  PageLayout,
+  PageLoader,
+} from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
@@ -40,9 +48,10 @@ export const ProfilePage: FC = observer(() => {
 
   return (
     <PageLayout header={header}>
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
         <ProfileCard
           name={model.displayName}
+          avatar={<ChangeAvatar />}
           login={model.login}
           roleLabel={model.roleLabel}
           emailVerified={model.emailVerified}
@@ -51,6 +60,10 @@ export const ProfilePage: FC = observer(() => {
           lastOnline={model.lastOnlineDate.formattedDate}
           onEdit={openEdit}
         />
+
+        <Card title="Приватность" description="Кто видит ваши данные в профиле">
+          <PrivacySettings />
+        </Card>
       </div>
 
       <EditProfileModal open={isEditOpen} onClose={closeEdit} />

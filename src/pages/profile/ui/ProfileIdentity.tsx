@@ -6,13 +6,14 @@ import { ProfileIdentityProps } from "./profile-identity.types";
 
 export const ProfileIdentity: FC<ProfileIdentityProps> = ({
   name,
+  avatar,
   login,
   roleLabel,
   emailVerified,
 }) => (
   <div className="flex flex-col gap-3">
     <div className="flex items-center gap-4">
-      <UserAvatar name={name} size="xl" />
+      {avatar ?? <UserAvatar name={name} size="xl" />}
       <div className="min-w-0">
         <h2 className="truncate text-lg font-semibold leading-tight text-foreground">
           {name}

@@ -39,3 +39,21 @@ export const computeEffectivePermissions = (
   directPermissions: KnownPermission[],
 ): KnownPermission[] =>
   Array.from(new Set([...rolePermissions, ...directPermissions]));
+
+/** Человеческие подписи известных прав — для экранов администрирования. */
+export const PERMISSION_LABELS: Record<KnownPermission, string> = {
+  "*": "Все права",
+  "user:view": "Просмотр пользователей",
+  "user:manage": "Управление пользователями",
+  "role:view": "Просмотр ролей",
+  "role:manage": "Управление ролями",
+  "profile:view": "Просмотр профилей",
+  "profile:manage": "Управление профилями",
+  "apikey:manage": "Управление API-ключами",
+  "audit:view": "Просмотр журнала",
+};
+
+/** Все известные права в порядке показа. */
+export const KNOWN_PERMISSIONS = Object.keys(
+  PERMISSION_LABELS,
+) as KnownPermission[];

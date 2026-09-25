@@ -1,91 +1,59 @@
 import type {
   ApiResponseDto,
-  BotCommandDto,
-  BotDetailDto,
-  BotDto,
-  CallDto,
-  ChatDto,
-  ChatFolderDto,
-  ChatInviteDto,
-  ChatMemberDto,
-  ContactDto,
-  DeleteMessageParams,
-  DeviceTokenDto,
-  GetCallHistoryParams,
-  GetChangesParams,
-  GetChatMediaParams,
-  GetContactsParams,
-  GetFileByIdParams,
-  GetMessagesParams,
+  DemoEchoJob201,
+  GetMyAuditParams,
+  GetMyFilesParams,
+  GetPasskeysParams,
   GetProfilesParams,
-  GetUserChatsParams,
+  GetSessionsParams,
   GetUserOptionsParams,
   GetUsersParams,
-  GetWebhookLogsParams,
-  IAddMembersBody,
-  IAddReactionBody,
-  IBanMemberBody,
-  IBannedMemberDto,
   IBiometricDevicesResponseDto,
-  IBotEditMessageBody,
-  IBotSendMessageBody,
-  ICallHistoryDto,
-  IChatListDto,
-  ICreateBotBody,
-  ICreateChannelBody,
-  ICreateContactBody,
-  ICreateDirectChatBody,
-  ICreateFolderBody,
-  ICreateGroupChatBody,
-  ICreateInviteBody,
-  ICreatePollBody,
+  IClaimJobsBody,
+  IClaimedJobDto,
+  ICompleteJobBody,
+  ICreateApiKeyBody,
   ICreateRoleRequestDto,
-  IDeleteBiometricResponseDto,
+  ICreateUploadBody,
+  ICreatedApiKeyDto,
+  ICursorPageDtoAuditEventDto,
+  IDemoEchoData,
+  IDirectUploadDto,
   IDisable2FARequestDto,
-  IEditMessageBody,
   IEnable2FARequestDto,
+  IFailJobBody,
   IFileDto,
   IGenerateAuthenticationOptionsRequestDto,
   IGenerateNonceRequestDto,
   IGenerateNonceResponseDto,
-  IInitiateCallBody,
-  IMarkReadBody,
-  IMediaGalleryDto,
-  IMediaStatsDto,
-  IMessageListDto,
-  IMessageSearchDto,
-  IMoveChatToFolderBody,
-  IMuteChatBody,
+  IHeartbeatJobBody,
+  IHeartbeatResultDto,
+  IPaginatedDtoApiKeyDto,
+  IPaginatedDtoIFileDto,
+  IPaginatedDtoJobRunDto,
+  IPaginatedDtoPasskeyDto,
+  IPaginatedDtoSessionDto,
   IProfileListDto,
   IProfileUpdateRequestDto,
+  IRefreshRequestDto,
   IRegisterBiometricRequestDto,
   IRegisterBiometricResponseDto,
-  IRegisterDeviceBody,
   IRoleDto,
   IRolePermissionsRequestDto,
-  ISendMessageBody,
-  ISetCommandsBody,
-  ISetSlowModeBody,
-  ISetWebhookBody,
-  ISetWebhookEventsBody,
   ISignInRequestDto,
   ISignInResponseDto,
-  ISyncResponseDto,
-  ISyncVersionDto,
   ITokensDto,
-  IUpdateBotBody,
-  IUpdateChannelBody,
-  IUpdateChatBody,
-  IUpdateFolderBody,
-  IUpdateMemberRoleBody,
-  IUpdateNotificationSettingsBody,
+  IUserAdminListDto,
   IUserChangePasswordDto,
+  IUserConfirmEmailChangeDto,
+  IUserDeleteDto,
   IUserListDto,
   IUserLoginRequestDto,
   IUserOptionsDto,
   IUserPrivilegesRequestDto,
   IUserResetPasswordRequestDto,
   IUserUpdateRequestDto,
+  IUserVerifyEmailDto,
   IUserWithTokensDto,
   IVerify2FARequestDto,
   IVerifyAuthenticationRequestDto,
@@ -94,31 +62,24 @@ import type {
   IVerifyBiometricSignatureResponseDto,
   IVerifyRegistrationRequestDto,
   IVerifyRegistrationResponseDto,
-  IVotePollBody,
-  IWebhookLogsResponse,
-  IWebhookTestResponse,
-  MessageDto,
-  MessageReceiptDto,
-  NotificationSettingsDto,
-  PollDto,
+  IWorkerQueueStatusDto,
+  JobRunDto,
+  ListApiKeysParams,
+  ListAuditEventsParams,
+  ListJobsParams,
   PrivacySettingsDto,
   ProfileDto,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
   PublicProfileDto,
   PublicUserDto,
-  RefreshBody,
-  SearchChannelsParams,
-  SearchChatMessagesParams,
-  SearchMessagesParams,
   SearchUsersParams,
-  SessionDto,
-  SetSlowMode200,
   SetUsernameBody,
   TSignUpRequestDto,
   UpdatePrivacySettingsBody,
   UploadFileBody,
   UserDto,
+  Uuid,
 } from "./model";
 
 import { mainMutator } from "../../main/main.mutator.ts";
@@ -126,41 +87,108 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getRestApi = () => {
   /**
-   * Получить список активных сессий пользователя.
-   * @summary Список сессий
+   * Файлы текущего пользователя, новые первыми. Ссылки в ответе подписаны
+   * и действуют ограниченное время.
+   * @summary Мои файлы
    */
-  const getSessions = (
-    options?: SecondParameter<typeof mainMutator<SessionDto[]>>,
+  const getMyFiles = (
+    params?: GetMyFilesParams,
+    options?: SecondParameter<typeof mainMutator<IPaginatedDtoIFileDto>>,
   ) => {
-    return mainMutator<SessionDto[]>(
-      { url: `/api/session`, method: "GET" },
+    return mainMutator<IPaginatedDtoIFileDto>(
+      { url: `/api/v1/file`, method: "GET", params },
       options,
     );
   };
 
   /**
-   * Завершить конкретную сессию.
-   * @summary Завершение сессии
+   * Загрузить небольшой файл (multipart, до 100 MB). Допустимы только типы
+   * из белого списка; расширение, заявленный mime и сигнатура содержимого
+   * должны совпадать, иначе 415. Медиа обрабатывается в фоне: файл
+   * возвращается в статусе `processing`, по готовности приходит
+   * `file:processed`.
+   * @summary Загрузка файла
    */
-  const terminateSession = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
+  const uploadFile = (
+    uploadFileBody: UploadFileBody,
+    options?: SecondParameter<typeof mainMutator<IFileDto[]>>,
   ) => {
-    return mainMutator<void>(
-      { url: `/api/session/${id}`, method: "DELETE" },
+    const formData = new FormData();
+    formData.append(`file`, uploadFileBody.file);
+
+    return mainMutator<IFileDto[]>(
+      {
+        url: `/api/v1/file`,
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data" },
+        data: formData,
+      },
       options,
     );
   };
 
   /**
-   * Завершить все сессии, кроме текущей.
-   * @summary Завершение остальных сессий
+   * Метаданные файла и подписанные ссылки на него.
+   * @summary Получение файла по ID
    */
-  const terminateOtherSessions = (
+  const getFileById = (
+    id: Uuid,
+    options?: SecondParameter<typeof mainMutator<IFileDto>>,
+  ) => {
+    return mainMutator<IFileDto>(
+      { url: `/api/v1/file/${id}`, method: "GET" },
+      options,
+    );
+  };
+
+  /**
+   * Удалить файл вместе с производными версиями. Доступно владельцу и
+   * суперпользователю; файл, прикреплённый к сообщению, удалить нельзя (409).
+   * @summary Удаление файла
+   */
+  const deleteFile = (
+    id: Uuid,
     options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
     return mainMutator<void>(
-      { url: `/api/session/terminate-others`, method: "POST" },
+      { url: `/api/v1/file/${id}`, method: "DELETE" },
+      options,
+    );
+  };
+
+  /**
+   * Начать прямую загрузку крупного файла: возвращает подписанную ссылку
+   * для `PUT` (с заголовками из `headers`, тело — ровно `size` байт).
+   * После загрузки — `POST /uploads/{fileId}/complete`. Неподтверждённая
+   * загрузка удаляется через сутки.
+   * @summary Прямая загрузка: получить ссылку
+   */
+  const createUpload = (
+    iCreateUploadBody: ICreateUploadBody,
+    options?: SecondParameter<typeof mainMutator<IDirectUploadDto>>,
+  ) => {
+    return mainMutator<IDirectUploadDto>(
+      {
+        url: `/api/v1/file/uploads`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iCreateUploadBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Завершить прямую загрузку: проверяются размер и сигнатура, затем
+   * медиа ставится в фоновую обработку. Повторный вызов безопасен.
+   * @summary Прямая загрузка: завершить
+   */
+  const completeUpload = (
+    fileId: Uuid,
+    options?: SecondParameter<typeof mainMutator<IFileDto>>,
+  ) => {
+    return mainMutator<IFileDto>(
+      { url: `/api/v1/file/uploads/${fileId}/complete`, method: "POST" },
       options,
     );
   };
@@ -175,7 +203,7 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<ProfileDto>>,
   ) => {
     return mainMutator<ProfileDto>(
-      { url: `/api/profile/my`, method: "GET" },
+      { url: `/api/v1/profile/my`, method: "GET" },
       options,
     );
   };
@@ -191,7 +219,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<ProfileDto>(
       {
-        url: `/api/profile/my/update`,
+        url: `/api/v1/profile/my/update`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: iProfileUpdateRequestDto,
@@ -208,7 +236,7 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<PrivacySettingsDto>>,
   ) => {
     return mainMutator<PrivacySettingsDto>(
-      { url: `/api/profile/my/privacy`, method: "GET" },
+      { url: `/api/v1/profile/my/privacy`, method: "GET" },
       options,
     );
   };
@@ -223,7 +251,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<PrivacySettingsDto>(
       {
-        url: `/api/profile/my/privacy`,
+        url: `/api/v1/profile/my/privacy`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: updatePrivacySettingsBody,
@@ -233,23 +261,22 @@ export const getRestApi = () => {
   };
 
   /**
-   * Удалить профиль текущего пользователя.
-   * Этот эндпоинт позволяет пользователю удалить свой профиль из системы.
-   * @summary Удаление профиля текущего пользователя
+   * Очистить профиль текущего пользователя.
+   * Личные данные (имя, фамилия, дата рождения, пол, аватар) обнуляются,
+   * сама запись профиля остаётся.
+   * @summary Очистка профиля текущего пользователя
    */
   const deleteMyProfile = (
-    options?: SecondParameter<typeof mainMutator<string>>,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<string>(
-      { url: `/api/profile/my/delete`, method: "DELETE" },
+    return mainMutator<void>(
+      { url: `/api/v1/profile/my/delete`, method: "DELETE" },
       options,
     );
   };
 
   /**
-   * Получить все профили.
-   * Этот эндпоинт позволяет администраторам получить список всех пользователей системы.
-   * Он поддерживает пагинацию через параметры `offset` и `limit`.
+   * Получить все профили постранично, новые первыми.
    * @summary Получение всех профилей
    */
   const getProfiles = (
@@ -257,7 +284,7 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<IProfileListDto>>,
   ) => {
     return mainMutator<IProfileListDto>(
-      { url: `/api/profile/all`, method: "GET", params },
+      { url: `/api/v1/profile/all`, method: "GET", params },
       options,
     );
   };
@@ -268,11 +295,11 @@ export const getRestApi = () => {
    * @summary Получение профиля по ID
    */
   const getProfileById = (
-    userId: string,
+    userId: Uuid,
     options?: SecondParameter<typeof mainMutator<PublicProfileDto>>,
   ) => {
     return mainMutator<PublicProfileDto>(
-      { url: `/api/profile/${userId}`, method: "GET" },
+      { url: `/api/v1/profile/${userId}`, method: "GET" },
       options,
     );
   };
@@ -283,13 +310,13 @@ export const getRestApi = () => {
    * @summary Обновление профиля другого пользователя
    */
   const updateProfile = (
-    userId: string,
+    userId: Uuid,
     iProfileUpdateRequestDto: IProfileUpdateRequestDto,
     options?: SecondParameter<typeof mainMutator<ProfileDto>>,
   ) => {
     return mainMutator<ProfileDto>(
       {
-        url: `/api/profile/update/${userId}`,
+        url: `/api/v1/profile/update/${userId}`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: iProfileUpdateRequestDto,
@@ -299,16 +326,16 @@ export const getRestApi = () => {
   };
 
   /**
-   * Удалить профиль другого пользователя.
-   * Этот эндпоинт позволяет администраторам удалить профиль другого пользователя из системы.
-   * @summary Удаление профиля другого пользователя
+   * Очистить профиль другого пользователя.
+   * Личные данные обнуляются, запись профиля остаётся.
+   * @summary Очистка профиля другого пользователя
    */
   const deleteProfile = (
-    userId: string,
-    options?: SecondParameter<typeof mainMutator<string>>,
+    userId: Uuid,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<string>(
-      { url: `/api/profile/delete/${userId}`, method: "DELETE" },
+    return mainMutator<void>(
+      { url: `/api/v1/profile/delete/${userId}`, method: "DELETE" },
       options,
     );
   };
@@ -321,7 +348,7 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<IRoleDto[]>>,
   ) => {
     return mainMutator<IRoleDto[]>(
-      { url: `/api/roles`, method: "GET" },
+      { url: `/api/v1/roles`, method: "GET" },
       options,
     );
   };
@@ -336,7 +363,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<IRoleDto>(
       {
-        url: `/api/roles`,
+        url: `/api/v1/roles`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iCreateRoleRequestDto,
@@ -350,28 +377,30 @@ export const getRestApi = () => {
    * @summary Удаление роли
    */
   const deleteRole = (
-    id: string,
+    id: Uuid,
     options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
     return mainMutator<void>(
-      { url: `/api/roles/${id}`, method: "DELETE" },
+      { url: `/api/v1/roles/${id}`, method: "DELETE" },
       options,
     );
   };
 
   /**
    * Установить права для роли.
-   * Заменяет текущий набор прав роли указанным.
+   * Заменяет текущий набор прав роли указанным. Роль `admin`, право `*` и
+   * собственную роль меняет только суперпользователь. Все пользователи роли
+   * получают `user:privileges-changed`, их сессии завершаются.
    * @summary Установка прав роли
    */
   const setRolePermissions = (
-    id: string,
+    id: Uuid,
     iRolePermissionsRequestDto: IRolePermissionsRequestDto,
     options?: SecondParameter<typeof mainMutator<IRoleDto>>,
   ) => {
     return mainMutator<IRoleDto>(
       {
-        url: `/api/roles/${id}/permissions`,
+        url: `/api/v1/roles/${id}/permissions`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: iRolePermissionsRequestDto,
@@ -389,14 +418,17 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<UserDto>>,
   ) => {
     return mainMutator<UserDto>(
-      { url: `/api/user/my`, method: "GET" },
+      { url: `/api/v1/user/my`, method: "GET" },
       options,
     );
   };
 
   /**
-   * Обновить пользователя.
-   * Этот эндпоинт позволяет пользователю обновить свои данные, такие как email, телефон и другие параметры пользователя.
+   * Обновить email и/или телефон текущего пользователя.
+   * Телефон меняется сразу. Email — нет: создаётся запрос на смену, код
+   * уходит на новый адрес, уведомление — на старый; адрес меняется после
+   * `POST my/email/confirm`. Повторный запрос — не чаще раза в минуту (429).
+   * Занятые email/телефон → 409 (`USER_EMAIL_TAKEN` / `USER_PHONE_TAKEN`).
    * @summary Обновление данных текущего пользователя
    */
   const updateMyUser = (
@@ -405,7 +437,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<UserDto>(
       {
-        url: `/api/user/my/update`,
+        url: `/api/v1/user/my/update`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: iUserUpdateRequestDto,
@@ -415,15 +447,43 @@ export const getRestApi = () => {
   };
 
   /**
-   * Удалить текущего пользователя.
-   * Этот эндпоинт позволяет удалить пользователя из системы.
+   * Подтвердить смену email кодом из письма на новый адрес. Email
+   * меняется и считается подтверждённым. Неверный код расходует попытку
+   * (`USER_EMAIL_CHANGE_INVALID_CODE`, в `details.attemptsLeft` — остаток);
+   * после 5 неверных или по истечении 15 минут запрос аннулируется.
+   * @summary Подтверждение смены email
+   */
+  const confirmEmailChange = (
+    iUserConfirmEmailChangeDto: IUserConfirmEmailChangeDto,
+    options?: SecondParameter<typeof mainMutator<UserDto>>,
+  ) => {
+    return mainMutator<UserDto>(
+      {
+        url: `/api/v1/user/my/email/confirm`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iUserConfirmEmailChangeDto,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Удалить текущего пользователя. Требуется текущий пароль.
+   * POST, а не DELETE: тело DELETE-запроса не разбирается body-parser-ом.
    * @summary Удаление текущего пользователя
    */
   const deleteMyUser = (
-    options?: SecondParameter<typeof mainMutator<boolean>>,
+    iUserDeleteDto: IUserDeleteDto,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<boolean>(
-      { url: `/api/user/my/delete`, method: "DELETE" },
+    return mainMutator<void>(
+      {
+        url: `/api/v1/user/my/delete`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iUserDeleteDto,
+      },
       options,
     );
   };
@@ -438,7 +498,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<UserDto>(
       {
-        url: `/api/user/my/username`,
+        url: `/api/v1/user/my/username`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: setUsernameBody,
@@ -448,7 +508,8 @@ export const getRestApi = () => {
   };
 
   /**
-   * Поиск пользователей по запросу (username, email, имя, фамилия).
+   * Поиск пользователей по username, имени и фамилии.
+   * Email в ответе не отдаётся; телефон — по настройке приватности `showPhone`.
    * @summary Поиск пользователей
    */
   const searchUsers = (
@@ -456,7 +517,7 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<IUserListDto>>,
   ) => {
     return mainMutator<IUserListDto>(
-      { url: `/api/user/search`, method: "GET", params },
+      { url: `/api/v1/user/search`, method: "GET", params },
       options,
     );
   };
@@ -470,22 +531,21 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<PublicUserDto>>,
   ) => {
     return mainMutator<PublicUserDto>(
-      { url: `/api/user/by-username/${username}`, method: "GET" },
+      { url: `/api/v1/user/by-username/${username}`, method: "GET" },
       options,
     );
   };
 
   /**
-   * Получить всех пользователей.
-   * Поддерживает пагинацию и поиск по email.
+   * Получить пользователей постранично (администрирование), новые первыми.
    * @summary Получение всех пользователей
    */
   const getUsers = (
     params?: GetUsersParams,
-    options?: SecondParameter<typeof mainMutator<IUserListDto>>,
+    options?: SecondParameter<typeof mainMutator<IUserAdminListDto>>,
   ) => {
-    return mainMutator<IUserListDto>(
-      { url: `/api/user/all`, method: "GET", params },
+    return mainMutator<IUserAdminListDto>(
+      { url: `/api/v1/user/all`, method: "GET", params },
       options,
     );
   };
@@ -500,39 +560,39 @@ export const getRestApi = () => {
     options?: SecondParameter<typeof mainMutator<IUserOptionsDto>>,
   ) => {
     return mainMutator<IUserOptionsDto>(
-      { url: `/api/user/options`, method: "GET", params },
+      { url: `/api/v1/user/options`, method: "GET", params },
       options,
     );
   };
 
   /**
    * Получить пользователя по ID.
-   * Этот эндпоинт позволяет получить пользователя по его ID. Доступен только для администраторов.
    * @summary Получение пользователя по ID
    */
   const getUserById = (
-    id: string,
+    id: Uuid,
     options?: SecondParameter<typeof mainMutator<UserDto>>,
   ) => {
     return mainMutator<UserDto>(
-      { url: `/api/user/${id}`, method: "GET" },
+      { url: `/api/v1/user/${id}`, method: "GET" },
       options,
     );
   };
 
   /**
-   * Установить привилегии для пользователя.
-   * Этот эндпоинт позволяет администраторам устанавливать роль и права пользователя.
+   * Установить роли и прямые права пользователя.
+   * Роли и права должны существовать. Свои привилегии менять нельзя; роль
+   * `admin` и право `*` выдаёт только суперпользователь.
    * @summary Установка привилегий для пользователя
    */
   const setPrivileges = (
-    id: string,
+    id: Uuid,
     iUserPrivilegesRequestDto: IUserPrivilegesRequestDto,
     options?: SecondParameter<typeof mainMutator<UserDto>>,
   ) => {
     return mainMutator<UserDto>(
       {
-        url: `/api/user/setPrivileges/${id}`,
+        url: `/api/v1/user/setPrivileges/${id}`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: iUserPrivilegesRequestDto,
@@ -542,47 +602,51 @@ export const getRestApi = () => {
   };
 
   /**
-   * Запросить подтверждение email-адреса для текущего пользователя.
-   * Этот эндпоинт позволяет отправить пользователю письмо для подтверждения его email-адреса.
+   * Отправить код подтверждения на email текущего пользователя.
+   * Повторная отправка — не чаще раза в минуту (429).
    * @summary Запрос подтверждения email
    */
   const requestVerifyEmail = (
-    options?: SecondParameter<typeof mainMutator<boolean>>,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<boolean>(
-      { url: `/api/user/requestVerifyEmail`, method: "POST" },
+    return mainMutator<void>(
+      { url: `/api/v1/user/verify-email/request`, method: "POST" },
       options,
     );
   };
 
   /**
-   * Подтвердить email-адрес текущего пользователя по коду.
-   * Этот эндпоинт позволяет пользователю подтвердить свой email, используя код, полученный в письме.
+   * Подтвердить email текущего пользователя кодом из письма.
    * @summary Подтверждение email-адреса
    */
   const verifyEmail = (
-    code: string,
-    options?: SecondParameter<typeof mainMutator<ApiResponseDto>>,
+    iUserVerifyEmailDto: IUserVerifyEmailDto,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<ApiResponseDto>(
-      { url: `/api/user/verifyEmail/${code}`, method: "GET" },
+    return mainMutator<void>(
+      {
+        url: `/api/v1/user/verify-email`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iUserVerifyEmailDto,
+      },
       options,
     );
   };
 
   /**
-   * Обновить пользователя.
-   * Этот эндпоинт позволяет администраторам обновлять других пользователей.
+   * Обновить email/телефон другого пользователя — сразу, без подтверждения
+   * кодом. Новый email сбрасывает `emailVerified`.
    * @summary Обновление другого пользователя
    */
   const updateUser = (
-    id: string,
+    id: Uuid,
     iUserUpdateRequestDto: IUserUpdateRequestDto,
     options?: SecondParameter<typeof mainMutator<UserDto>>,
   ) => {
     return mainMutator<UserDto>(
       {
-        url: `/api/user/update/${id}`,
+        url: `/api/v1/user/update/${id}`,
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         data: iUserUpdateRequestDto,
@@ -592,17 +656,17 @@ export const getRestApi = () => {
   };
 
   /**
-   * Изменить пароль текущего пользователя.
-   * Этот эндпоинт позволяет пользователю изменить свой пароль.
+   * Изменить пароль текущего пользователя. Требуется текущий пароль;
+   * остальные сессии завершаются, текущая остаётся.
    * @summary Изменение пароля
    */
   const changePassword = (
     iUserChangePasswordDto: IUserChangePasswordDto,
-    options?: SecondParameter<typeof mainMutator<ApiResponseDto>>,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<ApiResponseDto>(
+    return mainMutator<void>(
       {
-        url: `/api/user/changePassword`,
+        url: `/api/v1/user/changePassword`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iUserChangePasswordDto,
@@ -612,16 +676,56 @@ export const getRestApi = () => {
   };
 
   /**
-   * Удалить другого пользователя.
-   * Этот эндпоинт позволяет администраторам удалить другого пользователя из системы.
+   * Удалить другого пользователя. Себя и суперпользователя удалить нельзя.
    * @summary Удаление другого пользователя
    */
   const deleteUser = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<boolean>>,
+    id: Uuid,
+    options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
-    return mainMutator<boolean>(
-      { url: `/api/user/delete/${id}`, method: "DELETE" },
+    return mainMutator<void>(
+      { url: `/api/v1/user/delete/${id}`, method: "DELETE" },
+      options,
+    );
+  };
+
+  /**
+   * Получить список активных сессий пользователя (последние активные — первыми).
+   * @summary Список сессий
+   */
+  const getSessions = (
+    params?: GetSessionsParams,
+    options?: SecondParameter<typeof mainMutator<IPaginatedDtoSessionDto>>,
+  ) => {
+    return mainMutator<IPaginatedDtoSessionDto>(
+      { url: `/api/v1/session`, method: "GET", params },
+      options,
+    );
+  };
+
+  /**
+   * Завершить конкретную сессию: её access-токен сразу перестаёт действовать.
+   * @summary Завершение сессии
+   */
+  const terminateSession = (
+    id: Uuid,
+    options?: SecondParameter<typeof mainMutator<void>>,
+  ) => {
+    return mainMutator<void>(
+      { url: `/api/v1/session/${id}`, method: "DELETE" },
+      options,
+    );
+  };
+
+  /**
+   * Завершить все сессии, кроме текущей.
+   * @summary Завершение остальных сессий
+   */
+  const terminateOtherSessions = (
+    options?: SecondParameter<typeof mainMutator<void>>,
+  ) => {
+    return mainMutator<void>(
+      { url: `/api/v1/session/terminate-others`, method: "POST" },
       options,
     );
   };
@@ -636,7 +740,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<IUserWithTokensDto>(
       {
-        url: `/api/auth/sign-up`,
+        url: `/api/v1/auth/sign-up`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: tSignUpRequestDto,
@@ -655,7 +759,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<ISignInResponseDto>(
       {
-        url: `/api/auth/sign-in`,
+        url: `/api/v1/auth/sign-in`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iSignInRequestDto,
@@ -674,7 +778,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<ApiResponseDto>(
       {
-        url: `/api/auth/request-reset-password`,
+        url: `/api/v1/auth/request-reset-password`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iUserLoginRequestDto,
@@ -693,7 +797,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<ApiResponseDto>(
       {
-        url: `/api/auth/reset-password`,
+        url: `/api/v1/auth/reset-password`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iUserResetPasswordRequestDto,
@@ -707,22 +811,46 @@ export const getRestApi = () => {
    * @summary Обновление токенов
    */
   const refresh = (
-    refreshBody: RefreshBody,
+    iRefreshRequestDto: IRefreshRequestDto,
     options?: SecondParameter<typeof mainMutator<ITokensDto>>,
   ) => {
     return mainMutator<ITokensDto>(
       {
-        url: `/api/auth/refresh`,
+        url: `/api/v1/auth/refresh`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: refreshBody,
+        data: iRefreshRequestDto,
       },
       options,
     );
   };
 
   /**
-   * Включить двухфакторную аутентификацию.
+   * Выйти из текущей сессии: сессия завершается, access-токен сразу
+   * перестаёт действовать, cookie с refresh-токеном очищается.
+   * @summary Выход
+   */
+  const signOut = (options?: SecondParameter<typeof mainMutator<void>>) => {
+    return mainMutator<void>(
+      { url: `/api/v1/auth/sign-out`, method: "POST" },
+      options,
+    );
+  };
+
+  /**
+   * Выйти со всех устройств, включая текущее: все сессии завершаются,
+   * их access-токены сразу перестают действовать.
+   * @summary Выход со всех устройств
+   */
+  const signOutAll = (options?: SecondParameter<typeof mainMutator<void>>) => {
+    return mainMutator<void>(
+      { url: `/api/v1/auth/sign-out-all`, method: "POST" },
+      options,
+    );
+  };
+
+  /**
+   * Включить двухфакторную аутентификацию. Требует текущий пароль аккаунта.
    * @summary Включение 2FA
    */
   const enable2FA = (
@@ -731,7 +859,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<ApiResponseDto>(
       {
-        url: `/api/auth/enable-2fa`,
+        url: `/api/v1/auth/enable-2fa`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iEnable2FARequestDto,
@@ -741,7 +869,8 @@ export const getRestApi = () => {
   };
 
   /**
-   * Отключить двухфакторную аутентификацию.
+   * Отключить двухфакторную аутентификацию. Требует текущий пароль аккаунта
+   * и пароль 2FA.
    * @summary Отключение 2FA
    */
   const disable2FA = (
@@ -750,7 +879,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<ApiResponseDto>(
       {
-        url: `/api/auth/disable-2fa`,
+        url: `/api/v1/auth/disable-2fa`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iDisable2FARequestDto,
@@ -760,7 +889,8 @@ export const getRestApi = () => {
   };
 
   /**
-   * Верифицировать 2FA и получить токены.
+   * Верифицировать 2FA и получить токены. Токен 2FA одноразовый; после
+   * нескольких неверных паролей вход по 2FA временно блокируется.
    * @summary Верификация 2FA
    */
   const verify2FA = (
@@ -769,7 +899,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<IUserWithTokensDto>(
       {
-        url: `/api/auth/verify-2fa`,
+        url: `/api/v1/auth/verify-2fa`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iVerify2FARequestDto,
@@ -779,1297 +909,29 @@ export const getRestApi = () => {
   };
 
   /**
-   * Регистрирует биометрические ключи с устройства
+   * Список passkeys текущего пользователя (новые — первыми).
+   * @summary Мои passkeys
    */
-  const registerBiometric = (
-    iRegisterBiometricRequestDto: IRegisterBiometricRequestDto,
-    options?: SecondParameter<
-      typeof mainMutator<IRegisterBiometricResponseDto>
-    >,
+  const getPasskeys = (
+    params?: GetPasskeysParams,
+    options?: SecondParameter<typeof mainMutator<IPaginatedDtoPasskeyDto>>,
   ) => {
-    return mainMutator<IRegisterBiometricResponseDto>(
-      {
-        url: `/api/biometric/register`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iRegisterBiometricRequestDto,
-      },
+    return mainMutator<IPaginatedDtoPasskeyDto>(
+      { url: `/api/v1/passkeys`, method: "GET", params },
       options,
     );
   };
 
   /**
-   * Генерирует nonce, который необходимо подписать на устройстве
+   * Удаляет passkey текущего пользователя.
+   * @summary Удаление passkey
    */
-  const generateNonce = (
-    iGenerateNonceRequestDto: IGenerateNonceRequestDto,
-    options?: SecondParameter<typeof mainMutator<IGenerateNonceResponseDto>>,
-  ) => {
-    return mainMutator<IGenerateNonceResponseDto>(
-      {
-        url: `/api/biometric/generate-nonce`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iGenerateNonceRequestDto,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Проверяет подпись и авторизует пользователя
-   */
-  const verifySignature = (
-    iVerifyBiometricSignatureRequestDto: IVerifyBiometricSignatureRequestDto,
-    options?: SecondParameter<
-      typeof mainMutator<IVerifyBiometricSignatureResponseDto>
-    >,
-  ) => {
-    return mainMutator<IVerifyBiometricSignatureResponseDto>(
-      {
-        url: `/api/biometric/verify-signature`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iVerifyBiometricSignatureRequestDto,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Список зарегистрированных устройств пользователя
-   */
-  const getDevices = (
-    options?: SecondParameter<typeof mainMutator<IBiometricDevicesResponseDto>>,
-  ) => {
-    return mainMutator<IBiometricDevicesResponseDto>(
-      { url: `/api/biometric/devices`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Удалить зарегистрированное устройство
-   */
-  const deleteDevice = (
-    deviceId: string,
-    options?: SecondParameter<typeof mainMutator<IDeleteBiometricResponseDto>>,
-  ) => {
-    return mainMutator<IDeleteBiometricResponseDto>(
-      { url: `/api/biometric/${deviceId}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Отправить сообщение от имени бота.
-   * @summary Bot: отправка сообщения
-   */
-  const botSendMessage = (
-    iBotSendMessageBody: IBotSendMessageBody,
-    options?: SecondParameter<typeof mainMutator<MessageDto>>,
-  ) => {
-    return mainMutator<MessageDto>(
-      {
-        url: `/api/bot-api/message/send`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iBotSendMessageBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Редактировать сообщение бота.
-   * @summary Bot: редактирование сообщения
-   */
-  const botEditMessage = (
-    id: string,
-    iBotEditMessageBody: IBotEditMessageBody,
-    options?: SecondParameter<typeof mainMutator<MessageDto>>,
-  ) => {
-    return mainMutator<MessageDto>(
-      {
-        url: `/api/bot-api/message/${id}/edit`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iBotEditMessageBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить сообщение бота.
-   * @summary Bot: удаление сообщения
-   */
-  const botDeleteMessage = (
+  const deletePasskey = (
     id: string,
     options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
     return mainMutator<void>(
-      { url: `/api/bot-api/message/${id}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Создать бота
-   */
-  const createBot = (
-    iCreateBotBody: ICreateBotBody,
-    options?: SecondParameter<typeof mainMutator<BotDetailDto>>,
-  ) => {
-    return mainMutator<BotDetailDto>(
-      {
-        url: `/api/bot`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateBotBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * @summary Мои боты
-   */
-  const getMyBots = (
-    options?: SecondParameter<typeof mainMutator<BotDto[]>>,
-  ) => {
-    return mainMutator<BotDto[]>({ url: `/api/bot`, method: "GET" }, options);
-  };
-
-  /**
-   * @summary Детали бота
-   */
-  const getBotById = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<BotDetailDto>>,
-  ) => {
-    return mainMutator<BotDetailDto>(
-      { url: `/api/bot/${id}`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Обновить бота
-   */
-  const updateBot = (
-    id: string,
-    iUpdateBotBody: IUpdateBotBody,
-    options?: SecondParameter<typeof mainMutator<BotDetailDto>>,
-  ) => {
-    return mainMutator<BotDetailDto>(
-      {
-        url: `/api/bot/${id}`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iUpdateBotBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * @summary Удалить бота
-   */
-  const deleteBot = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/bot/${id}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Перегенерировать токен
-   */
-  const regenerateToken = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<BotDetailDto>>,
-  ) => {
-    return mainMutator<BotDetailDto>(
-      { url: `/api/bot/${id}/token`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Установить webhook
-   */
-  const setWebhook = (
-    id: string,
-    iSetWebhookBody: ISetWebhookBody,
-    options?: SecondParameter<typeof mainMutator<BotDetailDto>>,
-  ) => {
-    return mainMutator<BotDetailDto>(
-      {
-        url: `/api/bot/${id}/webhook`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iSetWebhookBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * @summary Удалить webhook
-   */
-  const deleteWebhook = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/bot/${id}/webhook`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Установить команды бота
-   */
-  const setCommands = (
-    id: string,
-    iSetCommandsBody: ISetCommandsBody,
-    options?: SecondParameter<typeof mainMutator<BotCommandDto[]>>,
-  ) => {
-    return mainMutator<BotCommandDto[]>(
-      {
-        url: `/api/bot/${id}/commands`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iSetCommandsBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * @summary Получить команды бота
-   */
-  const getCommands = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<BotCommandDto[]>>,
-  ) => {
-    return mainMutator<BotCommandDto[]>(
-      { url: `/api/bot/${id}/commands`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Тестировать webhook (отправляет ping)
-   */
-  const testWebhook = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<IWebhookTestResponse>>,
-  ) => {
-    return mainMutator<IWebhookTestResponse>(
-      { url: `/api/bot/${id}/webhook/test`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * @summary Получить логи доставки webhook
-   */
-  const getWebhookLogs = (
-    id: string,
-    params?: GetWebhookLogsParams,
-    options?: SecondParameter<typeof mainMutator<IWebhookLogsResponse>>,
-  ) => {
-    return mainMutator<IWebhookLogsResponse>(
-      { url: `/api/bot/${id}/webhook/logs`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * @summary Обновить фильтр событий webhook
-   */
-  const setWebhookEvents = (
-    id: string,
-    iSetWebhookEventsBody: ISetWebhookEventsBody,
-    options?: SecondParameter<typeof mainMutator<BotDetailDto>>,
-  ) => {
-    return mainMutator<BotDetailDto>(
-      {
-        url: `/api/bot/${id}/webhook/events`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iSetWebhookEventsBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Инициировать звонок.
-   * @summary Начать звонок
-   */
-  const initiateCall = (
-    iInitiateCallBody: IInitiateCallBody,
-    options?: SecondParameter<typeof mainMutator<CallDto>>,
-  ) => {
-    return mainMutator<CallDto>(
-      {
-        url: `/api/call`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iInitiateCallBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Ответить на звонок.
-   * @summary Ответить
-   */
-  const answerCall = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<CallDto>>,
-  ) => {
-    return mainMutator<CallDto>(
-      { url: `/api/call/${id}/answer`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Отклонить звонок.
-   * @summary Отклонить
-   */
-  const declineCall = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<CallDto>>,
-  ) => {
-    return mainMutator<CallDto>(
-      { url: `/api/call/${id}/decline`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Завершить звонок.
-   * @summary Завершить
-   */
-  const endCall = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<CallDto>>,
-  ) => {
-    return mainMutator<CallDto>(
-      { url: `/api/call/${id}/end`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Получить историю звонков.
-   * @summary История звонков
-   */
-  const getCallHistory = (
-    params?: GetCallHistoryParams,
-    options?: SecondParameter<typeof mainMutator<ICallHistoryDto>>,
-  ) => {
-    return mainMutator<ICallHistoryDto>(
-      { url: `/api/call/history`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Получить активный звонок.
-   * @summary Активный звонок
-   */
-  const getActiveCall = (
-    options?: SecondParameter<typeof mainMutator<CallDto | null>>,
-  ) => {
-    return mainMutator<CallDto | null>(
-      { url: `/api/call/active`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Установить режим медленной отправки.
-   * @summary Медленный режим
-   */
-  const setSlowMode = (
-    id: string,
-    iSetSlowModeBody: ISetSlowModeBody,
-    options?: SecondParameter<typeof mainMutator<SetSlowMode200>>,
-  ) => {
-    return mainMutator<SetSlowMode200>(
-      {
-        url: `/api/chat/${id}/slow-mode`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iSetSlowModeBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Заблокировать участника чата.
-   * @summary Блокировка участника
-   */
-  const banMember = (
-    id: string,
-    userId: string,
-    iBanMemberBody: IBanMemberBody,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      {
-        url: `/api/chat/${id}/members/${userId}/ban`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iBanMemberBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Разблокировать участника чата.
-   * @summary Разблокировка участника
-   */
-  const unbanMember = (
-    id: string,
-    userId: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/chat/${id}/members/${userId}/ban`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Получить заблокированных участников.
-   * @summary Заблокированные участники
-   */
-  const getBannedMembers = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<IBannedMemberDto[]>>,
-  ) => {
-    return mainMutator<IBannedMemberDto[]>(
-      { url: `/api/chat/${id}/members/banned`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Создать или получить существующий личный чат.
-   * @summary Создание личного чата
-   */
-  const createDirectChat = (
-    iCreateDirectChatBody: ICreateDirectChatBody,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      {
-        url: `/api/chat/direct`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateDirectChatBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Создать групповой чат.
-   * @summary Создание группового чата
-   */
-  const createGroupChat = (
-    iCreateGroupChatBody: ICreateGroupChatBody,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      {
-        url: `/api/chat/group`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateGroupChatBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Создать канал.
-   * @summary Создание канала
-   */
-  const createChannel = (
-    iCreateChannelBody: ICreateChannelBody,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      {
-        url: `/api/chat/channel`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateChannelBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Обновить канал.
-   * @summary Обновление канала
-   */
-  const updateChannel = (
-    id: string,
-    iUpdateChannelBody: IUpdateChannelBody,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      {
-        url: `/api/chat/channel/${id}`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iUpdateChannelBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Подписаться на публичный канал.
-   * @summary Подписка на канал
-   */
-  const subscribeToChannel = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      { url: `/api/chat/channel/${id}/subscribe`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Отписаться от канала.
-   * @summary Отписка от канала
-   */
-  const unsubscribeFromChannel = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<string>>,
-  ) => {
-    return mainMutator<string>(
-      { url: `/api/chat/channel/${id}/subscribe`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Поиск публичных каналов.
-   * @summary Поиск каналов
-   */
-  const searchChannels = (
-    params?: SearchChannelsParams,
-    options?: SecondParameter<typeof mainMutator<IChatListDto>>,
-  ) => {
-    return mainMutator<IChatListDto>(
-      { url: `/api/chat/channel/search`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Получить список чатов текущего пользователя.
-   * @summary Список чатов
-   */
-  const getUserChats = (
-    params?: GetUserChatsParams,
-    options?: SecondParameter<typeof mainMutator<IChatListDto>>,
-  ) => {
-    return mainMutator<IChatListDto>(
-      { url: `/api/chat`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Получить информацию о чате.
-   * @summary Получение чата
-   */
-  const getChatById = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      { url: `/api/chat/${id}`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Обновить групповой чат (название, аватар).
-   * @summary Обновление чата
-   */
-  const updateChat = (
-    id: string,
-    iUpdateChatBody: IUpdateChatBody,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      {
-        url: `/api/chat/${id}`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iUpdateChatBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Покинуть чат.
-   * @summary Выход из чата
-   */
-  const leaveChat = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<string>>,
-  ) => {
-    return mainMutator<string>(
-      { url: `/api/chat/${id}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Создать invite-ссылку для группового чата.
-   * @summary Создание invite-ссылки
-   */
-  const createInviteLink = (
-    id: string,
-    iCreateInviteBody: ICreateInviteBody,
-    options?: SecondParameter<typeof mainMutator<ChatInviteDto>>,
-  ) => {
-    return mainMutator<ChatInviteDto>(
-      {
-        url: `/api/chat/${id}/invite`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateInviteBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Получить список invite-ссылок чата.
-   * @summary Список invite-ссылок
-   */
-  const getInvites = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ChatInviteDto[]>>,
-  ) => {
-    return mainMutator<ChatInviteDto[]>(
-      { url: `/api/chat/${id}/invite`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Отозвать invite-ссылку.
-   * @summary Отзыв invite-ссылки
-   */
-  const revokeInvite = (
-    id: string,
-    inviteId: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/chat/${id}/invite/${inviteId}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Присоединиться к чату по invite-коду.
-   * @summary Вступление по invite-ссылке
-   */
-  const joinByInvite = (
-    code: string,
-    options?: SecondParameter<typeof mainMutator<ChatDto>>,
-  ) => {
-    return mainMutator<ChatDto>(
-      { url: `/api/chat/join/${code}`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Замутить или размутить чат.
-   * @summary Мут чата
-   */
-  const muteChat = (
-    id: string,
-    iMuteChatBody: IMuteChatBody,
-    options?: SecondParameter<typeof mainMutator<ChatMemberDto>>,
-  ) => {
-    return mainMutator<ChatMemberDto>(
-      {
-        url: `/api/chat/${id}/mute`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iMuteChatBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Добавить участников в групповой чат.
-   * @summary Добавление участников
-   */
-  const addMembers = (
-    id: string,
-    iAddMembersBody: IAddMembersBody,
-    options?: SecondParameter<typeof mainMutator<ChatMemberDto[]>>,
-  ) => {
-    return mainMutator<ChatMemberDto[]>(
-      {
-        url: `/api/chat/${id}/members`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iAddMembersBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить участника из группового чата.
-   * @summary Удаление участника
-   */
-  const removeMember = (
-    id: string,
-    userId: string,
-    options?: SecondParameter<typeof mainMutator<string>>,
-  ) => {
-    return mainMutator<string>(
-      { url: `/api/chat/${id}/members/${userId}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Изменить роль участника в групповом чате.
-   * @summary Изменение роли участника
-   */
-  const updateMemberRole = (
-    id: string,
-    userId: string,
-    iUpdateMemberRoleBody: IUpdateMemberRoleBody,
-    options?: SecondParameter<typeof mainMutator<ChatMemberDto>>,
-  ) => {
-    return mainMutator<ChatMemberDto>(
-      {
-        url: `/api/chat/${id}/members/${userId}`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iUpdateMemberRoleBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Закрепить чат.
-   * @summary Закрепление чата
-   */
-  const pinChat = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ChatMemberDto>>,
-  ) => {
-    return mainMutator<ChatMemberDto>(
-      { url: `/api/chat/${id}/pin`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Открепить чат.
-   * @summary Открепление чата
-   */
-  const unpinChat = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ChatMemberDto>>,
-  ) => {
-    return mainMutator<ChatMemberDto>(
-      { url: `/api/chat/${id}/pin`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Переместить чат в папку.
-   * @summary Перемещение в папку
-   */
-  const moveChatToFolder = (
-    id: string,
-    iMoveChatToFolderBody: IMoveChatToFolderBody,
-    options?: SecondParameter<typeof mainMutator<ChatMemberDto>>,
-  ) => {
-    return mainMutator<ChatMemberDto>(
-      {
-        url: `/api/chat/${id}/folder`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iMoveChatToFolderBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Получить список папок чатов.
-   * @summary Список папок
-   */
-  const getUserFolders = (
-    options?: SecondParameter<typeof mainMutator<ChatFolderDto[]>>,
-  ) => {
-    return mainMutator<ChatFolderDto[]>(
-      { url: `/api/chat/folder/list`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Создать папку для чатов.
-   * @summary Создание папки
-   */
-  const createFolder = (
-    iCreateFolderBody: ICreateFolderBody,
-    options?: SecondParameter<typeof mainMutator<ChatFolderDto>>,
-  ) => {
-    return mainMutator<ChatFolderDto>(
-      {
-        url: `/api/chat/folder`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateFolderBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Обновить папку.
-   * @summary Обновление папки
-   */
-  const updateFolder = (
-    folderId: string,
-    iUpdateFolderBody: IUpdateFolderBody,
-    options?: SecondParameter<typeof mainMutator<ChatFolderDto>>,
-  ) => {
-    return mainMutator<ChatFolderDto>(
-      {
-        url: `/api/chat/folder/${folderId}`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iUpdateFolderBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить папку.
-   * @summary Удаление папки
-   */
-  const deleteFolder = (
-    folderId: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/chat/folder/${folderId}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Добавить контакт.
-   * @summary Добавление контакта
-   */
-  const addContact = (
-    iCreateContactBody: ICreateContactBody,
-    options?: SecondParameter<typeof mainMutator<ContactDto>>,
-  ) => {
-    return mainMutator<ContactDto>(
-      {
-        url: `/api/contact`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateContactBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Получить список контактов текущего пользователя.
-   * @summary Список контактов
-   */
-  const getContacts = (
-    params?: GetContactsParams,
-    options?: SecondParameter<typeof mainMutator<ContactDto[]>>,
-  ) => {
-    return mainMutator<ContactDto[]>(
-      { url: `/api/contact`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Принять запрос на добавление в контакты.
-   * @summary Принять контакт
-   */
-  const acceptContact = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ContactDto>>,
-  ) => {
-    return mainMutator<ContactDto>(
-      { url: `/api/contact/${id}/accept`, method: "PATCH" },
-      options,
-    );
-  };
-
-  /**
-   * Удалить контакт.
-   * @summary Удаление контакта
-   */
-  const removeContact = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<string>>,
-  ) => {
-    return mainMutator<string>(
-      { url: `/api/contact/${id}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Заблокировать контакт.
-   * @summary Блокировка контакта
-   */
-  const blockContact = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<ContactDto>>,
-  ) => {
-    return mainMutator<ContactDto>(
-      { url: `/api/contact/${id}/block`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Получить файл по ID.
-   * Этот эндпоинт позволяет пользователю получить файл по его уникальному ID.
-   * Он защищен с использованием JWT-аутентификации, что означает, что только аутентифицированные пользователи могут получить доступ к этому ресурсу.
-   * @summary Получение файла по ID
-   */
-  const getFileById = (
-    params: GetFileByIdParams,
-    options?: SecondParameter<typeof mainMutator<IFileDto>>,
-  ) => {
-    return mainMutator<IFileDto>(
-      { url: `/api/file`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Загрузить файл.
-   * Этот эндпоинт позволяет пользователю загрузить один файл на сервер.
-   * Он защищен с использованием JWT-аутентификации, что означает, что только аутентифицированные пользователи могут загружать файлы.
-   * @summary Загрузка файла
-   */
-  const uploadFile = (
-    uploadFileBody: UploadFileBody,
-    options?: SecondParameter<typeof mainMutator<IFileDto[]>>,
-  ) => {
-    const formData = new FormData();
-    formData.append(`file`, uploadFileBody.file);
-
-    return mainMutator<IFileDto[]>(
-      {
-        url: `/api/file`,
-        method: "POST",
-        headers: { "Content-Type": "multipart/form-data" },
-        data: formData,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить файл.
-   * Этот эндпоинт позволяет пользователю удалить файл по его ID. Доступ разрешен только пользователю, который загрузил файл, либо администратору.
-   * @summary Удаление файла
-   */
-  const deleteFile = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<boolean>>,
-  ) => {
-    return mainMutator<boolean>(
-      { url: `/api/file/${id}`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Отправить сообщение в чат.
-   * @summary Отправка сообщения
-   */
-  const sendMessage = (
-    chatId: string,
-    iSendMessageBody: ISendMessageBody,
-    options?: SecondParameter<typeof mainMutator<MessageDto>>,
-  ) => {
-    return mainMutator<MessageDto>(
-      {
-        url: `/api/chat/${chatId}/message`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iSendMessageBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Получить сообщения чата с cursor-based пагинацией.
-   * - `before` — загрузить старые сообщения (скролл вверх)
-   * - `after` — загрузить новые сообщения (скролл вниз из detached окна)
-   * - `around` — загрузить окно вокруг конкретного сообщения (навигация)
-   * - без параметров — последние сообщения
-   * @summary Список сообщений
-   */
-  const getMessages = (
-    chatId: string,
-    params?: GetMessagesParams,
-    options?: SecondParameter<typeof mainMutator<IMessageListDto>>,
-  ) => {
-    return mainMutator<IMessageListDto>(
-      { url: `/api/chat/${chatId}/message`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Поиск сообщений в чате.
-   * @summary Поиск в чате
-   */
-  const searchChatMessages = (
-    chatId: string,
-    params: SearchChatMessagesParams,
-    options?: SecondParameter<typeof mainMutator<IMessageSearchDto>>,
-  ) => {
-    return mainMutator<IMessageSearchDto>(
-      { url: `/api/chat/${chatId}/message/search`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Получить закреплённые сообщения чата.
-   * @summary Закреплённые сообщения
-   */
-  const getPinnedMessages = (
-    chatId: string,
-    options?: SecondParameter<typeof mainMutator<MessageDto[]>>,
-  ) => {
-    return mainMutator<MessageDto[]>(
-      { url: `/api/chat/${chatId}/message/pinned`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Получить медиафайлы чата.
-   * @summary Медиа-галерея чата
-   */
-  const getChatMedia = (
-    chatId: string,
-    params?: GetChatMediaParams,
-    options?: SecondParameter<typeof mainMutator<IMediaGalleryDto>>,
-  ) => {
-    return mainMutator<IMediaGalleryDto>(
-      { url: `/api/chat/${chatId}/media`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Получить статистику медиафайлов чата.
-   * @summary Статистика медиа
-   */
-  const getChatMediaStats = (
-    chatId: string,
-    options?: SecondParameter<typeof mainMutator<IMediaStatsDto>>,
-  ) => {
-    return mainMutator<IMediaStatsDto>(
-      { url: `/api/chat/${chatId}/media/stats`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Отметить сообщения как прочитанные.
-   * @summary Прочитать сообщения
-   */
-  const markAsRead = (
-    chatId: string,
-    iMarkReadBody: IMarkReadBody,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      {
-        url: `/api/chat/${chatId}/message/read`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iMarkReadBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Глобальный поиск по сообщениям во всех чатах пользователя.
-   * @summary Глобальный поиск сообщений
-   */
-  const searchMessages = (
-    params: SearchMessagesParams,
-    options?: SecondParameter<typeof mainMutator<IMessageSearchDto>>,
-  ) => {
-    return mainMutator<IMessageSearchDto>(
-      { url: `/api/message/search`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Отредактировать сообщение.
-   * @summary Редактирование сообщения
-   */
-  const editMessage = (
-    id: string,
-    iEditMessageBody: IEditMessageBody,
-    options?: SecondParameter<typeof mainMutator<MessageDto>>,
-  ) => {
-    return mainMutator<MessageDto>(
-      {
-        url: `/api/message/${id}`,
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        data: iEditMessageBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить сообщение. forAll=true — для всех, forAll=false — только для себя.
-   * @summary Удаление сообщения
-   */
-  const deleteMessage = (
-    id: string,
-    params?: DeleteMessageParams,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/message/${id}`, method: "DELETE", params },
-      options,
-    );
-  };
-
-  /**
-   * Добавить реакцию на сообщение.
-   * @summary Добавление реакции
-   */
-  const addReaction = (
-    id: string,
-    iAddReactionBody: IAddReactionBody,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      {
-        url: `/api/message/${id}/reaction`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iAddReactionBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить реакцию с сообщения.
-   * @summary Удаление реакции
-   */
-  const removeReaction = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/message/${id}/reaction`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Закрепить сообщение.
-   * @summary Закрепление сообщения
-   */
-  const pinMessage = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<MessageDto>>,
-  ) => {
-    return mainMutator<MessageDto>(
-      { url: `/api/message/${id}/pin`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Открепить сообщение.
-   * @summary Открепление сообщения
-   */
-  const unpinMessage = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<void>>,
-  ) => {
-    return mainMutator<void>(
-      { url: `/api/message/${id}/pin`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Получить информацию о прочтении сообщения (кто прочитал, кто получил).
-   * Доступно для участников чата.
-   * @summary Информация о прочтении сообщения
-   */
-  const getReceiptInfo = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<MessageReceiptDto[]>>,
-  ) => {
-    return mainMutator<MessageReceiptDto[]>(
-      { url: `/api/message/${id}/receipts`, method: "GET" },
+      { url: `/api/v1/passkeys/${id}`, method: "DELETE" },
       options,
     );
   };
@@ -2085,7 +947,7 @@ export const getRestApi = () => {
     >,
   ) => {
     return mainMutator<PublicKeyCredentialCreationOptionsJSON>(
-      { url: `/api/passkeys/generate-registration-options`, method: "POST" },
+      { url: `/api/v1/passkeys/generate-registration-options`, method: "POST" },
       options,
     );
   };
@@ -2102,7 +964,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<IVerifyRegistrationResponseDto>(
       {
-        url: `/api/passkeys/verify-registration`,
+        url: `/api/v1/passkeys/verify-registration`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iVerifyRegistrationRequestDto,
@@ -2124,7 +986,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<PublicKeyCredentialRequestOptionsJSON>(
       {
-        url: `/api/passkeys/generate-authentication-options`,
+        url: `/api/v1/passkeys/generate-authentication-options`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iGenerateAuthenticationOptionsRequestDto,
@@ -2145,7 +1007,7 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<IVerifyAuthenticationResponseDto>(
       {
-        url: `/api/passkeys/verify-authentication`,
+        url: `/api/v1/passkeys/verify-authentication`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         data: iVerifyAuthenticationRequestDto,
@@ -2155,185 +1017,342 @@ export const getRestApi = () => {
   };
 
   /**
-   * Создать опрос в чате.
-   * @summary Создание опроса
+   * Видимые задачи: свои, либо задачи scope (`scopeType` + `scopeId`), если
+   * политика scope разрешает просмотр. Новые — первыми.
+   * @summary Список задач
    */
-  const createPoll = (
-    chatId: string,
-    iCreatePollBody: ICreatePollBody,
-    options?: SecondParameter<typeof mainMutator<PollDto>>,
+  const listJobs = (
+    params?: ListJobsParams,
+    options?: SecondParameter<typeof mainMutator<IPaginatedDtoJobRunDto>>,
   ) => {
-    return mainMutator<PollDto>(
-      {
-        url: `/api/chat/${chatId}/poll`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreatePollBody,
-      },
+    return mainMutator<IPaginatedDtoJobRunDto>(
+      { url: `/api/v1/jobs`, method: "GET", params },
       options,
     );
   };
 
   /**
-   * Проголосовать в опросе.
-   * @summary Голосование
+   * Задача: статус, прогресс, хвост лога, результат или ошибка.
+   * @summary Задача
    */
-  const vote = (
-    id: string,
-    iVotePollBody: IVotePollBody,
-    options?: SecondParameter<typeof mainMutator<PollDto>>,
+  const getJob = (
+    id: Uuid,
+    options?: SecondParameter<typeof mainMutator<JobRunDto>>,
   ) => {
-    return mainMutator<PollDto>(
-      {
-        url: `/api/poll/${id}/vote`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iVotePollBody,
-      },
+    return mainMutator<JobRunDto>(
+      { url: `/api/v1/jobs/${id}`, method: "GET" },
       options,
     );
   };
 
   /**
-   * Отозвать голос.
-   * @summary Отзыв голоса
+   * Отменить задачу: ждущая снимается сразу, выполняющаяся получает сигнал
+   * отмены. Завершённую отменить нельзя (409).
+   * @summary Отмена задачи
    */
-  const retractVote = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<PollDto>>,
-  ) => {
-    return mainMutator<PollDto>(
-      { url: `/api/poll/${id}/vote`, method: "DELETE" },
-      options,
-    );
-  };
-
-  /**
-   * Закрыть опрос.
-   * @summary Закрытие опроса
-   */
-  const closePoll = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<PollDto>>,
-  ) => {
-    return mainMutator<PollDto>(
-      { url: `/api/poll/${id}/close`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Получить опрос по ID.
-   * @summary Получение опроса
-   */
-  const getPoll = (
-    id: string,
-    options?: SecondParameter<typeof mainMutator<PollDto>>,
-  ) => {
-    return mainMutator<PollDto>(
-      { url: `/api/poll/${id}`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Зарегистрировать устройство для push-уведомлений.
-   * @summary Регистрация устройства
-   */
-  const registerDevice = (
-    iRegisterDeviceBody: IRegisterDeviceBody,
-    options?: SecondParameter<typeof mainMutator<DeviceTokenDto>>,
-  ) => {
-    return mainMutator<DeviceTokenDto>(
-      {
-        url: `/api/device`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iRegisterDeviceBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Удалить устройство из push-уведомлений.
-   * @summary Удаление устройства
-   */
-  const unregisterDevice = (
-    token: string,
+  const cancelJob = (
+    id: Uuid,
     options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
     return mainMutator<void>(
-      { url: `/api/device/${token}`, method: "DELETE" },
+      { url: `/api/v1/jobs/${id}/cancel`, method: "POST" },
       options,
     );
   };
 
   /**
-   * Получить настройки уведомлений текущего пользователя.
-   * @summary Настройки уведомлений
+   * Поставить демо-задачу `demo.echo` внешнему воркеру — проверка, что
+   * воркеры подключены (`python/examples/echo_worker.py`). Только для админов.
+   * @summary Проверка внешних воркеров
    */
-  const getSettings = (
-    options?: SecondParameter<typeof mainMutator<NotificationSettingsDto>>,
+  const demoEchoJob = (
+    iDemoEchoData: IDemoEchoData,
+    options?: SecondParameter<typeof mainMutator<DemoEchoJob201>>,
   ) => {
-    return mainMutator<NotificationSettingsDto>(
-      { url: `/api/notification/settings`, method: "GET" },
-      options,
-    );
-  };
-
-  /**
-   * Обновить настройки уведомлений.
-   * @summary Обновление настроек уведомлений
-   */
-  const updateSettings = (
-    iUpdateNotificationSettingsBody: IUpdateNotificationSettingsBody,
-    options?: SecondParameter<typeof mainMutator<NotificationSettingsDto>>,
-  ) => {
-    return mainMutator<NotificationSettingsDto>(
+    return mainMutator<DemoEchoJob201>(
       {
-        url: `/api/notification/settings`,
-        method: "PATCH",
+        url: `/api/v1/jobs/demo/echo`,
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: iUpdateNotificationSettingsBody,
+        data: iDemoEchoData,
       },
       options,
     );
   };
 
   /**
-   * Получить изменения с указанной версии (компактифицированные).
-   * Если версия клиента устарела — вернёт requiresSnapshot: true.
-   * @summary Incremental sync
+   * Внешние очереди и воркеры: кто брал задачи и на связи ли сейчас (брал в
+   * последние 90 с). Для индикатора «воркер доступен» в интерфейсе.
+   * @summary Статус воркеров
    */
-  const getChanges = (
-    params?: GetChangesParams,
-    options?: SecondParameter<typeof mainMutator<ISyncResponseDto>>,
+  const status = (
+    options?: SecondParameter<typeof mainMutator<IWorkerQueueStatusDto[]>>,
   ) => {
-    return mainMutator<ISyncResponseDto>(
-      { url: `/api/sync`, method: "GET", params },
+    return mainMutator<IWorkerQueueStatusDto[]>(
+      { url: `/api/v1/worker/status`, method: "GET" },
       options,
     );
   };
 
   /**
-   * Получить текущую sync version.
-   * Используется при первом запуске для установки начальной точки синхронизации.
-   * @summary Current sync version
+   * Взять задачи из очередей. Long-poll: без задач ждёт до `waitSeconds`
+   * (не больше 25 с) и возвращает пустой список. Каждая задача выдаётся в
+   * аренду на `leaseSeconds`; без heartbeat она вернётся в очередь.
+   * @summary Взять задачи
    */
-  const getVersion = (
-    options?: SecondParameter<typeof mainMutator<ISyncVersionDto>>,
+  const claim = (
+    iClaimJobsBody: IClaimJobsBody,
+    options?: SecondParameter<typeof mainMutator<IClaimedJobDto[]>>,
   ) => {
-    return mainMutator<ISyncVersionDto>(
-      { url: `/api/sync/version`, method: "GET" },
+    return mainMutator<IClaimedJobDto[]>(
+      {
+        url: `/api/v1/worker/jobs/claim`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iClaimJobsBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Продлить аренду и сообщить прогресс. `cancel: true` — задачу отменили
+   * или аренда потеряна: прекратить работу и не вызывать complete.
+   * @summary Heartbeat задачи
+   */
+  const heartbeat = (
+    id: Uuid,
+    iHeartbeatJobBody: IHeartbeatJobBody,
+    options?: SecondParameter<typeof mainMutator<IHeartbeatResultDto>>,
+  ) => {
+    return mainMutator<IHeartbeatResultDto>(
+      {
+        url: `/api/v1/worker/jobs/${id}/heartbeat`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iHeartbeatJobBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Завершить задачу с результатом. 409 — аренда потеряна или задачу
+   * отменили: результат не принят.
+   * @summary Завершить задачу
+   */
+  const complete = (
+    id: Uuid,
+    iCompleteJobBody: ICompleteJobBody,
+    options?: SecondParameter<typeof mainMutator<void>>,
+  ) => {
+    return mainMutator<void>(
+      {
+        url: `/api/v1/worker/jobs/${id}/complete`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iCompleteJobBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Сообщить об ошибке. `retryable: false` — без повторов; иначе задача
+   * повторяется по политике очереди.
+   * @summary Ошибка задачи
+   */
+  const fail = (
+    id: Uuid,
+    iFailJobBody: IFailJobBody,
+    options?: SecondParameter<typeof mainMutator<void>>,
+  ) => {
+    return mainMutator<void>(
+      {
+        url: `/api/v1/worker/jobs/${id}/fail`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iFailJobBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Регистрирует публичный ключ устройства для входа по биометрии.
+   * @summary Регистрация биометрии
+   */
+  const registerBiometric = (
+    iRegisterBiometricRequestDto: IRegisterBiometricRequestDto,
+    options?: SecondParameter<
+      typeof mainMutator<IRegisterBiometricResponseDto>
+    >,
+  ) => {
+    return mainMutator<IRegisterBiometricResponseDto>(
+      {
+        url: `/api/v1/biometric/register`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iRegisterBiometricRequestDto,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Выдаёт одноразовый nonce (5 минут), который устройство подписывает своим
+   * ключом. Публичный: вызывается до входа.
+   * @summary Nonce для биометрического входа
+   */
+  const generateNonce = (
+    iGenerateNonceRequestDto: IGenerateNonceRequestDto,
+    options?: SecondParameter<typeof mainMutator<IGenerateNonceResponseDto>>,
+  ) => {
+    return mainMutator<IGenerateNonceResponseDto>(
+      {
+        url: `/api/v1/biometric/generate-nonce`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iGenerateNonceRequestDto,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Проверяет подпись nonce и открывает новую сессию. Публичный; nonce
+   * одноразовый — одна попытка на nonce.
+   * @summary Вход по биометрии
+   */
+  const verifySignature = (
+    iVerifyBiometricSignatureRequestDto: IVerifyBiometricSignatureRequestDto,
+    options?: SecondParameter<
+      typeof mainMutator<IVerifyBiometricSignatureResponseDto>
+    >,
+  ) => {
+    return mainMutator<IVerifyBiometricSignatureResponseDto>(
+      {
+        url: `/api/v1/biometric/verify-signature`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iVerifyBiometricSignatureRequestDto,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Список зарегистрированных устройств пользователя.
+   * @summary Мои биометрические устройства
+   */
+  const getDevices = (
+    options?: SecondParameter<typeof mainMutator<IBiometricDevicesResponseDto>>,
+  ) => {
+    return mainMutator<IBiometricDevicesResponseDto>(
+      { url: `/api/v1/biometric/devices`, method: "GET" },
+      options,
+    );
+  };
+
+  /**
+   * Удаляет зарегистрированное устройство.
+   * @summary Удаление биометрического устройства
+   */
+  const deleteDevice = (
+    deviceId: string,
+    options?: SecondParameter<typeof mainMutator<void>>,
+  ) => {
+    return mainMutator<void>(
+      { url: `/api/v1/biometric/${deviceId}`, method: "DELETE" },
+      options,
+    );
+  };
+
+  /**
+   * Журнал безопасности текущего пользователя: входы (в том числе
+   * неудачные), блокировки, 2FA, смена пароля, сессии, passkeys, биометрия.
+   * Новые — первыми.
+   * @summary Мой журнал безопасности
+   */
+  const getMyAudit = (
+    params?: GetMyAuditParams,
+    options?: SecondParameter<typeof mainMutator<ICursorPageDtoAuditEventDto>>,
+  ) => {
+    return mainMutator<ICursorPageDtoAuditEventDto>(
+      { url: `/api/v1/audit/my`, method: "GET", params },
+      options,
+    );
+  };
+
+  /**
+   * Журнал безопасности всех пользователей. Требует право `audit:view`.
+   * @summary Журнал безопасности
+   */
+  const listAuditEvents = (
+    params?: ListAuditEventsParams,
+    options?: SecondParameter<typeof mainMutator<ICursorPageDtoAuditEventDto>>,
+  ) => {
+    return mainMutator<ICursorPageDtoAuditEventDto>(
+      { url: `/api/v1/audit`, method: "GET", params },
+      options,
+    );
+  };
+
+  /**
+   * Выпустить API-ключ сервиса. Полный ключ (`key`) возвращается только в
+   * этом ответе — сохраните его: в БД хранится лишь хеш.
+   * @summary Создание API-ключа
+   */
+  const createApiKey = (
+    iCreateApiKeyBody: ICreateApiKeyBody,
+    options?: SecondParameter<typeof mainMutator<ICreatedApiKeyDto>>,
+  ) => {
+    return mainMutator<ICreatedApiKeyDto>(
+      {
+        url: `/api/v1/api-keys`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iCreateApiKeyBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Все API-ключи, новые первыми. Секреты не возвращаются.
+   * @summary Список API-ключей
+   */
+  const listApiKeys = (
+    params?: ListApiKeysParams,
+    options?: SecondParameter<typeof mainMutator<IPaginatedDtoApiKeyDto>>,
+  ) => {
+    return mainMutator<IPaginatedDtoApiKeyDto>(
+      { url: `/api/v1/api-keys`, method: "GET", params },
+      options,
+    );
+  };
+
+  /**
+   * Отозвать ключ: запросы с ним сразу получают 401. Повторный отзыв — 204.
+   * @summary Отзыв API-ключа
+   */
+  const revokeApiKey = (
+    id: Uuid,
+    options?: SecondParameter<typeof mainMutator<void>>,
+  ) => {
+    return mainMutator<void>(
+      { url: `/api/v1/api-keys/${id}/revoke`, method: "POST" },
       options,
     );
   };
 
   return {
-    getSessions,
-    terminateSession,
-    terminateOtherSessions,
+    getMyFiles,
+    uploadFile,
+    getFileById,
+    deleteFile,
+    createUpload,
+    completeUpload,
     getMyProfile,
     updateMyProfile,
     getPrivacySettings,
@@ -2349,6 +1368,7 @@ export const getRestApi = () => {
     setRolePermissions,
     getMyUser,
     updateMyUser,
+    confirmEmailChange,
     deleteMyUser,
     setUsername,
     searchUsers,
@@ -2362,119 +1382,63 @@ export const getRestApi = () => {
     updateUser,
     changePassword,
     deleteUser,
+    getSessions,
+    terminateSession,
+    terminateOtherSessions,
     signUp,
     signIn,
     requestResetPassword,
     resetPassword,
     refresh,
+    signOut,
+    signOutAll,
     enable2FA,
     disable2FA,
     verify2FA,
+    getPasskeys,
+    deletePasskey,
+    generateRegistrationOptions,
+    verifyRegistration,
+    generateAuthenticationOptions,
+    verifyAuthentication,
+    listJobs,
+    getJob,
+    cancelJob,
+    demoEchoJob,
+    status,
+    claim,
+    heartbeat,
+    complete,
+    fail,
     registerBiometric,
     generateNonce,
     verifySignature,
     getDevices,
     deleteDevice,
-    botSendMessage,
-    botEditMessage,
-    botDeleteMessage,
-    createBot,
-    getMyBots,
-    getBotById,
-    updateBot,
-    deleteBot,
-    regenerateToken,
-    setWebhook,
-    deleteWebhook,
-    setCommands,
-    getCommands,
-    testWebhook,
-    getWebhookLogs,
-    setWebhookEvents,
-    initiateCall,
-    answerCall,
-    declineCall,
-    endCall,
-    getCallHistory,
-    getActiveCall,
-    setSlowMode,
-    banMember,
-    unbanMember,
-    getBannedMembers,
-    createDirectChat,
-    createGroupChat,
-    createChannel,
-    updateChannel,
-    subscribeToChannel,
-    unsubscribeFromChannel,
-    searchChannels,
-    getUserChats,
-    getChatById,
-    updateChat,
-    leaveChat,
-    createInviteLink,
-    getInvites,
-    revokeInvite,
-    joinByInvite,
-    muteChat,
-    addMembers,
-    removeMember,
-    updateMemberRole,
-    pinChat,
-    unpinChat,
-    moveChatToFolder,
-    getUserFolders,
-    createFolder,
-    updateFolder,
-    deleteFolder,
-    addContact,
-    getContacts,
-    acceptContact,
-    removeContact,
-    blockContact,
-    getFileById,
-    uploadFile,
-    deleteFile,
-    sendMessage,
-    getMessages,
-    searchChatMessages,
-    getPinnedMessages,
-    getChatMedia,
-    getChatMediaStats,
-    markAsRead,
-    searchMessages,
-    editMessage,
-    deleteMessage,
-    addReaction,
-    removeReaction,
-    pinMessage,
-    unpinMessage,
-    getReceiptInfo,
-    generateRegistrationOptions,
-    verifyRegistration,
-    generateAuthenticationOptions,
-    verifyAuthentication,
-    createPoll,
-    vote,
-    retractVote,
-    closePoll,
-    getPoll,
-    registerDevice,
-    unregisterDevice,
-    getSettings,
-    updateSettings,
-    getChanges,
-    getVersion,
+    getMyAudit,
+    listAuditEvents,
+    createApiKey,
+    listApiKeys,
+    revokeApiKey,
   };
 };
-export type GetSessionsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getSessions"]>>
+export type GetMyFilesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getMyFiles"]>>
 >;
-export type TerminateSessionResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["terminateSession"]>>
+export type UploadFileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["uploadFile"]>>
 >;
-export type TerminateOtherSessionsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["terminateOtherSessions"]>>
+export type GetFileByIdResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getFileById"]>>
+>;
+export type DeleteFileResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteFile"]>>
+>;
+export type CreateUploadResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["createUpload"]>>
+>;
+export type CompleteUploadResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["completeUpload"]>>
 >;
 export type GetMyProfileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getMyProfile"]>>
@@ -2521,6 +1485,9 @@ export type GetMyUserResult = NonNullable<
 export type UpdateMyUserResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["updateMyUser"]>>
 >;
+export type ConfirmEmailChangeResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["confirmEmailChange"]>>
+>;
 export type DeleteMyUserResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteMyUser"]>>
 >;
@@ -2560,6 +1527,15 @@ export type ChangePasswordResult = NonNullable<
 export type DeleteUserResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteUser"]>>
 >;
+export type GetSessionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getSessions"]>>
+>;
+export type TerminateSessionResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["terminateSession"]>>
+>;
+export type TerminateOtherSessionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["terminateOtherSessions"]>>
+>;
 export type SignUpResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["signUp"]>>
 >;
@@ -2575,6 +1551,12 @@ export type ResetPasswordResult = NonNullable<
 export type RefreshResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["refresh"]>>
 >;
+export type SignOutResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["signOut"]>>
+>;
+export type SignOutAllResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["signOutAll"]>>
+>;
 export type Enable2FAResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["enable2FA"]>>
 >;
@@ -2584,245 +1566,11 @@ export type Disable2FAResult = NonNullable<
 export type Verify2FAResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["verify2FA"]>>
 >;
-export type RegisterBiometricResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["registerBiometric"]>>
->;
-export type GenerateNonceResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["generateNonce"]>>
->;
-export type VerifySignatureResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["verifySignature"]>>
->;
-export type GetDevicesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getDevices"]>>
->;
-export type DeleteDeviceResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteDevice"]>>
->;
-export type BotSendMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["botSendMessage"]>>
->;
-export type BotEditMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["botEditMessage"]>>
->;
-export type BotDeleteMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["botDeleteMessage"]>>
->;
-export type CreateBotResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createBot"]>>
->;
-export type GetMyBotsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getMyBots"]>>
->;
-export type GetBotByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getBotById"]>>
->;
-export type UpdateBotResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["updateBot"]>>
->;
-export type DeleteBotResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteBot"]>>
->;
-export type RegenerateTokenResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["regenerateToken"]>>
->;
-export type SetWebhookResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["setWebhook"]>>
->;
-export type DeleteWebhookResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteWebhook"]>>
->;
-export type SetCommandsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["setCommands"]>>
->;
-export type GetCommandsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getCommands"]>>
->;
-export type TestWebhookResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["testWebhook"]>>
->;
-export type GetWebhookLogsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getWebhookLogs"]>>
->;
-export type SetWebhookEventsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["setWebhookEvents"]>>
->;
-export type InitiateCallResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["initiateCall"]>>
->;
-export type AnswerCallResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["answerCall"]>>
->;
-export type DeclineCallResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["declineCall"]>>
->;
-export type EndCallResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["endCall"]>>
->;
-export type GetCallHistoryResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getCallHistory"]>>
->;
-export type GetActiveCallResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getActiveCall"]>>
->;
-export type SetSlowModeResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["setSlowMode"]>>
->;
-export type BanMemberResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["banMember"]>>
->;
-export type UnbanMemberResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["unbanMember"]>>
->;
-export type GetBannedMembersResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getBannedMembers"]>>
->;
-export type CreateDirectChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createDirectChat"]>>
->;
-export type CreateGroupChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createGroupChat"]>>
->;
-export type CreateChannelResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createChannel"]>>
->;
-export type UpdateChannelResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["updateChannel"]>>
->;
-export type SubscribeToChannelResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["subscribeToChannel"]>>
->;
-export type UnsubscribeFromChannelResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["unsubscribeFromChannel"]>>
->;
-export type SearchChannelsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["searchChannels"]>>
->;
-export type GetUserChatsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getUserChats"]>>
->;
-export type GetChatByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getChatById"]>>
->;
-export type UpdateChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["updateChat"]>>
->;
-export type LeaveChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["leaveChat"]>>
->;
-export type CreateInviteLinkResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createInviteLink"]>>
->;
-export type GetInvitesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getInvites"]>>
->;
-export type RevokeInviteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["revokeInvite"]>>
->;
-export type JoinByInviteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["joinByInvite"]>>
->;
-export type MuteChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["muteChat"]>>
->;
-export type AddMembersResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["addMembers"]>>
->;
-export type RemoveMemberResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["removeMember"]>>
->;
-export type UpdateMemberRoleResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["updateMemberRole"]>>
->;
-export type PinChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["pinChat"]>>
->;
-export type UnpinChatResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["unpinChat"]>>
->;
-export type MoveChatToFolderResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["moveChatToFolder"]>>
->;
-export type GetUserFoldersResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getUserFolders"]>>
->;
-export type CreateFolderResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createFolder"]>>
->;
-export type UpdateFolderResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["updateFolder"]>>
->;
-export type DeleteFolderResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteFolder"]>>
->;
-export type AddContactResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["addContact"]>>
->;
-export type GetContactsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getContacts"]>>
->;
-export type AcceptContactResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["acceptContact"]>>
->;
-export type RemoveContactResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["removeContact"]>>
->;
-export type BlockContactResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["blockContact"]>>
->;
-export type GetFileByIdResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getFileById"]>>
->;
-export type UploadFileResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["uploadFile"]>>
->;
-export type DeleteFileResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteFile"]>>
->;
-export type SendMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["sendMessage"]>>
->;
-export type GetMessagesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getMessages"]>>
->;
-export type SearchChatMessagesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["searchChatMessages"]>>
->;
-export type GetPinnedMessagesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getPinnedMessages"]>>
->;
-export type GetChatMediaResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getChatMedia"]>>
->;
-export type GetChatMediaStatsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getChatMediaStats"]>>
->;
-export type MarkAsReadResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["markAsRead"]>>
->;
-export type SearchMessagesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["searchMessages"]>>
->;
-export type EditMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["editMessage"]>>
->;
-export type DeleteMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteMessage"]>>
->;
-export type AddReactionResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["addReaction"]>>
->;
-export type RemoveReactionResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["removeReaction"]>>
->;
-export type PinMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["pinMessage"]>>
->;
-export type UnpinMessageResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["unpinMessage"]>>
->;
-export type GetReceiptInfoResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getReceiptInfo"]>>
+export type GetPasskeysResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getPasskeys"]>>
+>;
+export type DeletePasskeyResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["deletePasskey"]>>
 >;
 export type GenerateRegistrationOptionsResult = NonNullable<
   Awaited<
@@ -2840,36 +1588,60 @@ export type GenerateAuthenticationOptionsResult = NonNullable<
 export type VerifyAuthenticationResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["verifyAuthentication"]>>
 >;
-export type CreatePollResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["createPoll"]>>
+export type ListJobsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["listJobs"]>>
 >;
-export type VoteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["vote"]>>
+export type GetJobResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getJob"]>>
 >;
-export type RetractVoteResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["retractVote"]>>
+export type CancelJobResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["cancelJob"]>>
 >;
-export type ClosePollResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["closePoll"]>>
+export type DemoEchoJobResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["demoEchoJob"]>>
 >;
-export type GetPollResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getPoll"]>>
+export type StatusResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["status"]>>
 >;
-export type RegisterDeviceResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["registerDevice"]>>
+export type ClaimResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["claim"]>>
 >;
-export type UnregisterDeviceResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["unregisterDevice"]>>
+export type HeartbeatResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["heartbeat"]>>
 >;
-export type GetSettingsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getSettings"]>>
+export type CompleteResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["complete"]>>
 >;
-export type UpdateSettingsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["updateSettings"]>>
+export type FailResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["fail"]>>
 >;
-export type GetChangesResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getChanges"]>>
+export type RegisterBiometricResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["registerBiometric"]>>
 >;
-export type GetVersionResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getVersion"]>>
+export type GenerateNonceResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["generateNonce"]>>
+>;
+export type VerifySignatureResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["verifySignature"]>>
+>;
+export type GetDevicesResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getDevices"]>>
+>;
+export type DeleteDeviceResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["deleteDevice"]>>
+>;
+export type GetMyAuditResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getMyAudit"]>>
+>;
+export type ListAuditEventsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["listAuditEvents"]>>
+>;
+export type CreateApiKeyResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["createApiKey"]>>
+>;
+export type ListApiKeysResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["listApiKeys"]>>
+>;
+export type RevokeApiKeyResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["revokeApiKey"]>>
 >;

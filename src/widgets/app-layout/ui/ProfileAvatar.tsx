@@ -2,11 +2,14 @@ import { FC } from "react";
 
 interface ProfileAvatarProps {
   initials: string;
+  /** Изображение аватара; без него — инициалы. */
+  src?: string;
   size?: "sm" | "md";
 }
 
 export const ProfileAvatar: FC<ProfileAvatarProps> = ({
   initials,
+  src,
   size = "sm",
 }) => (
   <div
@@ -17,6 +20,14 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
       size === "sm" ? "h-8 w-8 text-xs" : "h-10 w-10 text-sm",
     ].join(" ")}
   >
-    {initials}
+    {src ? (
+      <img
+        src={src}
+        alt=""
+        className="h-full w-full rounded-full object-cover"
+      />
+    ) : (
+      initials
+    )}
   </div>
 );

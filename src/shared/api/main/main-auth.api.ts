@@ -29,9 +29,12 @@ export class MainAuthApi extends BaseApi implements IMainAuthApi {
   }
 
   refresh(refreshToken: string) {
-    return this.post<TokenPair, { refreshToken: string }>("/api/auth/refresh", {
-      refreshToken,
-    });
+    return this.post<TokenPair, { refreshToken: string }>(
+      "/api/v1/auth/refresh",
+      {
+        refreshToken,
+      },
+    );
   }
 }
 

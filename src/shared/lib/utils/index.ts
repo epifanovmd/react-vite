@@ -1,5 +1,6 @@
 export * from "./cn";
 export * from "./deep-keys";
+export * from "./describe-user-agent";
 export * from "./download-blob";
 export * from "./enum-values";
 export * from "./flatten";

@@ -76,6 +76,12 @@ class UserStore implements IUserStore {
     return this.privacyHolder.data;
   }
 
+  get avatarUrl() {
+    const avatar = this.user?.profile?.avatar;
+
+    return avatar?.thumbnailUrl ?? avatar?.url ?? undefined;
+  }
+
   get error() {
     return this._holder.error?.message;
   }
@@ -170,8 +176,21 @@ class UserStore implements IUserStore {
     return res;
   }
 
-  async changePassword(password: string) {
-    return this._api.changePassword({ password });
+  async changeEmail(email: string) {
+    return this._api.updateMyUser({ email });
+  }
+
+  async confirmEmailChange(code: string) {
+    const res = await this._api.confirmEmailChange({ code });
+
+    // В ответе может не быть связей (профиль) — они остаются от известного пользователя.
+    if (res.data) this._holder.setData({ ...this._holder.data, ...res.data });
+
+    return res;
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this._api.changePassword({ currentPassword, newPassword });
   }
 
   async requestVerifyEmail() {
@@ -179,18 +198,21 @@ class UserStore implements IUserStore {
   }
 
   async verifyEmail(code: string) {
-    const res = await this._api.verifyEmail(code);
+    const res = await this._api.verifyEmail({ code });
 
-    if (res.data) {
+    if (!res.error) {
       this.patchUser({ emailVerified: true });
     }
 
     return res;
   }
 
-  async deleteMyAccount() {
-    await this._api.deleteMyUser();
-    this.reset();
+  async deleteMyAccount(password: string) {
+    const res = await this._api.deleteMyUser({ password });
+
+    if (!res.error) this.reset();
+
+    return res;
   }
 
   reset() {

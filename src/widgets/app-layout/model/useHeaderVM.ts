@@ -1,10 +1,11 @@
 import { IUserStore } from "@entities/user";
 import { useState } from "react";
 
-import { NAV_GROUPS, NavItem } from "./constants";
+import { NAV_GROUPS } from "./constants";
 
 export const useHeaderVM = () => {
-  const { user, model } = IUserStore.useInstance();
+  const userStore = IUserStore.useInstance();
+  const { user, model } = userStore;
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const displayName = model?.displayName ?? "Admin";
@@ -15,14 +16,18 @@ export const useHeaderVM = () => {
     user?.phone ??
     (user?.username ? `@${user.username}` : undefined);
 
-  const visibleGroups = NAV_GROUPS.filter(group => group.items.length > 0);
-  const navItems: NavItem[] = visibleGroups.flatMap(group => group.items);
+  const visibleGroups = NAV_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(
+      item => !item.permission || userStore.can(item.permission),
+    ),
+  })).filter(group => group.items.length > 0);
 
   return {
     displayName,
     initials,
+    avatarUrl: userStore.avatarUrl,
     subtitle,
-    navItems,
     visibleGroups,
     mobileOpen,
     setMobileOpen,

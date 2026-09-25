@@ -8,13 +8,7 @@ import type { PublicKeyCredentialRpEntity } from "./publicKeyCredentialRpEntity.
 import type { PublicKeyCredentialUserEntityJSON } from "./publicKeyCredentialUserEntityJSON.ts";
 
 /**
- * A variant of PublicKeyCredentialCreationOptions suitable for JSON transmission to the browser to
- * (eventually) get passed into navigator.credentials.create(...) in the browser.
- *
- * This should eventually get replaced with official TypeScript DOM types when WebAuthn L3 types
- * eventually make it into the language:
- *
- * https://w3c.github.io/webauthn/#dictdef-publickeycredentialcreationoptionsjson
+ * Опции для `navigator.credentials.create()`.
  */
 export interface PublicKeyCredentialCreationOptionsJSON {
   rp: PublicKeyCredentialRpEntity;
@@ -24,6 +18,8 @@ export interface PublicKeyCredentialCreationOptionsJSON {
   timeout?: number;
   excludeCredentials?: PublicKeyCredentialDescriptorJSON[];
   authenticatorSelection?: AuthenticatorSelectionCriteria;
+  hints?: string[];
   attestation?: AttestationConveyancePreference;
+  attestationFormats?: string[];
   extensions?: AuthenticationExtensionsClientInputs;
 }

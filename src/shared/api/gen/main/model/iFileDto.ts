@@ -1,9 +1,24 @@
+import type { EFileStatus } from "./eFileStatus.ts";
+
 export interface IFileDto {
   id: string;
+  /** @nullable */
+  ownerId: string | null;
   name: string;
   type: string;
-  url: string;
   size: number;
+  status: EFileStatus;
+  /**
+   * Подписанная ссылка для показа: оптимизированная версия, если готова,
+   * иначе оригинал. `null` — прямая загрузка не завершена. Срок ограничен.
+   * @nullable
+   */
+  url: string | null;
+  /**
+   * Подписанная ссылка на скачивание оригинала под исходным именем.
+   * @nullable
+   */
+  downloadUrl: string | null;
   /** @nullable */
   thumbnailUrl: string | null;
   /** @nullable */

@@ -1,4 +1,4 @@
-import { IAuthStore } from "@entities/auth";
+import { IAuthStore, PASSKEY_LOGIN_STORAGE_KEY } from "@entities/auth";
 import { IMainApi } from "@shared/api";
 import {
   AuthenticationResponseJSON,
@@ -10,10 +10,11 @@ import {
   startAuthentication,
   startRegistration,
 } from "@simplewebauthn/browser";
-import { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
+import {
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/types";
 import { useCallback, useEffect, useState } from "react";
-
-const PROFILE_ID_KEY = "app:profileId";
 
 export const usePasskeyAuth = (onSuccess: () => void) => {
   const storage = IStorageService.useInstance();
@@ -21,7 +22,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(() =>
-    storage.getItem(PROFILE_ID_KEY),
+    storage.getItem(PASSKEY_LOGIN_STORAGE_KEY),
   );
 
   const api = IMainApi.useInstance();
@@ -55,7 +56,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
         } catch (err: any) {
           if (err?.name === "InvalidStateError") {
             // Аутентификатор уже зарегистрирован — считаем успехом
-            storage.setItem(PROFILE_ID_KEY, login);
+            storage.setItem(PASSKEY_LOGIN_STORAGE_KEY, login);
             setProfileId(login);
 
             return { ok: true };
@@ -79,7 +80,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
         }
 
         if (verifyRes.data?.verified) {
-          storage.setItem(PROFILE_ID_KEY, login);
+          storage.setItem(PASSKEY_LOGIN_STORAGE_KEY, login);
           setProfileId(login);
 
           return { ok: true };
@@ -133,7 +134,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
 
       try {
         authResp = await startAuthentication({
-          optionsJSON: optionsRes.data!,
+          optionsJSON: optionsRes.data as PublicKeyCredentialRequestOptionsJSON,
         });
       } catch (err: any) {
         const error = err?.message ?? "Registration cancelled";
@@ -177,7 +178,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
   }, [api, onSuccess, profileId, restore]);
 
   const removePasskey = useCallback(() => {
-    storage.removeItem(PROFILE_ID_KEY);
+    storage.removeItem(PASSKEY_LOGIN_STORAGE_KEY);
     setProfileId(null);
   }, [storage]);
 

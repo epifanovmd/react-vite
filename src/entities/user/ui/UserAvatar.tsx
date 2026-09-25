@@ -29,13 +29,16 @@ const SIZE_CLASS: Record<NonNullable<UserAvatarProps["size"]>, string> = {
 
 type UserAvatarProps = {
   name: string;
+  /** Ссылка на изображение; без неё — инициалы на цветном фоне. */
+  src?: string;
   size?: "sm" | "md" | "lg" | "xl";
 };
 
-export const UserAvatar: FC<UserAvatarProps> = ({ name, size = "md" }) => (
+export const UserAvatar: FC<UserAvatarProps> = ({ name, src, size = "md" }) => (
   <Avatar
     name={name}
-    fallback="?"
+    src={src}
+    fallback={name.trim() ? undefined : "?"}
     className={`${colorFromString(name)} font-semibold text-white ${SIZE_CLASS[size]}`}
   />
 );

@@ -1,6 +1,7 @@
 import { SessionDto } from "@shared/api/gen/main/model";
 import { createInjectDecorator } from "@shared/lib/di";
 import { CollectionHolder, MutationHolder } from "@shared/lib/holders";
+import { ApiError, ApiResponse } from "@shared/lib/http";
 
 import { SessionModel } from "./session-model";
 
@@ -16,7 +17,7 @@ export interface ISessionStore {
 
   load(): Promise<void>;
   terminateSession(sessionId: string): Promise<void>;
-  terminateOtherSessions(): Promise<void>;
+  terminateOtherSessions(): Promise<ApiResponse<void, ApiError>>;
 
   handleNewSession(session: SessionDto): void;
   handleSessionTerminated(sessionId: string): void;

@@ -36,7 +36,6 @@ src/
 │   │   ├── api/              # session-guard.ts (токены — shared/lib/session + shared/api/main)
 │   │   ├── auth.module.ts
 │   │   └── index.ts          # Public API: authModule, AuthStatus, IAuthStore, loginValidation, passwordValidation
-│   ├── biometric/           # ОТДЕЛЬНЫЙ слайс: model/biometric-store.ts (IBiometricStore, devicesHolder), biometric.module.ts
 │   └── user/
 │       ├── model/            # store.ts (UserStore), session-store.ts (+ session-model.ts, session-types.ts), realtime.ts, user-model.ts, profile-model.ts, role-model.ts, public-user-model.ts
 │       ├── api/               # user-socket.ts (UserSocketService — реалтайм-события пользователя)

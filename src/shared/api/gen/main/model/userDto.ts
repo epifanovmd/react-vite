@@ -2,6 +2,9 @@ import type { IPermissionDto } from "./iPermissionDto.ts";
 import type { IRoleDto } from "./iRoleDto.ts";
 import type { ProfileDto } from "./profileDto.ts";
 
+/**
+ * Пользователь для владельца и администрирования; аватар — из карты подписей.
+ */
 export interface UserDto {
   id: string;
   /** @nullable */

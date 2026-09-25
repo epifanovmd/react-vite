@@ -1,12 +1,12 @@
-import type { TPermission } from "./tPermission.ts";
-import type { TRole } from "./tRole.ts";
+import type { PermissionName } from "./permissionName.ts";
+import type { RoleName } from "./roleName.ts";
 
 export interface IUserPrivilegesRequestDto {
   /** Роли для назначения пользователю (заменяет текущие роли). */
-  roles: TRole[];
+  roles: RoleName[];
   /**
    * Прямые разрешения, выданные этому пользователю дополнительно к разрешениям ролей.
    * Заменяет текущие прямые разрешения.
    */
-  permissions: TPermission[];
+  permissions: PermissionName[];
 }

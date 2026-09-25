@@ -30,27 +30,15 @@ const defineApi = (name: string, input: Options["input"]): Options => ({
   },
 });
 
-/** Локальный файл спеки для генерации без сети: `MAIN_SWAGGER=./swagger.json yarn generate:orval`. */
+/**
+ * Спека — из соседнего репозитория шаблона бэкенда (`yarn generate` там обновляет
+ * `src/routing/swagger.json`). С запущенного сервера:
+ * `MAIN_SWAGGER=http://localhost:8181/api-docs/swagger.json yarn generate:orval`.
+ */
 const MAIN_SWAGGER =
   process.env.MAIN_SWAGGER ??
-  "http://147.45.245.104:8181/api-docs/swagger.json";
+  "../rest-api-template-app/src/routing/swagger.json";
 
 export default defineConfig({
-  main: defineApi("main", {
-    target: MAIN_SWAGGER,
-    override: {
-      // В swagger-спеке GET /api/chat/{chatId}/message/search и GET /api/message/search
-      // делят один operationId "SearchMessages" — orval сгенерировал бы два
-      // одноимённых экспорта. Разводим их до генерации.
-      transformer: spec => {
-        const op = spec.paths?.["/api/chat/{chatId}/message/search"]?.get;
-
-        if (op?.operationId === "SearchMessages") {
-          op.operationId = "SearchChatMessages";
-        }
-
-        return spec;
-      },
-    },
-  }),
+  main: defineApi("main", { target: MAIN_SWAGGER }),
 });

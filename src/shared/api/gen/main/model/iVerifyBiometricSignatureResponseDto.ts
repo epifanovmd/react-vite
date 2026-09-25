@@ -1,6 +1,6 @@
-import type { IVerifyBiometricSignatureResponseDtoTokens } from "./iVerifyBiometricSignatureResponseDtoTokens.ts";
+import type { ITokensDto } from "./iTokensDto.ts";
 
 export interface IVerifyBiometricSignatureResponseDto {
   verified: boolean;
-  tokens: IVerifyBiometricSignatureResponseDtoTokens;
+  tokens: ITokensDto;
 }

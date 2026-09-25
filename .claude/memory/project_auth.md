@@ -1,6 +1,6 @@
 ---
 name: Auth architecture
-description: Token lifecycle, session management, JWT, socket auth, 2FA, passkey/biometric — entities/auth + entities/user
+description: Token lifecycle, session management, JWT, socket auth, 2FA, passkey — entities/auth + entities/user
 type: project
 ---
 
@@ -19,7 +19,7 @@ index.ts               Public API: authModule, AuthStatus, IAuthStore, loginVali
 
 В слайсе остался **только домен**. Механика токенов — общий `shared/lib/session`
 (см. `project_session.md`), привязка к бэкенду — `shared/api/main/main-session.ts`
-(см. `project_api.md`). Biometric и Passkey вынесены в свои места (см. ниже).
+(см. `project_api.md`). Passkey — в features (см. ниже).
 
 ## Token lifecycle
 
@@ -58,10 +58,11 @@ TokenSession (shared/lib/session)
 
 `AuthStore.signIn()` — если ответ `I2FARequiredDto` (`require2FA === true`), сохраняет `twoFactorToken`/`twoFactorHint`, статус остаётся `Unauthenticated`, `isTwoFactorRequired` становится `true`. `verify2FA(password)` шлёт `{ twoFactorToken, password }`, при успехе — `_session.setTokens(...)` и `Authenticated`. UI — `features/sign-in/ui/TwoFactorPrompt.tsx`.
 
-## Passkey (WebAuthn) и Biometric — разные механизмы, оба ВНЕ entities/auth
+## Passkey (WebAuthn) — вне entities/auth
+
+Серверный biometric API в шаблоне есть, но веб его не использует (слайс entities/biometric удалён 2026-09-26). Ключ логина для passkey-входа — `PASSKEY_LOGIN_STORAGE_KEY` из `@entities/auth`.
 
 - **Passkey**: отдельного стора нет (бывший `PasskeyStore` удалён). Вся логика — в `features/sign-in/model/usePasskeyAuth.ts`: напрямую через `IMainApi` (`@simplewebauthn/browser`: browser support check, `startRegistration`/`startAuthentication`), профиль-ID в storage под ключом `app:profileId`. При успешной аутентификации — `authStore.restore(tokens)` + `onSuccess` callback.
-- **Biometric** (`entities/biometric` — отдельный слайс): `IBiometricStore` (`model/biometric-store.ts`), `devicesHolder` (`CollectionHolder<IBiometricDeviceDto>`) со списком зарегистрированных устройств, register/verify/delete device. Public API: `biometricModule`, `IBiometricStore`.
 
 ## Session management (multi-device) — entities/user
 

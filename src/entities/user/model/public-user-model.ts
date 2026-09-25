@@ -26,7 +26,7 @@ export class PublicUserModel extends DataModelBase<PublicUserDto> {
     const p = this.data.profile;
     const name = [p?.firstName, p?.lastName].filter(Boolean).join(" ");
 
-    return name || this.data.email || this.data.username || "Unknown";
+    return name || this.data.username || "Unknown";
   }
 
   get initials() {
@@ -39,7 +39,7 @@ export class PublicUserModel extends DataModelBase<PublicUserDto> {
         .join("")
         .toUpperCase();
 
-    return (this.data.email?.[0] ?? "U").toUpperCase();
+    return (this.data.username?.[0] ?? "U").toUpperCase();
   }
 
   get lastOnline() {

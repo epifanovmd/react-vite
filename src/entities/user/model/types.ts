@@ -34,6 +34,8 @@ export interface IUserStore {
   /** superadmin bypass (роль KnownRole.admin) */
   readonly isAdmin: boolean;
   readonly privacy: PrivacySettingsDto | null;
+  /** Ссылка на миниатюру аватара; `undefined` — аватара нет. */
+  readonly avatarUrl: string | undefined;
   readonly error: string | undefined;
   readonly isLoading: boolean;
   readonly isReady: boolean;
@@ -68,15 +70,22 @@ export interface IUserStore {
     data: UpdatePrivacySettingsBody,
   ): Promise<PrivacySettingsDto | undefined>;
   setUsername(username: string): Promise<ApiResponse<UserDto, ApiError>>;
+  /** Запрос смены email: код уходит на новый адрес, email меняется после подтверждения. */
+  changeEmail(email: string): Promise<ApiResponse<UserDto, ApiError>>;
+  confirmEmailChange(code: string): Promise<ApiResponse<UserDto, ApiError>>;
+  /** Смена пароля; остальные сессии сервер завершает. */
   changePassword(
-    password: string,
-  ): Promise<ApiResponse<ApiResponseDto, ApiError>>;
-  requestVerifyEmail(): Promise<ApiResponse<boolean, ApiError>>;
-  verifyEmail(code: string): Promise<ApiResponse<ApiResponseDto, ApiError>>;
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<ApiResponse<void, ApiError>>;
+  /** Код подтверждения уходит на email. */
+  requestVerifyEmail(): Promise<ApiResponse<void, ApiError>>;
+  verifyEmail(code: string): Promise<ApiResponse<void, ApiError>>;
 
   reset(): void;
 
-  deleteMyAccount(): Promise<void>;
+  /** Удалить свой аккаунт; нужен текущий пароль. */
+  deleteMyAccount(password: string): Promise<ApiResponse<void, ApiError>>;
 }
 
 export const IUserRealtime = createInjectDecorator<IUserRealtime>();

@@ -1,21 +1,23 @@
 import { IThemeStore } from "@shared/lib/theme";
-import { DropdownMenuCheckboxItem } from "@shared/ui";
+import { DropdownMenuItem } from "@shared/ui";
+import { Moon, Sun } from "lucide-react";
 import { observer } from "mobx-react-lite";
 
-/** Меню остаётся открытым: пользователь видит результат переключения. */
-const keepMenuOpen = (event: Event) => event.preventDefault();
-
-/** Пункт выпадающего меню «Тёмная тема», подключённый к `IThemeStore`. */
+/** Пункт выпадающего меню смены темы, подключённый к `IThemeStore`. */
 export const ThemeMenuItem = observer(() => {
   const { isDark, toggleTheme } = IThemeStore.useInstance();
+  const Icon = isDark ? Sun : Moon;
 
   return (
-    <DropdownMenuCheckboxItem
-      checked={isDark}
-      onCheckedChange={toggleTheme}
-      onSelect={keepMenuOpen}
+    <DropdownMenuItem
+      onSelect={event => {
+        // Меню остаётся открытым: пользователь видит результат переключения.
+        event.preventDefault();
+        toggleTheme();
+      }}
     >
-      Тёмная тема
-    </DropdownMenuCheckboxItem>
+      <Icon aria-hidden className="text-muted-foreground" />
+      {isDark ? "Светлая тема" : "Тёмная тема"}
+    </DropdownMenuItem>
   );
 });

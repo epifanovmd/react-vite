@@ -5,10 +5,7 @@ import type { Base64URLString } from "./base64URLString.ts";
 import type { PublicKeyCredentialType } from "./publicKeyCredentialType.ts";
 
 /**
- * A slightly-modified RegistrationCredential to simplify working with ArrayBuffers that
- * are Base64URL-encoded in the browser so that they can be sent as JSON to the server.
- *
- * https://w3c.github.io/webauthn/#dictdef-registrationresponsejson
+ * Ответ браузера на регистрацию passkey.
  */
 export interface RegistrationResponseJSON {
   id: Base64URLString;

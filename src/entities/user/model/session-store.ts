@@ -9,6 +9,9 @@ import { action, makeAutoObservable } from "mobx";
 import { SessionModel } from "./session-model";
 import { ISessionStore } from "./session-types";
 
+/** Активных сессий у пользователя немного — одна страница покрывает все. */
+const SESSIONS_LIMIT = 100;
+
 @injectable()
 export class SessionStore implements ISessionStore {
   public sessionsHolder = new CollectionHolder<SessionDto>({
@@ -45,7 +48,10 @@ export class SessionStore implements ISessionStore {
   }
 
   async load() {
-    await this.sessionsHolder.fromApi(() => this._api.getSessions());
+    await this.sessionsHolder.fromApi(
+      () => this._api.getSessions({ limit: SESSIONS_LIMIT }),
+      page => page.items,
+    );
   }
 
   async terminateSession(sessionId: string) {
@@ -61,8 +67,11 @@ export class SessionStore implements ISessionStore {
   }
 
   async terminateOtherSessions() {
-    await this._api.terminateOtherSessions();
-    await this.load();
+    const res = await this._api.terminateOtherSessions();
+
+    if (!res.error) await this.load();
+
+    return res;
   }
 
   handleNewSession(session: SessionDto) {

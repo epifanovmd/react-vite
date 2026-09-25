@@ -1,3 +1,4 @@
 export interface IUserChangePasswordDto {
-  password: string;
+  currentPassword: string;
+  newPassword: string;
 }

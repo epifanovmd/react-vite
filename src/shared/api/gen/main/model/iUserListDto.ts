@@ -1,9 +1,9 @@
 import type { PublicUserDto } from "./publicUserDto.ts";
 
 export interface IUserListDto {
-  count?: number;
-  totalCount?: number;
-  offset?: number;
-  limit?: number;
-  data: PublicUserDto[];
+  items: PublicUserDto[];
+  /** Всего элементов, подходящих под фильтр. */
+  total: number;
+  offset: number;
+  limit: number;
 }

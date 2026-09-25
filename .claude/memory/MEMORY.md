@@ -13,7 +13,8 @@
 
 ## Домен
 
-- [Auth](project_auth.md) — token lifecycle, session, JWT, socket auth, 2FA, passkey (feature-level) / biometric (entities/biometric)
+- [Auth](project_auth.md) — token lifecycle, session, JWT, socket auth, 2FA (второй пароль), passkey; biometric в вебе нет
+- [Screens](project_screens.md) — экраны аккаунта, файлов, задач и админки: слайсы, права, gotcha
 - [Holders](project_holders.md) — MobX holder-система (EntityHolder/PagedHolder/...) и хуки (useEntity, useCollection, ...)
 
 ## UI и роутинг

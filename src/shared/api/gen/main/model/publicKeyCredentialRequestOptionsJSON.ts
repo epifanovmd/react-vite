@@ -4,8 +4,7 @@ import type { PublicKeyCredentialDescriptorJSON } from "./publicKeyCredentialDes
 import type { UserVerificationRequirement } from "./userVerificationRequirement.ts";
 
 /**
- * A variant of PublicKeyCredentialRequestOptions suitable for JSON transmission to the browser to
- * (eventually) get passed into navigator.credentials.get(...) in the browser.
+ * Опции для `navigator.credentials.get()`.
  */
 export interface PublicKeyCredentialRequestOptionsJSON {
   challenge: Base64URLString;
@@ -13,5 +12,6 @@ export interface PublicKeyCredentialRequestOptionsJSON {
   rpId?: string;
   allowCredentials?: PublicKeyCredentialDescriptorJSON[];
   userVerification?: UserVerificationRequirement;
+  hints?: string[];
   extensions?: AuthenticationExtensionsClientInputs;
 }

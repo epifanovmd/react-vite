@@ -1,3 +1,6 @@
+/**
+ * Профиль глазами другого пользователя; ссылка на аватар — из карты подписей.
+ */
 export interface PublicProfileDto {
   id: string;
   userId: string;
@@ -7,4 +10,9 @@ export interface PublicProfileDto {
   lastName: string | null;
   /** @nullable */
   lastOnline: string | null;
+  /**
+   * Подписанная ссылка на аватар; срок ограничен. `null` — аватара нет.
+   * @nullable
+   */
+  avatarUrl: string | null;
 }

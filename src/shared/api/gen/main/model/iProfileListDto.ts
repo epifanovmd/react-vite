@@ -1,9 +1,9 @@
 import type { PublicProfileDto } from "./publicProfileDto.ts";
 
 export interface IProfileListDto {
-  count?: number;
-  totalCount?: number;
-  offset?: number;
-  limit?: number;
-  data: PublicProfileDto[];
+  items: PublicProfileDto[];
+  /** Всего элементов, подходящих под фильтр. */
+  total: number;
+  offset: number;
+  limit: number;
 }

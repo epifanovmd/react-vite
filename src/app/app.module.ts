@@ -1,5 +1,5 @@
 import { authModule } from "@entities/auth";
-import { biometricModule } from "@entities/biometric";
+import { jobModule } from "@entities/job";
 import { userModule } from "@entities/user";
 import { apiModule } from "@shared/api";
 import { appStateModule } from "@shared/lib/app-state";
@@ -18,7 +18,7 @@ export const registerContainerModules = (): void => {
   iocContainer.load(
     apiModule,
     authModule,
-    biometricModule,
+    jobModule,
     userModule,
     appStateModule,
     mediaModule,

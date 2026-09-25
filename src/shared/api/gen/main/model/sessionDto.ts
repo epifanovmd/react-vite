@@ -10,5 +10,6 @@ export interface SessionDto {
   /** @nullable */
   userAgent: string | null;
   lastActiveAt: string;
+  expiresAt: string;
   createdAt: string;
 }

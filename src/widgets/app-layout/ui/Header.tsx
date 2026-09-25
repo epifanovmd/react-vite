@@ -5,6 +5,7 @@ import { FC } from "react";
 
 import { useHeaderVM } from "../model/useHeaderVM";
 import { AppLogo } from "./AppLogo";
+import { HeaderNavGroup } from "./HeaderNavGroup";
 import { HeaderNavItem } from "./HeaderNavItem";
 import { MobileMenu } from "./MobileMenu";
 import { ProfileMenu } from "./ProfileMenu";
@@ -13,8 +14,8 @@ export const Header: FC = observer(() => {
   const {
     displayName,
     initials,
+    avatarUrl,
     subtitle,
-    navItems,
     visibleGroups,
     mobileOpen,
     setMobileOpen,
@@ -26,25 +27,34 @@ export const Header: FC = observer(() => {
         <IconButton
           variant="ghost"
           size="sm"
-          className="md:hidden"
+          className="lg:hidden"
           onClick={() => setMobileOpen(true)}
           aria-label="Открыть меню"
         >
           <Menu size={18} />
         </IconButton>
 
-        <AppLogo />
+        <AppLogo compact className="shrink-0 whitespace-nowrap" />
 
-        <nav className="ml-2 hidden items-center gap-1 md:flex">
-          {navItems.map(item => (
-            <HeaderNavItem key={item.to as string} item={item} />
-          ))}
+        <nav className="ml-2 hidden items-center gap-1 lg:flex">
+          {visibleGroups
+            .filter(group => !group.mobileOnly)
+            .map(group =>
+              group.label && group.items.length > 1 ? (
+                <HeaderNavGroup key={group.label} group={group} />
+              ) : (
+                group.items.map(item => (
+                  <HeaderNavItem key={item.to as string} item={item} />
+                ))
+              ),
+            )}
         </nav>
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <ProfileMenu
             displayName={displayName}
             initials={initials}
+            avatarUrl={avatarUrl}
             subtitle={subtitle}
           />
         </div>
