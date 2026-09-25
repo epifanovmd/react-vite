@@ -11,6 +11,12 @@ describe("Avatar", () => {
     );
   });
 
+  it("условный пустой children (`{cond && <Icon/>}`) не прячет инициалы", () => {
+    render(<Avatar name="Аудит">{false}</Avatar>);
+
+    expect(screen.getByRole("img", { name: "Аудит" })).toHaveTextContent("А");
+  });
+
   it("retries the image when src changes after an error", () => {
     const { rerender } = render(<Avatar src="/a.png" name="Anna" />);
 

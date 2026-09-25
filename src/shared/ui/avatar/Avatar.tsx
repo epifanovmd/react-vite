@@ -65,7 +65,9 @@ const Avatar = React.forwardRef<HTMLSpanElement, AvatarProps>(
 
     const showImage = Boolean(src) && erroredSrc !== src;
     const accessibleName = alt ?? name;
-    const fallbackNode = children ?? fallback ?? (getInitials(name) || null);
+    // `false` / `""` из условного рендера — «нет содержимого», а не содержимое.
+    const content = children === false || children === "" ? null : children;
+    const fallbackNode = content ?? fallback ?? (getInitials(name) || null);
     // Корень с role="img" делает потомков презентационными:
     // тогда статус входит в его имя, а точка — только декор.
     const labelledRoot = !showImage && !!accessibleName;

@@ -33,12 +33,14 @@ describe("useZodForm", () => {
     expect(submitted).toEqual([{ age: 21 }]);
   });
 
-  it("applies onBlur mode by default and lets options override it", () => {
+  it("проверяет по отправке (не по уходу фокуса) и даёт переопределить режим", () => {
     const { result } = renderHook(() =>
       useZodForm(schema, { defaultValues: { age: "" } }),
     );
 
-    expect(result.current.control._options.mode).toBe("onBlur");
+    // Уход фокуса с пустого или автозаполненного поля не должен ругаться.
+    expect(result.current.control._options.mode).toBe("onSubmit");
+    expect(result.current.control._options.reValidateMode).toBe("onChange");
 
     const overridden = renderHook(() =>
       useZodForm(schema, {
