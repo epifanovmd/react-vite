@@ -78,8 +78,25 @@ yarn build
 Собранный бандл — в `dist/`. Локально проверить прод-сборку:
 
 ```sh
-yarn prod
+yarn prod           # локальный предпросмотр прод-сборки
 ```
+
+### Деплой
+
+Образ: `Dockerfile` собирает статику, отдаёт её nginx (`nginx.conf`: SPA-fallback на
+`index.html`, долгий кэш `/assets`). `VITE_*` встраиваются при сборке —
+`.env.production`, поверх для конкретного сервера — `.env.production.local`.
+
+Деплой по SSH — исходники на хост (rsync, исключения — `.deployignore`) и сборка там же:
+
+```sh
+cp .env.deploy.example .env.deploy   # хост, каталог, порт (файл не в git)
+make env                             # один раз: .env.production.local на хост (если нужен)
+make deploy                          # sync → build → up
+make status | logs | restart | down
+```
+
+Любое значение из `.env.deploy` переопределяется в команде: `make deploy SSH_HOST=…`.
 
 ### Checks
 

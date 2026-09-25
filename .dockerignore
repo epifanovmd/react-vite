@@ -12,10 +12,11 @@ dist
 .vscode
 .idea
 
-# Локальные env-файлы (не нужны для production-сборки)
+# Env разработки; .env.production и .env.production.local нужны сборке
 .env.development
+.env.development.local
 .env.local
-.env.*.local
+.env.deploy*
 
 # Логи и временные файлы
 *.log

@@ -32,18 +32,20 @@ Node >= 22.12.0, Yarn >= 1.22.18 (см. `engines` в `package.json`).
 
 `husky` (`prepare: husky`), скрипт `precommit`: `lint-staged && tsc --noEmit && vitest run` — то есть перед коммитом гоняются и типы, и вся тестовая сюита. `lint-staged`: `*.{ts,tsx}` → `eslint --fix` + `prettier --write`; `*.{js,json,css,md,html,yml,...}` → `prettier --write`.
 
-## Docker (Dockerfile — 3-stage build)
+## Docker и деплой
 
-1. **deps** (`node:22-alpine`) — `COPY package.json yarn.lock` → `yarn install --frozen-lockfile`, отдельный слой для кэша.
-2. **builder** — копирует `node_modules` из `deps`, весь исходник, `yarn build`. `VITE_*` переменные встраиваются в бандл на этом этапе (build-time, не runtime) — передаются через `build-args` в `docker-compose.yml`.
-3. **runner** — копирует только `node_modules`, `dist/`, `package.json`, `vite.config.ts` и `src/app/routes` (нужны `vite preview`, т.к. `vite.config.ts` грузит `tanstackRouter()`, который на старте сканирует `routesDirectory` — без этой папки процесс не падает, но сыпет `ENOENT` в логи). Слушает `4173` (`vite preview`), `CMD ["yarn", "prod"]`.
+`Dockerfile`: deps (`yarn install --ignore-scripts` — `prepare` = `lefthook install`, без git
+в образе падает) → builder (`yarn build`, `VITE_*` из `.env.production`, поверх
+`.env.production.local`) → `nginx:1.27-alpine` с `nginx.conf` (SPA-fallback на `index.html`,
+`/assets` — `max-age=31536000, immutable`, `index.html` — `no-cache`, gzip). Порт контейнера 80,
+на хосте — `APP_PORT`. `yarn prod` (vite preview) — только локальный предпросмотр.
 
-Healthcheck: `wget -qO- http://127.0.0.1:4173/` — **обязательно `127.0.0.1`, не `localhost`**: на Alpine/musl `localhost` резолвится в `::1` (IPv6) раньше `127.0.0.1`, а сервер слушает только IPv4 (`0.0.0.0`) — с `localhost` healthcheck никогда не проходит, несмотря на рабочее приложение.
-
-## docker-compose.yml
-
-Один сервис `react-vite`, билдит `Dockerfile`, `env_file: .env.production`, порт `${APP_PORT:-3001}:4173`, `restart: unless-stopped`, отдельная bridge-сеть `react-net`.
+`Makefile` (как в шаблоне бэкенда): настройки — `.env.deploy` (образец `.env.deploy.example`,
+файл не в git; без него make останавливается с подсказкой), `make deploy` = rsync
+(`.deployignore`) → `docker compose build` → `up` на хосте; `env` кладёт
+`.env.production.local`; `status/logs/restart/down`.
 
 ## CI (.github/workflows/deploy.yml)
 
-`Deploy with Docker Compose` — триггерится на `push`/`pull_request` в `master`. Шаги: checkout → `webfactory/ssh-agent` (SSH ключ из `secrets.SSH_PRIVATE_KEY`) → `ssh-keyscan` удалённого хоста (`REMOTE_HOST` env) → `make deploy ssh` (Makefile на репозитории/сервере разворачивает через `docker-compose` по SSH). Нет отдельного шага `lint`/`test`/`build` в CI — сборка происходит внутри Docker на удалённом хосте через `make deploy`.
+push в `main` или вручную: ssh-agent (секрет `SSH_PRIVATE_KEY`) → `.env.deploy` из образца с
+`SSH_HOST=$DEPLOY_HOST` (переменная репозитория, по умолчанию 147.45.245.104) → `make deploy`.

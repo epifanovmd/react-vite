@@ -1,29 +1,33 @@
-name: Deploy with Docker Compose
+name: Deploy
 
+# Сборка и запуск на хосте по SSH (make deploy). Хост — переменная репозитория
+# DEPLOY_HOST (по умолчанию 147.45.245.104), ключ — секрет SSH_PRIVATE_KEY.
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [main]
+  workflow_dispatch:
 
-env:
-  REMOTE_HOST: 147.45.245.104
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '147.45.245.104' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add remote server to known_hosts
-        run: ssh-keyscan ${{ env.REMOTE_HOST }} >> ~/.ssh/known_hosts
+      - name: Хост в known_hosts
+        run: ssh-keyscan "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy
-        run: make deploy ssh
+      - name: Настройки деплоя
+        run: sed "s/^SSH_HOST=.*/SSH_HOST=$DEPLOY_HOST/" .env.deploy.example > .env.deploy
+
+      - name: Деплой
+        run: make deploy

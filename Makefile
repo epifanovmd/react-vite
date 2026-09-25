@@ -1,69 +1,39 @@
-# Параметры для подключения по SSH
-SSH_USER=root
-SSH_HOST=147.45.245.104
+# Деплой по SSH: исходники на хост и сборка образа там же. Настройки — .env.deploy
+# (образец .env.deploy.example); адрес API для сервера — ENV_FILE (кладёт `make env`).
+ifeq ($(wildcard .env.deploy),)
+$(error Нет .env.deploy — скопируйте .env.deploy.example и заполните)
+endif
+include .env.deploy
 
-.PHONY: all deploy clean copy remove-container docker-compose-up status logs restart-container backup
+SSH = ssh $(SSH_USER)@$(SSH_HOST)
+REMOTE = cd $(SSH_PROJECT_DIR) && export APP_PORT=$(APP_PORT) && docker compose
 
-# Имя контейнера (или сервиса в docker-compose.yml)
-CONTAINER_NAME=react-vite
+.PHONY: deploy sync env build up down status logs restart
 
-# Переменная для использования SSH
-USE_SSH=$(filter ssh,$(MAKECMDGOALS))
+deploy: sync build up
 
-# Префикс для команд (локально или по SSH)
-CMD_PREFIX=$(if $(USE_SSH),ssh $(SSH_USER)@$(SSH_HOST),)
+sync:
+	$(SSH) 'mkdir -p $(SSH_PROJECT_DIR)'
+	rsync -az --delete --exclude-from=.deployignore ./ $(SSH_USER)@$(SSH_HOST):$(SSH_PROJECT_DIR)/
 
-# Локальная директория проекта
-LOCAL_PROJECT_DIR=.
+env:
+	$(SSH) 'mkdir -p $(SSH_PROJECT_DIR)'
+	scp $(ENV_FILE) $(SSH_USER)@$(SSH_HOST):$(SSH_PROJECT_DIR)/$(ENV_FILE)
 
-# Директория проекта только для SSH
-SSH_PROJECT_DIR=development/react-vite
+build:
+	$(SSH) '$(REMOTE) build'
 
-# Директория проекта (локально или по SSH)
-PROJECT_DIR=$(if $(USE_SSH),$(SSH_PROJECT_DIR),$(LOCAL_PROJECT_DIR))
+up:
+	$(SSH) '$(REMOTE) up -d --remove-orphans && docker image prune -f'
 
-# Цель по умолчанию
-all: deploy
+down:
+	$(SSH) '$(REMOTE) down'
 
-# Комплексное правило для деплоя
-deploy: copy remove-container docker-compose-up
-
-# Очистка проекта на удаленном сервере (всегда по SSH)
-clean:
-	ssh $(SSH_USER)@$(SSH_HOST) rm -rf $(SSH_PROJECT_DIR)
-
-# Правило для копирования проекта из текущей папки
-copy:
-	ssh $(SSH_USER)@$(SSH_HOST) 'mkdir -p $(SSH_PROJECT_DIR)' && \
-	rsync -avz --delete --exclude='.git' --exclude='.claude' --exclude='node_modules' --exclude-from='.gitignore' $(LOCAL_PROJECT_DIR)/ $(SSH_USER)@$(SSH_HOST):$(SSH_PROJECT_DIR)
-
-
-# Правило для остановки и удаления запущенного контейнера
-remove-container:
-	@if [ "$$($(CMD_PREFIX) docker ps -f name=^/$(CONTAINER_NAME) -q -a)" != "" ]; then \
-		$(CMD_PREFIX) docker rm --force $$($(CMD_PREFIX) docker ps -f name=^/$(CONTAINER_NAME) -q -a); \
-	fi
-
-# Правило для запуска Docker Compose
-docker-compose-up:
-	$(if $(USE_SSH),$(CMD_PREFIX) 'cd $(PROJECT_DIR) && docker compose --env-file .env.production up -d --no-deps --build --force-recreate',docker compose --env-file .env.production up -d --no-deps --build --force-recreate)
-
-# Проверка состояния контейнеров
 status:
-	$(CMD_PREFIX) docker ps -a
+	$(SSH) '$(REMOTE) ps'
 
-# Просмотр логов контейнера
 logs:
-	$(CMD_PREFIX) docker logs $(CONTAINER_NAME)
+	$(SSH) '$(REMOTE) logs -f --tail=200'
 
-# Перезапуск контейнера
-restart-container:
-	$(CMD_PREFIX) docker restart $(CONTAINER_NAME)
-
-# Создание резервной копии проекта
-backup:
-	$(CMD_PREFIX) tar czf $(PROJECT_DIR)_backup_$(shell date +%Y%m%d%H%M%S).tar.gz -C $(PROJECT_DIR) .
-
-# Убрать --ssh из целей make
-%:
-	@:
+restart:
+	$(SSH) '$(REMOTE) restart'
