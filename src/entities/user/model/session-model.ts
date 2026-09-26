@@ -1,6 +1,7 @@
 import { SessionDto } from "@shared/api/gen/main/model";
 import { DataModelBase } from "@shared/lib/models";
 import { DateModel } from "@shared/lib/models/date";
+import { describeUserAgent } from "@shared/lib/utils";
 import { computed, makeObservable } from "mobx";
 
 export class SessionModel extends DataModelBase<SessionDto> {
@@ -16,7 +17,8 @@ export class SessionModel extends DataModelBase<SessionDto> {
     });
   }
 
+  /** Имя устройства с сервера; без него — браузер/приложение и ОС из User-Agent. */
   get deviceName() {
-    return this.data.deviceName ?? "Unknown device";
+    return this.data.deviceName ?? describeUserAgent(this.data.userAgent);
   }
 }

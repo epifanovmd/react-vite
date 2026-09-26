@@ -1,5 +1,5 @@
 import type { SessionModel } from "@entities/user";
-import { describeUserAgent, formatter } from "@shared/lib/utils";
+import { formatter } from "@shared/lib/utils";
 import { Badge, Button } from "@shared/ui";
 import { Monitor } from "lucide-react";
 import { FC } from "react";
@@ -21,7 +21,7 @@ export const SessionRow: FC<SessionRowProps> = ({
     <Monitor size={18} aria-hidden className="shrink-0 text-muted-foreground" />
     <div className="min-w-0 flex-1">
       <p className="flex items-center gap-2 truncate text-sm font-medium text-foreground">
-        {session.data.deviceName ?? describeUserAgent(session.data.userAgent)}
+        {session.deviceName}
         {current && <Badge variant="success">Это устройство</Badge>}
       </p>
       <p className="truncate text-xs text-muted-foreground">

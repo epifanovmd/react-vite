@@ -19,6 +19,16 @@ describe("describeUserAgent", () => {
     ).toBe("Edge, Windows");
   });
 
+  it("мобильное приложение на iOS (CFNetwork/Darwin)", () => {
+    expect(
+      describeUserAgent("rnapp/1 CFNetwork/3860.700.2 Darwin/25.6.0"),
+    ).toBe("Приложение, iOS");
+  });
+
+  it("мобильное приложение на Android (okhttp)", () => {
+    expect(describeUserAgent("okhttp/4.12.0")).toBe("Приложение, Android");
+  });
+
   it("без User-Agent — прочерк", () => {
     expect(describeUserAgent(null)).toBe("—");
   });

@@ -6,7 +6,12 @@ const BROWSERS: [RegExp, string][] = [
   [/Chrome\//, "Chrome"],
   [/Safari\//, "Safari"],
   [/curl\//, "curl"],
-  [/okhttp\//, "okhttp"],
+];
+
+/** Нативные клиенты: HTTP-стек iOS (CFNetwork) и Android (okhttp). */
+const APPS: [RegExp, string][] = [
+  [/CFNetwork\/.*Darwin\//, "Приложение, iOS"],
+  [/okhttp\//, "Приложение, Android"],
 ];
 
 const SYSTEMS = /(Windows|Mac OS X|Android|iPhone|iPad|Linux)/;
@@ -14,6 +19,10 @@ const SYSTEMS = /(Windows|Mac OS X|Android|iPhone|iPad|Linux)/;
 /** Короткое имя клиента из User-Agent: браузер и ОС; `—`, если его нет. */
 export const describeUserAgent = (userAgent: string | null): string => {
   if (!userAgent) return "—";
+
+  const app = APPS.find(([pattern]) => pattern.test(userAgent))?.[1];
+
+  if (app) return app;
 
   const browser = BROWSERS.find(([pattern]) => pattern.test(userAgent))?.[1];
   const os = SYSTEMS.exec(userAgent)?.[1];
