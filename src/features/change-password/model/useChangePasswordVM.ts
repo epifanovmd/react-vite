@@ -1,4 +1,5 @@
 import { IUserStore } from "@entities/user";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 
@@ -21,7 +22,11 @@ export const useChangePasswordVM = () => {
       data.newPassword,
     );
 
-    if (res.error) return;
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     form.reset(EMPTY);
     toast.success("Пароль изменён. Остальные сессии завершены.");

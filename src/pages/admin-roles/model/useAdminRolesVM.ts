@@ -2,6 +2,7 @@ import { IUserStore } from "@entities/user";
 import { IMainApi } from "@shared/api";
 import { type IRoleDto, KnownPermission } from "@shared/api/gen/main/model";
 import { useCollection } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm, useZodForm } from "@shared/ui";
 import { useEffect } from "react";
@@ -40,7 +41,11 @@ export const useAdminRolesVM = () => {
   const create = async ({ name }: TNewRoleForm) => {
     const res = await api.createRole({ name });
 
-    if (!res.data) return;
+    if (!res.data) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     roles.appendItem(res.data);
     form.reset({ name: "" });
@@ -50,7 +55,11 @@ export const useAdminRolesVM = () => {
   const savePermissions = async (role: IRoleDto, permissions: string[]) => {
     const res = await api.setRolePermissions(role.id, { permissions });
 
-    if (!res.data) return false;
+    if (!res.data) {
+      notifyApiError(toast, res.error);
+
+      return false;
+    }
 
     roles.updateItem(role.id, res.data);
     toast.success(`Права роли ${role.name} сохранены`);
@@ -70,7 +79,13 @@ export const useAdminRolesVM = () => {
 
     const res = await api.deleteRole(role.id);
 
-    if (!res.error) roles.removeItem(role.id);
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    roles.removeItem(role.id);
   };
 
   return {

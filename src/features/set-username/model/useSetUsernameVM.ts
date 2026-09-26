@@ -1,4 +1,5 @@
 import { IUserStore } from "@entities/user";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { useEffect } from "react";
@@ -21,7 +22,13 @@ export const useSetUsernameVM = () => {
   const submit = async ({ username }: TUsernameForm) => {
     const res = await userStore.setUsername(username);
 
-    if (!res.error) toast.success("Имя пользователя сохранено");
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    toast.success("Имя пользователя сохранено");
   };
 
   return { form, submit, current };

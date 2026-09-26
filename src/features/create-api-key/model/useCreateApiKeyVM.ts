@@ -1,5 +1,7 @@
 import { IMainApi } from "@shared/api";
 import type { ApiKeyDto } from "@shared/api/gen/main/model";
+import { notifyApiError } from "@shared/lib/http";
+import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
 import { z } from "zod";
@@ -29,6 +31,7 @@ interface UseCreateApiKeyOptions {
 /** Создание ключа; секрет сервер отдаёт один раз — он показывается до закрытия. */
 export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
   const api = IMainApi.useInstance();
+  const toast = INotificationService.useInstance();
   const [open, setOpen] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
   const form = useZodForm(createApiKeySchema, {
@@ -48,7 +51,11 @@ export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
       expiresAt: data.expiresAt?.toISOString(),
     });
 
-    if (!res.data) return;
+    if (!res.data) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     setSecret(res.data.key);
     onCreated(res.data.apiKey);

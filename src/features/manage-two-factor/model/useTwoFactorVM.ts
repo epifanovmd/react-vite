@@ -1,4 +1,5 @@
 import { IMainApi } from "@shared/api";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
@@ -40,7 +41,11 @@ export const useTwoFactorVM = () => {
       hint: data.hint || undefined,
     });
 
-    if (res.error) return;
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     enableForm.reset();
     toast.success("Двухфакторная защита включена");
@@ -49,7 +54,11 @@ export const useTwoFactorVM = () => {
   const disable = async (data: TDisableTwoFactorForm) => {
     const res = await api.disable2FA(data);
 
-    if (res.error) return;
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     disableForm.reset();
     toast.success("Двухфакторная защита отключена");

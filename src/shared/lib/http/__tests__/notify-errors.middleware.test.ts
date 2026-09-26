@@ -1,8 +1,16 @@
 import type { INotificationService } from "@shared/lib/notifications";
 import type { Mock } from "vitest";
 
-import { HttpError, NetworkError, TimeoutError } from "../core/errors";
-import { notifyErrors } from "../middleware/notify-errors.middleware";
+import {
+  CanceledError,
+  HttpError,
+  NetworkError,
+  TimeoutError,
+} from "../core/errors";
+import {
+  notifyApiError,
+  notifyErrors,
+} from "../middleware/notify-errors.middleware";
 import {
   createFakeTransport,
   createHangingTransport,
@@ -77,6 +85,59 @@ describe("notifyErrors", () => {
     }).request({ url: "/a" }, { notifyErrors: false });
 
     expect(res.error?.status).toBe(404);
+    expect(notifications.error).not.toHaveBeenCalled();
+  });
+});
+
+describe("notifyApiError", () => {
+  const httpError = (status: number, message: string) =>
+    new HttpError({ message, status });
+
+  it("4xx — тост с сообщением сервера", () => {
+    const notifications = createNotifications();
+
+    notifyApiError(notifications, httpError(409, "Email занят"));
+
+    expect(notifications.error).toHaveBeenCalledWith("Email занят");
+  });
+
+  it("сеть, таймаут, 5xx и отмену уже показал notifyErrors или они молчат", () => {
+    const notifications = createNotifications();
+
+    notifyApiError(notifications, new NetworkError());
+    notifyApiError(notifications, new TimeoutError());
+    notifyApiError(notifications, httpError(502, "Bad gateway"));
+    notifyApiError(notifications, new CanceledError());
+
+    expect(notifications.error).not.toHaveBeenCalled();
+  });
+
+  it("ошибка не из HTTP-клиента — тост с её текстом", () => {
+    const notifications = createNotifications();
+
+    notifyApiError(notifications, new Error("Хранилище не приняло файл"));
+
+    expect(notifications.error).toHaveBeenCalledWith(
+      "Хранилище не приняло файл",
+    );
+  });
+
+  it("ошибка холдера простым объектом: 4xx показывает, 5xx и отмену — нет", () => {
+    const notifications = createNotifications();
+
+    notifyApiError(notifications, { message: "Нет прав", status: 403 });
+    notifyApiError(notifications, { message: "Сбой", status: 500 });
+    notifyApiError(notifications, { message: "", isCanceled: true });
+
+    expect(notifications.error).toHaveBeenCalledTimes(1);
+    expect(notifications.error).toHaveBeenCalledWith("Нет прав");
+  });
+
+  it("пусто — ничего", () => {
+    const notifications = createNotifications();
+
+    notifyApiError(notifications, null);
+
     expect(notifications.error).not.toHaveBeenCalled();
   });
 });

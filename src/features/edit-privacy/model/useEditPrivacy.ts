@@ -3,6 +3,7 @@ import {
   EPrivacyLevel,
   type PrivacySettingsDto,
 } from "@shared/api/gen/main/model";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useEffect, useState } from "react";
 
@@ -38,10 +39,16 @@ export const useEditPrivacy = () => {
   ) => {
     setSaving(key);
 
-    const saved = await userStore.updatePrivacy({ [key]: value });
+    const res = await userStore.updatePrivacy({ [key]: value });
 
     setSaving(null);
-    if (saved) toast.success("Настройки приватности сохранены");
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    toast.success("Настройки приватности сохранены");
   };
 
   return { privacy: userStore.privacy, saving, change };

@@ -1,6 +1,8 @@
 import { IMainApi } from "@shared/api";
 import type { IFileDto } from "@shared/api/gen/main/model";
 import { usePaged } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
+import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm } from "@shared/ui";
 import { useEffect } from "react";
 
@@ -8,6 +10,7 @@ const PAGE_SIZE = 20;
 
 export const useFilesVM = () => {
   const api = IMainApi.useInstance();
+  const toast = INotificationService.useInstance();
   const confirm = useConfirm();
 
   const files = usePaged<IFileDto>({
@@ -40,7 +43,13 @@ export const useFilesVM = () => {
 
     const res = await api.deleteFile(file.id);
 
-    if (!res.error) await files.reload({ refresh: true });
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    await files.reload({ refresh: true });
   };
 
   const onUploaded = () => {

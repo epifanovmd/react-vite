@@ -1,6 +1,7 @@
 import { IMainApi } from "@shared/api";
 import type { IRoleDto, UserDto } from "@shared/api/gen/main/model";
 import { useCollection, useMutation } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useEffect, useState } from "react";
 
@@ -45,6 +46,7 @@ export const useEditUserPrivilegesVM = ({
       toast.success("Права пользователя сохранены");
       onSaved(saved);
     },
+    onError: error => notifyApiError(toast, error),
   });
 
   return {

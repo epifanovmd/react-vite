@@ -1,6 +1,7 @@
 import { IMainApi } from "@shared/api";
 import type { IFileDto } from "@shared/api/gen/main/model";
 import type { IApiResponse } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useState } from "react";
 
@@ -44,9 +45,10 @@ export const useUploadFile = ({ onUploaded }: UseUploadFileOptions) => {
     }).catch(() => null);
 
     if (!put?.ok) {
-      toast.error(`Хранилище не приняло файл ${file.name}`);
-
-      return { data: null, error: { message: "Загрузка не удалась" } };
+      return {
+        data: null,
+        error: { message: `Хранилище не приняло файл ${file.name}` },
+      };
     }
 
     return api.completeUpload(target.data.fileId);
@@ -61,7 +63,11 @@ export const useUploadFile = ({ onUploaded }: UseUploadFileOptions) => {
           ? await uploadDirect(file)
           : await uploadRegular(file);
 
-      if (res.data) onUploaded(res.data);
+      if (res.data) {
+        onUploaded(res.data);
+      } else {
+        notifyApiError(toast, res.error);
+      }
     }
 
     setUploading(null);

@@ -1,6 +1,7 @@
 import { IUserStore } from "@entities/user";
 import { IMainApi } from "@shared/api";
 import { useMutation } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 
 /** Загрузка аватара: файл уходит в хранилище, его id — в профиль. */
@@ -19,11 +20,13 @@ export const useChangeAvatar = () => {
       return userStore.updateProfile({ avatarId });
     },
     onSuccess: () => toast.success("Аватар обновлён"),
+    onError: error => notifyApiError(toast, error),
   });
 
   const remove = useMutation<void, unknown>({
     mutationFn: () => userStore.updateProfile({ avatarId: null }),
     onSuccess: () => toast.success("Аватар удалён"),
+    onError: error => notifyApiError(toast, error),
   });
 
   return {

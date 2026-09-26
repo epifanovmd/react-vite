@@ -2,6 +2,8 @@ import { IJobStore } from "@entities/job";
 import { IMainApi } from "@shared/api";
 import type { IWorkerQueueStatusDto } from "@shared/api/gen/main/model";
 import { usePolling } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
+import { INotificationService } from "@shared/lib/notifications";
 import { useEffect, useState } from "react";
 
 /** Как часто обновлять статус воркеров, мс. */
@@ -9,6 +11,7 @@ const WORKERS_POLL_INTERVAL = 15_000;
 
 export const useJobsVM = () => {
   const api = IMainApi.useInstance();
+  const toast = INotificationService.useInstance();
   const jobs = IJobStore.useInstance();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
@@ -25,8 +28,11 @@ export const useJobsVM = () => {
 
   const cancel = async (id: string) => {
     setCancellingId(id);
-    await jobs.cancel(id);
+
+    const { error } = await jobs.cancel(id);
+
     setCancellingId(null);
+    notifyApiError(toast, error);
   };
 
   return {

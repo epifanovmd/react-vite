@@ -12,7 +12,9 @@ export const ForgotPasswordSuccess: FC<ForgotPasswordSuccessProps> = ({
     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success/15">
       <Check className="h-6 w-6 text-success" />
     </div>
-    <h2 className="mb-2 text-lg font-bold text-foreground">Письмо отправлено</h2>
+    <h2 className="mb-2 text-lg font-bold text-foreground">
+      Письмо отправлено
+    </h2>
     <p className="mb-6 text-sm text-muted-foreground">
       Если аккаунт с таким email существует, вы получите ссылку для сброса
       пароля.

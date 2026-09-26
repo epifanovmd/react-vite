@@ -1,4 +1,5 @@
 import { IUserStore } from "@entities/user";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
@@ -26,7 +27,11 @@ export const useChangeEmailVM = () => {
   const requestChange = async ({ email }: TNewEmailForm) => {
     const res = await userStore.changeEmail(email);
 
-    if (res.error) return;
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     setPendingEmail(email);
     codeForm.reset({ code: "" });
@@ -36,7 +41,11 @@ export const useChangeEmailVM = () => {
   const confirm = async ({ code }: TEmailCodeForm) => {
     const res = await userStore.confirmEmailChange(code);
 
-    if (res.error) return;
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     setPendingEmail(null);
     emailForm.reset({ email: "" });

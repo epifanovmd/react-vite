@@ -1,5 +1,6 @@
 import { IAuthStore } from "@entities/auth";
 import { IUserStore } from "@entities/user";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
@@ -28,7 +29,11 @@ export const useDeleteAccountVM = () => {
   const submit = async ({ password }: TDeleteAccountForm) => {
     const res = await userStore.deleteMyAccount(password);
 
-    if (res.error) return;
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     setOpen(false);
     toast.success("Аккаунт удалён");

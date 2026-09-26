@@ -1,5 +1,6 @@
 import { IJobStore } from "@entities/job";
 import { IMainApi } from "@shared/api";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { z } from "zod";
@@ -23,7 +24,11 @@ export const useRunDemoJobVM = () => {
   const submit = async (data: TDemoJobForm) => {
     const res = await api.demoEchoJob(data);
 
-    if (!res.data) return;
+    if (!res.data) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
 
     toast.info("Задача поставлена в очередь");
     await jobs.fetch(res.data.jobId);

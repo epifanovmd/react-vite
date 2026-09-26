@@ -6,6 +6,7 @@ import type {
   RegistrationResponseJSON,
 } from "@shared/api/gen/main/model";
 import { useCollection, useMutation } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { IStorageService } from "@shared/lib/storage";
 import { useConfirm } from "@shared/ui";
@@ -56,9 +57,13 @@ export const useManagePasskeysVM = () => {
         const error = e as Error;
 
         // Отмена системного диалога — не ошибка для пользователя.
-        if (error.name !== "NotAllowedError") toast.error(error.message);
-
-        return { data: null, error: { message: error.message } };
+        return {
+          data: null,
+          error: {
+            message: error.message,
+            isCanceled: error.name === "NotAllowedError",
+          },
+        };
       }
 
       const verified = await api.verifyRegistration({ data: attestation });
@@ -72,6 +77,7 @@ export const useManagePasskeysVM = () => {
       toast.success("Passkey добавлен");
       await list.refresh();
     },
+    onError: error => notifyApiError(toast, error),
   });
 
   const remove = async (id: string) => {
@@ -86,7 +92,13 @@ export const useManagePasskeysVM = () => {
 
     const res = await api.deletePasskey(id);
 
-    if (!res.error) list.removeItem(id);
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    list.removeItem(id);
   };
 
   return {

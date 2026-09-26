@@ -68,7 +68,7 @@ export interface IUserStore {
   loadPrivacy(): Promise<void>;
   updatePrivacy(
     data: UpdatePrivacySettingsBody,
-  ): Promise<PrivacySettingsDto | undefined>;
+  ): Promise<ApiResponse<PrivacySettingsDto, ApiError>>;
   setUsername(username: string): Promise<ApiResponse<UserDto, ApiError>>;
   /** Запрос смены email: код уходит на новый адрес, email меняется после подтверждения. */
   changeEmail(email: string): Promise<ApiResponse<UserDto, ApiError>>;

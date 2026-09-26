@@ -55,7 +55,7 @@ export class SessionStore implements ISessionStore {
   }
 
   async terminateSession(sessionId: string) {
-    await this.terminateMutation.execute(sessionId, async id => {
+    const res = await this.terminateMutation.execute(sessionId, async id => {
       const res = await this._api.terminateSession(id);
 
       if (!res.error) {
@@ -64,6 +64,8 @@ export class SessionStore implements ISessionStore {
 
       return res;
     });
+
+    return res.error;
   }
 
   async terminateOtherSessions() {

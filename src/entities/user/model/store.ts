@@ -163,7 +163,7 @@ class UserStore implements IUserStore {
       this.privacyHolder.setData(res.data);
     }
 
-    return res.data;
+    return res;
   }
 
   async setUsername(username: string) {

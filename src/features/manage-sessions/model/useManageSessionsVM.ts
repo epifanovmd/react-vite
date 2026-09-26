@@ -3,6 +3,7 @@ import { ISessionStore } from "@entities/user";
 import { IMainApi } from "@shared/api";
 import { IAuthSessionGuard } from "@shared/lib/contracts";
 import { useMutation } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm } from "@shared/ui";
 import { useEffect, useState } from "react";
@@ -24,12 +25,16 @@ export const useManageSessionsVM = () => {
   const terminateOthers = useMutation<void, unknown>({
     mutationFn: () => sessions.terminateOtherSessions(),
     onSuccess: () => toast.success("Остальные сессии завершены"),
+    onError: error => notifyApiError(toast, error),
   });
 
   const terminate = async (id: string) => {
     setTerminatingId(id);
-    await sessions.terminateSession(id);
+
+    const error = await sessions.terminateSession(id);
+
     setTerminatingId(null);
+    notifyApiError(toast, error);
   };
 
   const signOutAll = async () => {
@@ -44,7 +49,13 @@ export const useManageSessionsVM = () => {
 
     const res = await api.signOutAll();
 
-    if (!res.error) auth.signOut();
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    auth.signOut();
   };
 
   return {

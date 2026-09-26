@@ -52,3 +52,41 @@ export const notifyErrors = (
     }
   };
 };
+
+/**
+ * Тост об ошибке, которую экран обрабатывает сам: 4xx и ошибки вне
+ * HTTP-клиента. Сеть, таймаут и 5xx уже показал `notifyErrors`, отмена — не ошибка.
+ */
+export const notifyApiError = (
+  notifications: INotificationService,
+  raw: unknown,
+): void => {
+  if (!raw) return;
+
+  // Ошибка холдера — простой объект `{ message, status }`.
+  if (!(raw instanceof Error) && typeof raw === "object" && "message" in raw) {
+    const { message, status, isCanceled } = raw as {
+      message: unknown;
+      status?: number;
+      isCanceled?: boolean;
+    };
+
+    if (!isCanceled && (status ?? 0) < 500)
+      notifications.error(String(message));
+
+    return;
+  }
+
+  const error = toApiError(raw);
+
+  if (
+    error.isCanceled ||
+    error.isNetworkError ||
+    error.isTimeout ||
+    error.isServerError
+  ) {
+    return;
+  }
+
+  notifications.error(error.message);
+};

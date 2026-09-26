@@ -3,6 +3,8 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { IMainApi } from "@shared/api";
 import { KnownPermission, type UserDto } from "@shared/api/gen/main/model";
 import { usePaged } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
+import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm } from "@shared/ui";
 import { useState } from "react";
 
@@ -11,6 +13,7 @@ const SEARCH_DEBOUNCE = 300;
 
 export const useAdminUsersVM = () => {
   const api = IMainApi.useInstance();
+  const toast = INotificationService.useInstance();
   const userStore = IUserStore.useInstance();
   const confirm = useConfirm();
   const [search, setSearch] = useState("");
@@ -47,7 +50,13 @@ export const useAdminUsersVM = () => {
 
     const res = await api.deleteUser(user.id);
 
-    if (!res.error) await users.reload({ refresh: true });
+    if (res.error) {
+      notifyApiError(toast, res.error);
+
+      return;
+    }
+
+    await users.reload({ refresh: true });
   };
 
   return {
