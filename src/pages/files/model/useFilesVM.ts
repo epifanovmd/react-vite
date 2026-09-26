@@ -33,15 +33,22 @@ export const useFilesVM = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Сервер закончил обработку (статус, миниатюра) — обновить файл на месте.
-  useEffect(
-    () =>
+  // Изменения с других устройств и итог обработки приходят по сокету.
+  useEffect(() => {
+    const reload = () => files.reload({ refresh: true }).then();
+    const unsubscribe = [
+      // Сервер закончил обработку (статус, миниатюра) — обновить файл на месте.
       socket.on<[IFileDto]>("file:processed", file =>
         files.updateItem(file.id, file),
       ),
+      // Загрузка и удаление сдвигают страницы — перечитать текущую.
+      socket.on("file:uploaded", reload),
+      socket.on("file:deleted", reload),
+    ];
+
+    return () => unsubscribe.forEach(off => off());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [socket],
-  );
+  }, [socket]);
 
   const remove = async (file: IFileDto) => {
     const ok = await confirm({

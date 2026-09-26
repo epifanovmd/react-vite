@@ -1,6 +1,7 @@
 import { IMainApi } from "@shared/api";
 import type { IFileDto } from "@shared/api/gen/main/model";
 import type { IApiResponse } from "@shared/lib/holders";
+import { createHttpClient, type HttpProgress } from "@shared/lib/http";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useState } from "react";
@@ -13,6 +14,21 @@ export const UPLOAD_MODE_OPTIONS = [
   { value: "direct" as const, label: "Напрямую" },
 ];
 
+/** Текущая загрузка: файл, его номер в пачке и доля отправленного. */
+export interface UploadProgress {
+  name: string;
+  index: number;
+  count: number;
+  /** 0..1; `undefined` — размер неизвестен или ждём ответа сервера. */
+  ratio?: number;
+}
+
+/**
+ * Клиент для подписанной ссылки хранилища: без авторизации и тостов, адрес —
+ * абсолютный. Нужен ради прогресса отправки, которого нет у `fetch`.
+ */
+const storageClient = createHttpClient({ baseUrl: "", timeout: 0 });
+
 interface UseUploadFileOptions {
   onUploaded: (file: IFileDto) => void;
 }
@@ -21,10 +37,13 @@ export const useUploadFile = ({ onUploaded }: UseUploadFileOptions) => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
   const [mode, setMode] = useState<UploadMode>("regular");
-  const [uploading, setUploading] = useState<string | null>(null);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
+
+  const onUploadProgress = ({ ratio }: HttpProgress) =>
+    setProgress(current => current && { ...current, ratio });
 
   const uploadRegular = async (file: File): Promise<IApiResponse<IFileDto>> => {
-    const res = await api.uploadFile({ file });
+    const res = await api.uploadFile({ file }, { onUploadProgress });
 
     return { data: res.data?.[0] ?? null, error: res.error };
   };
@@ -38,13 +57,17 @@ export const useUploadFile = ({ onUploaded }: UseUploadFileOptions) => {
 
     if (!target.data) return { data: null, error: target.error };
 
-    const put = await fetch(target.data.uploadUrl, {
-      method: "PUT",
-      headers: target.data.headers,
-      body: file,
-    }).catch(() => null);
+    const put = await storageClient.request(
+      {
+        url: target.data.uploadUrl,
+        method: "PUT",
+        headers: target.data.headers,
+        data: file,
+      },
+      { onUploadProgress },
+    );
 
-    if (!put?.ok) {
+    if (put.error) {
       return {
         data: null,
         error: { message: `Хранилище не приняло файл ${file.name}` },
@@ -55,8 +78,8 @@ export const useUploadFile = ({ onUploaded }: UseUploadFileOptions) => {
   };
 
   const upload = async (files: File[]) => {
-    for (const file of files) {
-      setUploading(file.name);
+    for (const [index, file] of files.entries()) {
+      setProgress({ name: file.name, index: index + 1, count: files.length });
 
       const res =
         mode === "direct"
@@ -70,8 +93,8 @@ export const useUploadFile = ({ onUploaded }: UseUploadFileOptions) => {
       }
     }
 
-    setUploading(null);
+    setProgress(null);
   };
 
-  return { mode, setMode, uploading, upload };
+  return { mode, setMode, progress, upload };
 };
