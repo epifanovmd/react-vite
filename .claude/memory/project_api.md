@@ -229,3 +229,9 @@ auth-API (обновление токенов) → сессия → HTTP-кли�
   остаётся result-style.
 - `getErrorBody<TBody>(error)` достаёт тело ошибки у `HttpError`; у сетевых
   ошибок, таймаутов и отмены вернёт `undefined` — ветвиться на `kind` не нужно.
+
+## Ошибки API на экранах (2026-09-26)
+
+- Глобально `notifyErrors` тостит только сеть, таймаут и 5xx. Ошибки 4xx экран показывает сам: `notifyApiError(notifications, res.error)` из `@shared/lib/http` — он пропускает то, что уже показал `notifyErrors`, и отменённые запросы (без дублей).
+- В `useMutation` — `onError: error => notifyApiError(toast, error)`.
+- Молчаливое `if (res.error) return` — баг.
