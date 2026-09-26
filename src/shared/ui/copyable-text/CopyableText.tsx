@@ -1,5 +1,4 @@
-import { useClipboard } from "@mantine/hooks";
-import { useEvent } from "@shared/lib/hooks";
+import { useClipboard, useEvent } from "@shared/lib/hooks";
 import { cn } from "@shared/lib/utils/cn";
 import { Check, Copy } from "lucide-react";
 import * as React from "react";

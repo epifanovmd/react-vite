@@ -32,4 +32,30 @@ describe("CopyableText", () => {
     expect(onCopied).toHaveBeenCalledTimes(1);
     expect(button).toHaveTextContent("Скопировано");
   });
+
+  it("без Clipboard API (страница по http) копирует через выделение текста", async () => {
+    const execCommand = vi.fn().mockReturnValue(true);
+    const onCopied = vi.fn();
+
+    Object.assign(navigator, { clipboard: undefined });
+    Object.assign(document, { execCommand });
+
+    render(
+      <TooltipProvider>
+        <CopyableText text="key.secret" onCopied={onCopied} />
+      </TooltipProvider>,
+    );
+
+    const button = screen.getByRole("button", {
+      name: "Копировать: key.secret",
+    });
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(execCommand).toHaveBeenCalledWith("copy");
+    expect(onCopied).toHaveBeenCalledTimes(1);
+    expect(button).toHaveTextContent("Скопировано");
+  });
 });
