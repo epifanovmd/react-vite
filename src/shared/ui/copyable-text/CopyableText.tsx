@@ -52,7 +52,7 @@ const CopyableText = React.forwardRef<HTMLButtonElement, CopyableTextProps>(
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
       onClick?.(event);
-      clipboard.copy(text);
+      clipboard.copy(text, event.currentTarget.parentElement ?? undefined);
     };
 
     const errorLabel = clipboard.error ? COPY_ERROR_LABEL : null;

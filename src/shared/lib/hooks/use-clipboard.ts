@@ -3,8 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /**
  * Копирование в буфер. Clipboard API есть только в защищённом контексте
  * (https, localhost) — на странице по http копируем выделением скрытого поля.
+ * `container` — где разместить поле: внутри модалки ловушка фокуса не даст
+ * выделить поле, вставленное в `body`.
  */
-export const copyToClipboard = async (text: string): Promise<void> => {
+export const copyToClipboard = async (
+  text: string,
+  container: HTMLElement = document.body,
+): Promise<void> => {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
 
@@ -17,7 +22,14 @@ export const copyToClipboard = async (text: string): Promise<void> => {
   area.setAttribute("readonly", "");
   area.style.position = "fixed";
   area.style.opacity = "0";
-  document.body.appendChild(area);
+
+  const previous =
+    document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+  container.appendChild(area);
+  area.focus();
   area.select();
 
   try {
@@ -26,6 +38,7 @@ export const copyToClipboard = async (text: string): Promise<void> => {
     }
   } finally {
     area.remove();
+    previous?.focus();
   }
 };
 
@@ -43,8 +56,8 @@ export const useClipboard = ({ timeout = 2000 }: UseClipboardOptions = {}) => {
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const copy = useCallback(
-    (text: string) => {
-      copyToClipboard(text)
+    (text: string, container?: HTMLElement) => {
+      copyToClipboard(text, container)
         .then(() => {
           setError(null);
           setCopied(true);
