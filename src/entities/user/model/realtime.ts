@@ -14,9 +14,11 @@ export class UserRealtime implements IUserRealtime {
 
   initialize() {
     return this._userSocket.subscribe({
+      // Событие несёт публичный профиль (`avatarUrl`, не `avatar`) — свой
+      // перечитываем целиком, иначе аватар с другого устройства не обновится.
       onProfileUpdated: profile => {
         if (profile.userId !== this._userStore.user?.id) return;
-        this._userStore.patchProfile(profile);
+        this._userStore.refresh().then();
       },
       onUsernameChanged: ({ username }) => {
         this._userStore.patchUser({ username });
