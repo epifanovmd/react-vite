@@ -3,6 +3,7 @@ import type { IFileDto } from "@shared/api/gen/main/model";
 import { usePaged } from "@shared/lib/holders";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
+import { ISocketTransport } from "@shared/lib/socket";
 import { useConfirm } from "@shared/ui";
 import { useEffect } from "react";
 
@@ -10,6 +11,7 @@ const PAGE_SIZE = 20;
 
 export const useFilesVM = () => {
   const api = IMainApi.useInstance();
+  const socket = ISocketTransport.useInstance();
   const toast = INotificationService.useInstance();
   const confirm = useConfirm();
 
@@ -30,6 +32,16 @@ export const useFilesVM = () => {
     files.load().then();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Сервер закончил обработку (статус, миниатюра) — обновить файл на месте.
+  useEffect(
+    () =>
+      socket.on<[IFileDto]>("file:processed", file =>
+        files.updateItem(file.id, file),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [socket],
+  );
 
   const remove = async (file: IFileDto) => {
     const ok = await confirm({
