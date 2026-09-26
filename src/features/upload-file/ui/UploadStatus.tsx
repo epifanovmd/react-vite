@@ -1,14 +1,14 @@
 import { Progress } from "@shared/ui";
 import { FC } from "react";
 
+import { describeUpload } from "../model/upload-status";
 import type { UploadProgress } from "../model/useUploadFile";
 
-/** Имя, номер в пачке и доля отправленного для текущего файла. */
+/** Текущий файл: имя, номер в пачке и стадия — отправка или обработка на сервере. */
 export const UploadStatus: FC<{ progress: UploadProgress }> = ({
   progress,
 }) => {
-  const percent =
-    progress.ratio === undefined ? null : Math.round(progress.ratio * 100);
+  const view = describeUpload(progress);
 
   return (
     <div
@@ -16,18 +16,15 @@ export const UploadStatus: FC<{ progress: UploadProgress }> = ({
       aria-live="polite"
     >
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="min-w-0 truncate font-medium">
-          Загрузка {progress.name}
-        </span>
+        <span className="min-w-0 truncate font-medium">{view.title}</span>
         <span className="shrink-0 tabular-nums text-muted-foreground">
-          {progress.count > 1 && `${progress.index} из ${progress.count} · `}
-          {percent === null ? "…" : `${percent}%`}
+          {view.detail}
         </span>
       </div>
       <Progress
         value={progress.ratio}
-        indeterminate={progress.ratio === undefined}
-        aria-label={`Загрузка ${progress.name}`}
+        indeterminate={view.indeterminate}
+        aria-label={view.title}
       />
     </div>
   );
