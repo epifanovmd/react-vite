@@ -30,3 +30,6 @@ coverage
 # Локальные env: деплой и переопределения для сервера
 .env.deploy
 *.local
+
+# Временные файлы плагина TanStack Router
+.tanstack/
