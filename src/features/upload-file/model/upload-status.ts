@@ -1,9 +1,10 @@
 import type { UploadProgress } from "./useUploadFile";
 
 export interface UploadStatusView {
-  title: string;
-  /** Справа: номер в пачке и процент либо стадия. */
-  detail: string;
+  /** Стадия целиком: «Загрузка 42%» или «Обработка на сервере…». */
+  stage: string;
+  /** Номер файла в пачке; `null` — файл один. */
+  position: string | null;
   /** Бегущая полоса: доля неизвестна или файл уже у сервера. */
   indeterminate: boolean;
 }
@@ -14,23 +15,18 @@ export interface UploadStatusView {
  */
 export const describeUpload = (progress: UploadProgress): UploadStatusView => {
   const position =
-    progress.count > 1 ? `${progress.index} из ${progress.count} · ` : "";
+    progress.count > 1 ? `${progress.index} из ${progress.count}` : null;
 
   if (progress.ratio !== undefined && progress.ratio >= 1) {
-    return {
-      title: `Обработка ${progress.name}`,
-      detail: `${position}на сервере…`,
-      indeterminate: true,
-    };
+    return { stage: "Обработка на сервере…", position, indeterminate: true };
   }
 
   return {
-    title: `Загрузка ${progress.name}`,
-    detail:
-      position +
-      (progress.ratio === undefined
-        ? "…"
-        : `${Math.round(progress.ratio * 100)}%`),
+    stage:
+      progress.ratio === undefined
+        ? "Загрузка…"
+        : `Загрузка ${Math.round(progress.ratio * 100)}%`,
+    position,
     indeterminate: progress.ratio === undefined,
   };
 };
