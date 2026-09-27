@@ -1,0 +1,8 @@
+services:
+  react-vite:
+    build: .
+    image: react-vite:latest
+    container_name: react-vite
+    ports:
+      - "${APP_PORT:-4173}:80"
+    restart: unless-stopped
