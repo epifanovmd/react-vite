@@ -67,9 +67,7 @@ UI-примитивы построены на Radix UI + `class-variance-authori
 Общие хуки — в `shared/lib/hooks`: `useControllableState`, `useLatestRef`/`useEvent`,
 `useMergedCallback`, `useInfiniteScrollSentinel`.
 
-### Общая база с ml-labeling-web
-
-`src/shared` в `ml-labeling-web` — та же база; правки shared переносить туда и держать идентичными.
+### Общая база `shared`
 
 - `PageLayout` — `header?`, `lead?`, `actions?` (`PageLayoutToolbar`), `contentClassName`; контент с `gap-3`.
 - `@shared/lib/navigation` — `useLeaveConfirmation({ when, dialog, confirm, onConfirm, shouldBlock, blockSamePath, beforeUnload, disabled })` → `{ withoutConfirmation }`. Применён в `features/edit-profile`. В тестах переходы через `router.history.push` без `act`.
@@ -79,7 +77,7 @@ UI-примитивы построены на Radix UI + `class-variance-authori
 
 ### Движение (motion)
 
-Единственный источник — `src/app/styles/motion.css` (импорт в `index.css`), одинаковый в react-vite и ml:
+Единственный источник — `src/app/styles/motion.css` (импорт в `index.css`), токены и утилиты:
 токены `--motion-fast/base`, `--motion-lift`, `--motion-zoom`, `ease-standard`; утилиты
 `hover-surface` (рамка brand + оверлей accent через `inset box-shadow`, фон карточки не затирается),
 `hover-lift` (рамка, `shadow-lg`, подъём), `hover-zoom` (на ребёнке `.group`), `reveal-on-hover`

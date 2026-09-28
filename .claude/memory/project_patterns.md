@@ -138,7 +138,7 @@ Page — тонкая композиция: делегирует данные в
 
 ## Модели данных (`shared/lib/models`)
 
-Базовые классы одинаковы во всех проектах (react-vite, ml-labeling-web, wg-admin-web, rnapp):
+Базовые классы:
 
 - `DataModelBase<TDto>` — `_data: observable.ref`: DTO не копируется, реакция только на
   замену объекта целиком (по полям DTO не мутировать);
