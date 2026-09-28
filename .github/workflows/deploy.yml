@@ -1,7 +1,10 @@
 name: Deploy
 
-# Проверки, затем сборка и запуск на хосте по SSH (make deploy). Хост — переменная
-# репозитория DEPLOY_HOST (по умолчанию 147.45.245.104), ключ — секрет SSH_PRIVATE_KEY.
+# Проверки, затем сборка и запуск на хосте по SSH (make deploy). Настройки —
+# переменная репозитория DEPLOY_ENV (содержимое .env.deploy), ключ — секрет
+# SSH_PRIVATE_KEY. Адрес API для сборки — секрет PRODUCTION_ENV (содержимое
+# .env.production): кладётся на хост при каждом деплое; без него — файл на
+# хосте (make env).
 on:
   push:
     branches: [main]
@@ -33,19 +36,20 @@ jobs:
     concurrency:
       group: deploy
       cancel-in-progress: false
-    env:
-      DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '147.45.245.104' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Ключ на месте
+      - name: Настройки деплоя
         env:
+          DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "::error::Нужен секрет репозитория SSH_PRIVATE_KEY"
+          if [ -z "$DEPLOY_ENV" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "::error::Нужны переменная репозитория DEPLOY_ENV и секрет SSH_PRIVATE_KEY"
             exit 1
           fi
+          # Веб-форма GitHub сохраняет значение с CRLF — \r ломает хост и пути.
+          printf '%s\n' "$DEPLOY_ENV" | tr -d '\r' > .env.deploy
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -54,16 +58,14 @@ jobs:
       # Связь с хостом бывает нестабильной: таймауты и повторы подключения.
       - name: SSH к хосту
         run: |
+          host=$(sed -n 's/^SSH_HOST=//p' .env.deploy)
           printf 'Host *\n  ConnectTimeout 20\n  ConnectionAttempts 5\n  ServerAliveInterval 15\n  ServerAliveCountMax 8\n' >> ~/.ssh/config
           for i in 1 2 3 4 5; do
-            keys=$(ssh-keyscan -T 15 "$DEPLOY_HOST" 2>/dev/null) && [ -n "$keys" ] && break
+            keys=$(ssh-keyscan -T 15 "$host" 2>/dev/null) && [ -n "$keys" ] && break
             sleep 5
           done
-          [ -n "$keys" ] || { echo "::error::Хост $DEPLOY_HOST не отвечает"; exit 1; }
+          [ -n "$keys" ] || { echo "::error::Хост $host не отвечает"; exit 1; }
           echo "$keys" >> ~/.ssh/known_hosts
-
-      - name: Настройки деплоя
-        run: sed "s/^SSH_HOST=.*/SSH_HOST=$DEPLOY_HOST/" .env.deploy.example > .env.deploy
 
       - name: Исходники на хост
         run: |
