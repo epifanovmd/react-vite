@@ -71,7 +71,7 @@ Node >= 22.12.0, Yarn >= 1.22.18.
 Inversify, явная регистрация через `ContainerModule` (без auto-bind декораторов):
 
 ```ts
-export const IMyService = createInjectDecorator<IMyService>();
+export const IMyService = createInjectDecorator<IMyService>("IMyService");
 @injectable()
 class MyService implements IMyService {
   constructor(@IOther() private other: IOther) {}

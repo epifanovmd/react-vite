@@ -11,7 +11,8 @@ type: project
 import { createInjectDecorator } from "@shared/lib/di";
 import { EntityHolder } from "@shared/lib/holders";
 
-export const IFeatureStore = createInjectDecorator<IFeatureStore>();
+export const IFeatureStore =
+  createInjectDecorator<IFeatureStore>("IFeatureStore");
 
 export interface IFeatureStore {
   readonly data: FeatureDto | null;
