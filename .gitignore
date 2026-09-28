@@ -27,8 +27,10 @@ local.properties
 # vitest --coverage
 coverage
 
-# Локальные env: деплой и переопределения для сервера
-.env.deploy
+# Env: локальные настройки разработки, сервера и деплоя (образец — .env.example)
+.env*
+!.env.example
+!.env.deploy.example
 *.local
 
 # Временные файлы плагина TanStack Router
