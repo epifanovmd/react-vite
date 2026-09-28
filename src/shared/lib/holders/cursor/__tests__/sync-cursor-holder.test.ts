@@ -2,7 +2,12 @@ import { testRuntime } from "../../__tests__/test-runtime";
 import { HolderStatus, MutationStatus } from "../../holder.types";
 import { type IFetchProvider } from "../cached-cursor-holder.types";
 import { SyncCursorHolder } from "../sync-cursor-holder";
-import { cursorItem as item, cursorOptions as options, type CursorTestItem as Item, MemoryCache } from "./cursor-test-utils";
+import {
+  cursorItem as item,
+  cursorOptions as options,
+  type CursorTestItem as Item,
+  MemoryCache,
+} from "./cursor-test-utils";
 
 describe("SyncCursorHolder", () => {
   it("hydrates cache, merges server and buffered items, and persists", async () => {
@@ -43,11 +48,19 @@ describe("SyncCursorHolder", () => {
       hasNewer: true,
     });
     const results: Array<ReturnType<IFetchProvider<Item>["fetch"]>> = [
-      Promise.resolve({ data: [item(2), item(3)], hasMore: true, hasNewer: true }),
+      Promise.resolve({
+        data: [item(2), item(3)],
+        hasMore: true,
+        hasNewer: true,
+      }),
       Promise.resolve(null),
       Promise.reject(new Error("failed")),
     ];
-    const holder = new SyncCursorHolder({ fetch: () => results.shift()! }, options, cache);
+    const holder = new SyncCursorHolder(
+      { fetch: () => results.shift()! },
+      options,
+      cache,
+    );
 
     await holder.fetchInitial(null, "feed");
     holder.bind("feed");
@@ -59,7 +72,11 @@ describe("SyncCursorHolder", () => {
     expect(holder.status).toBe(HolderStatus.Success);
 
     const noCache = new SyncCursorHolder(
-      { fetch: async () => { throw new Error("failed"); } },
+      {
+        fetch: async () => {
+          throw new Error("failed");
+        },
+      },
       options,
     );
 
@@ -69,8 +86,16 @@ describe("SyncCursorHolder", () => {
   });
 
   it("invalidates an in-flight initial request", async () => {
-    let resolve!: (value: { data: Item[]; hasMore: boolean; hasNewer: boolean }) => void;
-    const promise = new Promise<{ data: Item[]; hasMore: boolean; hasNewer: boolean }>(res => {
+    let resolve!: (value: {
+      data: Item[];
+      hasMore: boolean;
+      hasNewer: boolean;
+    }) => void;
+    const promise = new Promise<{
+      data: Item[];
+      hasMore: boolean;
+      hasNewer: boolean;
+    }>(res => {
       resolve = res;
     });
     const holder = new SyncCursorHolder({ fetch: () => promise }, options);
@@ -177,7 +202,11 @@ describe("SyncCursorHolder", () => {
       { data: [], hasMore: false, hasNewer: false },
       { data: [item(10)], hasMore: false, hasNewer: false },
     ];
-    const holder = new SyncCursorHolder({ fetch: async () => responses.shift() ?? null }, options, cache);
+    const holder = new SyncCursorHolder(
+      { fetch: async () => responses.shift() ?? null },
+      options,
+      cache,
+    );
 
     expect(await holder.navigateToItem("1", "feed")).toBe(false);
     holder.bind("feed");
@@ -188,7 +217,14 @@ describe("SyncCursorHolder", () => {
     expect(await holder.navigateToItem("missing", "feed")).toBe(false);
     expect(await holder.navigateToItem("missing", "wrong-key")).toBe(false);
 
-    const failing = new SyncCursorHolder({ fetch: async () => { throw new Error("failed"); } }, options);
+    const failing = new SyncCursorHolder(
+      {
+        fetch: async () => {
+          throw new Error("failed");
+        },
+      },
+      options,
+    );
 
     failing.bind("feed");
     expect(await failing.navigateToItem("1", "feed")).toBe(false);
@@ -232,11 +268,14 @@ describe("SyncCursorHolder", () => {
       hasMore: false,
       hasNewer: false,
     }));
-    const holder = new SyncCursorHolder({ fetch }, {
-      keyExtractor: options.keyExtractor,
-      idExtractor: options.idExtractor,
-      sort: options.sort,
-    });
+    const holder = new SyncCursorHolder(
+      { fetch },
+      {
+        keyExtractor: options.keyExtractor,
+        idExtractor: options.idExtractor,
+        sort: options.sort,
+      },
+    );
 
     holder.bind("feed");
     await holder.fetchInitial(null, "feed");

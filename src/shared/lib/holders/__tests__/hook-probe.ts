@@ -20,7 +20,9 @@ export const renderHook = async <T>(useValue: () => T) => {
   };
 
   await act(async () => {
-    renderer = TestRenderer.create(createElement(HookProbe<T>, { useValue, onValue }));
+    renderer = TestRenderer.create(
+      createElement(HookProbe<T>, { useValue, onValue }),
+    );
   });
 
   return {
@@ -29,7 +31,9 @@ export const renderHook = async <T>(useValue: () => T) => {
     },
     async rerender(nextUseValue: () => T) {
       await act(async () => {
-        renderer.update(createElement(HookProbe<T>, { useValue: nextUseValue, onValue }));
+        renderer.update(
+          createElement(HookProbe<T>, { useValue: nextUseValue, onValue }),
+        );
       });
     },
     async unmount() {

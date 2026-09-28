@@ -4,8 +4,16 @@ import { filterOptions as options, flush } from "./filter-test-utils";
 
 describe("FiltersHolder", () => {
   it("coordinates filters and creates a request from saved values", async () => {
-    const status = new FilterHolder({ title: "Status", options, defaultValue: 1 });
-    const category = new FilterHolder({ title: "Category", options, defaultValue: 2 });
+    const status = new FilterHolder({
+      title: "Status",
+      options,
+      defaultValue: 1,
+    });
+    const category = new FilterHolder({
+      title: "Category",
+      options,
+      defaultValue: 2,
+    });
     const holder = new FiltersHolder({ status, category });
 
     await flush();

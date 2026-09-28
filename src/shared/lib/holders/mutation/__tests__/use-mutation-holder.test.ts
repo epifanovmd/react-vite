@@ -12,7 +12,9 @@ describe("Mutation React integration", () => {
     const hook = await renderHook(() =>
       useMutation<number, string>({
         mutationFn: async value =>
-          value > 0 ? { data: String(value) } : { error: { message: "invalid" } },
+          value > 0
+            ? { data: String(value) }
+            : { error: { message: "invalid" } },
         onSuccess,
         onError,
         onSettled,
@@ -25,8 +27,12 @@ describe("Mutation React integration", () => {
     await expect(hook.current.mutate(-1)).resolves.toBeUndefined();
     expect(onError).toHaveBeenCalledWith({ message: "invalid" });
     await expect(hook.current.mutateAsync(2)).resolves.toBe("2");
-    await expect(hook.current.mutateAsync(-2)).rejects.toEqual({ message: "invalid" });
-    const empty = await renderHook(() => useMutation<void, string>({ mutationFn: async () => ({ data: null }) }));
+    await expect(hook.current.mutateAsync(-2)).rejects.toEqual({
+      message: "invalid",
+    });
+    const empty = await renderHook(() =>
+      useMutation<void, string>({ mutationFn: async () => ({ data: null }) }),
+    );
 
     await expect(empty.current.mutate()).resolves.toBeUndefined();
     await empty.unmount();
@@ -40,7 +46,9 @@ describe("Mutation React integration", () => {
     const first = testRuntime.fn();
     const second = testRuntime.fn();
     const mutationFn = async () => ({ data: "done" });
-    const hook = await renderHook(() => useMutation({ mutationFn, onSuccess: first }));
+    const hook = await renderHook(() =>
+      useMutation({ mutationFn, onSuccess: first }),
+    );
     const holder = hook.current.holder;
 
     await hook.rerender(() => useMutation({ mutationFn, onSuccess: second }));
@@ -48,6 +56,22 @@ describe("Mutation React integration", () => {
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledWith("done");
     expect(hook.current.holder).toBe(holder);
+    await hook.unmount();
+  });
+
+  it("calls the mutationFn of the latest render", async () => {
+    const hook = await renderHook(() =>
+      useMutation<void, string>({
+        mutationFn: async () => ({ data: "first" }),
+      }),
+    );
+
+    await hook.rerender(() =>
+      useMutation<void, string>({
+        mutationFn: async () => ({ data: "second" }),
+      }),
+    );
+    await expect(hook.current.mutate()).resolves.toBe("second");
     await hook.unmount();
   });
 });

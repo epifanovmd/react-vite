@@ -134,7 +134,11 @@ describe("FilterHolder", () => {
     holder.cancelExpand();
     expect(holder.expanded).toBe(true);
 
-    const empty = new FilterHolder<number>({ title: "Empty", options: [], value: 1 });
+    const empty = new FilterHolder<number>({
+      title: "Empty",
+      options: [],
+      value: 1,
+    });
 
     await flush();
     empty.apply();

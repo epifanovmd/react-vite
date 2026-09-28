@@ -1,5 +1,10 @@
 import { CachedCursorHolder } from "../cached-cursor-holder";
-import { cursorItem as item, cursorOptions as options, type CursorTestItem as Item, MemoryCache } from "./cursor-test-utils";
+import {
+  cursorItem as item,
+  cursorOptions as options,
+  type CursorTestItem as Item,
+  MemoryCache,
+} from "./cursor-test-utils";
 
 describe("CachedCursorHolder", () => {
   it("persists bound state and ignores persistence without cache or key", () => {

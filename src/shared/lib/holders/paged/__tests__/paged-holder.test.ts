@@ -1,4 +1,9 @@
-import { cancelError, cancelResponse, item, type TestItem as Item } from "../../__tests__/holder-test-utils";
+import {
+  cancelError,
+  cancelResponse,
+  item,
+  type TestItem as Item,
+} from "../../__tests__/holder-test-utils";
 import { testRuntime } from "../../__tests__/test-runtime";
 import { PagedHolder } from "../paged-holder";
 
@@ -9,9 +14,11 @@ afterEach(() => {
 
 describe("PagedHolder", () => {
   it("manages pagination, items and page navigation", async () => {
-    const fetch = testRuntime.fn(async ({ offset, limit }: { offset: number; limit: number }) => ({
-      data: { data: [item(offset)], totalCount: 5, limit },
-    }));
+    const fetch = testRuntime.fn(
+      async ({ offset, limit }: { offset: number; limit: number }) => ({
+        data: { data: [item(offset)], totalCount: 5, limit },
+      }),
+    );
     const holder = new PagedHolder<Item, string>({
       onFetch: fetch,
       pageSize: 2,
@@ -50,20 +57,43 @@ describe("PagedHolder", () => {
 
   it("supports fromApi and failure branches", async () => {
     const holder = new PagedHolder<Item>();
-    const extract = (value: { rows: Item[] }) => ({ items: value.rows, totalCount: 4 });
-
-    await expect(holder.fromApi(async () => ({ data: { rows: [item(1)] } }), extract)).resolves.toEqual({
-      data: [item(1)], totalCount: 4, error: null,
+    const extract = (value: { rows: Item[] }) => ({
+      items: value.rows,
+      totalCount: 4,
     });
-    await expect(holder.fromApi(async () => ({ data: null }), extract, { refresh: true })).resolves.toEqual({
-      data: [], totalCount: 0, error: null,
+
+    await expect(
+      holder.fromApi(async () => ({ data: { rows: [item(1)] } }), extract),
+    ).resolves.toEqual({
+      data: [item(1)],
+      totalCount: 4,
+      error: null,
+    });
+    await expect(
+      holder.fromApi(async () => ({ data: null }), extract, { refresh: true }),
+    ).resolves.toEqual({
+      data: [],
+      totalCount: 0,
+      error: null,
     });
     const error = { message: "api" };
 
-    await expect(holder.fromApi(async () => ({ error }), extract)).resolves.toMatchObject({ error });
-    await expect(holder.fromApi(async () => cancelResponse, extract)).resolves.toEqual({ data: null, totalCount: 0, error: null });
-    await expect(holder.fromApi(async () => { throw cancelError; }, extract)).resolves.toEqual({ data: null, totalCount: 0, error: null });
-    await expect(holder.fromApi(async () => { throw new Error("boom"); }, extract)).resolves.toMatchObject({ error: { message: "boom" } });
+    await expect(
+      holder.fromApi(async () => ({ error }), extract),
+    ).resolves.toMatchObject({ error });
+    await expect(
+      holder.fromApi(async () => cancelResponse, extract),
+    ).resolves.toEqual({ data: null, totalCount: 0, error: null });
+    await expect(
+      holder.fromApi(async () => {
+        throw cancelError;
+      }, extract),
+    ).resolves.toEqual({ data: null, totalCount: 0, error: null });
+    await expect(
+      holder.fromApi(async () => {
+        throw new Error("boom");
+      }, extract),
+    ).resolves.toMatchObject({ error: { message: "boom" } });
   });
 
   it("handles count fallback, errors and missing onFetch", async () => {
@@ -72,11 +102,15 @@ describe("PagedHolder", () => {
       { error: { message: "api" } },
       null,
     ];
-    const holder = new PagedHolder<Item>({ onFetch: async () => responses.shift() ?? { data: null } });
+    const holder = new PagedHolder<Item>({
+      onFetch: async () => responses.shift() ?? { data: null },
+    });
 
     await holder.load();
     expect(holder.pagination.totalCount).toBe(3);
-    await expect(holder.reload()).resolves.toMatchObject({ error: { message: "api" } });
+    await expect(holder.reload()).resolves.toMatchObject({
+      error: { message: "api" },
+    });
     await expect(holder.reload()).resolves.toMatchObject({ data: [] });
     const fallback = new PagedHolder<Item>({
       onFetch: async () => ({ data: { data: undefined as unknown as Item[] } }),
@@ -84,21 +118,43 @@ describe("PagedHolder", () => {
 
     await fallback.load();
     expect(fallback.pagination.totalCount).toBe(0);
-    const warn = testRuntime.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = testRuntime
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
 
     await new PagedHolder<Item>().load();
     expect(warn).toHaveBeenCalled();
   });
 
   it("handles cancellation and thrown errors in configured paging", async () => {
-    const cancelHolder = new PagedHolder<Item>({ onFetch: async () => cancelResponse });
+    const cancelHolder = new PagedHolder<Item>({
+      onFetch: async () => cancelResponse,
+    });
 
-    await expect(cancelHolder.load()).resolves.toEqual({ data: null, totalCount: 0, error: null });
-    const thrown = new PagedHolder<Item>({ onFetch: async () => { throw new Error("boom"); } });
+    await expect(cancelHolder.load()).resolves.toEqual({
+      data: null,
+      totalCount: 0,
+      error: null,
+    });
+    const thrown = new PagedHolder<Item>({
+      onFetch: async () => {
+        throw new Error("boom");
+      },
+    });
 
-    await expect(thrown.load()).resolves.toMatchObject({ error: { message: "boom" } });
-    const canceled = new PagedHolder<Item>({ onFetch: async () => { throw cancelError; } });
+    await expect(thrown.load()).resolves.toMatchObject({
+      error: { message: "boom" },
+    });
+    const canceled = new PagedHolder<Item>({
+      onFetch: async () => {
+        throw cancelError;
+      },
+    });
 
-    await expect(canceled.load()).resolves.toEqual({ data: null, totalCount: 0, error: null });
+    await expect(canceled.load()).resolves.toEqual({
+      data: null,
+      totalCount: 0,
+      error: null,
+    });
   });
 });

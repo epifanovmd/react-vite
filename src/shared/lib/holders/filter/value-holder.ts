@@ -1,4 +1,7 @@
-import { LambdaValue, resolveLambdaValue } from "@shared/lib/utils/lambda-value";
+import {
+  LambdaValue,
+  resolveLambdaValue,
+} from "@shared/lib/utils/lambda-value";
 import { isFunction } from "@shared/lib/utils/type-guards";
 import { action, computed, makeObservable, observable, when } from "mobx";
 

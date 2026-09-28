@@ -12,7 +12,11 @@ describe("Polling React integration", () => {
     testRuntime.useFakeTimers();
     const query = testRuntime.fn(async () => ({ data: 1 }));
     const hook = await renderHook(() =>
-      usePolling<number, void>({ queryFn: query, interval: 5, autoStart: true }),
+      usePolling<number, void>({
+        queryFn: query,
+        interval: 5,
+        autoStart: true,
+      }),
     );
 
     await act(async () => undefined);
@@ -29,7 +33,9 @@ describe("Polling React integration", () => {
 
   it("passes auto-start arguments to polling", async () => {
     const query = testRuntime.fn(async (value: string) => ({ data: value }));
-    const hook = await renderHook(() => usePolling({ queryFn: query, autoStart: "argument" }));
+    const hook = await renderHook(() =>
+      usePolling({ queryFn: query, autoStart: "argument" }),
+    );
 
     await act(async () => undefined);
     expect(query).toHaveBeenCalledWith("argument");
@@ -43,5 +49,20 @@ describe("Polling React integration", () => {
     const watch = await renderHook(() => useWatchEffect(() => undefined));
 
     await watch.unmount();
+  });
+
+  it("calls the queryFn of the latest render", async () => {
+    const hook = await renderHook(() =>
+      usePolling<string>({ queryFn: async () => ({ data: "first" }) }),
+    );
+
+    await hook.rerender(() =>
+      usePolling<string>({ queryFn: async () => ({ data: "second" }) }),
+    );
+    await act(async () => {
+      await hook.current.load();
+    });
+    expect(hook.current.data).toBe("second");
+    await hook.unmount();
   });
 });

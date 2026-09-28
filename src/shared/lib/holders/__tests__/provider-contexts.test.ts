@@ -28,48 +28,54 @@ describe("providers and contexts", () => {
     [PollingProvider, usePollingContext],
   ] as const;
 
-  it.each(specs)("provides an external value through %p", async (Provider, useContextValue) => {
-    const value = { marker: true };
-    let received: unknown;
+  it.each(specs)(
+    "provides an external value through %p",
+    async (Provider, useContextValue) => {
+      const value = { marker: true };
+      let received: unknown;
 
-    await act(async () => {
-      TestRenderer.create(
-        createElement(
-          Provider as unknown as ComponentType<Record<string, unknown>>,
-          { value },
-          createElement(HookProbe, {
-            useValue: useContextValue,
-            onValue: result => {
-              received = result;
-            },
-          }),
-        ),
-      );
-    });
+      await act(async () => {
+        TestRenderer.create(
+          createElement(
+            Provider as unknown as ComponentType<Record<string, unknown>>,
+            { value },
+            createElement(HookProbe, {
+              useValue: useContextValue,
+              onValue: result => {
+                received = result;
+              },
+            }),
+          ),
+        );
+      });
 
-    expect(received).toBe(value);
-  });
+      expect(received).toBe(value);
+    },
+  );
 
-  it.each(specs)("creates an internal value in %p", async (Provider, useContextValue) => {
-    let received: unknown;
+  it.each(specs)(
+    "creates an internal value in %p",
+    async (Provider, useContextValue) => {
+      let received: unknown;
 
-    await act(async () => {
-      TestRenderer.create(
-        createElement(
-          Provider as unknown as ComponentType<Record<string, unknown>>,
-          null,
-          createElement(HookProbe, {
-            useValue: useContextValue,
-            onValue: result => {
-              received = result;
-            },
-          }),
-        ),
-      );
-    });
+      await act(async () => {
+        TestRenderer.create(
+          createElement(
+            Provider as unknown as ComponentType<Record<string, unknown>>,
+            null,
+            createElement(HookProbe, {
+              useValue: useContextValue,
+              onValue: result => {
+                received = result;
+              },
+            }),
+          ),
+        );
+      });
 
-    expect(received).toHaveProperty("holder");
-  });
+      expect(received).toHaveProperty("holder");
+    },
+  );
 
   it("reports context usage outside its provider", async () => {
     let received: Error | null = null;
@@ -78,7 +84,11 @@ describe("providers and contexts", () => {
       TestRenderer.create(
         createElement(
           ErrorBoundary,
-          { onError: error => { received = error; } },
+          {
+            onError: error => {
+              received = error;
+            },
+          },
           createElement(HookProbe, {
             useValue: useEntityContext,
             onValue: () => undefined,
@@ -91,5 +101,4 @@ describe("providers and contexts", () => {
       "useEntityContext must be used within EntityProvider",
     );
   });
-
 });

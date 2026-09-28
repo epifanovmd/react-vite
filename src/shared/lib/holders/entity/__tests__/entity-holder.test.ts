@@ -1,4 +1,8 @@
-import { cancelError, cancelResponse, deferred } from "../../__tests__/holder-test-utils";
+import {
+  cancelError,
+  cancelResponse,
+  deferred,
+} from "../../__tests__/holder-test-utils";
 import { testRuntime } from "../../__tests__/test-runtime";
 import { HolderStatus } from "../../holder.types";
 import { EntityHolder } from "../entity-holder";
@@ -25,7 +29,9 @@ describe("EntityHolder", () => {
   });
 
   it("loads, refreshes and handles API and thrown errors", async () => {
-    const fetch = testRuntime.fn(async (args: string) => ({ data: args.length }));
+    const fetch = testRuntime.fn(async (args: string) => ({
+      data: args.length,
+    }));
     const holder = new EntityHolder<number, string>({ onFetch: fetch });
 
     await expect(holder.load("abc")).resolves.toEqual({ data: 3, error: null });
@@ -40,14 +46,21 @@ describe("EntityHolder", () => {
 
     const apiError = { message: "api" };
 
-    await expect(holder.fromApi(async () => ({ error: apiError }))).resolves.toEqual({
+    await expect(
+      holder.fromApi(async () => ({ error: apiError })),
+    ).resolves.toEqual({
       data: null,
       error: apiError,
     });
     expect(holder.error).toBe(apiError);
-    await expect(holder.fromApi(async () => {
-      throw new Error("boom");
-    })).resolves.toEqual({ data: null, error: { message: "boom", code: undefined } });
+    await expect(
+      holder.fromApi(async () => {
+        throw new Error("boom");
+      }),
+    ).resolves.toEqual({
+      data: null,
+      error: { message: "boom", code: undefined },
+    });
   });
 
   it("handles cancellation and cancels a superseded request", async () => {
@@ -66,13 +79,17 @@ describe("EntityHolder", () => {
       data: null,
       error: null,
     });
-    await expect(holder.fromApi(async () => {
-      throw cancelError;
-    })).resolves.toEqual({ data: null, error: null });
+    await expect(
+      holder.fromApi(async () => {
+        throw cancelError;
+      }),
+    ).resolves.toEqual({ data: null, error: null });
   });
 
   it("warns when no fetch function is configured", async () => {
-    const warn = testRuntime.spyOn(console, "warn").mockImplementation(() => undefined);
+    const warn = testRuntime
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
     const holder = new EntityHolder<number>();
 
     await expect(holder.load()).resolves.toEqual({ data: null, error: null });
@@ -85,16 +102,30 @@ describe("EntityHolder", () => {
       { error: { message: "api" } },
       { data: null },
     ];
-    const holder = new EntityHolder<number>({ onFetch: async () => results.shift()! });
+    const holder = new EntityHolder<number>({
+      onFetch: async () => results.shift()!,
+    });
 
     await expect(holder.load()).resolves.toEqual({ data: null, error: null });
-    await expect(holder.load()).resolves.toMatchObject({ error: { message: "api" } });
+    await expect(holder.load()).resolves.toMatchObject({
+      error: { message: "api" },
+    });
     await expect(holder.load()).resolves.toEqual({ data: null, error: null });
 
-    const thrown = new EntityHolder<number>({ onFetch: async () => { throw new Error("boom"); } });
+    const thrown = new EntityHolder<number>({
+      onFetch: async () => {
+        throw new Error("boom");
+      },
+    });
 
-    await expect(thrown.load()).resolves.toMatchObject({ error: { message: "boom" } });
-    const canceled = new EntityHolder<number>({ onFetch: async () => { throw cancelError; } });
+    await expect(thrown.load()).resolves.toMatchObject({
+      error: { message: "boom" },
+    });
+    const canceled = new EntityHolder<number>({
+      onFetch: async () => {
+        throw cancelError;
+      },
+    });
 
     await expect(canceled.load()).resolves.toEqual({ data: null, error: null });
   });

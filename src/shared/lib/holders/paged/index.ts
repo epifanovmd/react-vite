@@ -1,4 +1,8 @@
-export type { IPagedHolderOptions, IPagedHolderPagination, IPagedHolderResult } from "./paged-holder";
+export type {
+  IPagedHolderOptions,
+  IPagedHolderPagination,
+  IPagedHolderResult,
+} from "./paged-holder";
 export { PagedHolder } from "./paged-holder";
 export { PagedProvider } from "./PagedProvider";
 export { usePagedContext } from "./use-paged-context";

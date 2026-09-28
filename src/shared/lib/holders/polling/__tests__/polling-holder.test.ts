@@ -26,7 +26,10 @@ describe("PollingHolder", () => {
   it("restarts, uses arguments and reset stops polling", async () => {
     testRuntime.useFakeTimers();
     const fetch = testRuntime.fn(async (value: string) => ({ data: value }));
-    const holder = new PollingHolder<string, string>({ onFetch: fetch, initialData: "initial" });
+    const holder = new PollingHolder<string, string>({
+      onFetch: fetch,
+      initialData: "initial",
+    });
 
     holder.startPolling({ args: "one", interval: 5 });
     holder.startPolling({ args: "two", interval: 5 });
@@ -39,7 +42,10 @@ describe("PollingHolder", () => {
   it("does not schedule after polling is stopped during the initial load", async () => {
     testRuntime.useFakeTimers();
     const pending = deferred<{ data: number }>();
-    const holder = new PollingHolder<number>({ onFetch: () => pending.promise, interval: 5 });
+    const holder = new PollingHolder<number>({
+      onFetch: () => pending.promise,
+      interval: 5,
+    });
 
     holder.startPolling();
     holder.stopPolling();
@@ -51,13 +57,17 @@ describe("PollingHolder", () => {
 
   it("ignores an already captured timer after polling stops", async () => {
     let callback: (() => Promise<void>) | undefined;
-    const timeout = testRuntime.spyOn(globalThis, "setTimeout").mockImplementation(((fn: () => Promise<void>) => {
-      callback = fn;
+    const timeout = testRuntime
+      .spyOn(globalThis, "setTimeout")
+      .mockImplementation(((fn: () => Promise<void>) => {
+        callback = fn;
 
-      return 1;
-    }) as typeof setTimeout);
+        return 1;
+      }) as typeof setTimeout);
 
-    testRuntime.spyOn(globalThis, "clearTimeout").mockImplementation(() => undefined);
+    testRuntime
+      .spyOn(globalThis, "clearTimeout")
+      .mockImplementation(() => undefined);
     const holder = new PollingHolder<number>({ initialData: 1 });
 
     holder.startPolling();
@@ -69,12 +79,16 @@ describe("PollingHolder", () => {
   it("does not reschedule after polling stops during a refresh", async () => {
     let callback: (() => Promise<void>) | undefined;
 
-    testRuntime.spyOn(globalThis, "setTimeout").mockImplementation(((fn: () => Promise<void>) => {
+    testRuntime.spyOn(globalThis, "setTimeout").mockImplementation(((
+      fn: () => Promise<void>,
+    ) => {
       callback = fn;
 
       return 1;
     }) as typeof setTimeout);
-    testRuntime.spyOn(globalThis, "clearTimeout").mockImplementation(() => undefined);
+    testRuntime
+      .spyOn(globalThis, "clearTimeout")
+      .mockImplementation(() => undefined);
     const pending = deferred<{ data: number }>();
     const holder = new PollingHolder<number>({
       initialData: 1,

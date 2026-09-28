@@ -1,10 +1,17 @@
 import { HolderStatus } from "../../holder.types";
 import { CursorHolder } from "../cursor-holder";
-import { cursorItem as item, cursorOptions as options, type CursorTestItem as Item } from "./cursor-test-utils";
+import {
+  cursorItem as item,
+  cursorOptions as options,
+  type CursorTestItem as Item,
+} from "./cursor-test-utils";
 
 describe("CursorHolder", () => {
   it("manages cursors, deduplication, directional states and reset", () => {
-    const holder = new CursorHolder<Item>({ keyExtractor: options.keyExtractor, limit: 2 });
+    const holder = new CursorHolder<Item>({
+      keyExtractor: options.keyExtractor,
+      limit: 2,
+    });
 
     expect(holder.limit).toBe(2);
     expect(holder.newestCursor).toBeNull();

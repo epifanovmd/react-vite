@@ -8,8 +8,12 @@ import { useEntity } from "../use-entity-holder";
 
 describe("Entity React integration", () => {
   it("keeps one EntityHolder and reacts to watched arguments", async () => {
-    const query = testRuntime.fn(async (value: string) => ({ data: value.length }));
-    const hook = await renderHook(() => useEntity({ queryFn: query, watch: ["one"] }));
+    const query = testRuntime.fn(async (value: string) => ({
+      data: value.length,
+    }));
+    const hook = await renderHook(() =>
+      useEntity({ queryFn: query, watch: ["one"] }),
+    );
 
     await act(async () => undefined);
     const first = hook.current.holder;
@@ -22,8 +26,29 @@ describe("Entity React integration", () => {
     await hook.current.refresh("two");
     await hook.current.fromApi(async () => ({ data: 5 }));
     hook.current.reset();
-    await hook.rerender(() => useEntity({ queryFn: query, watch: ["next"], enabled: false }));
+    await hook.rerender(() =>
+      useEntity({ queryFn: query, watch: ["next"], enabled: false }),
+    );
     expect(hook.current.holder).toBe(first);
+    await hook.unmount();
+  });
+
+  it("calls the queryFn of the latest render", async () => {
+    const hook = await renderHook(() =>
+      useEntity<string, string>({
+        queryFn: async id => ({ data: `first:${id}` }),
+      }),
+    );
+
+    await hook.rerender(() =>
+      useEntity<string, string>({
+        queryFn: async id => ({ data: `second:${id}` }),
+      }),
+    );
+    await act(async () => {
+      await hook.current.load("x");
+    });
+    expect(hook.current.data).toBe("second:x");
     await hook.unmount();
   });
 });
