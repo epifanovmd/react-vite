@@ -1,5 +1,6 @@
 import { authModule } from "@entities/auth";
 import { jobModule } from "@entities/job";
+import { permissionModule } from "@entities/permission";
 import { userModule } from "@entities/user";
 import { apiModule } from "@shared/api";
 import { appStateModule } from "@shared/lib/app-state";
@@ -19,6 +20,7 @@ export const registerContainerModules = (): void => {
     apiModule,
     authModule,
     jobModule,
+    permissionModule,
     userModule,
     appStateModule,
     mediaModule,

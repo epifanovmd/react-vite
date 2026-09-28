@@ -1,4 +1,5 @@
-import { IJobStore } from "@entities/job";
+import { IJobStore, JOB_PERMISSIONS } from "@entities/job";
+import { IUserStore } from "@entities/user";
 import { IMainApi } from "@shared/api";
 import type { IWorkerQueueStatusDto } from "@shared/api/gen/main/model";
 import { usePolling } from "@shared/lib/holders";
@@ -13,6 +14,7 @@ export const useJobsVM = () => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
   const jobs = IJobStore.useInstance();
+  const userStore = IUserStore.useInstance();
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const workers = usePolling<IWorkerQueueStatusDto[]>({
@@ -43,5 +45,6 @@ export const useJobsVM = () => {
     isWorkersLoading: workers.isLoading,
     cancellingId,
     cancel,
+    canRunDemo: userStore.can(JOB_PERMISSIONS.DEMO),
   };
 };

@@ -1,6 +1,5 @@
 import { AuditEventTable } from "@entities/audit";
-import { PermissionGate } from "@entities/user";
-import { KnownPermission } from "@shared/api/gen/main/model";
+import { ADMIN_PERMISSIONS, PermissionGate } from "@entities/user";
 import { PageHeader, PageLayout, Select } from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
@@ -47,7 +46,7 @@ const AdminAuditContent: FC = observer(() => {
 
 export const AdminAuditPage: FC = () => (
   <PageLayout header={header}>
-    <PermissionGate permission={KnownPermission["audit:view"]}>
+    <PermissionGate permission={ADMIN_PERMISSIONS.AUDIT_VIEW}>
       <AdminAuditContent />
     </PermissionGate>
   </PageLayout>

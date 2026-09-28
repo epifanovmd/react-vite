@@ -36,11 +36,12 @@ src/
 │   │   ├── api/              # session-guard.ts (токены — shared/lib/session + shared/api/main)
 │   │   ├── auth.module.ts
 │   │   └── index.ts          # Public API: authModule, AuthStatus, IAuthStore, loginValidation, passwordValidation
+│   ├── permission/          # каталог прав с сервера: model/store.ts (PermissionCatalogStore), ui/PermissionPicker.tsx, permission.module.ts
 │   └── user/
 │       ├── model/            # store.ts (UserStore), session-store.ts (+ session-model.ts, session-types.ts), realtime.ts, user-model.ts, profile-model.ts, role-model.ts, public-user-model.ts
 │       ├── api/               # user-socket.ts (UserSocketService — реалтайм-события пользователя)
-│       ├── lib/permissions.ts
-│       ├── ui/UserAvatar.tsx
+│       ├── lib/permissions.ts  # Permission, ALL_PERMISSIONS, ADMIN_PERMISSIONS, canAccess
+│       ├── ui/UserAvatar.tsx, PermissionGate.tsx
 │       └── user.module.ts
 └── shared/                  # переиспользуемый код без знания о бизнес-логике
     ├── ui/                  # UI-кит: button, input, select, table, date-picker, kanban, modal, drawer,
@@ -99,7 +100,11 @@ HTTP-движок — `shared/lib/http` (пайплайн middleware повер�
 
 ## Socket.IO
 
-`shared/lib/socket/transport/socket.transport.ts` — auto-reconnect (exponential backoff 1s→2s→4s→8s→10s max при "io server disconnect"/auth_error), `reconnection: true`, `reconnectionAttempts: Infinity`. Auth token — через `ITokenProvider` (контракт в `shared/lib/socket/contract/`, реализация — `AuthTokenProvider` в `entities/auth`). Сегменты: `contract/`, `events/`, `hooks/` (useSocketStatus), `transport/`, `socket.module.ts`. Доменный `UserSocketService` живёт в `entities/user/api/user-socket.ts` (папка `shared/lib/socket/user/` пуста — leftover после переноса).
+`shared/lib/socket/transport/socket.transport.ts` — auto-reconnect (exponential backoff 1s→2s→4s→8s→10s max при "io server disconnect"/auth_error), `reconnection: true`, `reconnectionAttempts: Infinity`. Auth token — через `ITokenProvider` (контракт в `shared/lib/socket/contract/`, реализация — `AuthTokenProvider` в `entities/auth`). Сегменты: `contract/`, `events/`, `hooks/` (useSocketStatus, `useSocketEvent(event, handler, enabled?)`, `useSocketRoom(type, id|null, onRejoin?)`), `rooms.ts` (`subscribeSocketRoom`), `transport/`, `socket.module.ts`.
+
+Комнаты (`rooms.ts`): `room:subscribe {type,id}` с ack; отказ сервера (`ok:false`) или `room:revoked {type,id}` (право отозвано) — подписка прекращается, повторного входа и `onRejoin` нет. Подписка в состоянии не-`connected` — вход один раз по `connect`, `onRejoin` на первом подключении НЕ зовётся (только на реальных переподключениях). Модели используют только хуки `useSocketRoom`/`useSocketEvent`, не ручной `useEffect`.
+
+Доменный `UserSocketService` живёт в `entities/user/api/user-socket.ts` (папка `shared/lib/socket/user/` пуста — leftover после переноса).
 
 ## Auth / User split
 

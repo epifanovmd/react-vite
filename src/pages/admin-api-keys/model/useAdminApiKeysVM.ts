@@ -1,10 +1,11 @@
+import { ADMIN_PERMISSIONS, IUserStore } from "@entities/user";
 import { IMainApi } from "@shared/api";
 import type { ApiKeyDto } from "@shared/api/gen/main/model";
 import { usePaged } from "@shared/lib/holders";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
+import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 import { useConfirm } from "@shared/ui";
-import { useEffect } from "react";
 
 const PAGE_SIZE = 20;
 
@@ -12,6 +13,8 @@ export const useAdminApiKeysVM = () => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
   const confirm = useConfirm();
+  const userStore = IUserStore.useInstance();
+  const canView = userStore.can(ADMIN_PERMISSIONS.APIKEY_VIEW);
 
   const keys = usePaged<ApiKeyDto>({
     pageSize: PAGE_SIZE,
@@ -24,12 +27,25 @@ export const useAdminApiKeysVM = () => {
         error,
       };
     },
+    autoLoad: true,
+    enabled: canView,
   });
 
-  useEffect(() => {
-    keys.load().then();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Новые ключи — первыми: выпущенный где-то ещё попадает на первую страницу.
+  useSocketRoom("api-keys", canView ? "all" : null, () =>
+    keys.reload({ refresh: true }),
+  );
+  useSocketEvent<[ApiKeyDto]>(
+    "apikey:updated",
+    key => {
+      if (keys.items.some(item => item.id === key.id)) {
+        keys.updateItem(key.id, key);
+      } else {
+        void keys.reload({ refresh: true });
+      }
+    },
+    canView,
+  );
 
   const revoke = async (key: ApiKeyDto) => {
     const ok = await confirm({
@@ -56,5 +72,11 @@ export const useAdminApiKeysVM = () => {
     keys.goToPage(1, { refresh: true }).then();
   };
 
-  return { keys, revoke, onCreated };
+  return {
+    keys,
+    revoke,
+    onCreated,
+    canCreate: userStore.can(ADMIN_PERMISSIONS.APIKEY_CREATE),
+    canRevoke: userStore.can(ADMIN_PERMISSIONS.APIKEY_REVOKE),
+  };
 };

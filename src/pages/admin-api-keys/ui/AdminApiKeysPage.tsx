@@ -1,6 +1,6 @@
-import { PermissionGate } from "@entities/user";
+import { ADMIN_PERMISSIONS, PermissionGate } from "@entities/user";
 import { CreateApiKeyButton } from "@features/create-api-key";
-import { type ApiKeyDto, KnownPermission } from "@shared/api/gen/main/model";
+import type { ApiKeyDto } from "@shared/api/gen/main/model";
 import { formatter } from "@shared/lib/utils";
 import {
   Badge,
@@ -24,7 +24,7 @@ const isExpired = (key: ApiKeyDto) =>
 
 const column = createColumnHelper<ApiKeyDto>();
 
-const createColumns = (onRevoke: (key: ApiKeyDto) => void) => [
+const createColumns = (onRevoke: ((key: ApiKeyDto) => void) | null) => [
   column.accessor("name", {
     header: "Ключ",
     cell: ({ row }) => (
@@ -84,7 +84,7 @@ const createColumns = (onRevoke: (key: ApiKeyDto) => void) => [
     size: 60,
     meta: { align: "right" },
     cell: ({ row }) =>
-      row.original.revokedAt ? null : (
+      row.original.revokedAt || !onRevoke ? null : (
         <IconButton
           aria-label="Отозвать"
           variant="destructive"
@@ -101,14 +101,19 @@ const header = (
 );
 
 const AdminApiKeysContent: FC = observer(() => {
-  const { keys, revoke, onCreated } = useAdminApiKeysVM();
-  const columns = useMemo(() => createColumns(revoke), [revoke]);
+  const { keys, revoke, onCreated, canCreate, canRevoke } = useAdminApiKeysVM();
+  const columns = useMemo(
+    () => createColumns(canRevoke ? revoke : null),
+    [canRevoke, revoke],
+  );
 
   return (
     <>
-      <div>
-        <CreateApiKeyButton onCreated={onCreated} />
-      </div>
+      {canCreate && (
+        <div>
+          <CreateApiKeyButton onCreated={onCreated} />
+        </div>
+      )}
       <Table
         className="min-h-0 flex-initial"
         stickyHeader
@@ -140,7 +145,7 @@ const AdminApiKeysContent: FC = observer(() => {
 
 export const AdminApiKeysPage: FC = () => (
   <PageLayout header={header} fill>
-    <PermissionGate permission={KnownPermission["apikey:manage"]}>
+    <PermissionGate permission={ADMIN_PERMISSIONS.APIKEY_VIEW}>
       <AdminApiKeysContent />
     </PermissionGate>
   </PageLayout>

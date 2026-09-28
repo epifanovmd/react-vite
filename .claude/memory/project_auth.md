@@ -72,12 +72,13 @@ TokenSession (shared/lib/session)
 - `terminateMutation: MutationHolder<string>` — terminate одной сессии по id
 - `terminateOtherSessions()` — logout всех сессий кроме текущей
 - `handleNewSession`/`handleSessionTerminated` — реалтайм-обновления (см. `entities/user/model/realtime.ts`, socket events)
-- Если завершена **текущая** сессия (`IAuthSessionGuard.isCurrentSession(sessionId)`, сверяется по `session.sessionId` из ответа бэкенда) → форсированный `signOut()` через `AuthSessionGuard`
+- Если завершена **текущая** сессия (`IAuthSessionGuard.isCurrentSession(sessionId)`, сверяется по `session.sessionId` из ответа бэкенда) или пришёл `sessionId: "all"` (аккаунт удалён) → форсированный `signOut()` через `AuthSessionGuard`
+- `reset()` — чистит список; зовётся `AppDataStore` при выходе
 
 `AuthSessionGuard` — контракт `IAuthSessionGuard` (`shared/lib/contracts`), implements `entities/auth/api/session-guard.ts`, инжектится в `entities/user` без прямого импорта `entities/auth` (Dependency Inversion, т.к. `entities/user` и `entities/auth` — соседние слайсы одного слоя).
 
 ## Auth vs User split
 
 - `IAuthStore` (`entities/auth`) — только аутентификация/сессия: `status` (`AuthStatus`: Idle/Loading/Authenticated/Unauthenticated), 2FA state, `signIn/signUp/verify2FA/restore/signOut`.
-- `IUserStore` (`entities/user`) — доменные данные текущего пользователя: профиль (`ProfileModel`), роли (`RoleModel`), effective permissions (`can(permission)`, `hasRole(role)`, wildcard-иерархия через `computeEffectivePermissions`), privacy settings. Использует `EntityHolder<UserDto>` внутри.
+- `IUserStore` (`entities/user`) — доменные данные текущего пользователя: профиль (`ProfileModel`), роли (`RoleModel`), effective permissions (`can(permission)`, `hasRole(role)`, wildcard-иерархия `user:view` ← `user:*` ← `*`, роль admin — всё), privacy settings. Права — `Permission = string`. Использует `EntityHolder<UserDto>` внутри; `reset()` чистит пользователя и privacy (зовётся при выходе).
 - Разделение осознанное: `AuthStore` не знает о профиле/ролях, `UserStore` не знает о токенах/2FA.

@@ -1,5 +1,4 @@
-import { PermissionGate } from "@entities/user";
-import { KnownPermission } from "@shared/api/gen/main/model";
+import { ADMIN_PERMISSIONS, PermissionGate } from "@entities/user";
 import {
   Button,
   Card,
@@ -25,7 +24,7 @@ const AdminRolesContent: FC = observer(() => {
 
   return (
     <>
-      {vm.canManage && (
+      {vm.canCreate && (
         <Card title="Новая роль">
           <Form
             form={vm.form}
@@ -51,12 +50,14 @@ const AdminRolesContent: FC = observer(() => {
       {vm.isLoading && vm.roles.length === 0 ? (
         <Skeleton className="h-64 w-full" />
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="flex flex-col gap-4">
           {vm.roles.map(role => (
             <RolePermissionsCard
               key={role.id}
               role={role}
-              canManage={vm.canManage}
+              canUpdate={vm.canUpdate}
+              canDelete={vm.canDelete}
+              canGrantAll={vm.isSuperUser}
               onSave={vm.savePermissions}
               onDelete={vm.remove}
             />
@@ -69,7 +70,7 @@ const AdminRolesContent: FC = observer(() => {
 
 export const AdminRolesPage: FC = () => (
   <PageLayout header={header}>
-    <PermissionGate permission={KnownPermission["role:view"]}>
+    <PermissionGate permission={ADMIN_PERMISSIONS.ROLE_VIEW}>
       <AdminRolesContent />
     </PermissionGate>
   </PageLayout>

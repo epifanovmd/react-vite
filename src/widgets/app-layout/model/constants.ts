@@ -1,4 +1,4 @@
-import { KnownPermission } from "@shared/api/gen/main/model";
+import { ADMIN_PERMISSIONS, type Permission } from "@entities/user";
 import { type LinkProps } from "@tanstack/react-router";
 import {
   Activity,
@@ -19,8 +19,8 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   badge?: number;
-  /** Пункт виден, только если у пользователя есть это право. */
-  permission?: KnownPermission;
+  /** Пункт виден, только если есть право (из списка — любое). */
+  permission?: Permission | Permission[];
 }
 
 export interface NavGroup {
@@ -58,25 +58,25 @@ export const NAV_GROUPS: NavGroup[] = [
         to: "/admin/users",
         label: "Пользователи",
         icon: Users,
-        permission: KnownPermission["user:view"],
+        permission: ADMIN_PERMISSIONS.USER_VIEW,
       },
       {
         to: "/admin/roles",
         label: "Роли",
         icon: ShieldCheck,
-        permission: KnownPermission["role:view"],
+        permission: ADMIN_PERMISSIONS.ROLE_VIEW,
       },
       {
         to: "/admin/api-keys",
         label: "API-ключи",
         icon: KeyRound,
-        permission: KnownPermission["apikey:manage"],
+        permission: ADMIN_PERMISSIONS.APIKEY_VIEW,
       },
       {
         to: "/admin/audit",
         label: "Аудит",
         icon: ScrollText,
-        permission: KnownPermission["audit:view"],
+        permission: ADMIN_PERMISSIONS.AUDIT_VIEW,
       },
     ],
   },

@@ -15,8 +15,15 @@ const header = (
 );
 
 export const JobsPage: FC = observer(() => {
-  const { jobs, isLoading, workers, isWorkersLoading, cancellingId, cancel } =
-    useJobsVM();
+  const {
+    jobs,
+    isLoading,
+    workers,
+    isWorkersLoading,
+    cancellingId,
+    cancel,
+    canRunDemo,
+  } = useJobsVM();
 
   return (
     <PageLayout header={header}>
@@ -30,12 +37,14 @@ export const JobsPage: FC = observer(() => {
           />
         </Card>
         <div className="flex flex-col gap-4">
-          <Card
-            title="Демо: echo"
-            description="Очередь demo.echo, внешний воркер"
-          >
-            <RunDemoJobForm />
-          </Card>
+          {canRunDemo && (
+            <Card
+              title="Демо: echo"
+              description="Очередь demo.echo, внешний воркер"
+            >
+              <RunDemoJobForm />
+            </Card>
+          )}
           <Card title="Воркеры">
             <WorkerStatus queues={workers} isLoading={isWorkersLoading} />
           </Card>
