@@ -72,8 +72,7 @@ jobs:
 
       - name: Адрес API для сборки на хост
         env:
-          # Секрет или переменная репозитория — что задано.
-          PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV || vars.PRODUCTION_ENV }}
+          PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
         run: |
           if [ -z "$PRODUCTION_ENV" ]; then
             echo "PRODUCTION_ENV не задан — используется файл на хосте"
