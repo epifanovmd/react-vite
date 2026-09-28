@@ -135,3 +135,13 @@ Page — тонкая композиция: делегирует данные в
 - **Formы** — React Hook Form + Zod (`zodResolver`).
 - **Layer boundaries**: слайсы одного слоя не импортируют друг друга — общая логика выносится слоем ниже (пример: `loginValidation`/`passwordValidation` в `entities/auth`, используются `features/sign-in` и `features/sign-up`) либо оформляется как Dependency Inversion контракт в `shared` (пример: `ITokenProvider` в `shared/lib/socket/contract`, реализация в `entities/auth`).
 - **Async state** — через холдеры (`shared/lib/holders`), не через ручной `useState`/`useEffect` fetch (см. `project_holders.md`).
+
+## Модели данных (`shared/lib/models`)
+
+Базовые классы одинаковы во всех проектах (react-vite, ml-labeling-web, wg-admin-web, rnapp):
+
+- `DataModelBase<TDto>` — `_data: observable.ref`: DTO не копируется, реакция только на
+  замену объекта целиком (по полям DTO не мутировать);
+- поля DTO — только через `model.data.x` (Proxy/`TypedModel` убраны 2026-09-28);
+- геттеры наследника помечаются `computed` явно в `makeObservable` его конструктора;
+- `createEnumModelBase` — `isX`-геттеры без `computed` (дешёвое сравнение с `data`).
