@@ -1,6 +1,6 @@
 import { IAuthStore } from "@entities/auth";
 import { IJobRealtime, IJobStore } from "@entities/job";
-import { IUserRealtime, IUserStore } from "@entities/user";
+import { ISessionStore, IUserRealtime, IUserStore } from "@entities/user";
 import { createDisposer } from "@shared/lib/di";
 import { ISocketTransport } from "@shared/lib/socket";
 import { injectable } from "inversify";
@@ -16,6 +16,7 @@ export class AppDataStore implements IAppDataStore {
     @ISocketTransport() private _socketTransport: ISocketTransport,
     @IUserRealtime() private _userRealtime: IUserRealtime,
     @IUserStore() private _userStore: IUserStore,
+    @ISessionStore() private _sessionStore: ISessionStore,
     @IJobRealtime() private _jobRealtime: IJobRealtime,
     @IJobStore() private _jobStore: IJobStore,
   ) {
@@ -39,6 +40,10 @@ export class AppDataStore implements IAppDataStore {
             );
           } else {
             disposers.dispose();
+            // Данные прежнего пользователя (права, сессии, задачи) не должны
+            // пережить выход: следующий вход в этой вкладке — другой человек.
+            this._userStore.reset();
+            this._sessionStore.reset();
             this._jobStore.reset();
 
             router.navigate({ to: "/sign-in" });

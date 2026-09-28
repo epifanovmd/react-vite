@@ -26,5 +26,8 @@ export interface ISessionStore {
   terminateOtherSessions(): Promise<ApiResponse<void, ApiError>>;
 
   handleNewSession(session: SessionDto): void;
+  /** Завершена сессия; `"all"` или текущая — выход. */
   handleSessionTerminated(sessionId: string): void;
+  /** Забыть сессии (выход пользователя). */
+  reset(): void;
 }

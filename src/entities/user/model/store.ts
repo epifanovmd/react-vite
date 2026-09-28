@@ -217,6 +217,7 @@ class UserStore implements IUserStore {
 
   reset() {
     this._holder.reset();
+    this.privacyHolder.reset();
   }
 }
 
