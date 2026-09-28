@@ -102,9 +102,12 @@ export interface DummyJsonCredentials {
 type Result<TData> = CancelablePromise<ApiResponse<TData>>;
 
 /** DI-токен HTTP-клиента DummyJSON. */
-export const IDummyJsonHttpClient = createInjectDecorator<IHttpClient>();
+export const IDummyJsonHttpClient = createInjectDecorator<IHttpClient>(
+  "IDummyJsonHttpClient",
+);
 
-export const IDummyJsonApi = createInjectDecorator<IDummyJsonApi>();
+export const IDummyJsonApi =
+  createInjectDecorator<IDummyJsonApi>("IDummyJsonApi");
 
 export interface IDummyJsonApi {
   getProducts(
@@ -122,14 +125,16 @@ export interface IDummyJsonApi {
   getMe(options?: RequestOptions): Result<DummyJsonUser>;
 }
 
-export const IDummyJsonSession = createInjectDecorator<IDummyJsonSession>();
+export const IDummyJsonSession =
+  createInjectDecorator<IDummyJsonSession>("IDummyJsonSession");
 
 /** Свои токены, не связанные с основным бэкендом; годится для `bearerAuth`. */
 export interface IDummyJsonSession extends ITokenSession {
   login(credentials: DummyJsonCredentials): Result<DummyJsonAuthUser>;
 }
 
-export const IDummyJsonAuthApi = createInjectDecorator<IDummyJsonAuthApi>();
+export const IDummyJsonAuthApi =
+  createInjectDecorator<IDummyJsonAuthApi>("IDummyJsonAuthApi");
 
 export interface IDummyJsonAuthApi {
   login(credentials: DummyJsonCredentials): Result<DummyJsonAuthUser>;

@@ -3,7 +3,6 @@ import "reflect-metadata";
 import { inject, optional } from "inversify";
 import decorators from "inversify-inject-decorators";
 import { useRef } from "react";
-import shortid from "shortid";
 
 import { iocContainer } from "./container";
 
@@ -25,9 +24,14 @@ export interface IInjectDecorator<T> {
 
 const { lazyInject } = decorators(iocContainer);
 
-const createInjectDecorator = <TInterface>(): IInjectDecorator<TInterface> => {
-  const name: string = shortid();
-
+/**
+ * `name` — идентификатор сервиса в контейнере, обычно имя константы
+ * (`"IAuthStore"`). Литерал стабилен при HMR: модуль переисполняется, а
+ * забинженный сервис по-прежнему находится.
+ */
+const createInjectDecorator = <TInterface>(
+  name: string,
+): IInjectDecorator<TInterface> => {
   const injectDecoratorFactory = (options?: IIoCDecoratorOptions) => {
     return (target: any, targetKey?: string, index?: number) => {
       if (index !== undefined) {
