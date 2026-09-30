@@ -47,7 +47,7 @@ export const EditUserPrivilegesModal: FC<EditUserPrivilegesModalProps> =
                 <Checkbox
                   key={name}
                   label={name}
-                  disabled={!vm.canEditRoles}
+                  disabled={!vm.canToggleRole(name)}
                   checked={vm.roles.includes(name)}
                   onCheckedChange={on => vm.toggleRole(name, on === true)}
                 />
