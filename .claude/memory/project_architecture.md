@@ -36,11 +36,11 @@ src/
 │   │   ├── api/              # session-guard.ts (токены — shared/lib/session + shared/api/main)
 │   │   ├── auth.module.ts
 │   │   └── index.ts          # Public API: authModule, AuthStatus, IAuthStore, loginValidation, passwordValidation
-│   ├── permission/          # каталог прав с сервера: model/store.ts (PermissionCatalogStore), ui/PermissionPicker.tsx, permission.module.ts
+│   ├── permission/          # каталог прав с сервера: model/store.ts (PermissionCatalogStore) + types.ts (локальные типы каталога с `own?`), lib/permission-levels.ts, ui/PermissionMatrix.tsx (+ PermissionGroupCard, PermissionLevelControl), permission.module.ts — см. `project_access.md`
 │   └── user/
 │       ├── model/            # store.ts (UserStore), session-store.ts (+ session-model.ts, session-types.ts), realtime.ts, user-model.ts, profile-model.ts, role-model.ts, public-user-model.ts
 │       ├── api/               # user-socket.ts (UserSocketService — реалтайм-события пользователя)
-│       ├── lib/permissions.ts  # Permission, ALL_PERMISSIONS, ADMIN_PERMISSIONS, canAccess
+│       ├── lib/permissions.ts  # ADMIN_PERMISSIONS, canAccess, resolveScope, isOwnedBy (грамматика — @shared/lib/access)
 │       ├── ui/UserAvatar.tsx, PermissionGate.tsx
 │       └── user.module.ts
 └── shared/                  # переиспользуемый код без знания о бизнес-логике
@@ -52,7 +52,7 @@ src/
     ├── api/                 # HttpClient (api.ts), ApiError, contract/, gen/ (orval, не редактировать)
     ├── config/              # env.ts (BASE_URL, SOCKET_BASE_URL)
     └── lib/                 # di, holders, socket, storage, theme, notifications, network, app-state,
-                              #   media, webrtc, slots, models, utils, hooks, contracts
+                              #   media, webrtc, slots, models, utils, hooks, contracts, access (+ access/testing)
 ```
 
 Слайсы одного слоя не импортируют друг друга напрямую (`entities/auth` не видит `entities/user`, `features/sign-in` не видит `features/sign-up` и т.д.) — проверяется `eslint-plugin-boundaries` (`eslint.boundaries.mjs`). Именование файлов/папок — `eslint-plugin-check-file` (`eslint.naming.mjs`). Полная таблица разрешённых/запрещённых импортов и naming-конвенций — в корневом `ARCHITECTURE.md`.

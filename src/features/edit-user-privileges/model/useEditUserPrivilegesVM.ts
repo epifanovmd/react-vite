@@ -67,8 +67,7 @@ export const useEditUserPrivilegesVM = ({
     permissions,
     toggleRole: (name: string, on: boolean) =>
       setRoles(list => toggle(list, name, on)),
-    togglePermission: (name: string, on: boolean) =>
-      setPermissions(list => toggle(list, name, on)),
+    setPermissions,
     isSaving: save.isLoading,
     save: () => save.mutate(),
   };

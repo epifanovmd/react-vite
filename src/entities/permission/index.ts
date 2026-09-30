@@ -1,3 +1,7 @@
-export { IPermissionCatalogStore } from "./model/types";
+export {
+  type IPermissionCatalogGroup,
+  type IPermissionCatalogItem,
+  IPermissionCatalogStore,
+} from "./model/types";
 export { permissionModule } from "./permission.module";
-export { PermissionPicker } from "./ui/PermissionPicker";
+export { PermissionMatrix } from "./ui/PermissionMatrix";

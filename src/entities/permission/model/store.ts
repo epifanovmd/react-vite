@@ -4,7 +4,7 @@ import { EntityHolder } from "@shared/lib/holders";
 import { injectable } from "inversify";
 import { makeAutoObservable } from "mobx";
 
-import { IPermissionCatalogStore } from "./types";
+import { type IPermissionCatalogGroup, IPermissionCatalogStore } from "./types";
 
 @injectable()
 export class PermissionCatalogStore implements IPermissionCatalogStore {
@@ -16,7 +16,7 @@ export class PermissionCatalogStore implements IPermissionCatalogStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  get groups() {
+  get groups(): IPermissionCatalogGroup[] {
     return this._holder.data?.groups ?? [];
   }
 

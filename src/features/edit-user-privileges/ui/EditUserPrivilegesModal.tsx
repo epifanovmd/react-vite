@@ -1,4 +1,4 @@
-import { PermissionPicker } from "@entities/permission";
+import { PermissionMatrix } from "@entities/permission";
 import type { UserDto } from "@shared/api/gen/main/model";
 import { Button, Checkbox, Modal, ModalContent } from "@shared/ui";
 import { observer } from "mobx-react-lite";
@@ -55,9 +55,9 @@ export const EditUserPrivilegesModal: FC<EditUserPrivilegesModalProps> =
             </fieldset>
             <section className="flex flex-col gap-3">
               <h3 className="text-sm font-semibold">Прямые права</h3>
-              <PermissionPicker
-                selected={vm.permissions}
-                onToggle={vm.togglePermission}
+              <PermissionMatrix
+                value={vm.permissions}
+                onChange={vm.setPermissions}
               />
             </section>
           </div>

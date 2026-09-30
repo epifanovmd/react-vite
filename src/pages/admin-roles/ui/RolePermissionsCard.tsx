@@ -1,4 +1,4 @@
-import { PermissionPicker } from "@entities/permission";
+import { PermissionMatrix } from "@entities/permission";
 import { ALL_PERMISSIONS } from "@entities/user";
 import { type IRoleDto, KnownRole } from "@shared/api/gen/main/model";
 import { pluralize } from "@shared/lib/utils";
@@ -24,7 +24,7 @@ const SYSTEM_ROLES = new Set<string>(Object.values(KnownRole));
 
 const PERMISSION_WORDS = { one: "право", few: "права", many: "прав" };
 
-/** Права одной роли: отметки правятся локально и сохраняются кнопкой. */
+/** Права одной роли: уровни правятся локально и сохраняются кнопкой. */
 export const RolePermissionsCard: FC<RolePermissionsCardProps> = ({
   role,
   canUpdate,
@@ -41,11 +41,6 @@ export const RolePermissionsCard: FC<RolePermissionsCardProps> = ({
   const saved = namesOf(role);
   const dirty =
     selected.length !== saved.length || selected.some(p => !saved.includes(p));
-
-  const toggle = (name: string, on: boolean) =>
-    setSelected(list =>
-      on ? [...list, name] : list.filter(permission => permission !== name),
-    );
 
   const save = async () => {
     setSaving(true);
@@ -77,9 +72,9 @@ export const RolePermissionsCard: FC<RolePermissionsCardProps> = ({
         )
       }
     >
-      <PermissionPicker
-        selected={selected}
-        onToggle={toggle}
+      <PermissionMatrix
+        value={selected}
+        onChange={setSelected}
         readOnly={!canUpdate}
         isLocked={name => name === ALL_PERMISSIONS && !canGrantAll}
       />

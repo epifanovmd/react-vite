@@ -1,6 +1,7 @@
 import { IUserStore } from "@entities/user";
 import { IMainApi } from "@shared/api";
 import type { UserDto } from "@shared/api/gen/main/model";
+import { createFakeAccess } from "@shared/lib/access/testing";
 import { iocContainer } from "@shared/lib/di";
 import { INotificationService } from "@shared/lib/notifications";
 import { act, renderHook } from "@testing-library/react";
@@ -23,7 +24,9 @@ beforeEach(() => {
   iocContainer
     .bind(INotificationService.Tid)
     .toConstantValue({ error: vi.fn(), success: vi.fn() });
-  iocContainer.bind(IUserStore.Tid).toConstantValue({ can: () => true });
+  iocContainer
+    .bind(IUserStore.Tid)
+    .toConstantValue(createFakeAccess({ permissions: ["*"] }));
 });
 
 afterEach(() => {
@@ -68,8 +71,20 @@ describe("useEditUserPrivilegesVM", () => {
     expect(result.current.canToggleRole("user")).toBe(true);
   });
 
+  it("права задаются набором целиком", () => {
+    const { result } = renderHook(() =>
+      useEditUserPrivilegesVM({ user, onSaved: vi.fn() }),
+    );
+
+    act(() => result.current.setPermissions(["file:update:own"]));
+
+    expect(result.current.permissions).toEqual(["file:update:own"]);
+  });
+
   it("без права просмотра ролей — роли не грузятся и не меняются", () => {
-    iocContainer.rebind(IUserStore.Tid).toConstantValue({ can: () => false });
+    iocContainer
+      .rebind(IUserStore.Tid)
+      .toConstantValue(createFakeAccess({ permissions: [] }));
 
     const { result } = renderHook(() =>
       useEditUserPrivilegesVM({ user, onSaved: vi.fn() }),

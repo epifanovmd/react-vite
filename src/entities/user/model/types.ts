@@ -7,6 +7,7 @@ import {
   UpdatePrivacySettingsBody,
   UserDto,
 } from "@shared/api/gen/main/model";
+import type { AccessScope } from "@shared/lib/access";
 import { createInjectDecorator, SupportInitialize } from "@shared/lib/di";
 import { IEntityHolderResult, IHolderError } from "@shared/lib/holders";
 import { ApiError, ApiResponse } from "@shared/lib/http";
@@ -40,8 +41,27 @@ export interface IUserStore {
   readonly isLoading: boolean;
   readonly isReady: boolean;
 
-  /** Есть ли у пользователя указанный permission (через роль, напрямую, или wildcard-иерархия). */
+  /**
+   * Отпечаток доступа: меняется при смене пользователя или его прав. Ключ
+   * мемоизации для того, что зависит от прав (например, колонки таблиц с действиями).
+   */
+  readonly accessKey: string;
+
+  /**
+   * Есть ли у пользователя указанный permission (через роль, напрямую, или
+   * wildcard-иерархия). `can(ownPermission(p))` — есть ли право хотя бы на свои.
+   */
   can(permission: Permission): boolean;
+  /** Область права: на все сущности, только на свои или нет права. */
+  scope(permission: Permission): AccessScope | null;
+  /**
+   * Можно ли действие над конкретной сущностью: право на все или «только
+   * свои», и пользователь среди её владельцев (создатель, назначенный).
+   */
+  canOn(
+    permission: Permission,
+    owners: ReadonlyArray<string | null | undefined>,
+  ): boolean;
   /** Есть ли у пользователя указанная роль. */
   hasRole(role: KnownRole): boolean;
 
