@@ -88,9 +88,24 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getRestApi = () => {
   /**
-   * Файлы текущего пользователя, новые первыми. Ссылки в ответе подписаны
-   * и действуют ограниченное время.
-   * @summary Мои файлы
+   * Каталог прав по группам с подписями — для редакторов ролей и прав
+   * пользователей. Первая группа — «Система» (полный доступ `*`).
+   * @summary Каталог прав
+   */
+  const getPermissionCatalog = (
+    options?: SecondParameter<typeof mainMutator<IPermissionCatalogDto>>,
+  ) => {
+    return mainMutator<IPermissionCatalogDto>(
+      { url: `/api/v1/permissions`, method: "GET" },
+      options,
+    );
+  };
+
+  /**
+   * Файлы, новые первыми. По умолчанию — свои; `mine=false` при праве
+   * `file:view` — все файлы (с правом только на свои — по-прежнему свои).
+   * Ссылки в ответе подписаны и действуют ограниченное время.
+   * @summary Файлы (по умолчанию — свои)
    */
   const getMyFiles = (
     params?: GetMyFilesParams,
@@ -129,7 +144,8 @@ export const getRestApi = () => {
   };
 
   /**
-   * Метаданные файла и подписанные ссылки на него.
+   * Метаданные файла и подписанные ссылки на него. Свой файл — с правом
+   * `file:view:own`, любой — с `file:view`; недоступный файл — 404.
    * @summary Получение файла по ID
    */
   const getFileById = (
@@ -143,8 +159,9 @@ export const getRestApi = () => {
   };
 
   /**
-   * Удалить файл вместе с производными версиями. Доступно владельцу и
-   * суперпользователю; файл, прикреплённый к сообщению, удалить нельзя (409).
+   * Удалить файл вместе с производными версиями. Свой — с правом
+   * `file:delete:own`, любой — с `file:delete`; недоступный файл — 404,
+   * видимый без права на удаление — 403; используемый файл (вложение) — 409.
    * @summary Удаление файла
    */
   const deleteFile = (
@@ -190,20 +207,6 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<IFileDto>(
       { url: `/api/v1/file/uploads/${fileId}/complete`, method: "POST" },
-      options,
-    );
-  };
-
-  /**
-   * Каталог прав по группам с подписями — для редакторов ролей и прав
-   * пользователей. Первая группа — «Система» (полный доступ `*`).
-   * @summary Каталог прав
-   */
-  const getPermissionCatalog = (
-    options?: SecondParameter<typeof mainMutator<IPermissionCatalogDto>>,
-  ) => {
-    return mainMutator<IPermissionCatalogDto>(
-      { url: `/api/v1/permissions`, method: "GET" },
       options,
     );
   };
@@ -1364,13 +1367,13 @@ export const getRestApi = () => {
   };
 
   return {
+    getPermissionCatalog,
     getMyFiles,
     uploadFile,
     getFileById,
     deleteFile,
     createUpload,
     completeUpload,
-    getPermissionCatalog,
     getMyProfile,
     updateMyProfile,
     getPrivacySettings,
@@ -1440,6 +1443,9 @@ export const getRestApi = () => {
     revokeApiKey,
   };
 };
+export type GetPermissionCatalogResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getPermissionCatalog"]>>
+>;
 export type GetMyFilesResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getMyFiles"]>>
 >;
@@ -1457,9 +1463,6 @@ export type CreateUploadResult = NonNullable<
 >;
 export type CompleteUploadResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["completeUpload"]>>
->;
-export type GetPermissionCatalogResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getPermissionCatalog"]>>
 >;
 export type GetMyProfileResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getMyProfile"]>>
