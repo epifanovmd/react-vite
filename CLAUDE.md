@@ -19,7 +19,8 @@ yarn build
 yarn generate:orval # регенерация src/shared/api/gen/
 ```
 
-Перед merge обязательны: lint + typecheck + test (это же гоняет pre-commit hook).
+Перед merge обязательны: lint + typecheck + test + build (первые три гоняет pre-commit
+hook, сборку — деплой в CI).
 
 ## Никогда не редактировать вручную
 
