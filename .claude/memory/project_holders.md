@@ -107,3 +107,5 @@ load() {
 - `useLatestFn(fn)` — стабильная обёртка над `queryFn`/`mutationFn`: холдер создаётся один раз, но вызывает функцию последнего рендера (как `setOptions` в TanStack). Её используют все шесть хуков; без неё функция фиксировалась с первого рендера, и `mutationFn`, читающий пропсы/state, молча работал со старыми значениями. Перезапрос по-прежнему только по смене `watch`.
 - `useWatchEffect(loadFn, { watch, enabled, autoLoad })` — авто-вызывает `load` при изменении `watch`-зависимостей, либо один раз без аргументов при `autoLoad`; пропускает если `enabled === false`.
 - `contextHelpers` — общая фабрика для `use-*-context.ts` файлов (создание `Context` + типизированный `useXxxContext()` с ошибкой при отсутствии Provider).
+
+- Списки (`items` в `BaseListHolder`, `pendingItems` в `SyncCursorHolder`) — `observable.ref`: DTO не конвертируются в observable, реакция только на присваивание массива. Любая запись — замена массива (`[...a, x]`, `map`, `filter`), никаких `push/splice/sort` по `holder.items` и мутаций полей элементов. Тест: `base/__tests__/list-holder-observability.test.ts`.
