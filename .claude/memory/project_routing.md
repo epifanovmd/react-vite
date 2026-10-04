@@ -74,3 +74,15 @@ Guard'ы читают `IAuthStore` через `getInstance()` (вне React, с�
 не проходит `react-hooks/rules-of-hooks`, а локальный компонент в файле роута —
 `react-refresh/only-export-components`. Параметры роута страница читает сама через
 `getRouteApi("<route id>")`, файл роута только ссылается на компонент.
+
+## Пустой экран после 401 на refresh (исправлено 2026-10-05)
+
+Симптом: на /sign-in пустой экран, в консоли «Uncaught undefined». Гонка TanStack Router
+(1.170.x): async `beforeLoad` корня ждал `auth.restore()`, роутер успевал показать pending,
+редирект с `_app` переводил матч в `redirected`, а `MatchInner` бросал `loadPromise`, который
+роутер уже обнулил, — `throw undefined`. `ErrorBoundary` хранил его как «ошибки нет», рендерил
+детей снова и пробрасывал выше — React размонтировал дерево. Плавающе, в jsdom не
+воспроизводится. Фикс: сессия восстанавливается в `AppDataStore.initialize` до роутера
+(`isRestored`; `App` рисует `PendingScreen`, потом `RouterProvider`), `beforeLoad` корня
+синхронный (restore — только запасной путь); `ErrorBoundary` приводит брошенное к Error
+(`toError`). Воспроизведение: `localStorage.setItem("app:refresh_token","bogus"); location.reload()`.
