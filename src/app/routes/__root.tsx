@@ -5,12 +5,13 @@ import { memo } from "react";
 import { ErrorPage, NotFoundPage } from "../../pages/errors";
 
 export const Route = createRootRoute({
-  beforeLoad: async () => {
+  // Сессию восстанавливает App до запуска роутера; здесь — только запасной
+  // путь. Без ожидания beforeLoad синхронный: асинхронный давал роутеру
+  // показать экран ожидания, и редирект с `_app` попадал в гонку перехода.
+  beforeLoad: () => {
     const auth = IAuthStore.getInstance();
 
-    if (auth.isIdle) {
-      await auth.restore();
-    }
+    return auth.isIdle ? auth.restore() : undefined;
   },
   component: memo(() => <Outlet />),
   notFoundComponent: NotFoundPage,
