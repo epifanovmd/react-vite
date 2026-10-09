@@ -9,8 +9,8 @@ export const nodeFormSchema = z.object({
     .string()
     .trim()
     .max(255)
-    .regex(HOST, "Имя хоста или IP-адрес.")
-    .or(z.literal("")),
+    // Пусто (в том числе одни пробелы) — адреса нет.
+    .refine(host => !host || HOST.test(host), "Имя хоста или IP-адрес."),
   description: z.string().trim().max(2000),
 });
 

@@ -39,6 +39,17 @@ afterEach(() => {
 });
 
 describe("nodeFormSchema", () => {
+  it("адрес из одних пробелов — адреса нет", () => {
+    const parsed = nodeFormSchema.safeParse({
+      name: "alpha",
+      host: "   ",
+      description: "",
+    });
+
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.host).toBe("");
+  });
+
   it("название обязательно, адрес — имя хоста или IP", () => {
     expect(
       nodeFormSchema.safeParse({ name: " ", host: "", description: "" })

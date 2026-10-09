@@ -51,7 +51,8 @@ export const useAssignNodeOwnerVM = ({
 
   const me = userStore.user;
   const fallback: SelectOption[] = [
-    ...(node?.ownerId
+    // Владелец — сам пользователь: одна запись с пометкой «(вы)».
+    ...(node?.ownerId && node.ownerId !== me?.id
       ? [{ value: node.ownerId, label: node.ownerName ?? node.ownerId }]
       : []),
     ...(me

@@ -80,6 +80,21 @@ describe("useAssignNodeOwnerVM", () => {
     expect(result.current.userOptions.map(o => o.value)).toEqual(["u-1", "me"]);
   });
 
+  it("владелец — сам пользователь: одна запись с пометкой «вы»", () => {
+    permissions.splice(permissions.indexOf("user:view"), 1);
+
+    const { result } = renderHook(() =>
+      useAssignNodeOwnerVM({ onSaved: vi.fn() }),
+    );
+
+    act(() =>
+      result.current.openFor({ ...node, ownerId: "me", ownerName: "Я" }),
+    );
+    expect(result.current.userOptions).toHaveLength(1);
+    expect(result.current.userOptions[0].value).toBe("me");
+    expect(String(result.current.userOptions[0].label)).toMatch(/вы/i);
+  });
+
   it("назначение, снятие и тот же владелец — без запроса", async () => {
     const onSaved = vi.fn();
     const updated = { ...node, ownerId: "u-2" };
