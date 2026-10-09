@@ -5,5 +5,6 @@ export { getColumnWidthStyle } from "./get-column-width-style";
 export type { PinningStyleResult } from "./get-pinning-style";
 export { getPinningStyle } from "./get-pinning-style";
 export { stopPropagation } from "./stop-propagation";
+export { stopRowClick } from "./stop-row-click";
 export type { TableSettingsStorage } from "./table-settings-storage";
 export { createLocalStorageTableSettings } from "./table-settings-storage";

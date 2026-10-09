@@ -1,13 +1,18 @@
+import { AGENT_PERMISSIONS } from "@entities/agent";
+import { NODE_PERMISSIONS } from "@entities/node";
 import { ADMIN_PERMISSIONS, type Permission } from "@entities/user";
+import { ownPermission } from "@shared/lib/access";
 import { type LinkProps } from "@tanstack/react-router";
 import {
   Activity,
+  Cpu,
   FolderOpen,
   KeyRound,
   LayoutGrid,
   ListChecks,
   type LucideIcon,
   ScrollText,
+  Server,
   Shield,
   ShieldCheck,
   User,
@@ -44,6 +49,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/profile", label: "Профиль", icon: User },
       { to: "/files", label: "Файлы", icon: FolderOpen },
       { to: "/jobs", label: "Задачи", icon: ListChecks },
+      {
+        to: "/nodes",
+        label: "Узлы",
+        icon: Server,
+        permission: ownPermission(NODE_PERMISSIONS.VIEW),
+      },
     ],
   },
   {
@@ -77,6 +88,12 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Аудит",
         icon: ScrollText,
         permission: ADMIN_PERMISSIONS.AUDIT_VIEW,
+      },
+      {
+        to: "/agents",
+        label: "Агенты",
+        icon: Cpu,
+        permission: AGENT_PERMISSIONS.VIEW,
       },
     ],
   },

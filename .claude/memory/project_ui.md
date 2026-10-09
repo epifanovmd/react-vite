@@ -39,7 +39,7 @@ Barrel `shared/ui/index.ts` — только явные именованные �
 | `popover/`                                                                                              | Popover (compound **и** standalone Trigger/Content/Anchor/Close/Portal/Arrow), `size="none"`                                                                                                                                                                                                                                                                      |
 | `progress/`, `segmented/`, `separator/`, `spinner/`, `tabs/`, `tooltip/`, `stat-card/`, `theme-toggle/` | Segmented — radiogroup с клавиатурой, `onValueChange`, дженерик по типу значения из `options`, `fullWidth` (по умолчанию ширина по содержимому); ThemeToggleButton — презентационный, обёртка со стором в `features/toggle-theme`                                                                                                                                 |
 | `select/`                                                                                               | Select, Autocomplete, GroupedSelect + стратегии `use{Static,Async,Controlled,Dependent,Eager,Infinite}Options` (ядро `useOptionsRequest`: abort + request-id, `error`, `enabled`; задокументированное исключение из правила holders — стратегии работают вне `observer`); движок `useSelectEngine`; триггер — `<button role="combobox">`, `aria-activedescendant` |
-| `table/`                                                                                                | Table + `use*Feature` хуки, TablePagination, primitives; `meta.align` у колонки (left/center/right) выравнивает заголовок, ячейки и футер; `meta.label` — имя колонки для списка видимости                                                                                                                                                                        |
+| `table/`                                                                                                | Table + `use*Feature` хуки, TablePagination, primitives, `TableRowActions` (кнопки строки справа, клик не доходит до `onRowClick`), `stopRowClick`; `meta.align` у колонки (left/center/right) выравнивает заголовок, ячейки и футер; `meta.label` — имя колонки для списка видимости                                                                             |
 
 Вне shared: `AppLogo` → `widgets/app-layout/ui`, `ThemeToggle` → `features/toggle-theme`.
 Удалены: `AuthFormCard` (формы auth на `Card`), `ButtonLink`, `Divider`, `Chart`/`Sparkline`, compound-формы Card/Tabs/Tooltip.
@@ -69,6 +69,7 @@ UI-примитивы построены на Radix UI + `class-variance-authori
 
 ### Общая база `shared`
 
+- `StatCard` — значок в строке заголовка, значение на всю ширину и переносится (не обрезается).
 - `PageLayout` — `header?`, `lead?`, `actions?` (`PageLayoutToolbar`), `contentClassName`; контент с `gap-3`.
 - `@shared/lib/navigation` — `useLeaveConfirmation({ when, dialog, confirm, onConfirm, shouldBlock, blockSamePath, beforeUnload, disabled })` → `{ withoutConfirmation }`. Применён в `features/edit-profile`. В тестах переходы через `router.history.push` без `act`.
 - `Textarea` — авторост `[minRows, maxRows]`, учёт рамки при border-box, `resize`, `clearable`, `onSubmitShortcut` (Mod+Enter). Очистка полей — `foundation/clearNativeField`.

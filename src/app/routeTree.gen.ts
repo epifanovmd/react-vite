@@ -13,13 +13,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/_auth'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppJobsRouteImport } from './routes/_app/jobs'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 
 const UiLazyRouteImport = createFileRoute('/ui')()
+const AppIndexLazyRouteImport = createFileRoute('/_app/')()
 const AppActivityLazyRouteImport = createFileRoute('/_app/activity')()
 const AppFilesLazyRouteImport = createFileRoute('/_app/files')()
-const AppJobsLazyRouteImport = createFileRoute('/_app/jobs')()
 const AppProfileLazyRouteImport = createFileRoute('/_app/profile')()
 const AppSecurityLazyRouteImport = createFileRoute('/_app/security')()
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
@@ -33,6 +33,12 @@ const AppAdminApiKeysLazyRouteImport = createFileRoute('/_app/admin/api-keys')()
 const AppAdminAuditLazyRouteImport = createFileRoute('/_app/admin/audit')()
 const AppAdminRolesLazyRouteImport = createFileRoute('/_app/admin/roles')()
 const AppAdminUsersLazyRouteImport = createFileRoute('/_app/admin/users')()
+const AppAgentsIndexLazyRouteImport = createFileRoute('/_app/agents/')()
+const AppAgentsAgentIdLazyRouteImport = createFileRoute(
+  '/_app/agents/$agentId',
+)()
+const AppNodesIndexLazyRouteImport = createFileRoute('/_app/nodes/')()
+const AppNodesNodeIdLazyRouteImport = createFileRoute('/_app/nodes/$nodeId')()
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -47,11 +53,11 @@ const UiLazyRoute = UiLazyRouteImport.update({
   path: '/ui',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/ui.lazy').then((d) => d.Route))
-const AppIndexRoute = AppIndexRouteImport.update({
+const AppIndexLazyRoute = AppIndexLazyRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
-} as any)
+} as any).lazy(() => import('./routes/_app/index.lazy').then((d) => d.Route))
 const AppActivityLazyRoute = AppActivityLazyRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -62,7 +68,7 @@ const AppFilesLazyRoute = AppFilesLazyRouteImport.update({
   path: '/files',
   getParentRoute: () => AppRoute,
 } as any).lazy(() => import('./routes/_app/files.lazy').then((d) => d.Route))
-const AppJobsLazyRoute = AppJobsLazyRouteImport.update({
+const AppJobsRoute = AppJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
   getParentRoute: () => AppRoute,
@@ -139,14 +145,42 @@ const AppAdminUsersLazyRoute = AppAdminUsersLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_app/admin/users.lazy').then((d) => d.Route),
 )
+const AppAgentsIndexLazyRoute = AppAgentsIndexLazyRouteImport.update({
+  id: '/agents/',
+  path: '/agents/',
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/agents.index.lazy').then((d) => d.Route),
+)
+const AppAgentsAgentIdLazyRoute = AppAgentsAgentIdLazyRouteImport.update({
+  id: '/agents/$agentId',
+  path: '/agents/$agentId',
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/agents.$agentId.lazy').then((d) => d.Route),
+)
+const AppNodesIndexLazyRoute = AppNodesIndexLazyRouteImport.update({
+  id: '/nodes/',
+  path: '/nodes/',
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/nodes.index.lazy').then((d) => d.Route),
+)
+const AppNodesNodeIdLazyRoute = AppNodesNodeIdLazyRouteImport.update({
+  id: '/nodes/$nodeId',
+  path: '/nodes/$nodeId',
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/nodes.$nodeId.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof AppIndexLazyRoute
   '/ui': typeof UiLazyRouteWithChildren
+  '/jobs': typeof AppJobsRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/activity': typeof AppActivityLazyRoute
   '/files': typeof AppFilesLazyRoute
-  '/jobs': typeof AppJobsLazyRoute
   '/profile': typeof AppProfileLazyRoute
   '/security': typeof AppSecurityLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
@@ -158,13 +192,17 @@ export interface FileRoutesByFullPath {
   '/admin/audit': typeof AppAdminAuditLazyRoute
   '/admin/roles': typeof AppAdminRolesLazyRoute
   '/admin/users': typeof AppAdminUsersLazyRoute
+  '/agents/$agentId': typeof AppAgentsAgentIdLazyRoute
+  '/nodes/$nodeId': typeof AppNodesNodeIdLazyRoute
+  '/agents/': typeof AppAgentsIndexLazyRoute
+  '/nodes/': typeof AppNodesIndexLazyRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppIndexRoute
+  '/': typeof AppIndexLazyRoute
+  '/jobs': typeof AppJobsRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/activity': typeof AppActivityLazyRoute
   '/files': typeof AppFilesLazyRoute
-  '/jobs': typeof AppJobsLazyRoute
   '/profile': typeof AppProfileLazyRoute
   '/security': typeof AppSecurityLazyRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
@@ -176,38 +214,46 @@ export interface FileRoutesByTo {
   '/admin/audit': typeof AppAdminAuditLazyRoute
   '/admin/roles': typeof AppAdminRolesLazyRoute
   '/admin/users': typeof AppAdminUsersLazyRoute
+  '/agents/$agentId': typeof AppAgentsAgentIdLazyRoute
+  '/nodes/$nodeId': typeof AppNodesNodeIdLazyRoute
+  '/agents': typeof AppAgentsIndexLazyRoute
+  '/nodes': typeof AppNodesIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/ui': typeof UiLazyRouteWithChildren
+  '/_app/jobs': typeof AppJobsRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_app/activity': typeof AppActivityLazyRoute
   '/_app/files': typeof AppFilesLazyRoute
-  '/_app/jobs': typeof AppJobsLazyRoute
   '/_app/profile': typeof AppProfileLazyRoute
   '/_app/security': typeof AppSecurityLazyRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/_auth/sign-in': typeof AuthSignInLazyRoute
   '/_auth/sign-up': typeof AuthSignUpLazyRoute
   '/ui/$section': typeof UiSectionLazyRoute
-  '/_app/': typeof AppIndexRoute
+  '/_app/': typeof AppIndexLazyRoute
   '/ui/': typeof UiIndexLazyRoute
   '/_app/admin/api-keys': typeof AppAdminApiKeysLazyRoute
   '/_app/admin/audit': typeof AppAdminAuditLazyRoute
   '/_app/admin/roles': typeof AppAdminRolesLazyRoute
   '/_app/admin/users': typeof AppAdminUsersLazyRoute
+  '/_app/agents/$agentId': typeof AppAgentsAgentIdLazyRoute
+  '/_app/nodes/$nodeId': typeof AppNodesNodeIdLazyRoute
+  '/_app/agents/': typeof AppAgentsIndexLazyRoute
+  '/_app/nodes/': typeof AppNodesIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/ui'
+    | '/jobs'
     | '/reset-password'
     | '/activity'
     | '/files'
-    | '/jobs'
     | '/profile'
     | '/security'
     | '/forgot-password'
@@ -219,13 +265,17 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/roles'
     | '/admin/users'
+    | '/agents/$agentId'
+    | '/nodes/$nodeId'
+    | '/agents/'
+    | '/nodes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/jobs'
     | '/reset-password'
     | '/activity'
     | '/files'
-    | '/jobs'
     | '/profile'
     | '/security'
     | '/forgot-password'
@@ -237,15 +287,19 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/roles'
     | '/admin/users'
+    | '/agents/$agentId'
+    | '/nodes/$nodeId'
+    | '/agents'
+    | '/nodes'
   id:
     | '__root__'
     | '/_app'
     | '/_auth'
     | '/ui'
+    | '/_app/jobs'
     | '/_auth/reset-password'
     | '/_app/activity'
     | '/_app/files'
-    | '/_app/jobs'
     | '/_app/profile'
     | '/_app/security'
     | '/_auth/forgot-password'
@@ -258,6 +312,10 @@ export interface FileRouteTypes {
     | '/_app/admin/audit'
     | '/_app/admin/roles'
     | '/_app/admin/users'
+    | '/_app/agents/$agentId'
+    | '/_app/nodes/$nodeId'
+    | '/_app/agents/'
+    | '/_app/nodes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -293,7 +351,7 @@ declare module '@tanstack/react-router' {
       id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
+      preLoaderRoute: typeof AppIndexLazyRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/activity': {
@@ -314,7 +372,7 @@ declare module '@tanstack/react-router' {
       id: '/_app/jobs'
       path: '/jobs'
       fullPath: '/jobs'
-      preLoaderRoute: typeof AppJobsLazyRouteImport
+      preLoaderRoute: typeof AppJobsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/profile': {
@@ -401,33 +459,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUsersLazyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/agents/': {
+      id: '/_app/agents/'
+      path: '/agents'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof AppAgentsIndexLazyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/agents/$agentId': {
+      id: '/_app/agents/$agentId'
+      path: '/agents/$agentId'
+      fullPath: '/agents/$agentId'
+      preLoaderRoute: typeof AppAgentsAgentIdLazyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/nodes/': {
+      id: '/_app/nodes/'
+      path: '/nodes'
+      fullPath: '/nodes/'
+      preLoaderRoute: typeof AppNodesIndexLazyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/nodes/$nodeId': {
+      id: '/_app/nodes/$nodeId'
+      path: '/nodes/$nodeId'
+      fullPath: '/nodes/$nodeId'
+      preLoaderRoute: typeof AppNodesNodeIdLazyRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppJobsRoute: typeof AppJobsRoute
   AppActivityLazyRoute: typeof AppActivityLazyRoute
   AppFilesLazyRoute: typeof AppFilesLazyRoute
-  AppJobsLazyRoute: typeof AppJobsLazyRoute
   AppProfileLazyRoute: typeof AppProfileLazyRoute
   AppSecurityLazyRoute: typeof AppSecurityLazyRoute
-  AppIndexRoute: typeof AppIndexRoute
+  AppIndexLazyRoute: typeof AppIndexLazyRoute
   AppAdminApiKeysLazyRoute: typeof AppAdminApiKeysLazyRoute
   AppAdminAuditLazyRoute: typeof AppAdminAuditLazyRoute
   AppAdminRolesLazyRoute: typeof AppAdminRolesLazyRoute
   AppAdminUsersLazyRoute: typeof AppAdminUsersLazyRoute
+  AppAgentsAgentIdLazyRoute: typeof AppAgentsAgentIdLazyRoute
+  AppNodesNodeIdLazyRoute: typeof AppNodesNodeIdLazyRoute
+  AppAgentsIndexLazyRoute: typeof AppAgentsIndexLazyRoute
+  AppNodesIndexLazyRoute: typeof AppNodesIndexLazyRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppJobsRoute: AppJobsRoute,
   AppActivityLazyRoute: AppActivityLazyRoute,
   AppFilesLazyRoute: AppFilesLazyRoute,
-  AppJobsLazyRoute: AppJobsLazyRoute,
   AppProfileLazyRoute: AppProfileLazyRoute,
   AppSecurityLazyRoute: AppSecurityLazyRoute,
-  AppIndexRoute: AppIndexRoute,
+  AppIndexLazyRoute: AppIndexLazyRoute,
   AppAdminApiKeysLazyRoute: AppAdminApiKeysLazyRoute,
   AppAdminAuditLazyRoute: AppAdminAuditLazyRoute,
   AppAdminRolesLazyRoute: AppAdminRolesLazyRoute,
   AppAdminUsersLazyRoute: AppAdminUsersLazyRoute,
+  AppAgentsAgentIdLazyRoute: AppAgentsAgentIdLazyRoute,
+  AppNodesNodeIdLazyRoute: AppNodesNodeIdLazyRoute,
+  AppAgentsIndexLazyRoute: AppAgentsIndexLazyRoute,
+  AppNodesIndexLazyRoute: AppNodesIndexLazyRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

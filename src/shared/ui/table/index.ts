@@ -4,6 +4,7 @@ export type {
   ColumnFilterConfigOf,
   ColumnFilterOption,
   ColumnFilterType,
+  TableRowActionsProps,
   TableRowProps,
 } from "./components";
 export {
@@ -14,6 +15,7 @@ export {
   TableHeader,
   TableRoot,
   TableRow,
+  TableRowActions,
 } from "./components";
 export type { TableLabels } from "./constants";
 export { DEFAULT_PAGE_SIZE_OPTIONS, TABLE_LABELS } from "./constants";
@@ -81,6 +83,6 @@ export type {
   TableVirtualOptions,
 } from "./table.types";
 export type { TableSettingsStorage } from "./utils";
-export { createLocalStorageTableSettings } from "./utils";
+export { createLocalStorageTableSettings, stopRowClick } from "./utils";
 export type { ColumnDef } from "@tanstack/react-table";
 export { createColumnHelper } from "@tanstack/react-table";

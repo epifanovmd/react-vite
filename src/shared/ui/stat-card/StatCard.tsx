@@ -28,14 +28,17 @@ export interface StatCardProps extends Omit<
   variant?: StatCardVariant;
 }
 
-const CONTENT_CLASS = "flex items-start justify-between gap-3 p-3 sm:p-5";
-const BODY_CLASS = "flex min-w-0 flex-1 flex-col gap-1.5";
+// Значок — в строке заголовка: значению остаётся вся ширина карточки, и в
+// узкой сетке оно переносится, а не обрезается многоточием.
+const CONTENT_CLASS = "flex flex-col gap-1.5 p-3 sm:p-4";
+const HEADER_CLASS = "flex items-center justify-between gap-2";
 const TITLE_CLASS =
-  "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-const VALUE_CLASS = "truncate text-lg font-bold text-foreground sm:text-xl";
+  "min-w-0 truncate text-xs font-semibold uppercase tracking-wider text-muted-foreground";
+const VALUE_CLASS =
+  "break-words text-lg font-bold leading-tight tabular-nums text-foreground sm:text-xl";
 const DESCRIPTION_CLASS = "text-xs text-muted-foreground";
 const ICON_BOX_CLASS =
-  "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11";
+  "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md [&_svg]:h-4 [&_svg]:w-4";
 
 const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
   (
@@ -52,19 +55,19 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
   ) => (
     <Card ref={ref} {...props}>
       <CardContent className={cn(CONTENT_CLASS, contentClassName)}>
-        <div className={BODY_CLASS}>
+        <div className={HEADER_CLASS}>
           <p className={TITLE_CLASS}>{title}</p>
-          <div className={VALUE_CLASS}>{value}</div>
-          {description && <p className={DESCRIPTION_CLASS}>{description}</p>}
+          {icon && (
+            <div
+              aria-hidden
+              className={cn(ICON_BOX_CLASS, ICON_CLASSES[variant])}
+            >
+              {icon}
+            </div>
+          )}
         </div>
-        {icon && (
-          <div
-            aria-hidden
-            className={cn(ICON_BOX_CLASS, ICON_CLASSES[variant])}
-          >
-            {icon}
-          </div>
-        )}
+        <div className={VALUE_CLASS}>{value}</div>
+        {description && <p className={DESCRIPTION_CLASS}>{description}</p>}
       </CardContent>
     </Card>
   ),

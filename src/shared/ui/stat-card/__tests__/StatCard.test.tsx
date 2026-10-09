@@ -12,3 +12,22 @@ describe("StatCard", () => {
     expect(content?.parentElement).toBe(screen.getByTestId("stat"));
   });
 });
+
+describe("StatCard: узкая карточка", () => {
+  it("значок — в строке заголовка, значение на всю ширину и не обрезается", () => {
+    render(
+      <StatCard
+        title="Интерфейсы"
+        value="135.2 Мбит/с"
+        icon={<svg data-testid="icon" />}
+      />,
+    );
+
+    const value = screen.getByText("135.2 Мбит/с");
+    const titleRow = screen.getByText("Интерфейсы").parentElement;
+
+    expect(titleRow?.contains(screen.getByTestId("icon"))).toBe(true);
+    expect(titleRow?.contains(value)).toBe(false);
+    expect(value.className).not.toMatch(/\btruncate\b/);
+  });
+});

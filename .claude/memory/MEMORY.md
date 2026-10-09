@@ -14,7 +14,7 @@
 ## Домен
 
 - [Auth](project_auth.md) — token lifecycle, session, JWT, socket auth, 2FA (второй пароль), passkey; biometric в вебе нет
-- [Screens](project_screens.md) — экраны аккаунта, файлов, задач и админки: слайсы, права, живые списки (комнаты), реакция на отзыв прав, gotcha
+- [Screens](project_screens.md) — экраны аккаунта, файлов, задач (echo.quick/long, фильтр по агенту), узлов и агентов (agent 1.0.0: отложенная замена воркера, manifest.jobs, deleted настроек, X-Agent-Worker-Status, «нет связи · N с»), админки: слайсы, права, живые списки (комнаты), gotcha
 - [Access](project_access.md) — права «все / свои»: грамматика `@shared/lib/access`, `IUserStore.scope/canOn/accessKey`, `PermissionMatrix`, `createFakeAccess`, каталог без `own`
 - [Holders](project_holders.md) — MobX holder-система (EntityHolder/PagedHolder/...) и хуки (useEntity, useCollection, ...)
 

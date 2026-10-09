@@ -29,3 +29,5 @@ export { TableBulkBar } from "./TableBulkBar";
 export { TableColumnVisibility } from "./TableColumnVisibility";
 export { TableFooterSection } from "./TableFooterSection";
 export { TableHeaderSection } from "./TableHeaderSection";
+export type { TableRowActionsProps } from "./TableRowActions";
+export { TableRowActions } from "./TableRowActions";

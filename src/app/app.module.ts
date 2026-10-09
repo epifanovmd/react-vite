@@ -1,5 +1,7 @@
+import { agentModule } from "@entities/agent";
 import { authModule } from "@entities/auth";
 import { jobModule } from "@entities/job";
+import { nodeModule } from "@entities/node";
 import { permissionModule } from "@entities/permission";
 import { userModule } from "@entities/user";
 import { apiModule } from "@shared/api";
@@ -18,8 +20,10 @@ import { appDataModule } from "./app-data.module";
 export const registerContainerModules = (): void => {
   iocContainer.load(
     apiModule,
+    agentModule,
     authModule,
     jobModule,
+    nodeModule,
     permissionModule,
     userModule,
     appStateModule,
