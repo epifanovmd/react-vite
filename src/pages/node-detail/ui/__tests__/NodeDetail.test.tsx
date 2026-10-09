@@ -92,6 +92,7 @@ const api = {
   getNodeById: vi.fn(async () => ({ data: node() })),
   getAgent: vi.fn(async () => ({ data: agent })),
   getAgentAlerts: vi.fn(async () => ({ data: [] })),
+  getAgentRelease: vi.fn(async () => ({ data: null })),
   getAgentMetrics: vi.fn(async () => ({ data: [] })),
 };
 

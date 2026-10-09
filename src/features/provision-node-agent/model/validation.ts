@@ -1,11 +1,5 @@
+import { workerNameSchema } from "@entities/agent";
 import { z } from "zod";
-
-/** Список через запятую или пробел. */
-export const splitList = (text: string): string[] =>
-  text
-    .split(/[\s,]+/)
-    .map(item => item.trim())
-    .filter(Boolean);
 
 const urlField = z
   .url("Полный адрес, например https://api.example.com")
@@ -25,7 +19,7 @@ export const installCommandSchema = z.object({
     .min(5, "Не меньше 5 минут.")
     .max(43_200, "Не больше 30 дней."),
   baseUrl: urlField,
-  workers: z.string().trim(),
+  workers: z.array(workerNameSchema),
 });
 
 export type TInstallCommandForm = z.input<typeof installCommandSchema>;
@@ -43,7 +37,7 @@ export const sshSchema = z
     passphrase: z.string(),
     sudo: z.boolean(),
     backendUrl: urlField,
-    workers: z.string().trim(),
+    workers: z.array(workerNameSchema),
     purge: z.boolean(),
   })
   .superRefine((data, ctx) => {
