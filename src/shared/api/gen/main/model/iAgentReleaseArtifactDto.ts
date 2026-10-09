@@ -1,3 +1,5 @@
+import type { TAgentReleaseSource } from "./tAgentReleaseSource.ts";
+
 /**
  * Сборка агента в выпуске.
  */
@@ -7,4 +9,7 @@ export interface IAgentReleaseArtifactDto {
   file: string;
   sha256: string;
   signature?: string;
+  source: TAgentReleaseSource;
+  /** Ссылка источника или путь от корня бэкенда. */
+  url: string;
 }

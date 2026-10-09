@@ -88,26 +88,17 @@ export const WorkerConfigsCard: FC<WorkerConfigsCardProps> = observer(
                   )}
                 </div>
                 <TableRowActions>
-                  <Tooltip
-                    content={
-                      vm.canConfig
-                        ? config
-                          ? "Изменить"
-                          : "Задать"
-                        : "Посмотреть"
-                    }
-                  >
-                    <IconButton
-                      aria-label={`Ключ ${item.key}`}
-                      onClick={() => vm.editor.openFor(item)}
-                    >
-                      {config || !vm.canConfig ? (
-                        <Pencil size={15} />
-                      ) : (
-                        <Plus size={15} />
-                      )}
-                    </IconButton>
-                  </Tooltip>
+                  {/* Значение ключа сервер отдаёт только с правом на настройки. */}
+                  {vm.canConfig && (
+                    <Tooltip content={config ? "Изменить" : "Задать"}>
+                      <IconButton
+                        aria-label={`Ключ ${item.key}`}
+                        onClick={() => vm.editor.openFor(item)}
+                      >
+                        {config ? <Pencil size={15} /> : <Plus size={15} />}
+                      </IconButton>
+                    </Tooltip>
+                  )}
                   {vm.canConfig && status && status.version !== null && (
                     <Tooltip content="Удалить ключ">
                       <IconButton

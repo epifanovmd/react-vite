@@ -1,3 +1,5 @@
+import type { TAgentReleaseSource } from "./tAgentReleaseSource.ts";
+
 /**
  * Сборка воркера в выпуске.
  */
@@ -7,6 +9,9 @@ export interface IAgentWorkerArtifactDto {
   file: string;
   sha256: string;
   signature?: string;
+  source: TAgentReleaseSource;
+  /** Ссылка источника или путь от корня бэкенда. */
+  url: string;
   name: string;
   version: string;
   /** Что запускать в сборке-архиве. */

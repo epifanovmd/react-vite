@@ -6,7 +6,7 @@ import type { IAgentWorkerUpdateCandidateDto } from "./iAgentWorkerUpdateCandida
  * Выпуск агента и кого можно обновить.
  */
 export interface IAgentReleaseDto {
-  /** `null` — каталог выпуска не задан или пуст. */
+  /** `null` — нет ни источника выпусков агента, ни каталога выпуска. */
   manifest: IAgentReleaseManifestDto | null;
   candidates: IAgentUpdateCandidateDto[];
   workerCandidates: IAgentWorkerUpdateCandidateDto[];
