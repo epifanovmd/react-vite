@@ -125,7 +125,7 @@ export class AgentsStore implements IAgentsStore {
       c => c.agentId === agentId,
     );
 
-    // Выпуск мог устареть: агент уже обновился, а выпуск ещё не перечитан.
+    // Сборки могли устареть: агент уже обновился, а сборки ещё не перечитаны.
     if (!candidate || (agent && agentVersion(agent) === candidate.target)) {
       return null;
     }

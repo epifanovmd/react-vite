@@ -108,7 +108,7 @@ describe("useNodeDetailVM", () => {
       ]),
     );
     expect(agents.loadAlerts).toHaveBeenCalled();
-    // Выпуск — только с правом на агентов.
+    // Сборки — только с правом на агентов.
     expect(agents.loadRelease).not.toHaveBeenCalled();
   });
 

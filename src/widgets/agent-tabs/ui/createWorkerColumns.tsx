@@ -44,7 +44,7 @@ export const createWorkerColumns = ({ vm }: WorkerColumnsOptions) => [
             original.worker.manifest?.version ??
               original.worker.version ??
               "версия не сообщена",
-            original.worker.release && "из выпуска",
+            original.worker.release && "сборка с сервера",
             !!original.worker.restarts &&
               `перезапусков: ${original.worker.restarts}`,
           ]

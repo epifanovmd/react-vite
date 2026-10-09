@@ -101,7 +101,7 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
     }
   };
 
-  /** `target` — версия выпуска; неизвестна (нет права на выпуск) — `null`. */
+  /** `target` — новая версия; неизвестна (нет права видеть сборки) — `null`. */
   const update = async (agent: AgentDto, target: string | null) => {
     const current = agentVersion(agent);
     const ok = await confirm({

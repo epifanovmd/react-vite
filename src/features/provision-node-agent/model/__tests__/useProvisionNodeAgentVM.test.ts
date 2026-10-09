@@ -119,7 +119,7 @@ describe("useProvisionNodeAgentVM", () => {
     expect(result.current.mode).toBe("install");
     expect(result.current.way).toBe("ssh");
     expect(result.current.sshForm.getValues("host")).toBe("203.0.113.10");
-    // Все воркеры выпуска отмечены по умолчанию.
+    // Все воркеры с сервера отмечены по умолчанию.
     expect(result.current.releaseWorkers).toEqual(["echo", "netprobe"]);
     expect(result.current.commandForm.getValues("workers")).toEqual([
       "echo",

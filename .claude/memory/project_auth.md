@@ -60,7 +60,7 @@ TokenSession (shared/lib/session)
 
 ## Passkey (WebAuthn) — вне entities/auth
 
-Серверный biometric API в шаблоне есть, но веб его не использует (слайс entities/biometric удалён 2026-09-26). Ключ логина для passkey-входа — `PASSKEY_LOGIN_STORAGE_KEY` из `@entities/auth`.
+Серверный biometric API веб не использует. Ключ логина для passkey-входа — `PASSKEY_LOGIN_STORAGE_KEY` из `@entities/auth`.
 
 - **Passkey**: отдельного стора нет (бывший `PasskeyStore` удалён). Вся логика — в `features/sign-in/model/usePasskeyAuth.ts`: напрямую через `IMainApi` (`@simplewebauthn/browser`: browser support check, `startRegistration`/`startAuthentication`), профиль-ID в storage под ключом `app:profileId`. При успешной аутентификации — `authStore.restore(tokens)` + `onSuccess` callback.
 

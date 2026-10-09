@@ -23,7 +23,7 @@ export interface IWorkerRow {
 /** Действия над воркером в строке таблицы. */
 export interface IWorkerRowAccess {
   canRestart: boolean;
-  /** Версия выпуска, до которой можно обновить; нельзя — `null`. */
+  /** Новая версия, до которой можно обновить; нельзя — `null`. */
   updateTo: string | null;
   /** Воркер занят или замена ждёт его — можно заменить сразу. */
   canReplaceNow: boolean;
@@ -67,7 +67,7 @@ export const useAgentWorkersVM = (agent: AgentDto, canManage: boolean) => {
     })),
     actions,
     accessOf,
-    /** Версия выпуска для воркера; неизвестна — `null`. */
+    /** Новая версия воркера; неизвестна — `null`. */
     updateTargetOf: (worker: IAgentWorkerDto) =>
       store.workerCandidate(agent.id, worker.name)?.target ?? null,
     /** Меняется вместе с правом — колонки таблицы пересобираются по нему. */

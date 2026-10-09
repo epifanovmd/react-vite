@@ -6,7 +6,7 @@
 
 ## Проект
 
-Messenger/admin panel. React 19 + Vite 8 + TypeScript, MobX 6 + Inversify 8 (DI), TanStack Router (файловый роутинг), Tailwind CSS 4, Socket.IO, RHF + Zod, orval (API codegen), Vitest.
+Веб-панель: аккаунт, файлы, задачи, узлы и агенты, админка. React 19 + Vite 8 + TypeScript, MobX 6 + Inversify 8 (DI), TanStack Router (файловый роутинг), Tailwind CSS 4, Socket.IO, RHF + Zod, orval (API codegen), Vitest.
 
 ## Команды
 

@@ -84,7 +84,7 @@ export const useNodeDetailVM = (nodeId: string) => {
   useEffect(() => {
     if (!agentId) return;
     void agents.loadAlerts();
-    // Выпуск — только с правом на агентов: из него кандидаты обновления.
+    // Сборки — только с правом на агентов: из них кандидаты обновления.
     if (canViewAgents) void agents.loadRelease();
   }, [agentId, agents, canViewAgents]);
 
@@ -173,9 +173,9 @@ export const useNodeDetailVM = (nodeId: string) => {
     provision,
     removeNode,
     agentActions,
-    /** Можно обновить агента: на связи и в выпуске есть другая версия. */
+    /** Можно обновить агента: на связи и на сервере есть другая версия. */
     canUpdateAgent: agentLive && !!node?.agent?.updateAvailable,
-    /** Версия выпуска для обновления; без права на выпуск — неизвестна. */
+    /** Новая версия для обновления; без права видеть сборки — неизвестна. */
     updateTarget: agentId
       ? (agents.updateCandidate(agentId)?.target ?? null)
       : null,

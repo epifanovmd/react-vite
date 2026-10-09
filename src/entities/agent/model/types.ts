@@ -15,7 +15,7 @@ import type { IAgentLogEntry } from "../lib/log";
 export const IAgentsStore = createInjectDecorator<IAgentsStore>("IAgentsStore");
 
 /**
- * Агенты, их активные проблемы и выпуск для обновления. Список — запросом,
+ * Агенты, их активные проблемы и сборки для обновления. Список — запросом,
  * изменения — событиями комнаты `agents` (`useAgentsRealtime`).
  */
 export interface IAgentsStore {
@@ -25,7 +25,7 @@ export interface IAgentsStore {
   readonly error: IHolderError | null;
   /** Активные проблемы всех агентов, новые первыми. */
   readonly alerts: AgentAlertDto[];
-  /** Выпуск и кого можно обновить; нет каталога выпуска — `manifest: null`. */
+  /** Сборки и кого можно обновить; нет каталога сборок — `manifest: null`. */
   readonly release: IAgentReleaseDto | null;
 
   load(): Promise<void>;
@@ -35,9 +35,9 @@ export interface IAgentsStore {
   fetch(id: string): Promise<{ error: IHolderError | null }>;
   byId(id: string): AgentDto | undefined;
   alertsOf(agentId: string): AgentAlertDto[];
-  /** Кандидат на обновление агента до версии выпуска. */
+  /** Кандидат на обновление агента до новой версии. */
   updateCandidate(agentId: string): IAgentUpdateCandidateDto | null;
-  /** Кандидат на обновление воркера из выпуска. */
+  /** Кандидат на обновление воркера сборкой с сервера. */
   workerCandidate(
     agentId: string,
     worker: string,

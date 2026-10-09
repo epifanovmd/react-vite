@@ -16,7 +16,7 @@ import type { IAgentTabsAccess } from "@widgets/agent-tabs";
 import { useEffect } from "react";
 
 /**
- * Карточка агента: данные из стора (обновляются событиями), проблемы, выпуск,
+ * Карточка агента: данные из стора (обновляются событиями), проблемы, сборки,
  * права на вкладки и действия с агентом. Пока страница открыта, сокет в
  * комнате агента — сервер держит наблюдателя: частые метрики и журнал.
  */
@@ -84,7 +84,7 @@ export const useAgentDetailVM = (agentId: string) => {
     isError: card.isError && !agent,
     alerts: store.alertsOf(agentId),
     actions,
-    /** Версия выпуска, до которой можно обновить агента; нельзя — `null`. */
+    /** Новая версия, до которой можно обновить агента; нельзя — `null`. */
     updateTo: live && canManage && candidate ? candidate.target : null,
     canRotate: live && canManage,
     canRevoke: !!agent && canManage && !agent.revoked,

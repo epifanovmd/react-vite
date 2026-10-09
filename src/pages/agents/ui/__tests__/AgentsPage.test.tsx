@@ -153,7 +153,7 @@ describe("AgentsPage", () => {
     expect(await screen.findByText("1. Токен регистрации")).toBeInTheDocument();
     expect(screen.getByText("2. Команда установки")).toBeInTheDocument();
     expect(
-      await screen.findByText("Токенов пока нет — выпустите первый."),
+      await screen.findByText("Токенов пока нет — создайте первый."),
     ).toBeInTheDocument();
   });
 });

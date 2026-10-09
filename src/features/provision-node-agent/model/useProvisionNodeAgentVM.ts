@@ -56,13 +56,13 @@ export const useProvisionNodeAgentVM = ({
   });
   const sshForm = useZodForm(sshSchema);
 
-  /** Воркеры из выпуска сервера — их можно поставить вместе с агентом. */
+  /** Воркеры с сервера — их можно поставить вместе с агентом. */
   const releaseWorkers = [
     ...new Set(agents.release?.manifest?.workers?.map(w => w.name) ?? []),
   ].sort();
   const releaseKey = releaseWorkers.join(",");
 
-  // Выпуск пришёл после открытия окна — отметить его воркеры, пока выбор не трогали.
+  // Сборки пришли после открытия окна — отметить их воркеры, пока выбор не трогали.
   useEffect(() => {
     if (!node || !releaseKey) return;
     const names = releaseKey.split(",");
@@ -81,7 +81,7 @@ export const useProvisionNodeAgentVM = ({
     setWay(nextMode === "install" && target.host ? "ssh" : "command");
     setCommand(null);
     setJobId(null);
-    // По умолчанию — все воркеры выпуска: снять лишние проще, чем вспомнить имена.
+    // По умолчанию — все воркеры с сервера: снять лишние проще, чем вспомнить имена.
     commandForm.reset({
       expiresInMinutes: DEFAULT_EXPIRES_MINUTES,
       baseUrl: "",

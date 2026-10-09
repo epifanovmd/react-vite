@@ -64,7 +64,7 @@ afterEach(() => {
 });
 
 describe("useAgentsVM", () => {
-  it("с правом просмотра грузит агентов, проблемы и выпуск", () => {
+  it("с правом просмотра грузит агентов, проблемы и сборки", () => {
     renderHook(() => useAgentsVM());
 
     expect(store.load).toHaveBeenCalled();

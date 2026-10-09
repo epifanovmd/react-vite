@@ -107,8 +107,8 @@ export const NodeSshForm: FC<NodeSshFormProps> = observer(({ vm, formId }) => {
               label="Воркеры"
               description={
                 vm.releaseWorkers.length
-                  ? "Из выпуска сервера; ничего не выбрано — только проверка сети (netprobe)"
-                  : "В выпуске на сервере воркеров нет — только проверка сети (netprobe)"
+                  ? "Со сборками с сервера; ничего не выбрано — только проверка сети (netprobe)"
+                  : "На сервере воркеров нет — только проверка сети (netprobe)"
               }
               options={vm.releaseWorkers.map(name => ({
                 value: name,

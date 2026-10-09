@@ -123,7 +123,7 @@ describe("AgentsStore", () => {
     store.upsert(makeAgent({ version: "1.2.0" }));
 
     expect(store.updateCandidate("a-1")).toBeNull();
-    // Версия сменилась — выпуск перечитывается.
+    // Версия сменилась — сборки перечитываются.
     expect(getAgentRelease).toHaveBeenCalledTimes(2);
 
     store.upsert(

@@ -270,7 +270,7 @@ describe("useAgentWorkersVM", () => {
     });
   });
 
-  it("без права или без связи — без действий; кандидат выпуска — обновление", async () => {
+  it("без права или без связи — без действий; есть новая версия — обновление", async () => {
     const store = iocContainer.get<IAgentsStore>(IAgentsStore.Tid);
 
     api.getAgentRelease.mockResolvedValue({

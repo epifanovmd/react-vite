@@ -1,6 +1,6 @@
 ---
 name: Project Architecture
-description: React + Vite messenger/admin panel — FSD-структура, стек, DI, layer-boundary правила
+description: React + Vite веб-панель (аккаунт, файлы, задачи, узлы и агенты, админка) — FSD-структура, стек, DI, layer-boundary правила
 type: project
 ---
 

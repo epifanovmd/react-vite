@@ -33,7 +33,7 @@ export const InstallCommandForm: FC<InstallCommandFormProps> = observer(
       <InputFormField<TInstallCommandForm>
         name="token"
         label="Токен регистрации"
-        description="Подставляется сам после выпуска токена"
+        description="Подставляется сам после создания токена"
         placeholder="prefix.secret"
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -52,11 +52,11 @@ export const InstallCommandForm: FC<InstallCommandFormProps> = observer(
       </div>
       <MultiSelectFormField<TInstallCommandForm>
         name="workers"
-        label="Воркеры из выпуска"
+        label="Воркеры с сервера"
         description={
           vm.releaseWorkers.length
             ? "Установятся вместе с агентом"
-            : "В выпуске на сервере воркеров нет"
+            : "На сервере воркеров нет"
         }
         options={vm.releaseWorkers.map(name => ({ value: name, label: name }))}
         disabled={vm.releaseWorkers.length === 0}
@@ -126,7 +126,7 @@ export const InstallCommandForm: FC<InstallCommandFormProps> = observer(
           <InputFormField<TInstallCommandForm>
             name="releases"
             label="Источник сборок воркеров"
-            description="Без него — выпуск этого сервера"
+            description="Без него — сборки этого сервера"
             placeholder="https://example.com/releases"
           />
         </Collapse.Content>

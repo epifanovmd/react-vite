@@ -25,7 +25,7 @@ type: project
 
 ## Живая проверка экранов агентов (свой стенд)
 
-- Свой API шаблона — по образцу `test/e2e/harness.ts` бэкенда: `NODE_ENV=test`, свой порт (8191), отдельная база (`CREATE DATABASE … ` в контейнере `dev-postgres`, потом `DROP`), Redis `db 14`, `STORAGE_DRIVER=local`, свои `ADMIN_*` и `AGENT_BOOTSTRAP_TOKEN`, `CORS_ALLOWED_ORIGINS=http://localhost:<порт vite>` (иначе сокет не пустит).
+- Свой сервер API (настройки — из `test/e2e/harness.ts` бэкенда): `NODE_ENV=test`, свой порт (8191), отдельная база (`CREATE DATABASE … ` в контейнере `dev-postgres`, потом `DROP`), Redis `db 14`, `STORAGE_DRIVER=local`, свои `ADMIN_*` и `AGENT_BOOTSTRAP_TOKEN`, `CORS_ALLOWED_ORIGINS=http://localhost:<порт vite>` (иначе сокет не пустит).
 - Свой агент — `scripts/agent-dev.sh start|stop` бэкенда с `AGENT_DIR=.agent-<имя>` (в корне бэкенда: путь unix-сокетов воркеров должен быть коротким, scratchpad слишком длинный), `SERVER_PORT`, `AGENT_BOOTSTRAP_TOKEN`; после — `stop` и удалить каталог.
 - Свой vite: `VITE_PROTOCOL/HOST/PORT/BASE_URL/SOCKET_BASE_URL` в окружении перекрывают `.env.development`. Чтобы не трогать кэш `node_modules/.vite` vite пользователя — свой конфиг в scratchpad: `import base from "<проект>/vite.config.ts"; export default {...base, root: "<проект>", cacheDir: "<scratchpad>/vite-cache"}` и `vite --config <он> --port N --strictPort`.
 - Свой агент — `AGENT_DIR=.agent-<имя> AGENT_NAME=… SERVER_PORT=… AGENT_BOOTSTRAP_TOKEN=… yarn agent:start|stop` в бэкенде (берёт `agent/release`); у API для живой проверки удобно `AGENT_STATUS_INTERVAL_MS=1000`. `agent:stop` останавливает и воркеры. Файлы задач с `withOutput` (S3 `e2e`, `jobs/<id>/echo.txt`) — удалить после.

@@ -6,7 +6,7 @@ import { IAgentsStore } from "./types";
 /**
  * Комната `agents`: изменения агентов и их проблем попадают в стор. После
  * переподключения события за время обрыва потеряны — список, проблемы и
- * выпуск перечитываются.
+ * сборки перечитываются.
  */
 export const useAgentsRealtime = (enabled: boolean): void => {
   const store = IAgentsStore.useInstance();

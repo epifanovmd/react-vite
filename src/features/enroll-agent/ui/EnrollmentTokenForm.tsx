@@ -24,7 +24,7 @@ const EXPIRY_OPTIONS = TOKEN_EXPIRY_OPTIONS.map(({ value, label }) => ({
   label,
 }));
 
-/** Выпуск токена регистрации: название, срок, одноразовость, метки. */
+/** Создание токена регистрации: название, срок, одноразовость, метки. */
 export const EnrollmentTokenForm: FC<EnrollmentTokenFormProps> = ({ vm }) => (
   <Form
     form={vm.tokenForm}
@@ -60,7 +60,7 @@ export const EnrollmentTokenForm: FC<EnrollmentTokenFormProps> = ({ vm }) => (
       leftIcon={<KeyRound size={15} />}
       loading={vm.tokenForm.formState.isSubmitting}
     >
-      Выпустить токен
+      Создать токен
     </Button>
   </Form>
 );

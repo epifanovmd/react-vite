@@ -20,7 +20,7 @@ const STATE = {
   used: { label: "использован", variant: "muted" },
 } as const;
 
-/** Выпущенные токены: состояние, использования, срок; действующие можно отозвать. */
+/** Созданные токены: состояние, использования, срок; действующие можно отозвать. */
 export const EnrollmentTokenList: FC<EnrollmentTokenListProps> = observer(
   ({ vm }) => {
     if (vm.isTokensLoading && vm.tokens.length === 0) {
@@ -29,7 +29,7 @@ export const EnrollmentTokenList: FC<EnrollmentTokenListProps> = observer(
     if (vm.tokens.length === 0) {
       return (
         <p className="text-sm text-muted-foreground">
-          Токенов пока нет — выпустите первый.
+          Токенов пока нет — создайте первый.
         </p>
       );
     }

@@ -13,7 +13,7 @@ import { useEffect } from "react";
 
 /** Действия над агентом в строке таблицы. */
 export interface IAgentRowAccess {
-  /** Версия выпуска, до которой можно обновить; нельзя — `null`. */
+  /** Новая версия, до которой можно обновить; нельзя — `null`. */
   updateTo: string | null;
   canRotate: boolean;
   canRevoke: boolean;
@@ -21,7 +21,7 @@ export interface IAgentRowAccess {
 }
 
 /**
- * Список агентов с их проблемами и выпуском для обновления; действия с
+ * Список агентов с их проблемами и сборками для обновления; действия с
  * агентом и установка нового. Данные и комната `agents` — только с правом
  * просмотра.
  */
@@ -62,7 +62,7 @@ export const useAgentsVM = () => {
     isLoading: store.isLoading,
     error: store.error,
     alerts: store.alerts,
-    /** Версия выпуска, если агента можно обновить. */
+    /** Новая версия, если агента можно обновить. */
     updateTarget: (agent: AgentDto) =>
       store.updateCandidate(agent.id)?.target ?? null,
     accessOf,

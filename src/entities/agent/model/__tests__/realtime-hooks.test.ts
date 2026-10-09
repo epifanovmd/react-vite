@@ -76,7 +76,7 @@ describe("useAgentsRealtime", () => {
     expect(store.alerts).toHaveLength(0);
   });
 
-  it("переподключение перечитывает список, проблемы и выпуск", () => {
+  it("переподключение перечитывает список, проблемы и сборки", () => {
     renderHook(() => useAgentsRealtime(true));
     act(() => socket.reconnect());
 

@@ -67,7 +67,7 @@ describe("useEnrollAgentVM", () => {
     expect(store.loadRelease).toHaveBeenCalled();
   });
 
-  it("выпущенный токен показывается и подставляется в команду", async () => {
+  it("созданный токен показывается и подставляется в команду", async () => {
     api.createAgentEnrollmentToken.mockResolvedValue({
       data: { enrollmentToken: tokenDto, token: "abcd1234.secret" },
     });

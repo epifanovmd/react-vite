@@ -40,7 +40,7 @@ Node >= 22.12.0, Yarn >= 1.22.18 (см. `engines` в `package.json`).
 `/assets` — `max-age=31536000, immutable`, `index.html` — `no-cache`, gzip). Порт контейнера 80,
 на хосте — `APP_PORT`. `yarn prod` (vite preview) — только локальный предпросмотр.
 
-`Makefile` (как в шаблоне бэкенда): настройки — `.env.deploy` (образец `.env.deploy.example`,
+`Makefile`: настройки — `.env.deploy` (образец `.env.deploy.example`,
 файл не в git; без него make останавливается с подсказкой), `make deploy` = rsync
 (`.deployignore`) → `docker compose build` → `up` на хосте; `env` кладёт
 `.env.production.local`; `status/logs/restart/down`.

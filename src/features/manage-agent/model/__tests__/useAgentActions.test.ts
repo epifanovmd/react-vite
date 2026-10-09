@@ -251,13 +251,13 @@ describe("useWorkerActions", () => {
 
   it("ошибка — уведомление, без итога", async () => {
     api.updateAgentWorker.mockResolvedValue({
-      error: { message: "Воркер не из выпуска" },
+      error: { message: "У воркера нет сборки на сервере" },
     });
 
     const { result } = renderHook(() => useWorkerActions());
 
     await act(() => result.current.update(agent, worker(), "1.1.0"));
-    expect(toast.error).toHaveBeenCalledWith("Воркер не из выпуска");
+    expect(toast.error).toHaveBeenCalledWith("У воркера нет сборки на сервере");
     expect(toast.success).not.toHaveBeenCalled();
   });
 });
