@@ -1,38 +1,45 @@
-import type { IAgentManifestRouteDto } from "@shared/api/gen/main/model";
+import { cn } from "@shared/lib/utils/cn";
 import { Badge } from "@shared/ui";
 import { FC } from "react";
 
+import type { IWorkerRoute } from "../lib/worker-routes";
+
 interface WorkerRoutePickerProps {
-  routes: IAgentManifestRouteDto[];
-  onPick: (route: IAgentManifestRouteDto) => void;
+  routes: IWorkerRoute[];
+  /** Ключ выбранного маршрута. */
+  value: string;
+  onPick: (route: IWorkerRoute) => void;
 }
 
-/** Маршруты из манифеста воркера: выбор подставляет метод и путь. */
+/** Маршруты из манифеста воркера: выбор задаёт метод, путь и тело. */
 export const WorkerRoutePicker: FC<WorkerRoutePickerProps> = ({
   routes,
+  value,
   onPick,
-}) => {
-  if (routes.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        Маршрутов воркер не объявил — путь можно ввести вручную.
-      </p>
-    );
-  }
+}) => (
+  <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+    {routes.map(route => {
+      const selected = route.key === value;
 
-  return (
-    <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
-      {routes.map(route => (
-        <li key={`${route.method} ${route.path}`}>
+      return (
+        <li key={route.key}>
           <button
             type="button"
-            className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 px-3 py-2 text-left text-sm hover:bg-muted"
+            aria-pressed={selected}
+            className={cn(
+              "flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 px-3 py-2 text-left text-sm hover:bg-muted",
+              selected && "bg-muted",
+            )}
             onClick={() => onPick(route)}
           >
-            <Badge variant="secondary" className="font-mono">
-              {route.method.toUpperCase()}
+            <Badge
+              variant={selected ? "primary" : "secondary"}
+              className="font-mono"
+            >
+              {route.method}
             </Badge>
             <span className="font-mono">{route.path}</span>
+            {route.request && <Badge variant="outline">тело по схеме</Badge>}
             {route.description && (
               <span className="w-full text-xs text-muted-foreground">
                 {route.description}
@@ -40,7 +47,7 @@ export const WorkerRoutePicker: FC<WorkerRoutePickerProps> = ({
             )}
           </button>
         </li>
-      ))}
-    </ul>
-  );
-};
+      );
+    })}
+  </ul>
+);

@@ -3,19 +3,17 @@ import { Badge, Collapse } from "@shared/ui";
 import { FC } from "react";
 
 import type { IWorkerRow } from "../model/useAgentWorkersVM";
-import { WorkerJobsSection } from "./WorkerJobsSection";
+import { WorkerManifestSection } from "./WorkerManifestSection";
 import { WorkerMetricsSummary } from "./WorkerMetricsSummary";
 
 interface WorkerDetailsProps {
   row: IWorkerRow;
 }
 
-const SUBTITLE_CLASS =
-  "text-xs font-medium uppercase tracking-wide text-muted-foreground";
-
 /**
- * Раскрытая строка воркера: манифест (описание, маршруты, события, ключи
- * настроек, типы задач), сведения из `/health` и метрики.
+ * Раскрытая строка воркера: каталог возможностей из манифеста (маршруты со
+ * схемами тела и ответа, события со схемой, задачи, запросы к серверу, ключи
+ * настроек с итогом применения), сведения из `/health` и метрики.
  */
 export const WorkerDetails: FC<WorkerDetailsProps> = ({ row }) => {
   const { worker, metrics } = row;
@@ -36,104 +34,85 @@ export const WorkerDetails: FC<WorkerDetailsProps> = ({ row }) => {
       ) : (
         <>
           {manifest.description && <p>{manifest.description}</p>}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
-            <section className="flex flex-col gap-1.5">
-              <h4 className={SUBTITLE_CLASS}>
-                Маршруты · {manifest.routes.length}
-              </h4>
-              {manifest.routes.length === 0 ? (
-                <p className="text-xs text-muted-foreground">нет</p>
-              ) : (
-                <ul className="flex flex-col gap-1">
-                  {manifest.routes.map(route => (
-                    <li key={`${route.method} ${route.path}`}>
-                      <span className="font-mono text-xs">
-                        {route.method.toUpperCase()} {route.path}
-                      </span>
-                      {route.description && (
-                        <span className="block text-xs text-muted-foreground">
-                          {route.description}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-            <section className="flex flex-col gap-1.5">
-              <h4 className={SUBTITLE_CLASS}>
-                События · {manifest.events.length}
-              </h4>
-              {manifest.events.length === 0 ? (
-                <p className="text-xs text-muted-foreground">нет</p>
-              ) : (
-                <ul className="flex flex-col gap-1">
-                  {manifest.events.map(event => (
-                    <li key={event.type}>
-                      <span className="font-mono text-xs">{event.type}</span>
-                      {event.description && (
-                        <span className="block text-xs text-muted-foreground">
-                          {event.description}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-            <section className="flex flex-col gap-1.5">
-              <h4 className={SUBTITLE_CLASS}>
-                Ключи настроек · {manifest.configs.length}
-              </h4>
-              {manifest.configs.length === 0 ? (
-                <p className="text-xs text-muted-foreground">нет</p>
-              ) : (
-                <ul className="flex flex-col gap-1">
-                  {manifest.configs.map(config => {
-                    const report = worker.configs?.[config.key];
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            <WorkerManifestSection
+              title="Маршруты"
+              items={manifest.routes.map(route => ({
+                key: `${route.method} ${route.path}`,
+                name: `${route.method.toUpperCase()} ${route.path}`,
+                description: route.description,
+                schemas: [
+                  { label: "тело запроса", schema: route.request },
+                  { label: "ответ", schema: route.response },
+                ],
+              }))}
+            />
+            <WorkerManifestSection
+              title="События"
+              items={manifest.events.map(event => ({
+                key: event.type,
+                name: event.type,
+                description: event.description,
+                schemas: [{ label: "data", schema: event.schema }],
+              }))}
+            />
+            <WorkerManifestSection
+              title="Задачи"
+              items={manifest.jobs.map(job => ({
+                key: job.type,
+                name: job.type,
+                description: job.description,
+                schemas: [{ label: "данные", schema: job.schema }],
+              }))}
+            />
+            <WorkerManifestSection
+              title="Запросы к серверу"
+              items={(manifest.requests ?? []).map(request => ({
+                key: request.type,
+                name: request.type,
+                description: request.description,
+                schemas: [
+                  { label: "данные", schema: request.schema },
+                  { label: "ответ сервера", schema: request.response },
+                ],
+              }))}
+            />
+            <WorkerManifestSection
+              title="Ключи настроек"
+              items={manifest.configs.map(config => {
+                const report = worker.configs?.[config.key];
 
-                    return (
-                      <li key={config.key}>
-                        <span className="flex flex-wrap items-center gap-1.5">
-                          <span className="font-mono text-xs">
-                            {config.key}
-                          </span>
-                          {report && (
-                            <Badge
-                              variant={
-                                report.ok === undefined
-                                  ? "info"
-                                  : report.ok
-                                    ? "success"
-                                    : "destructive"
-                              }
-                            >
-                              v{report.version}
-                              {report.ok === undefined
-                                ? " · применяется"
-                                : report.ok
-                                  ? ""
-                                  : " · ошибка"}
-                            </Badge>
-                          )}
-                        </span>
-                        {config.description && (
-                          <span className="block text-xs text-muted-foreground">
-                            {config.description}
-                          </span>
-                        )}
-                        {report?.error && (
-                          <span className="block text-xs text-destructive">
-                            {report.error.message}
-                          </span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-            <WorkerJobsSection jobs={manifest.jobs} />
+                return {
+                  key: config.key,
+                  name: config.key,
+                  description: config.description,
+                  extra: report && (
+                    <Badge
+                      variant={
+                        report.ok === undefined
+                          ? "info"
+                          : report.ok
+                            ? "success"
+                            : "destructive"
+                      }
+                    >
+                      v{report.version}
+                      {report.ok === undefined
+                        ? " · применяется"
+                        : report.ok
+                          ? ""
+                          : " · ошибка"}
+                    </Badge>
+                  ),
+                  footer: report?.error && (
+                    <span className="text-xs text-destructive">
+                      {report.error.message}
+                    </span>
+                  ),
+                  schemas: [{ label: "значение", schema: config.schema }],
+                };
+              })}
+            />
           </div>
         </>
       )}

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   jobAttemptText,
   jobErrorDetails,
+  jobErrorText,
   jobExecutorText,
   jobOutputFiles,
   jobResultText,
@@ -37,6 +38,20 @@ describe("jobErrorDetails", () => {
       "Сбой",
     );
     expect(jobErrorDetails(job({}))).toBeNull();
+  });
+});
+
+describe("jobErrorText", () => {
+  it("ошибки по манифесту воркера — понятным текстом, остальные — как есть", () => {
+    expect(
+      jobErrorText(
+        job({ error: { code: "JOB_UNKNOWN", message: "unknown job type" } }),
+      ),
+    ).toContain("не объявил этот тип задачи");
+    expect(
+      jobErrorText(job({ error: { code: "JOB_TIMEOUT", message: "Срок" } })),
+    ).toBe("Срок");
+    expect(jobErrorText(job({}))).toBeNull();
   });
 });
 

@@ -31,11 +31,16 @@ export const demoJobSchema = z.object({
     .nullable(),
   fail: z.boolean(),
   withOutput: z.boolean(),
+  /** Быстрая задача: префикс воркер спрашивает у сервера (`echo.lookup`). */
+  lookup: z.boolean(),
 });
 
 export type TDemoJobForm = z.infer<typeof demoJobSchema>;
 
-/** Тело запроса демо-задачи: параметры долгой задачи — только для `echo.long`. */
+/**
+ * Тело запроса демо-задачи: `lookup` — только для `echo.quick`, параметры
+ * долгой задачи — только для `echo.long`.
+ */
 export const demoJobBody = ({
   kind,
   text,
@@ -43,9 +48,10 @@ export const demoJobBody = ({
   delayMs,
   fail,
   withOutput,
+  lookup,
 }: TDemoJobForm): IDemoEchoData =>
   kind === "quick"
-    ? { text }
+    ? { text, ...(lookup && { lookup }) }
     : {
         text,
         long: true,
@@ -57,7 +63,7 @@ export const demoJobBody = ({
 
 /**
  * Демо-задача `demo.echo` воркеру `echo` агента: `echo.quick` — итог в ответе
- * воркера, `echo.long` — шаги с ходом, отмена, провал после шагов и итог в
+ * воркера (с `lookup` — префикс по запросу воркера к серверу), `echo.long` — шаги с ходом, отмена, провал после шагов и итог в
  * файл.
  */
 export const useRunDemoJobVM = () => {
@@ -72,6 +78,7 @@ export const useRunDemoJobVM = () => {
       delayMs: 500,
       fail: false,
       withOutput: false,
+      lookup: false,
     },
   });
 

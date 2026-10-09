@@ -139,6 +139,31 @@ describe("WorkerFetchSession", () => {
       status: 502,
       code: "WORKER_UNAVAILABLE",
       message: "Воркер недоступен",
+      reason: null,
+    });
+  });
+
+  it("ошибка по манифесту — подробности агента из details.reason", async () => {
+    const session = new WorkerFetchSession();
+    const req = controlled();
+    const done = session.start("POST /echo", req.run);
+
+    req.head("application/json", null);
+    req.chunk(
+      encode(
+        JSON.stringify({
+          code: "AGENT_REQUEST_INVALID",
+          message: "Тело не по схеме",
+          details: { reason: "POST /echo: /text: нужна строка" },
+        }),
+      ),
+    );
+    req.finish({ data: true });
+    await done;
+
+    expect(session.apiError).toMatchObject({
+      code: "AGENT_REQUEST_INVALID",
+      reason: "POST /echo: /text: нужна строка",
     });
   });
 
@@ -156,6 +181,7 @@ describe("WorkerFetchSession", () => {
       status: 502,
       code: null,
       message: "Bad Gateway",
+      reason: null,
     });
   });
 });

@@ -15,27 +15,34 @@ export interface IWorkerFetchApiError {
   status: number;
   code: string | null;
   message: string;
+  /** Подробности агента (`details.reason`): замечания к телу и т. п. */
+  reason: string | null;
 }
 
 const parseApiError = (
   text: string | null,
-): { code: string | null; message: string | null } => {
+): { code: string | null; message: string | null; reason: string | null } => {
   try {
     const body: unknown = JSON.parse(text ?? "");
 
     if (typeof body === "object" && body !== null) {
-      const { code, message } = body as Record<string, unknown>;
+      const { code, message, details } = body as Record<string, unknown>;
+      const reason =
+        typeof details === "object" && details !== null
+          ? (details as Record<string, unknown>).reason
+          : undefined;
 
       return {
         code: typeof code === "string" ? code : null,
         message: typeof message === "string" ? message : null,
+        reason: typeof reason === "string" ? reason : null,
       };
     }
   } catch {
     // Тело не JSON — показывается статус.
   }
 
-  return { code: null, message: null };
+  return { code: null, message: null, reason: null };
 };
 
 /** Сколько текста показывать; дальше тело только скачать. */
@@ -92,12 +99,13 @@ export class WorkerFetchSession {
   get apiError(): IWorkerFetchApiError | null {
     if (!this.head || !this.isApiError || this.isRunning) return null;
 
-    const { code, message } = parseApiError(this.text);
+    const { code, message, reason } = parseApiError(this.text);
 
     return {
       status: this.head.status,
       code,
       message: message ?? (this.head.statusText || `HTTP ${this.head.status}`),
+      reason,
     };
   }
 

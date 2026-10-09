@@ -41,7 +41,16 @@ const agent = {
         version: "1.0.0",
         configs: [{ key: "settings", description: "Префикс" }],
         routes: [],
-        events: [{ type: "echo.done" }, { type: "echo.started" }],
+        events: [
+          { type: "echo.done" },
+          {
+            type: "echo.started",
+            description: "Воркер запущен",
+            schema: { type: "object" },
+          },
+        ],
+        jobs: [{ type: "echo.quick" }],
+        requests: [],
       },
     },
     {
@@ -53,6 +62,8 @@ const agent = {
         configs: [],
         routes: [],
         events: [{ type: "kv.saved" }],
+        jobs: [],
+        requests: [],
       },
     },
     { name: "sysmetrics", state: "running", builtin: true },
@@ -124,8 +135,19 @@ describe("useAgentEventsVM", () => {
     expect(result.current.typeOptions).toEqual([
       "echo.done",
       "echo.started",
+      "job.cancelled",
+      "job.done",
+      "job.failed",
+      "job.progress",
       "kv.saved",
     ]);
+    expect(result.current.declaration).toBeNull();
+
+    act(() => result.current.setType("echo.started"));
+    expect(result.current.declaration).toMatchObject({
+      description: "Воркер запущен",
+      schema: { type: "object" },
+    });
 
     act(() => result.current.setWorker("kv"));
     await waitFor(() =>

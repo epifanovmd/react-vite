@@ -1,3 +1,4 @@
+import { SchemaHint } from "@entities/agent";
 import type { AgentDto } from "@shared/api/gen/main/model";
 import { Button, Card, Empty, Select, Skeleton } from "@shared/ui";
 import { observer } from "mobx-react-lite";
@@ -55,6 +56,20 @@ export const AgentEventsTab: FC<AgentEventsTabProps> = observer(({ agent }) => {
         </div>
       }
     >
+      {vm.declaration && (
+        <div className="mb-4 flex flex-col gap-2">
+          {vm.declaration.description && (
+            <p className="text-sm text-muted-foreground">
+              {vm.declaration.description}
+            </p>
+          )}
+          <SchemaHint
+            schema={vm.declaration.schema}
+            label="data события"
+            emptyText="Схемы data воркер не объявил."
+          />
+        </div>
+      )}
       {feed.isLoading && feed.items.length === 0 ? (
         <Skeleton className="h-24 w-full" />
       ) : feed.items.length === 0 ? (

@@ -1,4 +1,4 @@
-import { ConfigStateBadge } from "@entities/agent";
+import { ConfigStateBadge, SchemaHint } from "@entities/agent";
 import {
   Alert,
   Button,
@@ -12,7 +12,6 @@ import { FC } from "react";
 
 import type { WorkerConfigEditorVM } from "../model/useWorkerConfigEditorVM";
 import type { TWorkerConfigForm } from "../model/validation";
-import { SchemaHint } from "./SchemaHint";
 
 interface WorkerConfigModalProps {
   vm: WorkerConfigEditorVM;

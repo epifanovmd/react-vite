@@ -22,6 +22,7 @@ const values = (patch: Partial<TDemoJobForm>): TDemoJobForm => ({
   delayMs: null,
   fail: false,
   withOutput: false,
+  lookup: false,
   ...patch,
 });
 
@@ -43,6 +44,14 @@ describe("demoJobBody", () => {
     expect(
       demoJobBody(values({ kind: "quick", steps: 3, fail: true })),
     ).toEqual({ text: "привет" });
+    expect(demoJobBody(values({ kind: "quick", lookup: true }))).toEqual({
+      text: "привет",
+      lookup: true,
+    });
+    expect(demoJobBody(values({ lookup: true }))).toEqual({
+      text: "привет",
+      long: true,
+    });
   });
 
   it("долгая — long и заданные параметры; пустые и выключенные не уходят", () => {

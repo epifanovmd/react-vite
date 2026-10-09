@@ -1,4 +1,4 @@
-import { formatSize } from "@entities/agent";
+import { agentErrorText, formatSize } from "@entities/agent";
 import { Alert, Badge, Button, Collapse, Empty, Tooltip } from "@shared/ui";
 import { Download } from "lucide-react";
 import { observer } from "mobx-react-lite";
@@ -44,7 +44,8 @@ export const WorkerFetchResponse: FC<WorkerFetchResponseProps> = observer(
       );
     }
 
-    const { head } = session;
+    const { head, apiError } = session;
+    const known = agentErrorText(apiError?.code);
     const duration = session.durationAt(session.finishedAt ?? Date.now());
     const headers = Object.entries(head?.headers ?? {}).sort(([a], [b]) =>
       a.localeCompare(b),
@@ -83,15 +84,23 @@ export const WorkerFetchResponse: FC<WorkerFetchResponseProps> = observer(
               .join(" · ")}
           </span>
         </p>
-        {session.apiError && (
-          <Alert variant="destructive" title="Ошибка API — воркер не ответил">
+        {apiError && (
+          <Alert
+            variant="destructive"
+            title={known?.title ?? "Ошибка API — воркер не ответил"}
+          >
             <span className="flex flex-col gap-1">
-              {session.apiError.code && (
+              {apiError.code && (
                 <span className="font-mono text-xs">
-                  {session.apiError.code} · HTTP {session.apiError.status}
+                  {apiError.code} · HTTP {apiError.status}
                 </span>
               )}
-              {session.apiError.message}
+              {known?.hint ?? apiError.message}
+              {apiError.reason && (
+                <span className="whitespace-pre-wrap font-mono text-xs">
+                  {apiError.reason}
+                </span>
+              )}
             </span>
           </Alert>
         )}

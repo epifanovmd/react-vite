@@ -22,6 +22,21 @@ const KIND_HINT = {
   long: "Шаги с ходом в реальном времени; задачу можно отменить",
 };
 
+/** Параметр быстрой задачи `echo.quick`: префикс от сервера. */
+const QuickJobFields: FC = () => {
+  const kind = useFormValue<TDemoJobForm, "kind">("kind");
+
+  if (kind !== "quick") return null;
+
+  return (
+    <SwitchFormField<TDemoJobForm>
+      name="lookup"
+      label="Префикс от сервера"
+      description="Воркер во время задачи спросит префикс у сервера (запрос echo.lookup)"
+    />
+  );
+};
+
 /** Параметры долгой задачи `echo.long`. */
 const LongJobFields: FC = () => {
   const kind = useFormValue<TDemoJobForm, "kind">("kind");
@@ -80,6 +95,7 @@ export const RunDemoJobForm: FC = () => {
       />
       <KindHint />
       <InputFormField<TDemoJobForm> name="text" label="Текст для воркера" />
+      <QuickJobFields />
       <LongJobFields />
       <Button
         type="submit"

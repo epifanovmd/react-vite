@@ -12,4 +12,6 @@ export interface IAgentEventDto {
   at: number;
   /** Когда принято, мс. */
   receivedAt: number;
+  /** `data` не подошло под схему события из манифеста воркера: замечания. */
+  problems?: string[];
 }

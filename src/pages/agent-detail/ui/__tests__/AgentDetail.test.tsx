@@ -52,6 +52,7 @@ const agent: AgentDto = {
         routes: [{ method: "GET", path: "/keys/{key}" }],
         events: [{ type: "backup.done" }],
         jobs: [],
+        requests: [],
       },
     },
   ],

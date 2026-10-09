@@ -13,12 +13,15 @@ export const FETCH_METHODS = [
   "OPTIONS",
 ] as const;
 
-/** Как отправить тело: без тела, JSON или текстом. */
+/** Как отправить тело: форма по схеме маршрута, без тела, JSON или текстом. */
 export const BODY_MODES = [
+  { value: "form", label: "Форма" },
   { value: "none", label: "Без тела" },
   { value: "json", label: "JSON" },
   { value: "text", label: "Текст" },
 ] as const;
+
+export type TBodyMode = (typeof BODY_MODES)[number]["value"];
 
 /** Срок ответа, с (не больше 10 минут — предел агента). */
 export const MAX_TIMEOUT_SEC = 600;
@@ -26,14 +29,16 @@ export const MAX_TIMEOUT_SEC = 600;
 export const workerFetchSchema = z
   .object({
     worker: z.string().min(1, "Выберите воркер."),
+    /** Маршрут из манифеста (`МЕТОД /путь`): другие агент не пропустит. */
+    route: z.string().min(1, "Выберите маршрут воркера."),
     method: z.enum(FETCH_METHODS),
-    path: z
-      .string()
-      .trim()
-      .startsWith("/", "Путь — от «/».")
-      .max(2048, "Не длиннее 2048 символов."),
+    path: z.string().trim().startsWith("/", "Путь — от «/»."),
     params: z.record(z.string(), z.string()),
-    bodyMode: z.enum(["none", "json", "text"]),
+    /** Параметры после `?`: `n=3&full=1`. */
+    query: z.string().trim().max(1024, "Не длиннее 1024 символов."),
+    bodyMode: z.enum(["form", "none", "json", "text"]),
+    /** Поля формы по схеме тела маршрута — строки (`schemaFormBody`). */
+    fields: z.record(z.string(), z.string().nullable().optional()),
     body: z.string(),
     headers: z.string(),
     timeoutSec: z

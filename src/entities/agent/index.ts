@@ -12,6 +12,7 @@ export {
   workersSummary,
 } from "./lib/agent";
 export { AGENT_RX_COLOR, AGENT_TX_COLOR } from "./lib/colors";
+export { agentErrorText } from "./lib/errors";
 export {
   byteAxisDomain,
   formatAgo,
@@ -51,6 +52,16 @@ export {
 export { AGENT_PERMISSIONS } from "./lib/permissions";
 export type { ISchemaField, ISchemaHint } from "./lib/schema";
 export { schemaHint, schemaSkeleton } from "./lib/schema";
+export type {
+  ISchemaFormField,
+  TSchemaFieldKind,
+  TSchemaFormValues,
+} from "./lib/schema-form";
+export {
+  schemaFormBody,
+  schemaFormDefaults,
+  schemaFormFields,
+} from "./lib/schema-form";
 export { isWorkerTroubled } from "./lib/status";
 export type { AgentEventFeed } from "./model/agent-event-feed";
 export { AGENT_EVENTS_PAGE_SIZE } from "./model/agent-event-feed";
@@ -78,6 +89,7 @@ export { AgentRxTx } from "./ui/AgentRxTx";
 export { AgentStatusBadge } from "./ui/AgentStatusBadge";
 export { AlertAgentLink } from "./ui/AlertAgentLink";
 export { ConfigStateBadge } from "./ui/ConfigStateBadge";
+export { SchemaHint } from "./ui/SchemaHint";
 export { WorkerHealthBadge } from "./ui/WorkerHealthBadge";
 export { WorkerPendingBadge } from "./ui/WorkerPendingBadge";
 export { WorkerStateBadge } from "./ui/WorkerStateBadge";

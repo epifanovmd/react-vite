@@ -1,5 +1,10 @@
 export interface IDemoEchoData {
   text: string;
+  /**
+   * Быстрая задача берёт префикс у сервера: воркер шлёт запрос `echo.lookup`
+   * (`DemoEchoLookupHandler`).
+   */
+  lookup?: boolean;
   /** Долгая задача `echo.long`: шаги с событиями хода; иначе — `echo.quick`. */
   long?: boolean;
   /** Шагов долгой задачи (по умолчанию 5). */

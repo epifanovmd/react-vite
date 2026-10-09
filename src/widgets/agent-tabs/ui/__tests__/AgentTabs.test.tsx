@@ -71,12 +71,34 @@ const agent = {
             },
           },
         ],
-        routes: [{ method: "POST", path: "/echo", description: "Эхо" }],
+        routes: [
+          {
+            method: "POST",
+            path: "/echo",
+            description: "Эхо",
+            request: {
+              type: "object",
+              required: ["text"],
+              properties: { text: { type: "string", description: "Текст" } },
+            },
+            response: {
+              type: "object",
+              properties: { text: { type: "string" } },
+            },
+          },
+        ],
         events: [{ type: "echo.done" }],
         jobs: [
           {
             type: "echo.long",
             description: "Долгая задача",
+            schema: { type: "object" },
+          },
+        ],
+        requests: [
+          {
+            type: "echo.lookup",
+            description: "Префикс от сервера",
             schema: { type: "object" },
           },
         ],
@@ -250,6 +272,9 @@ describe("AgentTabs", () => {
     expect(screen.getByText("POST /echo")).toBeInTheDocument();
     expect(screen.getByText("echo.done")).toBeInTheDocument();
     expect(screen.getByText("Задачи · 1")).toBeInTheDocument();
+    expect(screen.getByText("Запросы к серверу · 1")).toBeInTheDocument();
+    expect(screen.getByText("echo.lookup")).toBeInTheDocument();
+    expect(screen.getByText("тело запроса · ответ")).toBeInTheDocument();
     expect(screen.getByText("echo.long")).toBeInTheDocument();
     expect(screen.getByText("Долгая задача")).toBeInTheDocument();
     expect(screen.getByText("плохой префикс")).toBeInTheDocument();
@@ -338,12 +363,19 @@ describe("AgentTabs", () => {
     ).toBeInTheDocument();
   });
 
-  it("запрос: маршруты воркера из манифеста", () => {
+  it("запрос: только маршруты из манифеста; тело — форма по схеме, подсказка по ответу", () => {
     renderTab("fetch", { ...none, canFetch: true });
 
-    expect(screen.getByText("Маршруты воркера")).toBeInTheDocument();
-    expect(screen.getByText("/echo")).toBeInTheDocument();
+    expect(screen.getByText("Маршрут")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Путь")).toBeNull();
+    expect(screen.getByText("/jobs")).toBeInTheDocument();
     expect(screen.getByText("Ответа пока нет")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /\/echo/ }));
+
+    expect(screen.getByLabelText(/^text/)).toBeInTheDocument();
+    expect(screen.getByText("Текст")).toBeInTheDocument();
+    expect(screen.getByText("ответ")).toBeInTheDocument();
   });
 
   it("события: лента со ссылкой на задачу", async () => {

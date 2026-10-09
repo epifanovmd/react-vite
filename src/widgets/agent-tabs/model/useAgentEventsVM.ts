@@ -1,8 +1,15 @@
 import { configuredWorkers, useAgentEventFeed } from "@entities/agent";
 import { IMainApi } from "@shared/api";
-import type { AgentDto, IAgentEventDto } from "@shared/api/gen/main/model";
+import type {
+  AgentDto,
+  IAgentEventDto,
+  IAgentManifestEventDto,
+} from "@shared/api/gen/main/model";
 import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 import { useState } from "react";
+
+/** События задач: агент принимает их от воркера с `jobs` в манифесте. */
+const JOB_EVENTS = ["job.progress", "job.done", "job.failed", "job.cancelled"];
 
 /**
  * События воркеров агента, новые первыми: страницы с сервера по курсору (с
@@ -38,15 +45,19 @@ export const useAgentEventsVM = (agent: AgentDto) => {
   });
 
   const workers = configuredWorkers(agent);
-  // Типы — из манифестов: выбранного воркера или всех.
-  const types = [
-    ...new Set(
-      workers
-        .filter(item => !worker || item.name === worker)
-        .flatMap(item => item.manifest?.events ?? [])
-        .map(event => event.type),
-    ),
-  ].sort();
+  // Типы — объявленные в манифестах (других агент не принимает): выбранного
+  // воркера или всех; у воркера с задачами — ещё события задач.
+  const declared = workers
+    .filter(item => !worker || item.name === worker)
+    .flatMap(item => [
+      ...(item.manifest?.events ?? []),
+      ...(item.manifest?.jobs.length
+        ? JOB_EVENTS.map(jobType => ({ type: jobType }))
+        : []),
+    ]);
+  const types = [...new Set(declared.map(event => event.type))].sort();
+  const declaration: IAgentManifestEventDto | null =
+    (type && declared.find(event => event.type === type)) || null;
 
   return {
     feed,
@@ -59,6 +70,8 @@ export const useAgentEventsVM = (agent: AgentDto) => {
     setType,
     workerOptions: workers.map(item => item.name),
     typeOptions: types,
+    /** Объявление выбранного типа в манифесте: описание и схема `data`. */
+    declaration,
   };
 };
 

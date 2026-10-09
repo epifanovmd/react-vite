@@ -12,9 +12,18 @@ const ACTIVE = new Set<EJobRunStatus>([
 /** Задача ещё идёт: её можно отменить, прогресс меняется. */
 export const isJobActive = (job: JobRunDto): boolean => ACTIVE.has(job.status);
 
+/** Понятный текст ошибок по манифесту воркера (код агента). */
+const KNOWN_ERRORS: Record<string, string> = {
+  JOB_UNKNOWN:
+    "Воркер не объявил этот тип задачи в манифесте — агент её не принял",
+  ROUTE_UNDECLARED: "Воркер не объявил задач в манифесте — агент её не принял",
+};
+
 /** Текст ошибки для человека; `null` — ошибки нет. */
 export const jobErrorText = (job: JobRunDto): string | null =>
-  job.error?.message ?? null;
+  job.error
+    ? (KNOWN_ERRORS[job.error.code.replace(/^AGENT_/, "")] ?? job.error.message)
+    : null;
 
 /** Ошибка с кодом: «JOB_TIMEOUT: Срок истёк»; ошибки нет — `null`. */
 export const jobErrorDetails = (job: JobRunDto): string | null => {

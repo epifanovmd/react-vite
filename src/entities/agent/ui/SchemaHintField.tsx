@@ -1,5 +1,6 @@
-import type { ISchemaField } from "@entities/agent";
 import { FC } from "react";
+
+import type { ISchemaField } from "../lib/schema";
 
 interface SchemaHintFieldProps {
   field: ISchemaField;

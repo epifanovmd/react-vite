@@ -14,6 +14,7 @@ export const makeWorker = (
     routes: [],
     events: [],
     jobs: [],
+    requests: [],
   },
   ...patch,
 });

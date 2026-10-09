@@ -4,7 +4,11 @@ import { iocContainer } from "@shared/lib/di";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { fetchBodyOf, useWorkerFetchVM } from "../useWorkerFetchVM";
+import {
+  bodyModesOf,
+  fetchBodyOf,
+  useWorkerFetchVM,
+} from "../useWorkerFetchVM";
 
 const stream = vi.fn();
 
@@ -25,9 +29,24 @@ const agent = {
         version: "1.0.0",
         configs: [],
         events: [],
+        jobs: [{ type: "echo.quick" }],
+        requests: [],
         routes: [
           { method: "post", path: "/work/{id}/cancel" },
           { method: "GET", path: "/stream" },
+          {
+            method: "POST",
+            path: "/echo",
+            request: {
+              type: "object",
+              required: ["text"],
+              properties: {
+                text: { type: "string" },
+                repeat: { type: "integer", minimum: 1 },
+              },
+            },
+            response: { type: "object" },
+          },
         ],
       },
     },
@@ -37,14 +56,30 @@ const agent = {
 
 const form = {
   worker: "echo",
+  route: "GET /stream",
   method: "GET" as const,
   path: "/stream",
   params: {},
+  query: "",
   bodyMode: "none" as const,
+  fields: {},
   body: "",
   headers: "",
   timeoutSec: null,
 };
+
+const echoFields = [
+  {
+    name: "text",
+    kind: "string" as const,
+    required: true,
+    description: null,
+    options: [],
+    minimum: null,
+    maximum: null,
+    maxLength: null,
+  },
+];
 
 beforeEach(() => {
   iocContainer.bind(IMainSession.Tid).toConstantValue({ accessToken: "t" });
@@ -53,6 +88,26 @@ beforeEach(() => {
 afterEach(() => {
   iocContainer.unbind(IMainSession.Tid);
   vi.clearAllMocks();
+});
+
+describe("bodyModesOf", () => {
+  it("по схеме — форма и JSON; чтение — без тела; остальное — выбор", () => {
+    expect(bodyModesOf(null)).toEqual(["none"]);
+    expect(bodyModesOf({ key: "GET /a", method: "GET", path: "/a" })).toEqual([
+      "none",
+    ]);
+    expect(bodyModesOf({ key: "POST /a", method: "POST", path: "/a" })).toEqual(
+      ["none", "json", "text"],
+    );
+    expect(
+      bodyModesOf({
+        key: "POST /a",
+        method: "POST",
+        path: "/a",
+        request: { type: "array" },
+      }),
+    ).toEqual(["json"]);
+  });
 });
 
 describe("fetchBodyOf", () => {
@@ -81,6 +136,27 @@ describe("fetchBodyOf", () => {
     });
   });
 
+  it("параметры после «?» и тело формой по схеме", () => {
+    expect(
+      fetchBodyOf(
+        {
+          ...form,
+          method: "POST",
+          path: "/echo",
+          query: "?upper=1",
+          bodyMode: "form",
+          fields: { text: "привет" },
+        },
+        echoFields,
+      ),
+    ).toEqual({
+      method: "POST",
+      path: "/echo?upper=1",
+      headers: { "content-type": "application/json" },
+      body: '{"text":"привет"}',
+    });
+  });
+
   it("текст: свой content-type не перезаписывается", () => {
     expect(
       fetchBodyOf({
@@ -98,16 +174,77 @@ describe("fetchBodyOf", () => {
 });
 
 describe("useWorkerFetchVM", () => {
-  it("воркеры без встроенного, маршрут подставляет метод, путь и тело", () => {
+  it("воркеры без встроенного; маршруты — из манифеста и задач; выбор задаёт метод, путь и тело", () => {
     const { result } = renderHook(() => useWorkerFetchVM(agent));
 
     expect(result.current.workers.map(w => w.name)).toEqual(["echo"]);
-    expect(result.current.routes).toHaveLength(2);
+    expect(result.current.routes.map(r => r.key)).toEqual([
+      "POST /work/{id}/cancel",
+      "GET /stream",
+      "POST /echo",
+      "POST /jobs",
+      "GET /jobs/{id}",
+      "POST /jobs/{id}/cancel",
+    ]);
 
     act(() => result.current.pickRoute(result.current.routes[0]));
     expect(result.current.form.getValues("method")).toBe("POST");
     expect(result.current.form.getValues("path")).toBe("/work/{id}/cancel");
-    expect(result.current.form.getValues("bodyMode")).toBe("json");
+    expect(result.current.form.getValues("bodyMode")).toBe("none");
+    expect(result.current.params).toEqual(["id"]);
+  });
+
+  it("маршрут со схемой тела — форма по полям; форма ↔ JSON переносит введённое", () => {
+    const { result } = renderHook(() => useWorkerFetchVM(agent));
+
+    act(() => result.current.pickRoute(result.current.routes[2]));
+    expect(result.current.route?.key).toBe("POST /echo");
+    expect(result.current.bodyModes).toEqual(["form", "json"]);
+    expect(result.current.fields?.map(f => f.name)).toEqual(["text", "repeat"]);
+    expect(result.current.form.getValues("bodyMode")).toBe("form");
+
+    act(() => result.current.form.setValue("fields.text", "аб"));
+    act(() => result.current.setBodyMode("json"));
+    expect(JSON.parse(result.current.form.getValues("body"))).toEqual({
+      text: "аб",
+    });
+
+    act(() => result.current.form.setValue("body", '{"text":"в","repeat":2}'));
+    act(() => result.current.setBodyMode("form"));
+    expect(result.current.form.getValues("fields")).toEqual({
+      text: "в",
+      repeat: "2",
+    });
+  });
+
+  it("форма не по схеме — ошибки у полей, запрос не уходит", async () => {
+    const { result } = renderHook(() => useWorkerFetchVM(agent));
+
+    act(() => result.current.pickRoute(result.current.routes[2]));
+    await act(() =>
+      result.current.submit({
+        ...result.current.form.getValues(),
+        fields: { text: "", repeat: "0" },
+      }),
+    );
+
+    expect(stream).not.toHaveBeenCalled();
+    expect(
+      result.current.form.getFieldState("fields.text").error?.message,
+    ).toBe("Обязательное поле.");
+    expect(
+      result.current.form.getFieldState("fields.repeat").error?.message,
+    ).toBe("Не меньше 1.");
+  });
+
+  it("смена воркера сбрасывает маршрут", () => {
+    const { result } = renderHook(() => useWorkerFetchVM(agent));
+
+    act(() => result.current.pickRoute(result.current.routes[1]));
+    expect(result.current.route).not.toBeNull();
+    act(() => result.current.form.setValue("worker", "other"));
+    expect(result.current.form.getValues("route")).toBe("");
+    expect(result.current.routes).toEqual([]);
   });
 
   it("отправка идёт потоком к выбранному воркеру агента", async () => {

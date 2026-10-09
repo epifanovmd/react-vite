@@ -22,7 +22,10 @@ const jobIdOf = (data: unknown): string | null =>
     ? data.jobId
     : null;
 
-/** Событие воркера: время, воркер, тип, данные (целиком — по раскрытию). */
+/**
+ * Событие воркера: время, воркер, тип, данные (целиком — по раскрытию);
+ * `data` не по схеме манифеста — пометка и замечания сервера.
+ */
 export const AgentEventItem: FC<AgentEventItemProps> = ({ event }) => {
   const jobId = jobIdOf(event.data);
 
@@ -38,6 +41,11 @@ export const AgentEventItem: FC<AgentEventItemProps> = ({ event }) => {
         </Tooltip>
         <Badge variant="secondary">{event.worker}</Badge>
         <span className="font-medium">{event.type}</span>
+        {event.problems && event.problems.length > 0 && (
+          <Tooltip content={event.problems.join("\n")}>
+            <Badge variant="warning">data не по схеме</Badge>
+          </Tooltip>
+        )}
         {jobId && (
           <Link to="/jobs" className="text-xs text-primary hover:underline">
             задача {jobId.slice(0, 8)}
@@ -49,6 +57,13 @@ export const AgentEventItem: FC<AgentEventItemProps> = ({ event }) => {
           </code>
         )}
       </div>
+      {event.problems && event.problems.length > 0 && (
+        <ul className="text-xs text-warning">
+          {event.problems.map(problem => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
+      )}
       {event.data !== undefined && (
         <Collapse size="sm">
           <Collapse.Trigger>Данные</Collapse.Trigger>

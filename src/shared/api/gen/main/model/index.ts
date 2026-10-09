@@ -55,6 +55,7 @@ export * from "./iAgentLogsDto.ts";
 export * from "./iAgentManifestConfigDto.ts";
 export * from "./iAgentManifestEventDto.ts";
 export * from "./iAgentManifestJobDto.ts";
+export * from "./iAgentManifestRequestDto.ts";
 export * from "./iAgentManifestRouteDto.ts";
 export * from "./iAgentMetricsPointDto.ts";
 export * from "./iAgentReleaseArtifactDto.ts";
