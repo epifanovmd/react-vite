@@ -68,6 +68,8 @@ export const useAgentsVM = () => {
     accessOf,
     /** Меняется вместе с правами — колонки таблицы пересобираются по нему. */
     accessKey: userStore.accessKey,
+    /** Сборки и кандидаты на обновление: пришли или сменились — колонки тоже пересобираются. */
+    release: store.release,
     actions,
     install,
     canEnroll,

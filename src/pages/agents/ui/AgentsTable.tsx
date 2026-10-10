@@ -15,12 +15,12 @@ interface AgentsTableProps {
 export const AgentsTable: FC<AgentsTableProps> = observer(({ vm }) => {
   const navigate = useNavigate();
   const vmRef = useLatestRef(vm);
-  const { accessKey } = vm;
-  // Права действий считаются по строке; при смене прав колонки пересобираются.
+  const { accessKey, release } = vm;
+  // Права и обновления считаются по строке; сменились права или сборки — колонки пересобираются.
   const columns = useMemo(
     () => createAgentColumns({ vm: vmRef }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [accessKey, vmRef],
+    [accessKey, release, vmRef],
   );
 
   return (

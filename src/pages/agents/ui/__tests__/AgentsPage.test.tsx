@@ -8,7 +8,7 @@ import { INotificationService } from "@shared/lib/notifications";
 import { ISocketTransport } from "@shared/lib/socket";
 import { createFakeSocket } from "@shared/lib/socket/testing";
 import { TooltipProvider } from "@shared/ui";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -79,6 +79,7 @@ const api = {
           target: "1.2.0",
           os: "linux",
           arch: "amd64",
+          source: "server" as const,
         },
       ],
       workerCandidates: [],
@@ -110,6 +111,33 @@ afterEach(() => {
 });
 
 describe("AgentsPage", () => {
+  it("сборки пришли позже списка — значок обновления и кнопка появляются сразу", async () => {
+    const release = await api.getAgentRelease();
+    let resolve!: (value: typeof release) => void;
+
+    api.getAgentRelease.mockImplementationOnce(
+      () => new Promise(r => (resolve = r)),
+    );
+    render(
+      <TooltipProvider>
+        <AgentsPage />
+      </TooltipProvider>,
+    );
+
+    const online = (await screen.findByText("node-01")).closest("tr")!;
+
+    expect(
+      within(online).queryByLabelText("Доступна версия 1.2.0"),
+    ).not.toBeInTheDocument();
+    await act(async () => resolve(release));
+    expect(
+      within(online).getByLabelText("Доступна версия 1.2.0"),
+    ).toBeInTheDocument();
+    expect(
+      within(online).getByRole("button", { name: "Обновить агента" }),
+    ).toBeInTheDocument();
+  });
+
   it("строки агентов со статусом, обновлением и действиями", async () => {
     render(
       <TooltipProvider>
