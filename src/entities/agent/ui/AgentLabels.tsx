@@ -1,3 +1,4 @@
+import { cn } from "@shared/lib/utils/cn";
 import { CodeChip } from "@shared/ui";
 import { FC } from "react";
 
@@ -7,10 +8,16 @@ interface AgentLabelsProps {
   labels: Record<string, string>;
   /** Что показать без меток. */
   emptyText?: string;
+  /** Каждая метка в одну строку с обрезкой, целиком — в подсказке (для таблиц). */
+  compact?: boolean;
 }
 
 /** Метки агента «ключ=значение». */
-export const AgentLabels: FC<AgentLabelsProps> = ({ labels, emptyText }) => {
+export const AgentLabels: FC<AgentLabelsProps> = ({
+  labels,
+  emptyText,
+  compact,
+}) => {
   const items = agentLabels(labels);
 
   if (items.length === 0) {
@@ -20,9 +27,15 @@ export const AgentLabels: FC<AgentLabelsProps> = ({ labels, emptyText }) => {
   }
 
   return (
-    <span className="flex flex-wrap gap-1">
+    <span className={cn("flex flex-wrap gap-1", compact && "min-w-0")}>
       {items.map(label => (
-        <CodeChip key={label}>{label}</CodeChip>
+        <CodeChip
+          key={label}
+          title={compact ? label : undefined}
+          className={cn(compact && "block max-w-full truncate")}
+        >
+          {label}
+        </CodeChip>
       ))}
     </span>
   );

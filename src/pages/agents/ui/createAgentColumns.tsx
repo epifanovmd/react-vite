@@ -38,12 +38,13 @@ export const createAgentColumns = ({ vm }: AgentColumnsOptions) => [
   column.display({
     id: "name",
     header: "Агент",
+    size: 220,
     cell: ({ row }) => (
       <div className="min-w-0">
         <Link
           to="/agents/$agentId"
           params={{ agentId: row.original.id }}
-          className="truncate font-medium hover:underline"
+          className="block truncate font-medium hover:underline"
           onClick={stopRowClick}
         >
           {row.original.name}
@@ -59,7 +60,7 @@ export const createAgentColumns = ({ vm }: AgentColumnsOptions) => [
     header: "Метки",
     size: 180,
     cell: ({ row }) => (
-      <AgentLabels labels={row.original.labels} emptyText="—" />
+      <AgentLabels labels={row.original.labels} emptyText="—" compact />
     ),
   }),
   column.display({
@@ -87,12 +88,12 @@ export const createAgentColumns = ({ vm }: AgentColumnsOptions) => [
       const target = vm.current.updateTarget(row.original);
 
       return (
-        <p className="flex items-center gap-1.5 text-sm">
+        <p className="flex flex-wrap items-center gap-1.5 whitespace-nowrap text-sm">
           {agentVersion(row.original) ?? "—"}
           {target && (
             <Tooltip content={`Доступна версия ${target}`}>
               <Badge variant="warning" aria-label={`Доступна версия ${target}`}>
-                обновление
+                → {target}
               </Badge>
             </Tooltip>
           )}
