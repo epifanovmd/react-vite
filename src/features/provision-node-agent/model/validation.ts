@@ -1,4 +1,3 @@
-import { workerNameSchema } from "@entities/agent";
 import { z } from "zod";
 
 const urlField = z
@@ -11,7 +10,7 @@ export const SSH_AUTH_OPTIONS = [
   { value: "key", label: "Ключ" },
 ] as const;
 
-/** Команда установки: срок токена, адрес сервера, воркеры. */
+/** Команда установки: срок токена, адрес сервера. */
 export const installCommandSchema = z.object({
   expiresInMinutes: z
     .number("Укажите срок.")
@@ -19,7 +18,6 @@ export const installCommandSchema = z.object({
     .min(5, "Не меньше 5 минут.")
     .max(43_200, "Не больше 30 дней."),
   baseUrl: urlField,
-  workers: z.array(workerNameSchema),
 });
 
 export type TInstallCommandForm = z.input<typeof installCommandSchema>;
@@ -37,7 +35,6 @@ export const sshSchema = z
     passphrase: z.string(),
     sudo: z.boolean(),
     backendUrl: urlField,
-    workers: z.array(workerNameSchema),
     purge: z.boolean(),
   })
   .superRefine((data, ctx) => {

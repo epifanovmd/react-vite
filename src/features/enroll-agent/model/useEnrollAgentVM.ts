@@ -1,4 +1,3 @@
-import { IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type { AgentEnrollmentTokenDto } from "@shared/api/gen/main/model";
 import { useCollection } from "@shared/lib/holders";
@@ -46,7 +45,6 @@ export const enrollmentTokenState = (
 export const useEnrollAgentVM = () => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
-  const agents = IAgentsStore.useInstance();
   const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const [issued, setIssued] = useState<string | null>(null);
@@ -78,7 +76,6 @@ export const useEnrollAgentVM = () => {
     setIssued(null);
     setCommand(null);
     setOpen(true);
-    void agents.loadRelease();
   };
 
   const createToken = async (values: TEnrollmentTokenValues) => {
@@ -127,16 +124,8 @@ export const useEnrollAgentVM = () => {
     });
   };
 
-  const createCommand = async ({
-    killMode,
-    ...values
-  }: TInstallCommandValues) => {
-    const res = await api.createAgentInstallCommand({
-      ...values,
-      workers: values.workers.length ? values.workers : undefined,
-      privileged: values.privileged || undefined,
-      killMode: killMode === "default" ? undefined : killMode,
-    });
+  const createCommand = async (values: TInstallCommandValues) => {
+    const res = await api.createAgentInstallCommand(values);
 
     if (!res.data) {
       notifyApiError(toast, res.error);
@@ -162,10 +151,6 @@ export const useEnrollAgentVM = () => {
     createCommand,
     /** Готовая команда установки. */
     command,
-    /** Воркеры с сервера — их можно поставить вместе с агентом. */
-    releaseWorkers: [
-      ...new Set(agents.release?.manifest?.workers?.map(w => w.name) ?? []),
-    ].sort(),
   };
 };
 

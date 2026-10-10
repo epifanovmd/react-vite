@@ -5,7 +5,6 @@ import {
   CopyableText,
   Form,
   InputFormField,
-  MultiSelectFormField,
   NumberInputFormField,
   PLAIN_NUMBER_FORMAT,
 } from "@shared/ui";
@@ -33,28 +32,11 @@ export const InstallCommandPanel: FC<InstallCommandPanelProps> = observer(
         onSubmit={vm.createCommand}
         className="flex flex-col gap-4"
       >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <NumberInputFormField<TInstallCommandForm>
-            name="expiresInMinutes"
-            label="Срок токена, минут"
-            formatOptions={PLAIN_NUMBER_FORMAT}
-          />
-          <MultiSelectFormField<TInstallCommandForm>
-            name="workers"
-            label="Воркеры"
-            description={
-              vm.releaseWorkers.length
-                ? "Со сборками с сервера; ничего не выбрано — только проверка сети (netprobe)"
-                : "На сервере воркеров нет — только проверка сети (netprobe)"
-            }
-            options={vm.releaseWorkers.map(name => ({
-              value: name,
-              label: name,
-            }))}
-            disabled={vm.releaseWorkers.length === 0}
-            clearable
-          />
-        </div>
+        <NumberInputFormField<TInstallCommandForm>
+          name="expiresInMinutes"
+          label="Срок токена, минут"
+          formatOptions={PLAIN_NUMBER_FORMAT}
+        />
         <InputFormField<TInstallCommandForm>
           name="baseUrl"
           label="Адрес сервера для узла"

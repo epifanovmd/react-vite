@@ -1,4 +1,3 @@
-import { IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import { iocContainer } from "@shared/lib/di";
 import { INotificationService } from "@shared/lib/notifications";
@@ -35,7 +34,6 @@ const api = {
   createAgentInstallCommand: vi.fn(),
 };
 const toast = { error: vi.fn(), success: vi.fn(), info: vi.fn() };
-const store = { loadRelease: vi.fn(), release: null };
 
 beforeEach(() => {
   api.getAgentEnrollmentTokens.mockResolvedValue({
@@ -43,13 +41,11 @@ beforeEach(() => {
   });
   iocContainer.bind(IMainApi.Tid).toConstantValue(api);
   iocContainer.bind(INotificationService.Tid).toConstantValue(toast);
-  iocContainer.bind(IAgentsStore.Tid).toConstantValue(store);
 });
 
 afterEach(() => {
   iocContainer.unbind(IMainApi.Tid);
   iocContainer.unbind(INotificationService.Tid);
-  iocContainer.unbind(IAgentsStore.Tid);
   vi.clearAllMocks();
 });
 
@@ -64,7 +60,6 @@ describe("useEnrollAgentVM", () => {
         limit: 100,
       }),
     );
-    expect(store.loadRelease).toHaveBeenCalled();
   });
 
   it("созданный токен показывается и подставляется в команду", async () => {

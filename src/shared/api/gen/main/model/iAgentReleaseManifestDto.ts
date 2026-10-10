@@ -4,7 +4,7 @@ import type { IAgentWorkerArtifactDto } from "./iAgentWorkerArtifactDto.ts";
 
 /**
  * Сборки, которые раздаёт бэкенд: агент и netprobe — из источника сборок
- * агента, воркеры проекта — из `AGENT_RELEASES_DIR`.
+ * агента, воркеры проекта — из `release/` каталога архивов `AGENT_BUNDLE_DIR`.
  */
 export interface IAgentReleaseManifestDto {
   version: string;

@@ -6,7 +6,6 @@ import {
   INSTALL_DEFAULTS,
   installCommandSchema,
   parsePairs,
-  splitList,
   tokenExpiresAt,
 } from "../validation";
 
@@ -16,10 +15,6 @@ describe("enroll-agent validation", () => {
       pairs: { zone: "eu", gpu: "", rack: "4" },
     });
     expect(parsePairs("bad pair")).toEqual({ error: "bad pair" });
-  });
-
-  it("список через запятые и пробелы", () => {
-    expect(splitList(" curl, jq\nwget ")).toEqual(["curl", "jq", "wget"]);
   });
 
   it("срок токена: бессрочный — без даты", () => {
@@ -56,36 +51,20 @@ describe("enroll-agent validation", () => {
       }).success,
     ).toBe(false);
 
-    const parsed = installCommandSchema.parse({
-      ...INSTALL_DEFAULTS,
-      token: "p.s",
-      packages: "curl jq",
-      sysctl: "net.ipv4.ip_forward=1",
-    });
-
-    expect(parsed).toMatchObject({
-      token: "p.s",
-      tokenFile: undefined,
-      name: undefined,
-      packages: ["curl", "jq"],
-      rwPaths: undefined,
-      sysctl: { "net.ipv4.ip_forward": "1" },
-    });
+    expect(
+      installCommandSchema.parse({ ...INSTALL_DEFAULTS, token: "p.s" }),
+    ).toEqual({ token: "p.s", tokenFile: undefined, baseUrl: undefined });
   });
 
-  it("неверный адрес сервера и время остановки", () => {
+  it("неверный адрес сервера", () => {
     const result = installCommandSchema.safeParse({
       ...INSTALL_DEFAULTS,
       token: "p.s",
       baseUrl: "not a url",
-      stopTimeout: "30 seconds",
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues.map(i => i.path[0]).sort()).toEqual([
-      "baseUrl",
-      "stopTimeout",
-    ]);
+    expect(result.error?.issues.map(i => i.path[0])).toEqual(["baseUrl"]);
   });
 
   it("состояние токена", () => {

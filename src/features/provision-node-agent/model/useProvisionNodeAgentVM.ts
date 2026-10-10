@@ -1,4 +1,3 @@
-import { IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type {
   INodeInstallCommandDto,
@@ -7,7 +6,7 @@ import type {
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   installCommandSchema,
@@ -41,7 +40,6 @@ export const useProvisionNodeAgentVM = ({
 }: UseProvisionNodeAgentOptions = {}) => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
-  const agents = IAgentsStore.useInstance();
   const [node, setNode] = useState<NodeDto | null>(null);
   const [mode, setMode] = useState<TProvisionMode>("install");
   const [way, setWay] = useState<TInstallWay>("command");
@@ -51,41 +49,18 @@ export const useProvisionNodeAgentVM = ({
     defaultValues: {
       expiresInMinutes: DEFAULT_EXPIRES_MINUTES,
       baseUrl: "",
-      workers: [],
     },
   });
   const sshForm = useZodForm(sshSchema);
 
-  /** Воркеры с сервера — их можно поставить вместе с агентом. */
-  const releaseWorkers = [
-    ...new Set(agents.release?.manifest?.workers?.map(w => w.name) ?? []),
-  ].sort();
-  const releaseKey = releaseWorkers.join(",");
-
-  // Сборки пришли после открытия окна — отметить их воркеры, пока выбор не трогали.
-  useEffect(() => {
-    if (!node || !releaseKey) return;
-    const names = releaseKey.split(",");
-
-    if (!commandForm.getFieldState("workers").isDirty) {
-      commandForm.setValue("workers", names);
-    }
-    if (!sshForm.getFieldState("workers").isDirty) {
-      sshForm.setValue("workers", names);
-    }
-  }, [node, releaseKey, commandForm, sshForm]);
-
   const openFor = (target: NodeDto, nextMode: TProvisionMode = "install") => {
-    if (nextMode === "install") void agents.loadRelease();
     setMode(nextMode);
     setWay(nextMode === "install" && target.host ? "ssh" : "command");
     setCommand(null);
     setJobId(null);
-    // По умолчанию — все воркеры с сервера: снять лишние проще, чем вспомнить имена.
     commandForm.reset({
       expiresInMinutes: DEFAULT_EXPIRES_MINUTES,
       baseUrl: "",
-      workers: releaseWorkers,
     });
     sshForm.reset({
       host: target.host ?? "",
@@ -97,7 +72,6 @@ export const useProvisionNodeAgentVM = ({
       passphrase: "",
       sudo: true,
       backendUrl: "",
-      workers: releaseWorkers,
       purge: false,
     });
     setNode(target);
@@ -108,11 +82,9 @@ export const useProvisionNodeAgentVM = ({
   const createCommand = async (data: TInstallCommandValues) => {
     if (!node) return;
 
-    const { workers } = data;
     const res = await api.createNodeInstallCommand(node.id, {
       expiresInMinutes: data.expiresInMinutes,
       baseUrl: data.baseUrl || undefined,
-      workers: workers.length ? workers : undefined,
     });
 
     if (res.error) {
@@ -127,17 +99,13 @@ export const useProvisionNodeAgentVM = ({
   const submitSsh = async (data: TSshValues) => {
     if (!node) return;
 
-    const { workers } = data;
     const res =
       mode === "uninstall"
         ? await api.uninstallNodeAgent(node.id, {
             ...sshBody(data),
             purge: data.purge,
           })
-        : await api.installNodeAgent(node.id, {
-            ...sshBody(data),
-            workers: workers.length ? workers : undefined,
-          });
+        : await api.installNodeAgent(node.id, sshBody(data));
 
     if (res.error) {
       notifyApiError(toast, res.error);
@@ -165,7 +133,6 @@ export const useProvisionNodeAgentVM = ({
     close,
     createCommand,
     submitSsh,
-    releaseWorkers,
   };
 };
 

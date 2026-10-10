@@ -1,4 +1,3 @@
-import { IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type { NodeDto } from "@shared/api/gen/main/model";
 import { iocContainer } from "@shared/lib/di";
@@ -17,12 +16,6 @@ const api = {
   uninstallNodeAgent: vi.fn(),
 };
 const toast = { success: vi.fn(), error: vi.fn() };
-const agents = {
-  release: {
-    manifest: { workers: [{ name: "netprobe" }, { name: "echo" }] },
-  },
-  loadRelease: vi.fn().mockResolvedValue(undefined),
-};
 
 const ssh = (patch: Partial<TSshValues> = {}): TSshValues => ({
   host: "",
@@ -34,7 +27,6 @@ const ssh = (patch: Partial<TSshValues> = {}): TSshValues => ({
   passphrase: "",
   sudo: true,
   backendUrl: "",
-  workers: [],
   purge: false,
   ...patch,
 });
@@ -42,13 +34,11 @@ const ssh = (patch: Partial<TSshValues> = {}): TSshValues => ({
 beforeEach(() => {
   iocContainer.bind(IMainApi.Tid).toConstantValue(api);
   iocContainer.bind(INotificationService.Tid).toConstantValue(toast);
-  iocContainer.bind(IAgentsStore.Tid).toConstantValue(agents);
 });
 
 afterEach(() => {
   iocContainer.unbind(IMainApi.Tid);
   iocContainer.unbind(INotificationService.Tid);
-  iocContainer.unbind(IAgentsStore.Tid);
   vi.clearAllMocks();
 });
 
@@ -119,28 +109,16 @@ describe("useProvisionNodeAgentVM", () => {
     expect(result.current.mode).toBe("install");
     expect(result.current.way).toBe("ssh");
     expect(result.current.sshForm.getValues("host")).toBe("203.0.113.10");
-    // Все воркеры с сервера отмечены по умолчанию.
-    expect(result.current.releaseWorkers).toEqual(["echo", "netprobe"]);
-    expect(result.current.commandForm.getValues("workers")).toEqual([
-      "echo",
-      "netprobe",
-    ]);
-    expect(result.current.sshForm.getValues("workers")).toEqual([
-      "echo",
-      "netprobe",
-    ]);
 
     await act(() =>
       result.current.createCommand({
         expiresInMinutes: 60,
         baseUrl: "",
-        workers: ["netprobe", "example"],
       }),
     );
     expect(api.createNodeInstallCommand).toHaveBeenCalledWith("n-1", {
       expiresInMinutes: 60,
       baseUrl: undefined,
-      workers: ["netprobe", "example"],
     });
     expect(result.current.command).toEqual(command);
   });
@@ -164,7 +142,7 @@ describe("useProvisionNodeAgentVM", () => {
     await act(() => result.current.submitSsh(ssh()));
     expect(api.installNodeAgent).toHaveBeenCalledWith(
       "n-1",
-      expect.objectContaining({ password: "secret", workers: undefined }),
+      expect.objectContaining({ password: "secret" }),
     );
     expect(result.current.jobId).toBe("j-1");
     expect(onStarted).toHaveBeenCalledWith("j-1");

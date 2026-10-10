@@ -3,7 +3,6 @@ import {
   Collapse,
   Form,
   InputFormField,
-  MultiSelectFormField,
   NumberInputFormField,
   PLAIN_NUMBER_FORMAT,
   SegmentedFormField,
@@ -101,23 +100,6 @@ export const NodeSshForm: FC<NodeSshFormProps> = observer(({ vm, formId }) => {
             placeholder="https://api.example.com"
             description="Пусто — публичный адрес из настроек сервера"
           />
-          {!uninstall && (
-            <MultiSelectFormField<TSshForm>
-              name="workers"
-              label="Воркеры"
-              description={
-                vm.releaseWorkers.length
-                  ? "Со сборками с сервера; ничего не выбрано — только проверка сети (netprobe)"
-                  : "На сервере воркеров нет — только проверка сети (netprobe)"
-              }
-              options={vm.releaseWorkers.map(name => ({
-                value: name,
-                label: name,
-              }))}
-              disabled={vm.releaseWorkers.length === 0}
-              clearable
-            />
-          )}
         </Collapse.Content>
       </Collapse>
       <Alert variant="info">

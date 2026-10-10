@@ -1,4 +1,4 @@
-import { optionalTextSchema, workerNameSchema } from "@entities/agent";
+import { optionalTextSchema } from "@entities/agent";
 import { z } from "zod";
 
 /** Срок действия токена регистрации. */
@@ -21,13 +21,6 @@ export const tokenExpiresAt = (
 
   return ms ? new Date(now + ms).toISOString() : undefined;
 };
-
-/** Список через запятую, пробел или перевод строки. */
-export const splitList = (text: string): string[] =>
-  text
-    .split(/[\s,]+/)
-    .map(item => item.trim())
-    .filter(Boolean);
 
 /**
  * Пары «ключ=значение» через запятую или с новой строки; ключ без значения —
@@ -82,45 +75,13 @@ export const enrollmentTokenSchema = z.object({
 export type TEnrollmentTokenForm = z.input<typeof enrollmentTokenSchema>;
 export type TEnrollmentTokenValues = z.output<typeof enrollmentTokenSchema>;
 
-const listSchema = (maxLength: number) =>
-  z
-    .string()
-    .transform(splitList)
-    .pipe(
-      z.array(z.string().max(maxLength, `Не длиннее ${maxLength} символов.`)),
-    )
-    .transform(items => (items.length ? items : undefined));
-
-export const KILL_MODE_OPTIONS = [
-  { value: "default", label: "Как в службе" },
-  { value: "process", label: "Только агент" },
-  { value: "mixed", label: "Агент и воркеры" },
-] as const;
-
 export const installCommandSchema = z
   .object({
     token: optionalTextSchema(500),
     tokenFile: optionalTextSchema(500),
-    name: optionalTextSchema(128),
     baseUrl: optionalTextSchema(500).pipe(
       z.url("Адрес вида https://example.com.").optional(),
     ),
-    user: optionalTextSchema(64),
-    workers: z.array(workerNameSchema),
-    privileged: z.boolean(),
-    stopTimeout: optionalTextSchema(20).pipe(
-      z
-        .string()
-        .regex(/^\d+(ms|s|m|h)$/, "Например 30s или 2m.")
-        .optional(),
-    ),
-    config: optionalTextSchema(500),
-    killMode: z.enum(["default", "process", "mixed"]),
-    packages: listSchema(100),
-    rwPaths: listSchema(500),
-    sysctl: pairsSchema,
-    caFile: optionalTextSchema(500),
-    releases: optionalTextSchema(500),
   })
   .refine(form => !!form.token !== !!form.tokenFile, {
     message: "Укажите токен или путь к файлу с токеном — что-то одно.",
@@ -133,17 +94,5 @@ export type TInstallCommandValues = z.output<typeof installCommandSchema>;
 export const INSTALL_DEFAULTS: TInstallCommandForm = {
   token: "",
   tokenFile: "",
-  name: "",
   baseUrl: "",
-  user: "",
-  workers: [],
-  privileged: false,
-  stopTimeout: "",
-  config: "",
-  killMode: "default",
-  packages: "",
-  rwPaths: "",
-  sysctl: "",
-  caFile: "",
-  releases: "",
 };

@@ -77,11 +77,7 @@ export { useAgentLiveMetrics } from "./model/useAgentLiveMetrics";
 export { ALL_LOG_SOURCES, useAgentLog } from "./model/useAgentLog";
 export { useAgentMetricsHistory } from "./model/useAgentMetricsHistory";
 export { useAgentsRealtime } from "./model/useAgentsRealtime";
-export {
-  jsonTextSchema,
-  optionalTextSchema,
-  workerNameSchema,
-} from "./model/validation";
+export { jsonTextSchema, optionalTextSchema } from "./model/validation";
 export { AgentAlertBadge } from "./ui/AgentAlertBadge";
 export { AgentAlertsCard } from "./ui/AgentAlertsCard";
 export { AgentLabels } from "./ui/AgentLabels";
