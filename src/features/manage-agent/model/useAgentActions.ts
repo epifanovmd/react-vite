@@ -108,7 +108,7 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
       title: target
         ? `Обновить агента «${agent.name}» до версии ${target}?`
         : `Обновить агента «${agent.name}» до новой версии?`,
-      description: `${current ? `Сейчас — ${current}. ` : ""}Агент скачает новую программу с сервера, проверит подпись и перезапустится; воркеры продолжат работу.`,
+      description: `${current ? `Сейчас — ${current}. ` : ""}Агент скачает новую программу, проверит подпись и перезапустится; воркеры продолжат работу.`,
       confirmLabel: "Обновить",
     });
 

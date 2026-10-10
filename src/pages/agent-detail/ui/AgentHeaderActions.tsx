@@ -42,7 +42,7 @@ export const AgentHeaderActions: FC<AgentHeaderActionsProps> = observer(
         </Tooltip>
         {updateTo && (
           <Tooltip
-            content={`Доступна версия ${updateTo}: агент скачает её с сервера и перезапустится`}
+            content={`Доступна версия ${updateTo}: агент скачает её, проверит подпись и перезапустится`}
           >
             <span className="inline-flex">
               <Button

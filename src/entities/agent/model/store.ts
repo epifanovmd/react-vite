@@ -28,6 +28,7 @@ const AGENTS_LIMIT = 100;
 const versionsOf = (agent: AgentDto): string =>
   [
     agentVersion(agent),
+    agent.update?.latest ?? "",
     ...agent.workers.map(w => `${w.name}@${w.version ?? ""}`),
   ].join(",");
 

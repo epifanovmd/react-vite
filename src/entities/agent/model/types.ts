@@ -60,6 +60,15 @@ export interface IAgentsStore {
   reset(): void;
 }
 
+/** Событие `agent:release`: там, откуда сервер берёт сборки агента, другая версия. */
+export interface IAgentReleaseEvent {
+  version: string;
+  /** Прежняя версия; нет — сборки получены впервые после запуска сервера. */
+  previous?: string;
+  /** `github:owner/repo` или ссылка на каталог сборок. */
+  from: string;
+}
+
 /** Отложенная замена воркера: ответ `deferred: true`, итог придёт `agent:action`. */
 export interface IDeferredWorkerAction {
   actionId: string;

@@ -76,6 +76,7 @@ export { useAgentEventFeed } from "./model/use-agent-event-feed";
 export { useAgentLiveMetrics } from "./model/useAgentLiveMetrics";
 export { ALL_LOG_SOURCES, useAgentLog } from "./model/useAgentLog";
 export { useAgentMetricsHistory } from "./model/useAgentMetricsHistory";
+export { useAgentReleaseWatch } from "./model/useAgentReleaseWatch";
 export { useAgentsRealtime } from "./model/useAgentsRealtime";
 export { jsonTextSchema, optionalTextSchema } from "./model/validation";
 export { AgentAlertBadge } from "./ui/AgentAlertBadge";

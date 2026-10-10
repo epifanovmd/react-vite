@@ -51,8 +51,8 @@ export const NodeHeaderActions: FC<NodeHeaderActionsProps> = observer(
           <Tooltip
             content={
               vm.updateTarget
-                ? `Доступна версия ${vm.updateTarget}: агент скачает её с сервера и перезапустится`
-                : "Есть новая версия: агент скачает её с сервера и перезапустится"
+                ? `Доступна версия ${vm.updateTarget}: агент скачает её, проверит подпись и перезапустится`
+                : "Есть новая версия: агент скачает её, проверит подпись и перезапустится"
             }
           >
             <span className="inline-flex">
