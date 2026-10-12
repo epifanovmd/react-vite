@@ -27,6 +27,14 @@ export {
   formatUsage,
   usagePercent,
 } from "./lib/format";
+export type { TAgentInstallMode } from "./lib/install";
+export {
+  AGENT_INSTALL_MODE_HINTS,
+  AGENT_INSTALL_MODE_OPTIONS,
+  AGENT_SSH_INSTALL_MODE_OPTIONS,
+  agentInstallLabel,
+  isAgentSelfUpdating,
+} from "./lib/install";
 export { formatJson, formatJsonInline, parseJsonText } from "./lib/json";
 export type { IAgentLogEntry, TAgentLogLevel } from "./lib/log";
 export {

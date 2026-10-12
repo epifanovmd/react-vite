@@ -28,6 +28,7 @@ const ssh = (patch: Partial<TSshValues> = {}): TSshValues => ({
   sudo: true,
   backendUrl: "",
   purge: false,
+  mode: "systemd",
   ...patch,
 });
 
@@ -53,6 +54,16 @@ describe("sshSchema", () => {
       sshSchema.safeParse(ssh({ auth: "key", privateKey: "-----BEGIN" }))
         .success,
     ).toBe(true);
+  });
+});
+
+describe("способ установки", () => {
+  it("без root: не root, без sudo; служба — по умолчанию", () => {
+    expect(sshSchema.safeParse(ssh({ mode: "rootless" })).success).toBe(false);
+    expect(
+      sshBody(ssh({ mode: "rootless", username: "deploy", sudo: true })),
+    ).toMatchObject({ mode: "rootless", sudo: false });
+    expect(sshBody(ssh({}))).toMatchObject({ mode: undefined });
   });
 });
 
@@ -114,6 +125,7 @@ describe("useProvisionNodeAgentVM", () => {
       result.current.createCommand({
         expiresInMinutes: 60,
         baseUrl: "",
+        mode: "systemd",
       }),
     );
     expect(api.createNodeInstallCommand).toHaveBeenCalledWith("n-1", {

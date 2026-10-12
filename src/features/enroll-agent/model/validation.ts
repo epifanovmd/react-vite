@@ -1,4 +1,4 @@
-import { optionalTextSchema } from "@entities/agent";
+import { optionalTextSchema, type TAgentInstallMode } from "@entities/agent";
 import { z } from "zod";
 
 /** Срок действия токена регистрации. */
@@ -75,6 +75,11 @@ export const enrollmentTokenSchema = z.object({
 export type TEnrollmentTokenForm = z.input<typeof enrollmentTokenSchema>;
 export type TEnrollmentTokenValues = z.output<typeof enrollmentTokenSchema>;
 
+/** Способ установки; служба (по умолчанию) серверу не передаётся. */
+export const installModeSchema = z
+  .enum(["systemd", "rootless", "run"] satisfies TAgentInstallMode[])
+  .transform(mode => (mode === "systemd" ? undefined : mode));
+
 export const installCommandSchema = z
   .object({
     token: optionalTextSchema(500),
@@ -82,6 +87,7 @@ export const installCommandSchema = z
     baseUrl: optionalTextSchema(500).pipe(
       z.url("Адрес вида https://example.com.").optional(),
     ),
+    mode: installModeSchema,
   })
   .refine(form => !!form.token !== !!form.tokenFile, {
     message: "Укажите токен или путь к файлу с токеном — что-то одно.",
@@ -95,4 +101,5 @@ export const INSTALL_DEFAULTS: TInstallCommandForm = {
   token: "",
   tokenFile: "",
   baseUrl: "",
+  mode: "systemd",
 };

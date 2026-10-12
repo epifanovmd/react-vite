@@ -10,6 +10,7 @@ import { useState } from "react";
 
 import {
   installCommandSchema,
+  installModeBody,
   sshBody,
   sshSchema,
   type TInstallCommandValues,
@@ -61,6 +62,7 @@ export const useProvisionNodeAgentVM = ({
     commandForm.reset({
       expiresInMinutes: DEFAULT_EXPIRES_MINUTES,
       baseUrl: "",
+      mode: "systemd",
     });
     sshForm.reset({
       host: target.host ?? "",
@@ -73,6 +75,7 @@ export const useProvisionNodeAgentVM = ({
       sudo: true,
       backendUrl: "",
       purge: false,
+      mode: "systemd",
     });
     setNode(target);
   };
@@ -85,6 +88,7 @@ export const useProvisionNodeAgentVM = ({
     const res = await api.createNodeInstallCommand(node.id, {
       expiresInMinutes: data.expiresInMinutes,
       baseUrl: data.baseUrl || undefined,
+      ...installModeBody(data),
     });
 
     if (res.error) {

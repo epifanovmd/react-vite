@@ -1,3 +1,4 @@
+import type { TAgentInstallMode } from "@entities/agent";
 import { z } from "zod";
 
 const urlField = z
@@ -10,7 +11,28 @@ export const SSH_AUTH_OPTIONS = [
   { value: "key", label: "Ключ" },
 ] as const;
 
-/** Команда установки: срок токена, адрес сервера. */
+/** Способ установки командой: служба, без root или без установки. */
+const modeField = z.enum([
+  "systemd",
+  "rootless",
+  "run",
+] satisfies TAgentInstallMode[]);
+
+/** Способ установки по SSH: без установки агент занял бы сеанс SSH. */
+const sshModeField = z.enum([
+  "systemd",
+  "rootless",
+] satisfies TAgentInstallMode[]);
+
+/** Способ для запроса: служба — по умолчанию (не передаётся). */
+export const installModeBody = <M extends TAgentInstallMode>(data: {
+  mode: M;
+}) => ({
+  mode:
+    data.mode === "systemd" ? undefined : (data.mode as Exclude<M, "systemd">),
+});
+
+/** Команда установки: срок токена, адрес сервера, способ установки. */
 export const installCommandSchema = z.object({
   expiresInMinutes: z
     .number("Укажите срок.")
@@ -18,6 +40,7 @@ export const installCommandSchema = z.object({
     .min(5, "Не меньше 5 минут.")
     .max(43_200, "Не больше 30 дней."),
   baseUrl: urlField,
+  mode: modeField,
 });
 
 export type TInstallCommandForm = z.input<typeof installCommandSchema>;
@@ -36,8 +59,16 @@ export const sshSchema = z
     sudo: z.boolean(),
     backendUrl: urlField,
     purge: z.boolean(),
+    mode: sshModeField,
   })
   .superRefine((data, ctx) => {
+    if (data.mode === "rootless" && data.username === "root") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["username"],
+        message: "Агент без root ставится от обычного пользователя, не root.",
+      });
+    }
     if (data.auth === "password" && !data.password) {
       ctx.addIssue({
         code: "custom",
@@ -68,7 +99,13 @@ export const sshBody = (data: TSshValues) => ({
         privateKey: data.privateKey,
         passphrase: data.passphrase || undefined,
       }),
-  // root работает без sudo; для остальных — как выбрано.
-  sudo: data.username === "root" ? undefined : data.sudo,
+  // root и агент без root — без sudo; для остальных — как выбрано.
+  sudo:
+    data.username === "root"
+      ? undefined
+      : data.mode === "rootless"
+        ? false
+        : data.sudo,
   backendUrl: data.backendUrl || undefined,
+  ...installModeBody(data),
 });

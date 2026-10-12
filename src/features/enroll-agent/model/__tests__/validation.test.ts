@@ -56,6 +56,15 @@ describe("enroll-agent validation", () => {
     ).toEqual({ token: "p.s", tokenFile: undefined, baseUrl: undefined });
   });
 
+  it("способ установки: служба не передаётся, без root и без установки — передаются", () => {
+    const parse = (patch: Partial<typeof INSTALL_DEFAULTS>) =>
+      installCommandSchema.parse({ ...INSTALL_DEFAULTS, token: "t", ...patch });
+
+    expect(parse({}).mode).toBeUndefined();
+    expect(parse({ mode: "rootless" }).mode).toBe("rootless");
+    expect(parse({ mode: "run" }).mode).toBe("run");
+  });
+
   it("неверный адрес сервера", () => {
     const result = installCommandSchema.safeParse({
       ...INSTALL_DEFAULTS,

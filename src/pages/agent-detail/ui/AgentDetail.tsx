@@ -1,6 +1,7 @@
 import {
   AGENT_PERMISSIONS,
   AgentAlertsCard,
+  agentInstallLabel,
   agentSubtitle,
   agentVersion,
 } from "@entities/agent";
@@ -41,6 +42,7 @@ export const AgentDetail: FC<AgentDetailProps> = observer(({ agentId }) => {
             subtitle={[
               agentSubtitle(agent),
               agentVersion(agent) && `агент ${agentVersion(agent)}`,
+              agentInstallLabel(agent.install),
             ]
               .filter(Boolean)
               .join(" · ")}

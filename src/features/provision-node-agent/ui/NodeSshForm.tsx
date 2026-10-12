@@ -1,4 +1,8 @@
 import {
+  AGENT_INSTALL_MODE_HINTS,
+  AGENT_SSH_INSTALL_MODE_OPTIONS,
+} from "@entities/agent";
+import {
   Alert,
   Collapse,
   Form,
@@ -26,7 +30,9 @@ interface NodeSshFormProps {
 export const NodeSshForm: FC<NodeSshFormProps> = observer(({ vm, formId }) => {
   const auth = useWatch({ control: vm.sshForm.control, name: "auth" });
   const username = useWatch({ control: vm.sshForm.control, name: "username" });
+  const installMode = useWatch({ control: vm.sshForm.control, name: "mode" });
   const uninstall = vm.mode === "uninstall";
+  const rootless = installMode === "rootless";
 
   return (
     <Form
@@ -48,7 +54,23 @@ export const NodeSshForm: FC<NodeSshFormProps> = observer(({ vm, formId }) => {
           formatOptions={PLAIN_NUMBER_FORMAT}
         />
       </div>
-      <InputFormField<TSshForm> name="username" label="Пользователь" />
+      <SegmentedFormField<TSshForm>
+        name="mode"
+        label={uninstall ? "Как агент поставлен" : "Способ установки"}
+        options={[...AGENT_SSH_INSTALL_MODE_OPTIONS]}
+        description={
+          uninstall
+            ? "Агента без root удаляют от того же пользователя, без sudo"
+            : AGENT_INSTALL_MODE_HINTS[installMode]
+        }
+      />
+      <InputFormField<TSshForm>
+        name="username"
+        label="Пользователь"
+        description={
+          rootless ? "Обычный пользователь узла, не root" : undefined
+        }
+      />
       <SegmentedFormField<TSshForm>
         name="auth"
         label="Вход"
@@ -77,7 +99,7 @@ export const NodeSshForm: FC<NodeSshFormProps> = observer(({ vm, formId }) => {
           description="Он же — для sudo, если sudo спрашивает пароль"
         />
       )}
-      {username !== "root" && (
+      {username !== "root" && !rootless && (
         <SwitchFormField<TSshForm>
           name="sudo"
           label="Через sudo"
@@ -88,7 +110,11 @@ export const NodeSshForm: FC<NodeSshFormProps> = observer(({ vm, formId }) => {
         <SwitchFormField<TSshForm>
           name="purge"
           label="Удалить всё"
-          description="Вместе с программой — данные, настройки, пакеты и пользователя службы"
+          description={
+            rootless
+              ? "Вместе с программой — данные и настройки (~/.agent…)"
+              : "Вместе с программой — данные, настройки, пакеты и пользователя службы"
+          }
         />
       )}
       <Collapse size="sm">
