@@ -87,7 +87,7 @@ export const useAgentDetailVM = (agentId: string) => {
     updateTo: live && canManage && candidate ? candidate.target : null,
     canRotate: live && canManage,
     canRevoke: !!agent && canManage && !agent.revoked,
-    canDelete: !!agent && canManage && agent.revoked,
+    canDelete: !!agent && canManage,
     canView,
     canManage,
     /** Права на вкладках — права раздела агентов. */

@@ -142,8 +142,8 @@ describe("AgentsPage", () => {
       within(online).getByRole("button", { name: "Сменить ключ" }),
     ).toBeInTheDocument();
     expect(
-      within(online).queryByRole("button", { name: "Удалить" }),
-    ).not.toBeInTheDocument();
+      within(online).getByRole("button", { name: "Удалить" }),
+    ).toBeInTheDocument();
 
     expect(within(revoked).getByText("отозван")).toBeInTheDocument();
     expect(

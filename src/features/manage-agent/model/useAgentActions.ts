@@ -60,7 +60,7 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
     const ok = await confirm({
       title: `Отозвать агента «${agent.name}»?`,
       description:
-        "Связь с агентом закроется, его ключ перестанет приниматься. Вернуть агента можно только новой регистрацией.",
+        "Агент остановит воркеры, уберёт за ними и больше не выйдет на связь; запись с историей останется в списке. Вернуть агента — новая установка с токеном.",
       confirmLabel: "Отозвать",
       confirmVariant: "destructive",
     });
@@ -77,7 +77,7 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
     const ok = await confirm({
       title: `Удалить агента «${agent.name}»?`,
       description:
-        "Агент пропадёт из списка вместе с настройками воркеров, событиями и историей метрик.",
+        "Агент пропадёт из списка вместе с настройками воркеров, событиями и историей метрик. На машине он остановит воркеры, уберёт за ними и больше не выйдет на связь; программа останется до удаления на узле (agent uninstall --purge или по SSH).",
       confirmLabel: "Удалить",
       confirmVariant: "destructive",
     });

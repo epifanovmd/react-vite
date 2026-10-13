@@ -18,7 +18,7 @@ export const useDeleteNode = ({ onDeleted }: UseDeleteNodeOptions) => {
     const ok = await confirm({
       title: `Удалить узел «${node.name}»?`,
       description: node.agentId
-        ? "Агент узла будет отозван и удалён. Программа на машине останется — чтобы убрать и её, сначала удалите агента."
+        ? "Агент узла будет удалён: на машине он остановит воркеры, уберёт за ними и больше не выйдет на связь. Программа останется — чтобы убрать и её, сначала удалите агента с машины (по SSH или agent uninstall --purge)."
         : "Узел пропадёт из списка.",
       confirmLabel: "Удалить",
       confirmVariant: "destructive",

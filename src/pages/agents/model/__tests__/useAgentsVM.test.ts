@@ -83,17 +83,17 @@ describe("useAgentsVM", () => {
       updateTo: "1.2.0",
       canRotate: true,
       canRevoke: true,
-      canDelete: false,
+      canDelete: true,
     });
     expect(result.current.accessOf(agent({ online: false }))).toEqual({
       updateTo: null,
       canRotate: false,
       canRevoke: true,
-      canDelete: false,
+      canDelete: true,
     });
   });
 
-  it("удалить можно только отозванного; без права управления — ничего", () => {
+  it("удалить — с правом управления; без него — ничего", () => {
     const { result, rerender } = renderHook(() => useAgentsVM());
 
     expect(result.current.accessOf(agent({ revoked: true })).canDelete).toBe(

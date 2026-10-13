@@ -93,7 +93,7 @@ describe("useAgentDetailVM", () => {
     expect(result.current).toMatchObject({
       canRotate: true,
       canRevoke: true,
-      canDelete: false,
+      canDelete: true,
       updateTo: null,
       access: {
         canManage: true,

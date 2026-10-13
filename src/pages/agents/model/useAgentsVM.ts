@@ -52,7 +52,7 @@ export const useAgentsVM = () => {
       updateTo: live && candidate ? candidate.target : null,
       canRotate: live,
       canRevoke: canManage && !agent.revoked,
-      canDelete: canManage && agent.revoked,
+      canDelete: canManage,
     };
   };
 
