@@ -15,21 +15,13 @@ import { IUserStore } from "@entities/user";
 import { useAssignNodeOwnerVM } from "@features/assign-node-owner";
 import { useDeleteNode, useNodeFormVM } from "@features/manage-node";
 import { useProvisionNodeAgentVM } from "@features/provision-node-agent";
-import { IMainApi } from "@shared/api";
 import type {
   IAgentMetricsPointDto,
-  INodeMeshDto,
   NodeDto,
 } from "@shared/api/gen/main/model";
 import { ownPermission } from "@shared/lib/access";
-import { useEntity } from "@shared/lib/holders";
 import { useCloseWhenForbidden } from "@shared/lib/hooks";
-import { useSocketEvent } from "@shared/lib/socket";
-import { useEffect, useRef, useState } from "react";
-
-/** Состав матрицы связности: id, название и адрес узлов. */
-const meshKey = (nodes: NodeDto[]): string =>
-  nodes.map(node => `${node.id}:${node.name}:${node.host ?? ""}`).join("|");
+import { useEffect, useState } from "react";
 
 /** Действия над узлом в строке таблицы по области прав. */
 export interface INodeRowAccess {
@@ -40,13 +32,11 @@ export interface INodeRowAccess {
 }
 
 /**
- * Узлы: список с фильтром, связность, нагрузка и действия. С областью
- * «свои» — только свои узлы (владелец или создатель); действия считаются по
- * строке. Связность и нагрузка — снимок, дальше события (`node:mesh`,
- * `node:load`): в комнате `nodes` или лично своим.
+ * Узлы: список с фильтром, нагрузка и действия. С областью «свои» — только
+ * свои узлы (владелец или создатель); действия считаются по строке. Нагрузка —
+ * снимок, дальше событие `node:load`: в комнате `nodes` или лично своим.
  */
 export const useNodesVM = () => {
-  const api = IMainApi.useInstance();
   const userStore = IUserStore.useInstance();
   const store = INodesStore.useInstance();
   const agents = IAgentsStore.useInstance();
@@ -75,13 +65,6 @@ export const useNodesVM = () => {
   const owner = useAssignNodeOwnerVM({ onSaved: store.upsert });
   const provision = useProvisionNodeAgentVM();
 
-  // Связность — снимок, дальше `node:mesh` (комната `nodes` или лично своим).
-  const mesh = useEntity<INodeMeshDto>({
-    queryFn: () => api.getNodeMesh(),
-    autoLoad: true,
-    enabled: canView,
-  });
-
   useEffect(() => {
     if (!canView) return;
     void store.load();
@@ -91,20 +74,6 @@ export const useNodesVM = () => {
 
   useNodesRealtime(viewScope);
   useAgentsRealtime(canViewAgents);
-  useSocketEvent<[INodeMeshDto]>("node:mesh", mesh.setData, canView);
-
-  // Узел добавлен, удалён или переименован — состав матрицы перечитывается.
-  const nodesKey = meshKey(store.nodes);
-  const shownKey = useRef<string | null>(null);
-  const meshHolder = mesh.holder;
-
-  useEffect(() => {
-    if (!canView || !store.isLoaded) return;
-    if (shownKey.current !== null && shownKey.current !== nodesKey) {
-      void meshHolder.refresh();
-    }
-    shownKey.current = nodesKey;
-  }, [canView, store.isLoaded, nodesKey, meshHolder]);
 
   /** Последняя нагрузка узла: событие `node:load` или метрики агента из списка. */
   const loadOf = (node: NodeDto): IAgentMetricsPointDto | null => {
@@ -145,7 +114,6 @@ export const useNodesVM = () => {
     filter,
     setQuery: (query: string) => setFilter(prev => ({ ...prev, query })),
     setMine: (mine: boolean) => setFilter(prev => ({ ...prev, mine })),
-    mesh: mesh.data,
     /** Нагрузка узла для колонки: последняя точка метрик его агента. */
     loadOf,
     form,

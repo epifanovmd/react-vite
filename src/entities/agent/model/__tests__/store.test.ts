@@ -19,7 +19,7 @@ const release = (target = "1.2.0"): IAgentReleaseDto => ({
       target,
       os: "linux",
       arch: "amd64",
-      source: "server",
+      source: "agent",
     },
   ],
   workerCandidates: [

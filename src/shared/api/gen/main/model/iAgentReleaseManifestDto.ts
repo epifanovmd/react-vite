@@ -1,10 +1,9 @@
 import type { IAgentReleaseArtifactDto } from "./iAgentReleaseArtifactDto.ts";
-import type { IAgentReleaseRemoteDto } from "./iAgentReleaseRemoteDto.ts";
 import type { IAgentWorkerArtifactDto } from "./iAgentWorkerArtifactDto.ts";
 
 /**
- * Сборки, которые раздаёт бэкенд: агент и netprobe — из источника сборок
- * агента, воркеры проекта — из `release/` каталога архивов `AGENT_BUNDLE_DIR`.
+ * Сборки, которые раздаёт бэкенд: воркеры проекта — из `release/` каталога
+ * архивов `AGENT_BUNDLE_DIR` (`manifest.json` от `agent pack --release-out`).
  */
 export interface IAgentReleaseManifestDto {
   version: string;
@@ -12,6 +11,4 @@ export interface IAgentReleaseManifestDto {
   publicKey?: string;
   artifacts: IAgentReleaseArtifactDto[];
   workers?: IAgentWorkerArtifactDto[];
-  /** Нет — источник сборок агента не задан или ещё не ответил. */
-  remote?: IAgentReleaseRemoteDto;
 }

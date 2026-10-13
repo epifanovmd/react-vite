@@ -6,7 +6,7 @@ import type { IAgentWorkerUpdateCandidateDto } from "./iAgentWorkerUpdateCandida
  * Сборки агента и кого можно обновить.
  */
 export interface IAgentReleaseDto {
-  /** `null` — нет ни источника сборок агента, ни каталога сборок воркеров. */
+  /** `null` — нет каталога сборок воркеров. */
   manifest: IAgentReleaseManifestDto | null;
   candidates: IAgentUpdateCandidateDto[];
   workerCandidates: IAgentWorkerUpdateCandidateDto[];

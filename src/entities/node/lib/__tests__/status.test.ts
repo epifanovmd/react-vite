@@ -36,14 +36,12 @@ describe("nodeConfigView", () => {
     const view = nodeConfigView({
       status: "error",
       pending: ["example.kv"],
-      failed: ["netprobe"],
+      failed: ["echo"],
     });
 
     expect(view.label).toBe("Ошибка применения");
     expect(view.variant).toBe("destructive");
-    expect(view.hint).toBe(
-      "Не применены: netprobe. Ждут применения: example.kv",
-    );
+    expect(view.hint).toBe("Не применены: echo. Ждут применения: example.kv");
   });
 
   it("ожидает агента и применяется", () => {

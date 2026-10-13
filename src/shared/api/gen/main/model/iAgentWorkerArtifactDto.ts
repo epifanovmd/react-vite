@@ -10,7 +10,7 @@ export interface IAgentWorkerArtifactDto {
   sha256: string;
   signature?: string;
   source: TAgentReleaseSource;
-  /** Ссылка источника или путь от корня бэкенда. */
+  /** Путь от корня бэкенда. */
   url: string;
   name: string;
   version: string;

@@ -62,7 +62,7 @@ const agents = {
   loadAlerts: vi.fn(),
   loadRelease: vi.fn(),
 };
-const api = { getNodeMesh: vi.fn(async () => ({ data: null })) };
+const api = {};
 let permissions: string[];
 let socket: IFakeSocket;
 
@@ -95,12 +95,11 @@ const rooms = () =>
   socket.emitted.filter(e => e.event === "room:subscribe").map(e => e.args[0]);
 
 describe("useNodesVM", () => {
-  it("свои: грузит узлы, агентов и связность; комнат nodes и agents нет", () => {
+  it("свои: грузит узлы и агентов; комнат nodes и agents нет", () => {
     renderHook(() => useNodesVM());
 
     expect(store.load).toHaveBeenCalled();
     expect(agents.load).toHaveBeenCalled();
-    expect(api.getNodeMesh).toHaveBeenCalled();
     expect(rooms()).toEqual([]);
   });
 
@@ -119,7 +118,7 @@ describe("useNodesVM", () => {
     renderHook(() => useNodesVM());
 
     expect(store.load).not.toHaveBeenCalled();
-    expect(api.getNodeMesh).not.toHaveBeenCalled();
+    expect(agents.load).not.toHaveBeenCalled();
   });
 
   it("действия по строке — по области и владельцам", () => {
@@ -163,46 +162,17 @@ describe("useNodesVM", () => {
     expect(result.current.loadOf(nodes[0])?.at, "прежний агент").toBe(100);
   });
 
-  it("свои: node:mesh лично заменяет связность; опроса нет", () => {
+  it("опроса нет: узлы и агенты грузятся один раз", () => {
     vi.useFakeTimers();
 
     try {
-      const { result, rerender } = renderHook(() => useNodesVM());
-      const mesh = { nodes: [], cells: [], generatedAt: 3 };
-
-      expect(api.getNodeMesh).toHaveBeenCalledTimes(1);
-      act(() => socket.fire("node:mesh", mesh));
-      rerender();
-      expect(result.current.mesh).toEqual(mesh);
+      renderHook(() => useNodesVM());
 
       act(() => vi.advanceTimersByTime(120_000));
-      expect(api.getNodeMesh).toHaveBeenCalledTimes(1);
+      expect(store.load).toHaveBeenCalledTimes(1);
       expect(agents.load).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }
-  });
-
-  it("состав узлов изменился — связность перечитывается", () => {
-    const { rerender } = renderHook(() => useNodesVM());
-
-    expect(api.getNodeMesh).toHaveBeenCalledTimes(1);
-    rerender();
-    expect(api.getNodeMesh).toHaveBeenCalledTimes(1);
-
-    nodeList = [...nodes, node({ id: "n-3", name: "gamma" })];
-    rerender();
-    expect(api.getNodeMesh).toHaveBeenCalledTimes(2);
-  });
-
-  it("node:mesh в комнате nodes заменяет связность", () => {
-    permissions.push("node:view");
-
-    const { result, rerender } = renderHook(() => useNodesVM());
-    const mesh = { nodes: [], cells: [], windowSec: 300, generatedAt: 2 };
-
-    act(() => socket.fire("node:mesh", mesh));
-    rerender();
-    expect(result.current.mesh).toEqual(mesh);
   });
 });

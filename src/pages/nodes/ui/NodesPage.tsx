@@ -8,7 +8,6 @@ import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
 import { useNodesVM } from "../model/useNodesVM";
-import { NodeMeshCard } from "./NodeMeshCard";
 import { NodesTable } from "./NodesTable";
 import { NodesToolbar } from "./NodesToolbar";
 
@@ -37,7 +36,6 @@ export const NodesPage: FC = observer(() => {
       <PermissionGate permission={vm.viewPermission}>
         <NodesToolbar vm={vm} />
         <NodesTable vm={vm} />
-        {vm.mesh && <NodeMeshCard mesh={vm.mesh} />}
       </PermissionGate>
       <NodeFormModal vm={vm.form} />
       <AssignNodeOwnerModal vm={vm.owner} />

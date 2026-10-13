@@ -50,7 +50,7 @@ const node = (patch: Partial<NodeDto>): NodeDto => ({
     updateAvailable: true,
     workers: [],
   },
-  config: { status: "error", pending: [], failed: ["netprobe"] },
+  config: { status: "error", pending: [], failed: ["echo"] },
   job: null,
   createdAt: "2026-10-01T10:00:00.000Z",
   updatedAt: "2026-10-01T10:00:00.000Z",
@@ -104,30 +104,6 @@ const api = {
         },
       ],
       total: 1,
-    },
-  })),
-  getNodeMesh: vi.fn(async () => ({
-    data: {
-      nodes: [
-        { id: "n-1", name: "alpha", host: "203.0.113.10" },
-        { id: "n-2", name: "beta", host: "203.0.113.11" },
-      ],
-      cells: [
-        {
-          from: "n-1",
-          to: "n-2",
-          method: "icmp",
-          sent: 3,
-          received: 3,
-          rttAvgMs: 12,
-          rttMinMs: 10,
-          rttMaxMs: 14,
-          lossPct: 0,
-          at: 1,
-          stale: false,
-        },
-      ],
-      generatedAt: 1,
     },
   })),
 };
@@ -193,7 +169,6 @@ describe("NodesPage", () => {
       within(other).queryByRole("button", { name: "Изменить" }),
     ).not.toBeInTheDocument();
 
-    expect(await screen.findByText("Связность узлов")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Новый узел" }),
     ).not.toBeInTheDocument();

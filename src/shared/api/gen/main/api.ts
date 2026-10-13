@@ -52,7 +52,6 @@ import type {
   IGenerateNonceResponseDto,
   INodeInstallCommandDto,
   INodeJobStartedDto,
-  INodeMeshDto,
   INodeSshAccessBody,
   IPaginatedDtoAgentDto,
   IPaginatedDtoAgentEnrollmentTokenDto,
@@ -1179,9 +1178,9 @@ export const getRestApi = () => {
   };
 
   /**
-   * Обновить агента до доступной версии (сборки агента — по
-   * умолчанию с GitHub): итог — после запуска новой версии. Агент в контейнере
-   * себя не обновляет.
+   * Обновить агента до новой версии, которую он нашёл в своём каталоге сборок
+   * (`update.latest`; сборки агента — по умолчанию с GitHub): итог — после
+   * запуска новой версии. Агент в контейнере себя не обновляет.
    * @summary Обновление агента
    */
   const updateAgent = (
@@ -1281,10 +1280,10 @@ export const getRestApi = () => {
   };
 
   /**
-   * Сборки, которые раздаёт бэкенд: агент и netprobe — из источника сборок
-   * агента (по умолчанию GitHub, `remote` — версия и когда проверен),
-   * воркеры проекта — из `release/` каталога архивов `AGENT_BUNDLE_DIR`; у каждой сборки — источник.
-   * И кого из доступных агентов можно обновить: агентов и воркеры с сервера.
+   * Сборки, которые раздаёт бэкенд: воркеры проекта — из `release/` каталога
+   * архивов `AGENT_BUNDLE_DIR` (у каждой сборки — источник `local` и путь).
+   * И кого из доступных агентов можно обновить: агентов — до версии, которую
+   * они нашли в своём каталоге сборок, и воркеры — до сборки с сервера.
    * @summary Сборки агента
    */
   const getAgentRelease = (
@@ -1594,21 +1593,6 @@ export const getRestApi = () => {
   ) => {
     return mainMutator<NodeOptionDto[]>(
       { url: `/api/v1/nodes/options`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Матрица связности узлов «откуда → куда»: средние задержка и потери за 5
-   * минут по измерениям воркера проверки сети (`netprobe`) агентов узлов.
-   * С правом `node:view:own` — только между своими узлами.
-   * @summary Связность узлов
-   */
-  const getNodeMesh = (
-    options?: SecondParameter<typeof mainMutator<INodeMeshDto>>,
-  ) => {
-    return mainMutator<INodeMeshDto>(
-      { url: `/api/v1/nodes/mesh`, method: "GET" },
       options,
     );
   };
@@ -2016,7 +2000,6 @@ export const getRestApi = () => {
     getNodes,
     createNode,
     getNodeOptions,
-    getNodeMesh,
     getNodeById,
     updateNode,
     deleteNode,
@@ -2298,9 +2281,6 @@ export type CreateNodeResult = NonNullable<
 >;
 export type GetNodeOptionsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getNodeOptions"]>>
->;
-export type GetNodeMeshResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getNodeMesh"]>>
 >;
 export type GetNodeByIdResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getNodeById"]>>

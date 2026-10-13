@@ -79,7 +79,7 @@ const api = {
           target: "1.2.0",
           os: "linux",
           arch: "amd64",
-          source: "server" as const,
+          source: "agent" as const,
         },
       ],
       workerCandidates: [],

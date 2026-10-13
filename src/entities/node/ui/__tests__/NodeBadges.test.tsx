@@ -12,7 +12,7 @@ describe("NodeStatusBadge", () => {
       <TooltipProvider>
         <NodeStatusBadge node={{ status: "offline", statusMessage: null }} />
         <NodeStatusBadge
-          node={{ status: "error", statusMessage: "Раздел netprobe: нет" }}
+          node={{ status: "error", statusMessage: "Раздел echo: нет" }}
         />
       </TooltipProvider>,
     );
@@ -61,7 +61,7 @@ describe("NodeConfigBadge", () => {
           config={{ status: "synced", pending: [], failed: [] }}
         />
         <NodeConfigBadge
-          config={{ status: "error", pending: [], failed: ["netprobe"] }}
+          config={{ status: "error", pending: [], failed: ["echo"] }}
         />
       </TooltipProvider>,
     );

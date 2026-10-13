@@ -42,11 +42,11 @@ const agent: AgentDto = {
   alerts: [],
   workers: [
     {
-      name: "netprobe",
+      name: "echo",
       state: "running",
       health: { ok: true },
       configs: {
-        targets: {
+        settings: {
           version: 2,
           ok: false,
           error: { code: "CONFIG_REJECTED", message: "нет цели" },
@@ -68,7 +68,7 @@ const node = (patch: Partial<NodeDto> = {}): NodeDto => ({
   agentId: "a-1",
   agentName: "alpha",
   status: "error",
-  statusMessage: "Настройка netprobe/targets: нет цели",
+  statusMessage: "Настройка echo/settings: нет цели",
   agent: {
     id: "a-1",
     name: "alpha",
@@ -81,7 +81,7 @@ const node = (patch: Partial<NodeDto> = {}): NodeDto => ({
     updateAvailable: true,
     workers: [],
   },
-  config: { status: "error", pending: [], failed: ["netprobe/targets"] },
+  config: { status: "error", pending: [], failed: ["echo/settings"] },
   job: null,
   createdAt: "2026-10-01T10:00:00.000Z",
   updatedAt: "2026-10-01T10:00:00.000Z",
@@ -141,7 +141,7 @@ describe("NodeDetail", () => {
     expect(screen.getByText("Анна")).toBeInTheDocument();
 
     expect(await screen.findByRole("tab", { name: "Обзор" })).toBeVisible();
-    expect(screen.getByText("netprobe/targets")).toBeInTheDocument();
+    expect(screen.getByText("echo/settings")).toBeInTheDocument();
     expect(screen.getByText(/: нет цели/)).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Обновить агента" }),
