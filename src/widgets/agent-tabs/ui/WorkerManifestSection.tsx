@@ -2,7 +2,7 @@ import { SchemaHint } from "@entities/agent";
 import { Collapse } from "@shared/ui";
 import { FC, ReactNode } from "react";
 
-/** Элемент каталога возможностей воркера: маршрут, событие, задача, запрос, ключ. */
+/** Элемент каталога возможностей воркера: команда, событие, запрос, ключ. */
 export interface IManifestItem {
   key: string;
   /** Имя: `POST /echo`, тип события, ключ. */

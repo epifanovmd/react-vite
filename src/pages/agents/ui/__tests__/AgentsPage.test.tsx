@@ -8,7 +8,7 @@ import { INotificationService } from "@shared/lib/notifications";
 import { ISocketTransport } from "@shared/lib/socket";
 import { createFakeSocket } from "@shared/lib/socket/testing";
 import { TooltipProvider } from "@shared/ui";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -32,23 +32,20 @@ const agent = (patch: Partial<AgentDto>): AgentDto => ({
   revoked: false,
   enrolledAt: 1,
   version: "1.1.0",
+  updateAvailable: "1.2.0",
+  desiredRev: 1,
   host: { hostname: "node-01", os: "linux", arch: "amd64" },
   workers: [
-    { name: "kv", state: "running", health: { ok: true } },
-    { name: "db", state: "backoff" },
-    { name: "sysmetrics", state: "running", builtin: true },
-  ],
-  alerts: [
     {
-      key: "workerDown:db",
-      type: "workerDown",
-      agentId: "a-1",
-      agentName: "node-01",
-      message: "упал",
-      since: 1,
-      worker: "db",
+      name: "kv",
+      state: "running",
+      health: { ok: true },
+      release: false,
+      restarts: 0,
     },
+    { name: "db", state: "backoff", release: false, restarts: 2 },
   ],
+  alerts: [{ kind: "workerDown", message: "упал", worker: "db" }],
   metrics: {
     at: 1,
     host: { cpuPercent: 33, memUsedBytes: 1, memTotalBytes: 4 },
@@ -61,29 +58,20 @@ const api = {
     data: {
       items: [
         agent({}),
-        agent({ id: "a-2", name: "node-02", online: false, revoked: true }),
+        agent({
+          id: "a-2",
+          name: "node-02",
+          online: false,
+          revoked: true,
+          updateAvailable: undefined,
+          alerts: [],
+        }),
       ],
       total: 2,
     },
   })),
-  getAgentAlerts: vi.fn(async () => ({ data: [] })),
   getAgentRelease: vi.fn(async () => ({
-    data: {
-      manifest: { version: "1.2.0", artifacts: [], workers: [] },
-      candidates: [
-        {
-          agentId: "a-1",
-          name: "node-01",
-          online: true,
-          current: "1.1.0",
-          target: "1.2.0",
-          os: "linux",
-          arch: "amd64",
-          source: "agent" as const,
-        },
-      ],
-      workerCandidates: [],
-    },
+    data: { bundle: true, workers: [] },
   })),
   getAgentEnrollmentTokens: vi.fn(async () => ({
     data: { items: [], total: 0 },
@@ -111,25 +99,17 @@ afterEach(() => {
 });
 
 describe("AgentsPage", () => {
-  it("сборки пришли позже списка — значок обновления и кнопка появляются сразу", async () => {
-    const release = await api.getAgentRelease();
-    let resolve!: (value: typeof release) => void;
-
-    api.getAgentRelease.mockImplementationOnce(
-      () => new Promise(r => (resolve = r)),
-    );
+  it("агент нашёл новую версию — значок обновления и кнопка", async () => {
     render(
       <TooltipProvider>
         <AgentsPage />
       </TooltipProvider>,
     );
 
-    const online = (await screen.findByText("node-01")).closest("tr")!;
+    const online = (await screen.findAllByText("node-01"))
+      .map(element => element.closest("tr"))
+      .find(Boolean)!;
 
-    expect(
-      within(online).queryByLabelText("Доступна версия 1.2.0"),
-    ).not.toBeInTheDocument();
-    await act(async () => resolve(release));
     expect(
       within(online).getByLabelText("Доступна версия 1.2.0"),
     ).toBeInTheDocument();
@@ -145,7 +125,9 @@ describe("AgentsPage", () => {
       </TooltipProvider>,
     );
 
-    const online = (await screen.findByText("node-01")).closest("tr")!;
+    const online = (await screen.findAllByText("node-01"))
+      .map(element => element.closest("tr"))
+      .find(Boolean)!;
     const revoked = screen.getByText("node-02").closest("tr")!;
 
     expect(within(online).getByText("на связи")).toBeInTheDocument();

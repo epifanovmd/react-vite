@@ -32,7 +32,7 @@ export const useHomeVM = () => {
     if (canViewNodes) void store.load();
   }, [canViewNodes, store]);
   useEffect(() => {
-    if (canViewAgents) void agents.loadAlerts();
+    if (canViewAgents) void agents.load();
   }, [canViewAgents, agents]);
   useNodesRealtime(scope);
   useAgentsRealtime(canViewAgents);

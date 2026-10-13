@@ -1,11 +1,9 @@
 import type {
-  AgentAlertDto,
+  AgentCommandDto,
   AgentDto,
-  IAgentErrorDto,
+  IAgentAlertDto,
   IAgentMetricsPointDto,
   IAgentReleaseDto,
-  IAgentUpdateCandidateDto,
-  IAgentWorkerUpdateCandidateDto,
 } from "@shared/api/gen/main/model";
 import { createInjectDecorator } from "@shared/lib/di";
 import type { IHolderError } from "@shared/lib/holders";
@@ -14,68 +12,66 @@ import type { IAgentLogEntry } from "../lib/log";
 
 export const IAgentsStore = createInjectDecorator<IAgentsStore>("IAgentsStore");
 
+/** Проблема агента вместе с агентом: в общем списке — ссылка на него. */
+export interface IAgentAlert extends IAgentAlertDto {
+  agentId: string;
+  agentName: string;
+}
+
+/** Новая версия агента или воркера, которую можно поставить. */
+export interface IAgentUpdateCandidate {
+  agentId: string;
+  /** Воркер; нет — сам агент. */
+  worker?: string;
+  current?: string;
+  target: string;
+}
+
 /**
- * Агенты, их активные проблемы и сборки для обновления. Список — запросом,
- * изменения — событиями комнаты `agents` (`useAgentsRealtime`).
+ * Агенты, их проблемы и сборки воркеров проекта. Список — запросом, изменения —
+ * событиями комнаты `agents` (`useAgentsRealtime`); проблемы и новые версии —
+ * в самих агентах.
  */
 export interface IAgentsStore {
   /** На связи — первыми, дальше по имени. */
   readonly agents: AgentDto[];
   readonly isLoading: boolean;
   readonly error: IHolderError | null;
-  /** Активные проблемы всех агентов, новые первыми. */
-  readonly alerts: AgentAlertDto[];
-  /** Сборки и кого можно обновить; нет каталога сборок — `manifest: null`. */
+  /** Проблемы всех агентов. */
+  readonly alerts: IAgentAlert[];
+  /** Сборки воркеров проекта у сервера. */
   readonly release: IAgentReleaseDto | null;
+  /** Кого можно обновить: агенты и воркеры. */
+  readonly candidates: IAgentUpdateCandidate[];
 
   load(): Promise<void>;
-  loadAlerts(): Promise<void>;
   loadRelease(): Promise<void>;
   /** Агент по id с сервера: карточка видна, даже если списка ещё нет. */
   fetch(id: string): Promise<{ error: IHolderError | null }>;
   byId(id: string): AgentDto | undefined;
-  alertsOf(agentId: string): AgentAlertDto[];
-  /** Кандидат на обновление агента до новой версии. */
-  updateCandidate(agentId: string): IAgentUpdateCandidateDto | null;
-  /** Кандидат на обновление воркера сборкой с сервера. */
+  alertsOf(agentId: string): IAgentAlert[];
+  /** Новая версия агента. */
+  updateCandidate(agentId: string): IAgentUpdateCandidate | null;
+  /** Новая сборка воркера с сервера. */
   workerCandidate(
     agentId: string,
     worker: string,
-  ): IAgentWorkerUpdateCandidateDto | null;
+  ): IAgentUpdateCandidate | null;
   /** `agent:updated`: добавить или заменить. */
   upsert(agent: AgentDto): void;
   /** `agent:deleted`. */
   remove(id: string): void;
-  /** `agent:alert`: активная — добавить, закончившаяся — убрать. */
-  applyAlert(alert: AgentAlertDto): void;
-  /** Отложенная замена воркера ждёт итога (`agent:action`). */
-  trackDeferred(action: IDeferredWorkerAction): void;
-  /** Итог отложенной замены пришёл: снять ожидание; не ждали — `undefined`. */
-  settleDeferred(actionId: string): IDeferredWorkerAction | undefined;
-  /** Замена воркера, которая ждёт окончания его работы. */
-  deferredOf(
+  /** Поставленная пользователем команда ждёт итога (строка воркера показывает ожидание). */
+  trackCommand(command: AgentCommandDto): void;
+  /** Итог пришёл: команда больше не ждёт. */
+  settleCommand(id: string): void;
+  /** Ждущая команда агента (воркера — по `worker`) этого типа. */
+  pendingCommand(
     agentId: string,
-    worker: string,
-  ): IDeferredWorkerAction | undefined;
+    type: string,
+    worker?: string,
+  ): AgentCommandDto | undefined;
   reset(): void;
-}
-
-/** Событие `agent:release`: там, откуда сервер берёт сборки агента, другая версия. */
-export interface IAgentReleaseEvent {
-  version: string;
-  /** Прежняя версия; нет — сборки получены впервые после запуска сервера. */
-  previous?: string;
-  /** `github:owner/repo` или ссылка на каталог сборок. */
-  from: string;
-}
-
-/** Отложенная замена воркера: ответ `deferred: true`, итог придёт `agent:action`. */
-export interface IDeferredWorkerAction {
-  actionId: string;
-  agentId: string;
-  worker: string;
-  /** Что ждёт: `restart` | `update`. */
-  pending: string;
 }
 
 /** Событие `agent:metrics` (комната агента). */
@@ -90,20 +86,5 @@ export interface IAgentLogEvent {
   entries: IAgentLogEntry[];
 }
 
-/** Событие `agent:action` (комната агента): итог встроенного действия. */
-export interface IAgentActionEvent {
-  id: string;
-  agentId: string;
-  /** `worker.restart` | `worker.update` | `agent.update` | `agent.rotateKey` | `agent.logs`. */
-  name: string;
-  args?: Record<string, unknown>;
-  actor?: string;
-  /** `done` | `failed`. */
-  status: string;
-  result?: unknown;
-  error?: IAgentErrorDto;
-  createdAt: number;
-  finishedAt: number;
-  /** Итог отложенной замены воркера (ждала окончания работы). */
-  deferred?: boolean;
-}
+/** Событие `agent:command` (комната агента): команда поставлена, идёт или завершена. */
+export type IAgentCommandEvent = AgentCommandDto;

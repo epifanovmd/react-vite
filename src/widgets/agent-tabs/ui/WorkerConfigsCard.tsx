@@ -28,14 +28,13 @@ export const WorkerConfigsCard: FC<WorkerConfigsCardProps> = observer(
       {group.items.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           {group.noManifest
-            ? "Ключи появятся, когда воркер ответит на GET /manifest."
+            ? "Ключи появятся, когда воркер зарегистрируется у агента."
             : "Воркер не объявил ключей настроек."}
         </p>
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {group.items.map(item => {
-            const status = item.entry?.status;
-            const config = item.entry?.config;
+            const status = item.entry;
 
             return (
               <li
@@ -54,15 +53,7 @@ export const WorkerConfigsCard: FC<WorkerConfigsCardProps> = observer(
                       <>
                         <ConfigStateBadge state={status.state} />
                         <span className="text-xs text-muted-foreground">
-                          {[
-                            status.version !== null &&
-                              `версия ${status.version}`,
-                            status.applied !== undefined &&
-                              status.applied !== status.version &&
-                              `применена ${status.applied}`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          версия {status.version}
                         </span>
                       </>
                     ) : (
@@ -79,10 +70,10 @@ export const WorkerConfigsCard: FC<WorkerConfigsCardProps> = observer(
                       {status.error.code}: {status.error.message}
                     </p>
                   )}
-                  {config && (
-                    <Tooltip content={formatMoment(config.updatedAt)}>
+                  {status && (
+                    <Tooltip content={formatMoment(status.updatedAt)}>
                       <p className="text-xs text-muted-foreground">
-                        изменено {formatAgo(config.updatedAt)}
+                        изменено {formatAgo(status.updatedAt)}
                       </p>
                     </Tooltip>
                   )}
@@ -90,16 +81,16 @@ export const WorkerConfigsCard: FC<WorkerConfigsCardProps> = observer(
                 <TableRowActions>
                   {/* Значение ключа сервер отдаёт только с правом на настройки. */}
                   {vm.canConfig && (
-                    <Tooltip content={config ? "Изменить" : "Задать"}>
+                    <Tooltip content={status ? "Изменить" : "Задать"}>
                       <IconButton
                         aria-label={`Ключ ${item.key}`}
                         onClick={() => vm.editor.openFor(item)}
                       >
-                        {config ? <Pencil size={15} /> : <Plus size={15} />}
+                        {status ? <Pencil size={15} /> : <Plus size={15} />}
                       </IconButton>
                     </Tooltip>
                   )}
-                  {vm.canConfig && status && status.version !== null && (
+                  {vm.canConfig && status && (
                     <Tooltip content="Удалить ключ">
                       <IconButton
                         aria-label={`Удалить ${item.key}`}

@@ -7,8 +7,8 @@ export interface IAgentTabsAccess {
   canManage: boolean;
   /** Запись и удаление настроек воркеров. */
   canConfig: boolean;
-  /** Запросы к воркерам (вкладка «Запрос»). */
-  canFetch: boolean;
+  /** Команды воркерам (вкладка «Команды»). */
+  canCommand: boolean;
   /** Журнал агента и воркеров с узла. */
   canLogs: boolean;
 }

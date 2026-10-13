@@ -1,8 +1,5 @@
 import { IMainApi } from "@shared/api";
-import type {
-  AgentAlertDto,
-  IAgentMetricsPointDto,
-} from "@shared/api/gen/main/model";
+import type { IAgentMetricsPointDto } from "@shared/api/gen/main/model";
 import { iocContainer } from "@shared/lib/di";
 import { ISocketTransport } from "@shared/lib/socket";
 import { createFakeSocket, type IFakeSocket } from "@shared/lib/socket/testing";
@@ -23,7 +20,6 @@ const point = (at: number): IAgentMetricsPointDto => ({
 
 const api = {
   getAgents: vi.fn(),
-  getAgentAlerts: vi.fn(),
   getAgentRelease: vi.fn(),
   getAgentMetrics: vi.fn(),
 };
@@ -34,7 +30,6 @@ beforeEach(() => {
   socket = createFakeSocket();
   store = new AgentsStore(api as unknown as IMainApi);
   api.getAgents.mockResolvedValue({ data: { items: [], total: 0 } });
-  api.getAgentAlerts.mockResolvedValue({ data: [] });
   api.getAgentRelease.mockResolvedValue({ data: null });
   api.getAgentMetrics.mockResolvedValue({ data: [] });
   iocContainer.bind(ISocketTransport.Tid).toConstantValue(socket);
@@ -53,7 +48,7 @@ const subscribed = () =>
   socket.emitted.filter(e => e.event === "room:subscribe").map(e => e.args[0]);
 
 describe("useAgentsRealtime", () => {
-  it("комната agents: изменения, удаление и проблемы попадают в стор", () => {
+  it("комната agents: изменения и удаление попадают в стор", () => {
     renderHook(() => useAgentsRealtime(true));
 
     expect(subscribed()).toEqual([{ type: "agents", id: "all" }]);
@@ -61,28 +56,15 @@ describe("useAgentsRealtime", () => {
     act(() => socket.fire("agent:updated", makeAgent()));
     expect(store.byId("a-1")).toBeDefined();
 
-    act(() =>
-      socket.fire("agent:alert", {
-        key: "offline",
-        type: "offline",
-        agentId: "a-1",
-        active: true,
-      } as AgentAlertDto),
-    );
-    expect(store.alerts).toHaveLength(1);
-
     act(() => socket.fire("agent:deleted", { id: "a-1" }));
     expect(store.byId("a-1")).toBeUndefined();
-    expect(store.alerts).toHaveLength(0);
   });
 
-  it("переподключение перечитывает список, проблемы и сборки", () => {
+  it("переподключение перечитывает список", () => {
     renderHook(() => useAgentsRealtime(true));
     act(() => socket.reconnect());
 
     expect(api.getAgents).toHaveBeenCalled();
-    expect(api.getAgentAlerts).toHaveBeenCalled();
-    expect(api.getAgentRelease).toHaveBeenCalled();
   });
 
   it("без права — не входит в комнату и не слушает", () => {

@@ -6,8 +6,8 @@ export const AGENT_PERMISSIONS = {
   MANAGE: "agent:manage",
   /** Запись и удаление настроек воркеров. */
   CONFIG: "agent:config",
-  /** Запросы к воркерам. */
-  FETCH: "agent:fetch",
+  /** Команды воркерам. */
+  COMMAND: "agent:command",
   /** Журнал агента и воркеров с узла. */
   LOGS: "agent:logs",
   /** Токены регистрации и команда установки. */

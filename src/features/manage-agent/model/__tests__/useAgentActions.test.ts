@@ -1,6 +1,10 @@
 import { IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
-import type { AgentDto, IAgentWorkerDto } from "@shared/api/gen/main/model";
+import type {
+  AgentCommandDto,
+  AgentDto,
+  IAgentWorkerDto,
+} from "@shared/api/gen/main/model";
 import { iocContainer } from "@shared/lib/di";
 import { INotificationService } from "@shared/lib/notifications";
 import { act, renderHook } from "@testing-library/react";
@@ -21,9 +25,25 @@ const worker = (patch: Partial<IAgentWorkerDto> = {}): IAgentWorkerDto => ({
   name: "echo",
   state: "running",
   version: "1.0.0",
+  release: true,
+  restarts: 0,
   health: { ok: true },
   ...patch,
 });
+
+/** Поставленная команда и её итог. */
+const queued = (type: string, patch: Partial<AgentCommandDto> = {}) => ({
+  data: {
+    id: "c-1",
+    agentId: "a-1",
+    type,
+    status: "pending",
+    createdAt: 1,
+    ...patch,
+  } as AgentCommandDto,
+});
+const done = (type: string, patch: Partial<AgentCommandDto> = {}) =>
+  queued(type, { status: "done", ok: true, ...patch });
 
 const api = {
   revokeAgent: vi.fn(),
@@ -32,13 +52,16 @@ const api = {
   updateAgent: vi.fn(),
   restartAgentWorker: vi.fn(),
   updateAgentWorker: vi.fn(),
+  getAgentCommand: vi.fn(),
 };
 const toast = { error: vi.fn(), success: vi.fn(), info: vi.fn() };
 const store = {
   upsert: vi.fn(),
   remove: vi.fn(),
-  trackDeferred: vi.fn(),
-  deferredOf: vi.fn(),
+  fetch: vi.fn(),
+  trackCommand: vi.fn(),
+  settleCommand: vi.fn(),
+  pendingCommand: vi.fn(),
 };
 
 beforeEach(() => {
@@ -108,20 +131,30 @@ describe("useAgentActions", () => {
     expect(onDeleted).not.toHaveBeenCalled();
   });
 
-  it("смена ключа: ответ сервера — итог действия агента", async () => {
-    api.rotateAgentKey.mockResolvedValue({ data: undefined });
+  it("смена ключа: команда агенту, итог — после ответа агента", async () => {
+    api.rotateAgentKey.mockResolvedValue(queued("agent.rotateKey"));
+    api.getAgentCommand.mockResolvedValue(done("agent.rotateKey"));
 
     const { result } = renderHook(() => useAgentActions());
 
     await act(() => result.current.rotateKey(agent));
 
+    expect(store.trackCommand).toHaveBeenCalled();
+    expect(api.getAgentCommand).toHaveBeenCalledWith(
+      "a-1",
+      "c-1",
+      { waitSeconds: 25 },
+      expect.anything(),
+    );
+    expect(store.settleCommand).toHaveBeenCalledWith("c-1");
     expect(toast.success).toHaveBeenCalledWith("Ключ агента «node-01» сменён");
   });
 
-  it("обновление: версия в вопросе, запрос без срока, итог — версия", async () => {
-    api.updateAgent.mockResolvedValue({
-      data: { version: "1.2.0", previous: "1.0.0" },
-    });
+  it("обновление: версия в вопросе и в команде, итог — версия", async () => {
+    api.updateAgent.mockResolvedValue(queued("agent.update"));
+    api.getAgentCommand.mockResolvedValue(
+      done("agent.update", { result: { version: "1.2.0", previous: "1.0.0" } }),
+    );
 
     const { result } = renderHook(() => useAgentActions());
 
@@ -131,23 +164,34 @@ describe("useAgentActions", () => {
         title: "Обновить агента «node-01» до версии 1.2.0?",
       }),
     );
-    expect(api.updateAgent).toHaveBeenCalledWith("a-1", { timeout: 0 });
+    expect(api.updateAgent).toHaveBeenCalledWith("a-1", { version: "1.2.0" });
     expect(toast.success).toHaveBeenCalledWith(
       "Агент «node-01» работает на версии 1.2.0",
     );
 
+    api.getAgentCommand.mockResolvedValue(
+      done("agent.update", {
+        ok: false,
+        error: { code: "UPDATE_NOT_SUPPORTED", message: "агент в контейнере" },
+      }),
+    );
     await act(() => result.current.update(agent, null));
     expect(confirm).toHaveBeenLastCalledWith(
       expect.objectContaining({
         title: "Обновить агента «node-01» до новой версии?",
       }),
     );
+    expect(api.updateAgent).toHaveBeenLastCalledWith("a-1", {});
+    expect(toast.error).toHaveBeenCalledWith("агент в контейнере", {
+      title: "Агент «node-01» не обновлён",
+    });
   });
 });
 
 describe("useWorkerActions", () => {
-  it("перезапуск свободного — после подтверждения, итог сразу", async () => {
-    api.restartAgentWorker.mockResolvedValue({ data: { deferred: false } });
+  it("перезапуск — после подтверждения, итог — после ответа агента", async () => {
+    api.restartAgentWorker.mockResolvedValue(queued("worker.restart"));
+    api.getAgentCommand.mockResolvedValue(done("worker.restart"));
     confirm.mockResolvedValueOnce(false);
 
     const { result } = renderHook(() => useWorkerActions());
@@ -160,59 +204,58 @@ describe("useWorkerActions", () => {
       force: false,
     });
     expect(toast.success).toHaveBeenCalledWith("Воркер «echo» перезапущен");
-    expect(store.trackDeferred).not.toHaveBeenCalled();
+    expect(toast.info).not.toHaveBeenCalled();
   });
 
-  it("занятый воркер: ответ сразу — замена ждёт, итог придёт событием", async () => {
-    api.restartAgentWorker.mockResolvedValue({
-      data: { deferred: true, pending: "restart", actionId: "act-1" },
-    });
+  it("занятый воркер: замена ждёт — предупреждение сразу, итог потом", async () => {
+    api.restartAgentWorker.mockResolvedValue(queued("worker.restart"));
+    api.getAgentCommand.mockResolvedValue(done("worker.restart"));
 
     const busy = worker({ health: { ok: true, busy: true } });
     const { result } = renderHook(() => useWorkerActions());
 
     await act(() => result.current.restart(agent, busy));
-    expect(store.trackDeferred).toHaveBeenCalledWith({
-      actionId: "act-1",
-      agentId: "a-1",
-      worker: "echo",
-      pending: "restart",
-    });
     expect(toast.info).toHaveBeenCalledWith(
       "Воркер «echo» занят — агент заменит его, когда освободится",
     );
-    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.success).toHaveBeenCalledWith("Воркер «echo» перезапущен");
     expect(result.current.isBusy("restart", "echo")).toBe(false);
   });
 
-  it("обновление: версия в тосте; отложенное — без тоста итога", async () => {
-    api.updateAgentWorker
-      .mockResolvedValueOnce({
-        data: { deferred: false, version: "1.1.0", previous: "1.0.0" },
-      })
-      .mockResolvedValueOnce({
-        data: { deferred: true, pending: "update", actionId: "act-2" },
-      });
+  it("обновление: версия из итога; отказ агента — ошибка", async () => {
+    api.updateAgentWorker.mockResolvedValue(queued("worker.update"));
+    api.getAgentCommand
+      .mockResolvedValueOnce(
+        done("worker.update", { result: { version: "1.1.0" } }),
+      )
+      .mockResolvedValueOnce(
+        done("worker.update", {
+          ok: false,
+          error: { code: "UPDATE_FAILED", message: "не запустился" },
+        }),
+      );
 
     const { result } = renderHook(() => useWorkerActions());
 
     await act(() => result.current.update(agent, worker(), "1.1.0"));
+    expect(api.updateAgentWorker).toHaveBeenCalledWith("a-1", "echo", {
+      force: false,
+      version: "1.1.0",
+    });
     expect(toast.success).toHaveBeenCalledWith(
       "Воркер «echo» работает на версии 1.1.0",
     );
 
     await act(() => result.current.update(agent, worker(), "1.1.0"));
-    expect(store.trackDeferred).toHaveBeenCalledWith(
-      expect.objectContaining({ actionId: "act-2", pending: "update" }),
-    );
-    expect(toast.success).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith("не запустился", {
+      title: "Воркер «echo» не обновлён",
+    });
   });
 
   it("заменить сейчас: ждущее обновление — обновление с force", async () => {
-    api.updateAgentWorker.mockResolvedValue({
-      data: { deferred: false, version: "1.1.0" },
-    });
-    api.restartAgentWorker.mockResolvedValue({ data: { deferred: false } });
+    api.updateAgentWorker.mockResolvedValue(queued("worker.update"));
+    api.restartAgentWorker.mockResolvedValue(queued("worker.restart"));
+    api.getAgentCommand.mockResolvedValue(done("worker.update"));
 
     const { result } = renderHook(() => useWorkerActions());
 
@@ -221,6 +264,7 @@ describe("useWorkerActions", () => {
     );
     expect(api.updateAgentWorker).toHaveBeenCalledWith("a-1", "echo", {
       force: true,
+      version: "1.1.0",
     });
     expect(confirm).toHaveBeenLastCalledWith(
       expect.objectContaining({ confirmVariant: "destructive" }),
@@ -234,30 +278,37 @@ describe("useWorkerActions", () => {
     });
   });
 
-  it("заменить сейчас: ожидание из ответа, статус ещё не пришёл", async () => {
-    api.updateAgentWorker.mockResolvedValue({
-      data: { deferred: false, version: "1.1.0" },
-    });
-    store.deferredOf.mockReturnValue({ pending: "update" });
+  it("заменить сейчас: ждущая команда, статус агента ещё не пришёл", async () => {
+    api.updateAgentWorker.mockResolvedValue(queued("worker.update"));
+    api.getAgentCommand.mockResolvedValue(done("worker.update"));
+    store.pendingCommand.mockImplementation((_a, type) =>
+      type === "worker.update" ? { id: "c-0" } : undefined,
+    );
 
     const { result } = renderHook(() => useWorkerActions());
 
     await act(() => result.current.replaceNow(agent, worker(), "1.1.0"));
-    expect(store.deferredOf).toHaveBeenCalledWith("a-1", "echo");
+    expect(store.pendingCommand).toHaveBeenCalledWith(
+      "a-1",
+      "worker.update",
+      "echo",
+    );
     expect(api.updateAgentWorker).toHaveBeenCalledWith("a-1", "echo", {
       force: true,
+      version: "1.1.0",
     });
   });
 
-  it("ошибка — уведомление, без итога", async () => {
+  it("ошибка постановки — уведомление, без итога", async () => {
     api.updateAgentWorker.mockResolvedValue({
-      error: { message: "У воркера нет сборки на сервере" },
+      error: { message: "Сборки нет в каталоге" },
     });
 
     const { result } = renderHook(() => useWorkerActions());
 
     await act(() => result.current.update(agent, worker(), "1.1.0"));
-    expect(toast.error).toHaveBeenCalledWith("У воркера нет сборки на сервере");
+    expect(toast.error).toHaveBeenCalledWith("Сборки нет в каталоге");
+    expect(api.getAgentCommand).not.toHaveBeenCalled();
     expect(toast.success).not.toHaveBeenCalled();
   });
 });

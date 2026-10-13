@@ -1,49 +1,44 @@
-import type { IAgentUpdateCandidateDto } from "@shared/api/gen/main/model";
-import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 import { reaction } from "mobx";
 import { useEffect, useRef } from "react";
 
-import { IAgentReleaseEvent, IAgentsStore } from "./types";
+import { IAgentsStore, type IAgentUpdateCandidate } from "./types";
+import { useAgentsRealtime } from "./useAgentsRealtime";
 
 interface IAgentReleaseWatchHandlers {
-  /** `agent:release`: там, откуда сервер берёт сборки агента, другая версия. */
-  onRelease?: (event: IAgentReleaseEvent) => void;
-  /** Агент сам нашёл новую версию в своём каталоге сборок (за время сессии). */
-  onAgentUpdate?: (candidate: IAgentUpdateCandidateDto) => void;
+  /** Агент или воркер получил новую версию за время сессии. */
+  onUpdateAvailable?: (candidate: IAgentUpdateCandidate) => void;
 }
 
-const agentFound = (candidates: IAgentUpdateCandidateDto[]) =>
-  new Map(
-    candidates
-      .filter(c => c.source === "agent")
-      .map(c => [`${c.agentId}@${c.target}`, c]),
-  );
+const keyOf = (c: IAgentUpdateCandidate) =>
+  `${c.agentId}/${c.worker ?? ""}@${c.target}`;
 
 /**
- * Сборки агента на всё время сессии: кого можно обновить. Новая версия у сервера
- * приходит событием `agent:release`, новая версия, найденная самим агентом, — в
- * `agent:updated` (сборки перечитывает стор). Уже известные при открытии
- * обновления — без `onAgentUpdate`: их видно по значку.
+ * Новые версии на всё время сессии: агент сам находит новую версию в своём
+ * каталоге сборок, сборки воркеров раздаёт сервер — всё приходит в
+ * `agent:updated` (`updateAvailable`). Уже известные при открытии — без
+ * `onUpdateAvailable`: их видно по значку.
  */
 export const useAgentReleaseWatch = (
   enabled: boolean,
-  { onRelease, onAgentUpdate }: IAgentReleaseWatchHandlers = {},
+  { onUpdateAvailable }: IAgentReleaseWatchHandlers = {},
 ): void => {
   const store = IAgentsStore.useInstance();
-  const notify = useRef(onAgentUpdate);
+  const notify = useRef(onUpdateAvailable);
 
-  notify.current = onAgentUpdate;
+  notify.current = onUpdateAvailable;
 
+  useAgentsRealtime(enabled);
   useEffect(() => {
     if (!enabled) return undefined;
+    void store.load();
     void store.loadRelease();
     let known: Set<string> | null = null;
 
     return reaction(
-      () => store.release?.candidates,
+      () => (store.isLoading ? null : store.candidates),
       candidates => {
         if (!candidates) return;
-        const found = agentFound(candidates);
+        const found = new Map(candidates.map(c => [keyOf(c), c]));
 
         if (known) {
           for (const [key, candidate] of found) {
@@ -55,16 +50,4 @@ export const useAgentReleaseWatch = (
       { fireImmediately: true },
     );
   }, [enabled, store]);
-
-  useSocketRoom("agents", enabled ? "all" : null, () => {
-    void store.loadRelease();
-  });
-  useSocketEvent<[IAgentReleaseEvent]>(
-    "agent:release",
-    event => {
-      void store.loadRelease();
-      onRelease?.(event);
-    },
-    enabled,
-  );
 };

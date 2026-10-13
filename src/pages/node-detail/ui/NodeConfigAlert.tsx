@@ -1,4 +1,3 @@
-import { workerOf } from "@entities/agent";
 import type { AgentDto, NodeDto } from "@shared/api/gen/main/model";
 import { Alert } from "@shared/ui";
 import { FC } from "react";
@@ -15,7 +14,14 @@ const errorOf = (agent: AgentDto | null, failed: string): string | null => {
 
   if (!agent || !worker || !key) return null;
 
-  return workerOf(agent, worker)?.configs?.[key]?.error?.message ?? null;
+  return (
+    agent.alerts.find(
+      alert =>
+        alert.kind === "configFailed" &&
+        alert.worker === worker &&
+        alert.key === key,
+    )?.message ?? null
+  );
 };
 
 /** Воркер отказал в настройке: ключи и что он ответил. */

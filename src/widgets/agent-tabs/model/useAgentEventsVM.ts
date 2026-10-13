@@ -1,4 +1,4 @@
-import { configuredWorkers, useAgentEventFeed } from "@entities/agent";
+import { agentWorkers, useAgentEventFeed } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type {
   AgentDto,
@@ -8,8 +8,8 @@ import type {
 import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 import { useState } from "react";
 
-/** События задач: агент принимает их от воркера с `jobs` в манифесте. */
-const JOB_EVENTS = ["job.progress", "job.done", "job.failed", "job.cancelled"];
+/** Ход долгой команды: его шлёт агент за воркер с командами. */
+const COMMAND_PROGRESS = "command.progress";
 
 /**
  * События воркеров агента, новые первыми: страницы с сервера по курсору (с
@@ -44,16 +44,14 @@ export const useAgentEventsVM = (agent: AgentDto) => {
     }
   });
 
-  const workers = configuredWorkers(agent);
+  const workers = agentWorkers(agent);
   // Типы — объявленные в манифестах (других агент не принимает): выбранного
-  // воркера или всех; у воркера с задачами — ещё события задач.
+  // воркера или всех; у воркера с командами — ещё ход команд.
   const declared = workers
     .filter(item => !worker || item.name === worker)
     .flatMap(item => [
       ...(item.manifest?.events ?? []),
-      ...(item.manifest?.jobs.length
-        ? JOB_EVENTS.map(jobType => ({ type: jobType }))
-        : []),
+      ...(item.manifest?.commands?.length ? [{ type: COMMAND_PROGRESS }] : []),
     ]);
   const types = [...new Set(declared.map(event => event.type))].sort();
   const declaration: IAgentManifestEventDto | null =

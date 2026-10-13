@@ -1,8 +1,8 @@
 import {
   AGENT_LOG_LEVEL_LABELS,
   AGENT_LOG_LEVELS,
+  agentWorkers,
   ALL_LOG_SOURCES,
-  configuredWorkers,
 } from "@entities/agent";
 import type { AgentDto } from "@shared/api/gen/main/model";
 import {
@@ -90,7 +90,7 @@ export const AgentLogsTab: FC<AgentLogsTabProps> = observer(
                   onChange={value => vm.setSource(value ?? AGENT_LOG_SOURCE)}
                   options={[
                     { value: AGENT_LOG_SOURCE, label: "агент" },
-                    ...configuredWorkers(agent).map(worker => ({
+                    ...agentWorkers(agent).map(worker => ({
                       value: worker.name,
                       label: `воркер ${worker.name}`,
                     })),

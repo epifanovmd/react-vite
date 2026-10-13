@@ -25,7 +25,7 @@ const FORM_ID = "worker-config-form";
 export const WorkerConfigModal: FC<WorkerConfigModalProps> = observer(
   ({ vm, canEdit }) => {
     const { target } = vm;
-    const status = target?.entry?.status;
+    const status = target?.entry;
 
     return (
       <Modal open={target !== null} onOpenChange={open => !open && vm.close()}>
@@ -64,7 +64,7 @@ export const WorkerConfigModal: FC<WorkerConfigModalProps> = observer(
               <SchemaHint schema={target.manifest?.schema} />
               {status && (
                 <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                  Сейчас — версия {status.version ?? "—"}
+                  Сейчас — версия {status.version}
                   <ConfigStateBadge state={status.state} />
                   {status.error && (
                     <span className="text-destructive">

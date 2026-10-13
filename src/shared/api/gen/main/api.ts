@@ -1,10 +1,11 @@
 import type {
-  AgentAlertDto,
+  AgentCommandDto,
+  AgentConfigDto,
   AgentDto,
   ApiResponseDto,
   DemoEchoJob201,
-  GetAgentAlertsParams,
-  GetAgentConfigsParams,
+  GetAgentCommandParams,
+  GetAgentCommandsParams,
   GetAgentEnrollmentTokensParams,
   GetAgentEventsParams,
   GetAgentLogsParams,
@@ -20,20 +21,15 @@ import type {
   GetSessionsParams,
   GetUserOptionsParams,
   GetUsersParams,
-  IAgentConfigEntryDto,
-  IAgentFetchBody,
   IAgentInstallCommandDto,
   IAgentLogsDto,
   IAgentMetricsPointDto,
   IAgentReleaseDto,
-  IAgentUpdateResultDto,
-  IAgentWorkerActionBody,
-  IAgentWorkerActionResultDto,
+  IAgentUpdateBody,
   IAssignNodeBody,
   IBiometricDevicesResponseDto,
-  ICreateAgentEnrollmentTokenBody,
-  ICreateAgentInstallCommandBody,
   ICreateApiKeyBody,
+  ICreateEnrollmentTokenBody,
   ICreateNodeBody,
   ICreateNodeInstallCommandBody,
   ICreateRoleRequestDto,
@@ -50,6 +46,7 @@ import type {
   IGenerateAuthenticationOptionsRequestDto,
   IGenerateNonceRequestDto,
   IGenerateNonceResponseDto,
+  IInstallCommandBody,
   INodeInstallCommandDto,
   INodeJobStartedDto,
   INodeSshAccessBody,
@@ -69,7 +66,6 @@ import type {
   IRegisterBiometricResponseDto,
   IRoleDto,
   IRolePermissionsRequestDto,
-  ISetAgentConfigBody,
   ISignInRequestDto,
   ISignInResponseDto,
   ITokensDto,
@@ -94,6 +90,9 @@ import type {
   IVerifyBiometricSignatureResponseDto,
   IVerifyRegistrationRequestDto,
   IVerifyRegistrationResponseDto,
+  IWorkerCommandBody,
+  IWorkerRestartBody,
+  IWorkerUpdateBody,
   JobRunDto,
   ListApiKeysParams,
   ListAuditEventsParams,
@@ -1071,9 +1070,8 @@ export const getRestApi = () => {
   };
 
   /**
-   * Агенты в порядке регистрации: связь, узел, воркеры (состояние,
-   * самочувствие, манифест, настройки), последняя точка метрик, проблемы.
-   * Право `agent:view` — все агенты, иначе — доступные через политику.
+   * Агенты: связь, узел, воркеры (состояние, пульс, манифест), последняя точка метрик,
+   * проблемы.
    * @summary Список агентов
    */
   const getAgents = (
@@ -1087,23 +1085,7 @@ export const getRestApi = () => {
   };
 
   /**
-   * Текущие проблемы: агент без связи, воркер упал, не зарегистрирован, не в
-   * порядке, отказал в настройке. Без `agentId` — у всех доступных агентов.
-   * @summary Проблемы агентов
-   */
-  const getAgentAlerts = (
-    params?: GetAgentAlertsParams,
-    options?: SecondParameter<typeof mainMutator<AgentAlertDto[]>>,
-  ) => {
-    return mainMutator<AgentAlertDto[]>(
-      { url: `/api/v1/agents/alerts`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * События воркеров, новые первыми: фильтр по агенту, воркеру и типу;
-   * следующая страница — `cursor` из ответа.
+   * События воркеров, новые первыми; `cursor` — `nextCursor` прошлой страницы.
    * @summary Лента событий воркеров
    */
   const getAgentEvents = (
@@ -1117,9 +1099,6 @@ export const getRestApi = () => {
   };
 
   /**
-   * Агент: `hello` (версия, узел, воркеры), последний `status` (воркеры с
-   * `state`, `health`, `pending`, манифестом и итогами настроек), метрики,
-   * проблемы, процесс с соединением.
    * @summary Агент
    */
   const getAgent = (
@@ -1133,9 +1112,8 @@ export const getRestApi = () => {
   };
 
   /**
-   * Удалить запись агента, его настройки и историю; соединение закрывается.
-   * Агент с токеном регистрации зарегистрируется заново — уже другим.
-   * @summary Удаление агента
+   * Удалить агента и всё его (настройки, команды, историю). Только с правом `agent:manage`.
+   * @summary Удалить агента
    */
   const deleteAgent = (
     id: TAgentId,
@@ -1148,9 +1126,9 @@ export const getRestApi = () => {
   };
 
   /**
-   * Отозвать агента: ключ больше не принимается, соединение закрывается.
-   * Повторный отзыв — тот же ответ.
-   * @summary Отзыв агента
+   * Отозвать: агент больше не войдёт, связь прекращается; воркеры на узле работают.
+   * Только с правом `agent:manage`.
+   * @summary Отозвать агента
    */
   const revokeAgent = (
     id: TAgentId,
@@ -1163,38 +1141,40 @@ export const getRestApi = () => {
   };
 
   /**
-   * Сменить ключ агента: агент создаёт новый секрет и переподключается с
-   * ним. Агент должен быть на связи.
-   * @summary Смена ключа агента
+   * @summary Сменить ключ агента
    */
   const rotateAgentKey = (
     id: TAgentId,
-    options?: SecondParameter<typeof mainMutator<void>>,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
   ) => {
-    return mainMutator<void>(
+    return mainMutator<AgentCommandDto>(
       { url: `/api/v1/agents/${id}/rotate-key`, method: "POST" },
       options,
     );
   };
 
   /**
-   * Обновить агента до новой версии, которую он нашёл в своём каталоге сборок
-   * (`update.latest`; сборки агента — по умолчанию с GitHub): итог — после
-   * запуска новой версии. Агент в контейнере себя не обновляет.
-   * @summary Обновление агента
+   * Обновить агента из его каталога сборок; итог присылает новая версия.
+   * @summary Обновить агента
    */
   const updateAgent = (
     id: TAgentId,
-    options?: SecondParameter<typeof mainMutator<IAgentUpdateResultDto>>,
+    iAgentUpdateBody: IAgentUpdateBody,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
   ) => {
-    return mainMutator<IAgentUpdateResultDto>(
-      { url: `/api/v1/agents/${id}/update`, method: "POST" },
+    return mainMutator<AgentCommandDto>(
+      {
+        url: `/api/v1/agents/${id}/update`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iAgentUpdateBody,
+      },
       options,
     );
   };
 
   /**
-   * Последние строки журнала с узла: агента или воркера (`worker`).
+   * Последние записи журнала агента (или воркера) с узла; агент должен быть на связи.
    * @summary Журнал агента
    */
   const getAgentLogs = (
@@ -1209,9 +1189,6 @@ export const getRestApi = () => {
   };
 
   /**
-   * История метрик агента по возрастанию времени: узел (`host`) и ответы
-   * `GET /metrics` воркеров (`workers`). Окно — `since` (строго позже) и
-   * `until` (мс), из него — последние `limit` точек.
    * @summary История метрик агента
    */
   const getAgentMetrics = (
@@ -1226,31 +1203,93 @@ export const getRestApi = () => {
   };
 
   /**
-   * Создать токен регистрации агентов. Полный токен (`token`) — только в
-   * этом ответе: он кладётся в настройки агента (`enroll.token`) или в
-   * команду установки. `maxUses` не задан — многоразовый (парк машин).
-   * @summary Создание токена регистрации
+   * Ключи настроек воркеров агента и итоги применения; значения — с правом на настройки.
+   * @summary Настройки воркеров
    */
-  const createAgentEnrollmentToken = (
-    iCreateAgentEnrollmentTokenBody: ICreateAgentEnrollmentTokenBody,
-    options?: SecondParameter<
-      typeof mainMutator<ICreatedAgentEnrollmentTokenDto>
-    >,
+  const getAgentConfigs = (
+    id: TAgentId,
+    options?: SecondParameter<typeof mainMutator<AgentConfigDto[]>>,
   ) => {
-    return mainMutator<ICreatedAgentEnrollmentTokenDto>(
+    return mainMutator<AgentConfigDto[]>(
+      { url: `/api/v1/agents/${id}/configs`, method: "GET" },
+      options,
+    );
+  };
+
+  /**
+   * @summary Команды агенту, новые первыми
+   */
+  const getAgentCommands = (
+    id: TAgentId,
+    params?: GetAgentCommandsParams,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto[]>>,
+  ) => {
+    return mainMutator<AgentCommandDto[]>(
+      { url: `/api/v1/agents/${id}/commands`, method: "GET", params },
+      options,
+    );
+  };
+
+  /**
+   * Команда и её итог; `waitSeconds` — подождать итог.
+   * @summary Команда агенту
+   */
+  const getAgentCommand = (
+    id: TAgentId,
+    commandId: string,
+    params?: GetAgentCommandParams,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
+  ) => {
+    return mainMutator<AgentCommandDto>(
       {
-        url: `/api/v1/agent-enrollment-tokens`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateAgentEnrollmentTokenBody,
+        url: `/api/v1/agents/${id}/commands/${commandId}`,
+        method: "GET",
+        params,
       },
       options,
     );
   };
 
   /**
-   * Токены регистрации, новые первыми; секреты не возвращаются.
-   * @summary Список токенов регистрации
+   * @summary Отменить идущую команду воркера
+   */
+  const cancelAgentCommand = (
+    id: TAgentId,
+    commandId: string,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
+  ) => {
+    return mainMutator<AgentCommandDto>(
+      {
+        url: `/api/v1/agents/${id}/commands/${commandId}/cancel`,
+        method: "POST",
+      },
+      options,
+    );
+  };
+
+  /**
+   * Создать токен регистрации; полный токен — только в этом ответе.
+   * @summary Создать токен регистрации
+   */
+  const createAgentEnrollmentToken = (
+    iCreateEnrollmentTokenBody: ICreateEnrollmentTokenBody,
+    options?: SecondParameter<
+      typeof mainMutator<ICreatedAgentEnrollmentTokenDto>
+    >,
+  ) => {
+    return mainMutator<ICreatedAgentEnrollmentTokenDto>(
+      {
+        url: `/api/v1/agent-enrollment/tokens`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iCreateEnrollmentTokenBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * @summary Токены регистрации
    */
   const getAgentEnrollmentTokens = (
     params?: GetAgentEnrollmentTokensParams,
@@ -1259,203 +1298,145 @@ export const getRestApi = () => {
     >,
   ) => {
     return mainMutator<IPaginatedDtoAgentEnrollmentTokenDto>(
-      { url: `/api/v1/agent-enrollment-tokens`, method: "GET", params },
+      { url: `/api/v1/agent-enrollment/tokens`, method: "GET", params },
       options,
     );
   };
 
   /**
-   * Отозвать токен: новые регистрации по нему невозможны, агенты остаются.
-   * Повторный отзыв — 204.
-   * @summary Отзыв токена регистрации
+   * @summary Отозвать токен регистрации
    */
   const revokeAgentEnrollmentToken = (
     id: Uuid,
     options?: SecondParameter<typeof mainMutator<void>>,
   ) => {
     return mainMutator<void>(
-      { url: `/api/v1/agent-enrollment-tokens/${id}/revoke`, method: "POST" },
+      { url: `/api/v1/agent-enrollment/tokens/${id}/revoke`, method: "POST" },
       options,
     );
   };
 
   /**
-   * Сборки, которые раздаёт бэкенд: воркеры проекта — из `release/` каталога
-   * архивов `AGENT_BUNDLE_DIR` (у каждой сборки — источник `local` и путь).
-   * И кого из доступных агентов можно обновить: агентов — до версии, которую
-   * они нашли в своём каталоге сборок, и воркеры — до сборки с сервера.
-   * @summary Сборки агента
+   * Команда установки агента на узел из архива этого сервера.
+   * @summary Команда установки агента
+   */
+  const createAgentInstallCommand = (
+    iInstallCommandBody: IInstallCommandBody,
+    options?: SecondParameter<typeof mainMutator<IAgentInstallCommandDto>>,
+  ) => {
+    return mainMutator<IAgentInstallCommandDto>(
+      {
+        url: `/api/v1/agent-enrollment/install-command`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iInstallCommandBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Каталог сборок воркеров проекта (`AGENT_BUNDLE_DIR/release`).
+   * @summary Сборки воркеров
    */
   const getAgentRelease = (
     options?: SecondParameter<typeof mainMutator<IAgentReleaseDto>>,
   ) => {
     return mainMutator<IAgentReleaseDto>(
-      { url: `/api/v1/agent-releases`, method: "GET" },
+      { url: `/api/v1/agent-enrollment/release`, method: "GET" },
       options,
     );
   };
 
   /**
-   * Команда установки агента на новый узел одной строкой:
-   * `curl …/api/v1/agent-bundle/install.sh | sudo sh -s -- --token …` — скрипт
-   * ставит архив папки агента (`agent pack`): настройки, экземпляр, воркеры и
-   * пакеты — из неё.
-   * @summary Команда установки агента
-   */
-  const createAgentInstallCommand = (
-    iCreateAgentInstallCommandBody: ICreateAgentInstallCommandBody,
-    options?: SecondParameter<typeof mainMutator<IAgentInstallCommandDto>>,
-  ) => {
-    return mainMutator<IAgentInstallCommandDto>(
-      {
-        url: `/api/v1/agent-releases/install-command`,
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        data: iCreateAgentInstallCommandBody,
-      },
-      options,
-    );
-  };
-
-  /**
-   * Перезапустить воркер. Свободный — перезапускается сразу (`deferred:
-   * false` после запуска). Занятый (`health.busy`) — ответ сразу (`deferred:
-   * true`, `pending`, `actionId`), замена — после окончания работы, её итог —
-   * событие сокета `agent:action` (`id = actionId`, `deferred: true`);
-   * `force` — заменить сразу.
-   * @summary Перезапуск воркера
+   * Перезапустить воркер; занятый — после окончания работы (или сразу с `force`).
+   * @summary Перезапустить воркер
    */
   const restartAgentWorker = (
     id: TAgentId,
     worker: TAgentWorkerName,
-    iAgentWorkerActionBody: IAgentWorkerActionBody,
-    options?: SecondParameter<typeof mainMutator<IAgentWorkerActionResultDto>>,
+    iWorkerRestartBody: IWorkerRestartBody,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
   ) => {
-    return mainMutator<IAgentWorkerActionResultDto>(
+    return mainMutator<AgentCommandDto>(
       {
         url: `/api/v1/agents/${id}/workers/${worker}/restart`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: iAgentWorkerActionBody,
+        data: iWorkerRestartBody,
       },
       options,
     );
   };
 
   /**
-   * Обновить воркер (`release: true`) до новейшей сборки под агента. Свободный — сразу
-   * (версии в ответе); занятый — как у перезапуска: ответ `deferred: true`,
-   * итог — событие `agent:action`; `force` — сразу. Новая сборка не
+   * Обновить воркер сборкой из каталога сборок проекта (подпись проверяет агент); новая не
    * заработала — агент возвращает прежнюю.
-   * @summary Обновление воркера
+   * @summary Обновить воркер
    */
   const updateAgentWorker = (
     id: TAgentId,
     worker: TAgentWorkerName,
-    iAgentWorkerActionBody: IAgentWorkerActionBody,
-    options?: SecondParameter<typeof mainMutator<IAgentWorkerActionResultDto>>,
+    iWorkerUpdateBody: IWorkerUpdateBody,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
   ) => {
-    return mainMutator<IAgentWorkerActionResultDto>(
+    return mainMutator<AgentCommandDto>(
       {
         url: `/api/v1/agents/${id}/workers/${worker}/update`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: iAgentWorkerActionBody,
+        data: iWorkerUpdateBody,
       },
       options,
     );
   };
 
   /**
-   * Запрос к воркеру через агента: метод, путь, заголовки, тело. Ответ —
-   * статус, заголовки и тело воркера потоком и заголовок
-   * `X-Agent-Worker-Status` (статус ответа воркера): по нему ответ воркера
-   * отличается от ошибки API (её тело — `{ code, message }`, заголовка нет).
-   * Служебные пути воркера (`/health`, `/metrics`, `/config/*`, `/cleanup`)
-   * недоступны. В аудит попадают изменяющие запросы (`POST`, `PUT`, `PATCH`,
-   * `DELETE`).
-   * @summary Запрос к воркеру
+   * Команда воркеру (тип — из `manifest.commands`); итог — в ответе (`waitSeconds`), по
+   * `GET /agents/{id}/commands/{commandId}` и сокету.
+   * @summary Команда воркеру
    */
-  const fetchAgentWorker = (
+  const sendAgentWorkerCommand = (
     id: TAgentId,
     worker: TAgentWorkerName,
-    iAgentFetchBody: IAgentFetchBody,
-    options?: SecondParameter<typeof mainMutator<Blob>>,
+    iWorkerCommandBody: IWorkerCommandBody,
+    options?: SecondParameter<typeof mainMutator<AgentCommandDto>>,
   ) => {
-    return mainMutator<Blob>(
+    return mainMutator<AgentCommandDto>(
       {
-        url: `/api/v1/agents/${id}/workers/${worker}/fetch`,
+        url: `/api/v1/agents/${id}/workers/${worker}/commands`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: iAgentFetchBody,
-        responseType: "blob",
+        data: iWorkerCommandBody,
       },
       options,
     );
   };
 
   /**
-   * Ключи настроек агента (или одного воркера): значение и статус
-   * применения — желаемая, доставленная и применённая версии, ошибка.
-   * @summary Настройки воркеров агента
-   */
-  const getAgentConfigs = (
-    id: TAgentId,
-    params?: GetAgentConfigsParams,
-    options?: SecondParameter<typeof mainMutator<IAgentConfigEntryDto[]>>,
-  ) => {
-    return mainMutator<IAgentConfigEntryDto[]>(
-      { url: `/api/v1/agents/${id}/configs`, method: "GET", params },
-      options,
-    );
-  };
-
-  /**
-   * Ключ настроек воркера: значение и статус применения.
-   * @summary Настройка воркера
-   */
-  const getAgentWorkerConfig = (
-    id: TAgentId,
-    worker: TAgentWorkerName,
-    key: TAgentWorkerName,
-    options?: SecondParameter<typeof mainMutator<IAgentConfigEntryDto>>,
-  ) => {
-    return mainMutator<IAgentConfigEntryDto>(
-      {
-        url: `/api/v1/agents/${id}/workers/${worker}/configs/${key}`,
-        method: "GET",
-      },
-      options,
-    );
-  };
-
-  /**
-   * Записать значение ключа (новая версия). Значение проверяется по схеме
-   * ключа из манифеста воркера (400 `AGENT_CONFIG_INVALID`); агент получит
-   * его сразу или при подключении, итог — в статусе и событии сокета.
-   * @summary Запись настройки воркера
+   * Записать ключ настроек воркера (тело — значение): новая версия желаемого.
+   * @summary Записать настройку воркера
    */
   const setAgentWorkerConfig = (
     id: TAgentId,
     worker: TAgentWorkerName,
     key: TAgentWorkerName,
-    iSetAgentConfigBody: ISetAgentConfigBody,
-    options?: SecondParameter<typeof mainMutator<IAgentConfigEntryDto>>,
+    setAgentWorkerConfigBody: unknown,
+    options?: SecondParameter<typeof mainMutator<AgentConfigDto>>,
   ) => {
-    return mainMutator<IAgentConfigEntryDto>(
+    return mainMutator<AgentConfigDto>(
       {
         url: `/api/v1/agents/${id}/workers/${worker}/configs/${key}`,
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        data: iSetAgentConfigBody,
+        data: setAgentWorkerConfigBody,
       },
       options,
     );
   };
 
   /**
-   * Удалить ключ: агент удалит его у себя и у воркера. Ключа нет — 404.
-   * @summary Удаление настройки воркера
+   * @summary Удалить настройку воркера
    */
   const deleteAgentWorkerConfig = (
     id: TAgentId,
@@ -1972,7 +1953,6 @@ export const getRestApi = () => {
     generateAuthenticationOptions,
     verifyAuthentication,
     getAgents,
-    getAgentAlerts,
     getAgentEvents,
     getAgent,
     deleteAgent,
@@ -1981,16 +1961,18 @@ export const getRestApi = () => {
     updateAgent,
     getAgentLogs,
     getAgentMetrics,
+    getAgentConfigs,
+    getAgentCommands,
+    getAgentCommand,
+    cancelAgentCommand,
     createAgentEnrollmentToken,
     getAgentEnrollmentTokens,
     revokeAgentEnrollmentToken,
-    getAgentRelease,
     createAgentInstallCommand,
+    getAgentRelease,
     restartAgentWorker,
     updateAgentWorker,
-    fetchAgentWorker,
-    getAgentConfigs,
-    getAgentWorkerConfig,
+    sendAgentWorkerCommand,
     setAgentWorkerConfig,
     deleteAgentWorkerConfig,
     listJobs,
@@ -2192,9 +2174,6 @@ export type VerifyAuthenticationResult = NonNullable<
 export type GetAgentsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgents"]>>
 >;
-export type GetAgentAlertsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentAlerts"]>>
->;
 export type GetAgentEventsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentEvents"]>>
 >;
@@ -2219,6 +2198,18 @@ export type GetAgentLogsResult = NonNullable<
 export type GetAgentMetricsResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentMetrics"]>>
 >;
+export type GetAgentConfigsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentConfigs"]>>
+>;
+export type GetAgentCommandsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentCommands"]>>
+>;
+export type GetAgentCommandResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentCommand"]>>
+>;
+export type CancelAgentCommandResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["cancelAgentCommand"]>>
+>;
 export type CreateAgentEnrollmentTokenResult = NonNullable<
   Awaited<
     ReturnType<ReturnType<typeof getRestApi>["createAgentEnrollmentToken"]>
@@ -2232,13 +2223,13 @@ export type RevokeAgentEnrollmentTokenResult = NonNullable<
     ReturnType<ReturnType<typeof getRestApi>["revokeAgentEnrollmentToken"]>
   >
 >;
-export type GetAgentReleaseResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentRelease"]>>
->;
 export type CreateAgentInstallCommandResult = NonNullable<
   Awaited<
     ReturnType<ReturnType<typeof getRestApi>["createAgentInstallCommand"]>
   >
+>;
+export type GetAgentReleaseResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentRelease"]>>
 >;
 export type RestartAgentWorkerResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["restartAgentWorker"]>>
@@ -2246,14 +2237,8 @@ export type RestartAgentWorkerResult = NonNullable<
 export type UpdateAgentWorkerResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["updateAgentWorker"]>>
 >;
-export type FetchAgentWorkerResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["fetchAgentWorker"]>>
->;
-export type GetAgentConfigsResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentConfigs"]>>
->;
-export type GetAgentWorkerConfigResult = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentWorkerConfig"]>>
+export type SendAgentWorkerCommandResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["sendAgentWorkerCommand"]>>
 >;
 export type SetAgentWorkerConfigResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["setAgentWorkerConfig"]>>

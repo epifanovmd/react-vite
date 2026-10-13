@@ -35,7 +35,6 @@ export const useAgentsVM = () => {
   useEffect(() => {
     if (!canView) return;
     void store.load();
-    void store.loadAlerts();
     void store.loadRelease();
   }, [canView, store]);
   useAgentsRealtime(canView);

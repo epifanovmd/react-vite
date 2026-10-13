@@ -55,11 +55,9 @@ const agents = {
   byId: vi.fn(() => agent),
   alertsOf: vi.fn(() => []),
   updateCandidate: vi.fn(() => null),
-  loadAlerts: vi.fn(),
   loadRelease: vi.fn(),
   upsert: vi.fn(),
   remove: vi.fn(),
-  applyAlert: vi.fn(),
 };
 const jobs = { fetch: vi.fn(async () => ({ id: "j-1" })), byId: vi.fn() };
 const toast = { warning: vi.fn() };
@@ -107,7 +105,6 @@ describe("useNodeDetailVM", () => {
         { type: "agent", id: "a-1" },
       ]),
     );
-    expect(agents.loadAlerts).toHaveBeenCalled();
     // Сборки — только с правом на агентов.
     expect(agents.loadRelease).not.toHaveBeenCalled();
   });
@@ -127,7 +124,7 @@ describe("useNodeDetailVM", () => {
       access: {
         canManage: true,
         canConfig: true,
-        canFetch: true,
+        canCommand: true,
         canLogs: false,
       },
     });
@@ -140,7 +137,7 @@ describe("useNodeDetailVM", () => {
 
     expect(result.current.canUpdateAgent).toBe(false);
     expect(result.current.access.canManage).toBe(false);
-    expect(result.current.access.canFetch).toBe(false);
+    expect(result.current.access.canCommand).toBe(false);
     nodes.byId.mockReturnValue(node);
   });
 
@@ -173,8 +170,6 @@ describe("useNodeDetailVM", () => {
 
     act(() => socket.fire("agent:updated", agent));
     expect(agents.upsert).toHaveBeenCalledWith(agent);
-    act(() => socket.fire("agent:alert", { agentId: "a-1", active: true }));
-    expect(agents.applyAlert).toHaveBeenCalled();
 
     act(() => socket.fire("node:deleted", { id: "n-1" }));
     expect(nodes.remove).toHaveBeenCalledWith("n-1");

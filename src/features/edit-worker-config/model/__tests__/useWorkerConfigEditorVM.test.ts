@@ -1,5 +1,5 @@
 import { IMainApi } from "@shared/api";
-import type { IAgentConfigEntryDto } from "@shared/api/gen/main/model";
+import type { AgentConfigDto } from "@shared/api/gen/main/model";
 import { iocContainer } from "@shared/lib/di";
 import { HttpError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
@@ -16,24 +16,14 @@ vi.mock("@shared/ui", async importOriginal => ({
   useConfirm: () => confirm,
 }));
 
-const entry = (version: number, data: unknown): IAgentConfigEntryDto => ({
+const entry = (version: number, data: unknown): AgentConfigDto => ({
+  agentId: "a-1",
   worker: "echo",
   key: "settings",
-  config: {
-    agentId: "a-1",
-    worker: "echo",
-    key: "settings",
-    version,
-    data,
-    updatedAt: 1,
-  },
-  status: {
-    agentId: "a-1",
-    worker: "echo",
-    key: "settings",
-    version,
-    state: "applying",
-  },
+  version,
+  state: "applied",
+  data,
+  updatedAt: 1,
 });
 
 const target = (
@@ -102,7 +92,7 @@ describe("useWorkerConfigEditorVM", () => {
       "a-1",
       "echo",
       "settings",
-      { data: { prefix: "!" } },
+      { prefix: "!" },
     );
     expect(onSaved).toHaveBeenCalledWith(saved);
     expect(toast.success).toHaveBeenCalledWith(

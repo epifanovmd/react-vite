@@ -21,9 +21,9 @@ const tokenDto = {
   labels: {},
   maxUses: 1,
   uses: 0,
-  expiresAt: null,
-  revokedAt: null,
-  createdBy: null,
+  expiresAt: undefined,
+  revokedAt: undefined,
+  createdBy: undefined,
   createdAt: "2026-10-08T00:00:00Z",
 };
 

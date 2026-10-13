@@ -46,6 +46,8 @@ const agent = {
   host: { hostname: "alpha", os: "linux", arch: "amd64", kernel: "6.8.0" },
   alerts: [],
   outbox: 0,
+  desiredRev: 2,
+  appliedRev: 2,
   metrics: {
     at: now,
     host: { cpuPercent: 10, uptimeSec: 3600 },
@@ -56,10 +58,11 @@ const agent = {
       name: "echo",
       state: "running",
       version: "1.0.0",
+      release: false,
+      restarts: 0,
       health: { ok: true, busy: true, message: "работа 42" },
       pending: "restart",
       manifest: {
-        version: "1.0.0",
         description: "Эхо для проверки",
         configs: [
           {
@@ -71,30 +74,27 @@ const agent = {
             },
           },
         ],
-        routes: [
+        commands: [
           {
-            method: "POST",
-            path: "/echo",
+            type: "echo.say",
             description: "Эхо",
-            request: {
+            schema: {
               type: "object",
               required: ["text"],
               properties: { text: { type: "string", description: "Текст" } },
             },
-            response: {
+            result: {
               type: "object",
               properties: { text: { type: "string" } },
             },
           },
-        ],
-        events: [{ type: "echo.done" }],
-        jobs: [
           {
             type: "echo.long",
-            description: "Долгая задача",
+            description: "Долгая работа",
             schema: { type: "object" },
           },
         ],
+        events: [{ type: "echo.done" }],
         requests: [
           {
             type: "echo.lookup",
@@ -103,20 +103,14 @@ const agent = {
           },
         ],
       },
-      configs: {
-        settings: {
-          version: 2,
-          ok: false,
-          error: { code: "CONFIG_REJECTED", message: "плохой префикс" },
-        },
-      },
     },
     {
       name: "broken",
       state: "invalid",
-      message: "GET /manifest: 404",
+      release: false,
+      restarts: 0,
+      message: "не зарегистрировался за 60 с",
     },
-    { name: "sysmetrics", state: "running", builtin: true },
   ],
 } as unknown as AgentDto;
 
@@ -142,27 +136,20 @@ const api = {
   getAgentConfigs: vi.fn(async () => ({
     data: [
       {
+        agentId: "a-1",
         worker: "echo",
         key: "settings",
-        config: {
-          agentId: "a-1",
-          worker: "echo",
-          key: "settings",
-          version: 2,
-          data: { prefix: "!" },
-          updatedAt: now,
-        },
-        status: {
-          agentId: "a-1",
-          worker: "echo",
-          key: "settings",
-          version: 2,
-          state: "failed",
-          error: { code: "CONFIG_REJECTED", message: "плохой префикс" },
-        },
+        version: 2,
+        state: "failed",
+        error: { code: "CONFIG_REJECTED", message: "плохой префикс" },
+        data: { prefix: "!" },
+        updatedAt: now,
       },
     ],
   })),
+  getAgentCommand: vi.fn(),
+  sendAgentWorkerCommand: vi.fn(),
+  cancelAgentCommand: vi.fn(),
 };
 
 const toast = { success: vi.fn(), error: vi.fn(), info: vi.fn() };
@@ -171,7 +158,7 @@ let socket: IFakeSocket;
 const none: IAgentTabsAccess = {
   canManage: false,
   canConfig: false,
-  canFetch: false,
+  canCommand: false,
   canLogs: false,
 };
 
@@ -211,7 +198,7 @@ const renderTab = (
   );
 
 describe("AgentTabs", () => {
-  it("набор вкладок: «Запрос» — только с правом", () => {
+  it("набор вкладок: «Команды» — только с правом", () => {
     const { unmount } = renderTab("overview", none);
 
     expect(screen.getAllByRole("tab").map(tab => tab.textContent)).toEqual([
@@ -223,8 +210,8 @@ describe("AgentTabs", () => {
     ]);
     unmount();
 
-    renderTab("overview", { ...none, canFetch: true });
-    expect(screen.getByRole("tab", { name: "Запрос" })).toBeInTheDocument();
+    renderTab("overview", { ...none, canCommand: true });
+    expect(screen.getByRole("tab", { name: "Команды" })).toBeInTheDocument();
   });
 
   it("обзор: метрики узла и сведения, которых нет в шапке", () => {
@@ -237,13 +224,12 @@ describe("AgentTabs", () => {
     expect(screen.queryByText("Имя узла")).toBeNull();
   });
 
-  it("воркеры: причина invalid, занят и ждёт замены, встроенный — без действий", () => {
+  it("воркеры: причина invalid, занят и ждёт замены", () => {
     renderTab("workers", { ...none, canManage: true });
 
     const rows = screen.getAllByRole("row");
     const echo = rows.find(row => row.textContent?.includes("echo"))!;
     const broken = rows.find(row => row.textContent?.includes("broken"))!;
-    const builtin = rows.find(row => row.textContent?.includes("sysmetrics"))!;
 
     expect(within(echo).getByText("занят")).toBeInTheDocument();
     expect(
@@ -252,11 +238,9 @@ describe("AgentTabs", () => {
     expect(
       within(echo).getByRole("button", { name: "Заменить сейчас" }),
     ).toBeVisible();
-    expect(within(broken).getByText("GET /manifest: 404")).toBeInTheDocument();
-    expect(within(builtin).getByText("встроенный")).toBeInTheDocument();
     expect(
-      within(builtin).queryByRole("button", { name: "Перезапустить" }),
-    ).toBeNull();
+      within(broken).getByText("не зарегистрировался за 60 с"),
+    ).toBeInTheDocument();
   });
 
   it("воркеры: раскрытая строка — манифест и метрики", () => {
@@ -269,32 +253,32 @@ describe("AgentTabs", () => {
     fireEvent.click(within(echo).getAllByRole("button")[0]);
 
     expect(screen.getByText("Эхо для проверки")).toBeInTheDocument();
-    expect(screen.getByText("POST /echo")).toBeInTheDocument();
+    expect(screen.getByText("Команды · 2")).toBeInTheDocument();
+    expect(screen.getByText("echo.say")).toBeInTheDocument();
+    expect(screen.getByText("аргументы · итог")).toBeInTheDocument();
+    expect(screen.getByText("echo.long")).toBeInTheDocument();
+    expect(screen.getByText("Долгая работа")).toBeInTheDocument();
     expect(screen.getByText("echo.done")).toBeInTheDocument();
-    expect(screen.getByText("Задачи · 1")).toBeInTheDocument();
     expect(screen.getByText("Запросы к серверу · 1")).toBeInTheDocument();
     expect(screen.getByText("echo.lookup")).toBeInTheDocument();
-    expect(screen.getByText("тело запроса · ответ")).toBeInTheDocument();
-    expect(screen.getByText("echo.long")).toBeInTheDocument();
-    expect(screen.getByText("Долгая задача")).toBeInTheDocument();
-    expect(screen.getByText("плохой префикс")).toBeInTheDocument();
     expect(screen.getByText("done")).toBeInTheDocument();
   });
 
-  it("отложенная замена из ответа — в строке до итога; итог — тост и снятие", async () => {
+  it("ждущая команда замены — в строке до итога", () => {
     const free = {
       ...agent,
       workers: [{ ...agent.workers[0], pending: undefined }],
     } as AgentDto;
     const store = IAgentsStore.getInstance();
 
-    api.getAgent.mockResolvedValue({ data: free });
     act(() =>
-      store.trackDeferred({
-        actionId: "act-1",
+      store.trackCommand({
+        id: "c-1",
         agentId: "a-1",
+        type: "worker.update",
         worker: "echo",
-        pending: "update",
+        status: "pending",
+        createdAt: now,
       }),
     );
     renderTab("workers", { ...none, canManage: true }, free);
@@ -302,27 +286,8 @@ describe("AgentTabs", () => {
     expect(
       screen.getByText("обновление — когда освободится"),
     ).toBeInTheDocument();
-
-    act(() =>
-      socket.fire("agent:action", {
-        id: "act-1",
-        agentId: "a-1",
-        name: "worker.update",
-        args: { name: "echo" },
-        status: "done",
-        result: { version: "1.1.0" },
-        createdAt: 1,
-        finishedAt: 2,
-        deferred: true,
-      }),
-    );
-    expect(toast.success).toHaveBeenCalledWith(
-      "Воркер «echo» обновлён: версия 1.1.0",
-    );
-    await waitFor(() =>
-      expect(screen.queryByText("обновление — когда освободится")).toBeNull(),
-    );
-    expect(api.getAgent).toHaveBeenCalledWith("a-1");
+    act(() => store.settleCommand("c-1"));
+    expect(screen.queryByText("обновление — когда освободится")).toBeNull();
   });
 
   it("без связи: состояние воркеров неизвестно, без действий", () => {
@@ -349,7 +314,7 @@ describe("AgentTabs", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Ключи появятся, когда воркер ответит на GET /manifest.",
+        "Ключи появятся, когда воркер зарегистрируется у агента.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -363,19 +328,53 @@ describe("AgentTabs", () => {
     ).toBeInTheDocument();
   });
 
-  it("запрос: только маршруты из манифеста; тело — форма по схеме, подсказка по ответу", () => {
-    renderTab("fetch", { ...none, canFetch: true });
+  it("команды: только из манифеста; аргументы — форма по схеме; итог — в списке", async () => {
+    api.sendAgentWorkerCommand.mockResolvedValue({
+      data: {
+        id: "c-9",
+        agentId: "a-1",
+        type: "worker.command",
+        worker: "echo",
+        workerType: "echo.say",
+        args: { worker: "echo", type: "echo.say", args: { text: "hi" } },
+        status: "pending",
+        createdAt: now,
+      },
+    });
+    api.getAgentCommand.mockResolvedValue({
+      data: {
+        id: "c-9",
+        agentId: "a-1",
+        type: "worker.command",
+        worker: "echo",
+        workerType: "echo.say",
+        status: "done",
+        ok: true,
+        result: { text: "HI" },
+        createdAt: now,
+      },
+    });
+    renderTab("commands", { ...none, canCommand: true });
 
-    expect(screen.getByText("Маршрут")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Путь")).toBeNull();
-    expect(screen.getByText("/jobs")).toBeInTheDocument();
-    expect(screen.getByText("Ответа пока нет")).toBeInTheDocument();
+    expect(
+      screen.getByText("Итоги отправленных команд появятся здесь."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Схема аргументов")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /\/echo/ }));
+    fireEvent.change(screen.getByLabelText(/^text/), {
+      target: { value: "hi" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Отправить" }));
 
-    expect(screen.getByLabelText(/^text/)).toBeInTheDocument();
-    expect(screen.getByText("Текст")).toBeInTheDocument();
-    expect(screen.getByText("ответ")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(api.sendAgentWorkerCommand).toHaveBeenCalledWith("a-1", "echo", {
+        type: "echo.say",
+        args: { text: "hi" },
+        waitSeconds: 0,
+      }),
+    );
+    expect(await screen.findByText("выполнена")).toBeInTheDocument();
+    expect(screen.getByText(/"HI"/)).toBeInTheDocument();
   });
 
   it("события: лента со ссылкой на задачу", async () => {

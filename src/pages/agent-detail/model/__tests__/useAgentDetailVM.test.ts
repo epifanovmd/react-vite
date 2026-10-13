@@ -38,11 +38,9 @@ const store = {
   alertsOf: vi.fn(),
   updateCandidate: vi.fn(),
   load: vi.fn(),
-  loadAlerts: vi.fn(),
   loadRelease: vi.fn(),
   upsert: vi.fn(),
   remove: vi.fn(),
-  applyAlert: vi.fn(),
 };
 const nodes = {
   nodes: [{ id: "n-1", name: "alpha", agentId: "a-1" }] as NodeDto[],
@@ -100,7 +98,7 @@ describe("useAgentDetailVM", () => {
       access: {
         canManage: true,
         canConfig: false,
-        canFetch: false,
+        canCommand: false,
         canLogs: false,
       },
     });

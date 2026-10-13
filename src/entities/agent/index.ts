@@ -6,7 +6,6 @@ export {
   agentVersion,
   agentWorkers,
   alertKey,
-  configuredWorkers,
   isAgentLive,
   workerOf,
   workersSummary,
@@ -74,10 +73,11 @@ export { isWorkerTroubled } from "./lib/status";
 export type { AgentEventFeed } from "./model/agent-event-feed";
 export { AGENT_EVENTS_PAGE_SIZE } from "./model/agent-event-feed";
 export type {
-  IAgentActionEvent,
+  IAgentAlert,
+  IAgentCommandEvent,
   IAgentLogEvent,
   IAgentMetricsEvent,
-  IDeferredWorkerAction,
+  IAgentUpdateCandidate,
 } from "./model/types";
 export { IAgentsStore } from "./model/types";
 export { useAgentEventFeed } from "./model/use-agent-event-feed";
@@ -87,6 +87,7 @@ export { useAgentMetricsHistory } from "./model/useAgentMetricsHistory";
 export { useAgentReleaseWatch } from "./model/useAgentReleaseWatch";
 export { useAgentsRealtime } from "./model/useAgentsRealtime";
 export { jsonTextSchema, optionalTextSchema } from "./model/validation";
+export { waitAgentCommand } from "./model/wait-command";
 export { AgentAlertBadge } from "./ui/AgentAlertBadge";
 export { AgentAlertsCard } from "./ui/AgentAlertsCard";
 export { AgentLabels } from "./ui/AgentLabels";

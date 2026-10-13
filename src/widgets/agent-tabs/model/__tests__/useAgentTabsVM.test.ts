@@ -1,8 +1,8 @@
-import { agentModule, IAgentsStore } from "@entities/agent";
+import { agentModule } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type {
+  AgentConfigDto,
   AgentDto,
-  IAgentConfigEntryDto,
   IAgentEventDto,
 } from "@shared/api/gen/main/model";
 import { iocContainer } from "@shared/lib/di";
@@ -36,11 +36,11 @@ const agent = {
       name: "echo",
       state: "running",
       release: true,
+      restarts: 0,
       health: { ok: true, busy: true },
       manifest: {
-        version: "1.0.0",
         configs: [{ key: "settings", description: "Префикс" }],
-        routes: [],
+        commands: [{ type: "echo.quick" }],
         events: [
           { type: "echo.done" },
           {
@@ -49,7 +49,6 @@ const agent = {
             schema: { type: "object" },
           },
         ],
-        jobs: [{ type: "echo.quick" }],
         requests: [],
       },
     },
@@ -57,16 +56,15 @@ const agent = {
       name: "kv",
       state: "running",
       pending: "restart",
+      release: false,
+      restarts: 0,
       manifest: {
-        version: "2.0.0",
         configs: [],
-        routes: [],
+        commands: [],
         events: [{ type: "kv.saved" }],
-        jobs: [],
         requests: [],
       },
     },
-    { name: "sysmetrics", state: "running", builtin: true },
   ],
 } as unknown as AgentDto;
 
@@ -80,15 +78,18 @@ const event = (id: string, patch: Partial<IAgentEventDto> = {}) => ({
   ...patch,
 });
 
-const configEntry = (key: string, version: number): IAgentConfigEntryDto => ({
+const configEntry = (key: string, version: number): AgentConfigDto => ({
+  agentId: "a-1",
   worker: "echo",
   key,
-  status: { agentId: "a-1", worker: "echo", key, version, state: "applying" },
+  version,
+  state: "pending",
+  data: { prefix: ">" },
+  updatedAt: 1,
 });
 
 const api = {
   getAgents: vi.fn(),
-  getAgentAlerts: vi.fn(),
   getAgentRelease: vi.fn(),
   getAgentMetrics: vi.fn(async () => ({ data: [] })),
   getAgentEvents: vi.fn(),
@@ -133,12 +134,9 @@ describe("useAgentEventsVM", () => {
     });
     expect(result.current.workerOptions).toEqual(["echo", "kv"]);
     expect(result.current.typeOptions).toEqual([
+      "command.progress",
       "echo.done",
       "echo.started",
-      "job.cancelled",
-      "job.done",
-      "job.failed",
-      "job.progress",
       "kv.saved",
     ]);
     expect(result.current.declaration).toBeNull();
@@ -194,24 +192,26 @@ describe("useAgentConfigsVM", () => {
       "kv",
     ]);
 
+    // Событие без значения: статус новый, значение прежнее.
     act(() =>
       socket.fire("agent:config", {
-        ...configEntry("settings", 3).status,
+        ...configEntry("settings", 3),
+        data: undefined,
         state: "applied",
-        applied: 3,
       }),
     );
     rerender();
-    expect(result.current.groups[0].items[0].entry?.status.state).toBe(
-      "applied",
-    );
+    expect(result.current.groups[0].items[0].entry).toMatchObject({
+      state: "applied",
+      data: { prefix: ">" },
+    });
 
     // Неизвестный ключ — список перечитывается.
-    act(() => socket.fire("agent:config", configEntry("fresh", 1).status));
+    act(() => socket.fire("agent:config", configEntry("fresh", 1)));
     expect(api.getAgentConfigs).toHaveBeenCalledTimes(2);
   });
 
-  it("агент удалил ключ (deleted) — ключ пропадает без перечитывания", async () => {
+  it("ключ удалён (deleted) — пропадает без перечитывания", async () => {
     api.getAgentConfigs.mockResolvedValue({
       data: [configEntry("settings", 3), configEntry("old", 1)],
     });
@@ -226,11 +226,7 @@ describe("useAgentConfigsVM", () => {
     });
 
     act(() =>
-      socket.fire("agent:config", {
-        ...configEntry("old", 1).status,
-        version: null,
-        state: "deleted",
-      }),
+      socket.fire("agent:config", { ...configEntry("old", 2), deleted: true }),
     );
     rerender();
     expect(result.current.groups[0].items.map(item => item.key)).toEqual([
@@ -240,9 +236,8 @@ describe("useAgentConfigsVM", () => {
     // Ключ из манифеста остаётся строкой без значения.
     act(() =>
       socket.fire("agent:config", {
-        ...configEntry("settings", 3).status,
-        version: null,
-        state: "deleted",
+        ...configEntry("settings", 4),
+        deleted: true,
       }),
     );
     rerender();
@@ -252,9 +247,9 @@ describe("useAgentConfigsVM", () => {
 });
 
 describe("useAgentWorkersVM", () => {
-  it("действия по строке: встроенный — без действий, занятый — заменить сейчас", () => {
+  it("действия по строке: занятый или ждущий замены — заменить сейчас", () => {
     const { result } = renderHook(() => useAgentWorkersVM(agent, true));
-    const [echo, kv, builtin] = result.current.rows;
+    const [echo, kv] = result.current.rows;
 
     expect(echo.metrics).toEqual({ done: 2 });
     expect(result.current.accessOf(echo.worker)).toEqual({
@@ -262,54 +257,32 @@ describe("useAgentWorkersVM", () => {
       updateTo: null,
       canReplaceNow: true,
     });
+    expect(kv.pending).toBe("restart");
     expect(result.current.accessOf(kv.worker).canReplaceNow).toBe(true);
-    expect(result.current.accessOf(builtin.worker)).toEqual({
-      canRestart: false,
-      updateTo: null,
-      canReplaceNow: false,
-    });
   });
 
-  it("без права или без связи — без действий; есть новая версия — обновление", async () => {
-    const store = iocContainer.get<IAgentsStore>(IAgentsStore.Tid);
-
-    api.getAgentRelease.mockResolvedValue({
-      data: {
-        manifest: null,
-        candidates: [],
-        workerCandidates: [
-          {
-            agentId: "a-1",
-            agentName: "node-01",
-            online: true,
-            worker: "echo",
-            current: "1.0.0",
-            target: "1.1.0",
-            os: "linux",
-            arch: "amd64",
-          },
-        ],
-      },
-    });
-    await store.loadRelease();
-
+  it("без права или без связи — без действий; есть новая версия — обновление", () => {
+    const fresh = {
+      ...agent,
+      workers: [{ ...agent.workers[0], updateAvailable: "1.1.0" }],
+    };
     const { result: withRight } = renderHook(() =>
-      useAgentWorkersVM(agent, true),
+      useAgentWorkersVM(fresh, true),
     );
 
-    expect(withRight.current.accessOf(agent.workers[0]).updateTo).toBe("1.1.0");
+    expect(withRight.current.accessOf(fresh.workers[0]).updateTo).toBe("1.1.0");
 
     const { result: noRight } = renderHook(() =>
-      useAgentWorkersVM(agent, false),
+      useAgentWorkersVM(fresh, false),
     );
 
-    expect(noRight.current.accessOf(agent.workers[0]).canRestart).toBe(false);
+    expect(noRight.current.accessOf(fresh.workers[0]).canRestart).toBe(false);
 
     const { result: offline } = renderHook(() =>
-      useAgentWorkersVM({ ...agent, online: false }, true),
+      useAgentWorkersVM({ ...fresh, online: false }, true),
     );
 
-    expect(offline.current.accessOf(agent.workers[0]).updateTo).toBeNull();
+    expect(offline.current.accessOf(fresh.workers[0]).updateTo).toBeNull();
   });
 });
 

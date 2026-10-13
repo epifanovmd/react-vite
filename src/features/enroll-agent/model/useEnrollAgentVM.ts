@@ -32,7 +32,7 @@ export const enrollmentTokenState = (
 ): "active" | "revoked" | "expired" | "used" => {
   if (token.revokedAt) return "revoked";
   if (token.expiresAt && Date.parse(token.expiresAt) <= now) return "expired";
-  if (token.maxUses !== null && token.uses >= token.maxUses) return "used";
+  if (token.maxUses != null && token.uses >= token.maxUses) return "used";
 
   return "active";
 };

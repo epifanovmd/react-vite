@@ -1,9 +1,10 @@
-import type { AgentAlertDto } from "@shared/api/gen/main/model";
 import { Link } from "@tanstack/react-router";
 import { FC } from "react";
 
+import type { IAgentAlert } from "../model/types";
+
 interface AlertAgentLinkProps {
-  alert: AgentAlertDto;
+  alert: IAgentAlert;
 }
 
 /** Агент проблемы — ссылкой на его страницу. */

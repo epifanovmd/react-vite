@@ -33,17 +33,10 @@ export const createWorkerColumns = ({ vm }: WorkerColumnsOptions) => [
       <div className="min-w-0">
         <p className="flex min-w-0 items-center gap-1.5">
           <span className="truncate font-medium">{original.worker.name}</span>
-          {original.worker.builtin && (
-            <Tooltip content="Часть агента: собирает метрики узла">
-              <Badge variant="muted">встроенный</Badge>
-            </Tooltip>
-          )}
         </p>
         <p className={MUTED_CLASS}>
           {[
-            original.worker.manifest?.version ??
-              original.worker.version ??
-              "версия не сообщена",
+            original.worker.version ?? "версия не сообщена",
             original.worker.release && "сборка с сервера",
             !!original.worker.restarts &&
               `перезапусков: ${original.worker.restarts}`,

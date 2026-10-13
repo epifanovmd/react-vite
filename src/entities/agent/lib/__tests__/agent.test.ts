@@ -1,4 +1,3 @@
-import type { AgentAlertDto } from "@shared/api/gen/main/model";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -8,7 +7,6 @@ import {
   agentVersion,
   agentWorkers,
   alertKey,
-  configuredWorkers,
   isAgentLive,
   onlineAgentFirst,
   workerOf,
@@ -29,7 +27,7 @@ describe("agent lib", () => {
     const agent = makeAgent({
       version: undefined,
       host: undefined,
-      address: undefined,
+      remoteIp: undefined,
     });
 
     expect(agentVersion(agent)).toBeNull();
@@ -61,21 +59,13 @@ describe("agent lib", () => {
     expect(workersSummary(agent)).toEqual({ total: 5, troubled: 3 });
   });
 
-  it("встроенный воркер — в конце списка, не в сводке и не среди настраиваемых", () => {
+  it("воркеры — по имени; воркер по имени", () => {
     const agent = makeAgent({
-      workers: [
-        { name: "sysmetrics", state: "backoff", builtin: true },
-        makeWorker({ name: "a" }),
-      ],
+      workers: [makeWorker({ name: "b" }), makeWorker({ name: "a" })],
     });
 
-    expect(agentWorkers(agent).map(worker => worker.name)).toEqual([
-      "a",
-      "sysmetrics",
-    ]);
-    expect(configuredWorkers(agent).map(worker => worker.name)).toEqual(["a"]);
-    expect(workersSummary(agent)).toEqual({ total: 1, troubled: 0 });
-    expect(workerOf(agent, "sysmetrics")?.builtin).toBe(true);
+    expect(agentWorkers(agent).map(worker => worker.name)).toEqual(["a", "b"]);
+    expect(workerOf(agent, "b")?.name).toBe("b");
     expect(workerOf(agent, "nope")).toBeUndefined();
   });
 
@@ -90,13 +80,15 @@ describe("agent lib", () => {
     expect(list.map(a => a.name)).toEqual(["a", "c", "b", "d"]);
   });
 
-  it("ключ проблемы — агент и ключ сервера", () => {
-    const alert = {
-      key: "workerDown:echo",
-      agentId: "a",
-      type: "workerDown",
-    } as AgentAlertDto;
-
-    expect(alertKey(alert)).toBe("a/workerDown:echo");
+  it("ключ проблемы — агент, вид, воркер и ключ настроек", () => {
+    expect(
+      alertKey({
+        agentId: "a",
+        kind: "configFailed",
+        worker: "echo",
+        key: "s",
+      }),
+    ).toBe("a/configFailed/echo/s");
+    expect(alertKey({ agentId: "a", kind: "offline" })).toBe("a/offline//");
   });
 });

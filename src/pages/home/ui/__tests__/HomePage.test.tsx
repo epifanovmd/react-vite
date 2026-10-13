@@ -43,17 +43,23 @@ const api = {
       total: 4,
     },
   })),
-  getAgentAlerts: vi.fn(async () => ({
-    data: [
-      {
-        key: "offline",
-        type: "offline",
-        agentId: "a-9",
-        agentName: "edge-9",
-        message: "Агент не на связи",
-        since: 1,
-      },
-    ],
+  getAgents: vi.fn(async () => ({
+    data: {
+      items: [
+        {
+          id: "a-9",
+          name: "edge-9",
+          labels: {},
+          online: false,
+          revoked: false,
+          enrolledAt: 1,
+          desiredRev: 0,
+          workers: [],
+          alerts: [{ kind: "offline", message: "Агент не на связи" }],
+        },
+      ],
+      total: 1,
+    },
   })),
 };
 let permissions: string[];
@@ -97,7 +103,7 @@ describe("HomePage", () => {
     expect(screen.getByText("node-3")).toBeInTheDocument();
     expect(screen.queryByText("node-1")).toBeNull();
     // Проблемы агентов — только с правом на агентов.
-    expect(api.getAgentAlerts).not.toHaveBeenCalled();
+    expect(api.getAgents).not.toHaveBeenCalled();
   });
 
   it("с правом на агентов — их проблемы", async () => {

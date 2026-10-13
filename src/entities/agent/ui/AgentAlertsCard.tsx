@@ -1,15 +1,14 @@
-import type { AgentAlertDto } from "@shared/api/gen/main/model";
-import { Card, Tooltip } from "@shared/ui";
+import { Card } from "@shared/ui";
 import { FC, ReactNode } from "react";
 
 import { alertKey } from "../lib/agent";
-import { formatAgo, formatMoment } from "../lib/format";
+import type { IAgentAlert } from "../model/types";
 import { AgentAlertBadge } from "./AgentAlertBadge";
 
 interface AgentAlertsCardProps {
-  alerts: AgentAlertDto[];
+  alerts: IAgentAlert[];
   /** Агент проблемы (в общем списке — ссылка); без него — не показывается. */
-  renderAgent?: (alert: AgentAlertDto) => ReactNode;
+  renderAgent?: (alert: IAgentAlert) => ReactNode;
 }
 
 /** Активные проблемы агентов: нет связи, воркер упал, настройка не применилась. */
@@ -30,20 +29,15 @@ export const AgentAlertsCard: FC<AgentAlertsCardProps> = ({
             key={alertKey(alert)}
             className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 text-sm first:pt-0 last:pb-0"
           >
-            <AgentAlertBadge type={alert.type} />
+            <AgentAlertBadge type={alert.kind} />
             {renderAgent?.(alert)}
             {alert.worker && (
               <span className="text-muted-foreground">
                 воркер {alert.worker}
-                {alert.configKey && ` · ключ ${alert.configKey}`}
+                {alert.key && ` · ключ ${alert.key}`}
               </span>
             )}
             <span className="min-w-0 flex-1">{alert.message}</span>
-            <Tooltip content={`С ${formatMoment(alert.since)}`}>
-              <span className="text-xs text-muted-foreground">
-                {formatAgo(alert.since)}
-              </span>
-            </Tooltip>
           </li>
         ))}
       </ul>

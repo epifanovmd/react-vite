@@ -11,11 +11,7 @@ import { useAssignNodeOwnerVM } from "@features/assign-node-owner";
 import { useAgentActions } from "@features/manage-agent";
 import { useDeleteNode, useNodeFormVM } from "@features/manage-node";
 import { useProvisionNodeAgentVM } from "@features/provision-node-agent";
-import type {
-  AgentAlertDto,
-  AgentDto,
-  NodeDto,
-} from "@shared/api/gen/main/model";
+import type { AgentDto, NodeDto } from "@shared/api/gen/main/model";
 import type { Permission } from "@shared/lib/access";
 import { useEntity } from "@shared/lib/holders";
 import { useCloseWhenForbidden } from "@shared/lib/hooks";
@@ -83,7 +79,6 @@ export const useNodeDetailVM = (nodeId: string) => {
 
   useEffect(() => {
     if (!agentId) return;
-    void agents.loadAlerts();
     // Сборки — только с правом на агентов: из них кандидаты обновления.
     if (canViewAgents) void agents.loadRelease();
   }, [agentId, agents, canViewAgents]);
@@ -119,13 +114,6 @@ export const useNodeDetailVM = (nodeId: string) => {
     },
     !!agentId,
   );
-  useSocketEvent<[AgentAlertDto]>(
-    "agent:alert",
-    alert => {
-      if (alert.agentId === agentId) agents.applyAlert(alert);
-    },
-    !!agentId,
-  );
 
   const form = useNodeFormVM({ onSaved: store.upsert });
   const owner = useAssignNodeOwnerVM({ onSaved: store.upsert });
@@ -153,7 +141,7 @@ export const useNodeDetailVM = (nodeId: string) => {
   const access: IAgentTabsAccess = {
     canManage: canAgent,
     canConfig: canAgent,
-    canFetch: canAgent,
+    canCommand: canAgent,
     canLogs: can(NODE_PERMISSIONS.LOGS),
   };
   const agentLive = canAgent && !!agent && isAgentLive(agent);

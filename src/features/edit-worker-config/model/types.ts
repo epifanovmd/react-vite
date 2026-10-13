@@ -1,5 +1,5 @@
 import type {
-  IAgentConfigEntryDto,
+  AgentConfigDto,
   IAgentManifestConfigDto,
 } from "@shared/api/gen/main/model";
 
@@ -11,5 +11,5 @@ export interface IWorkerConfigTarget {
   /** Ключ из манифеста воркера (описание и схема); нет в манифесте — `null`. */
   manifest: IAgentManifestConfigDto | null;
   /** Заданное значение и статус применения; ключ не задан — `null`. */
-  entry: IAgentConfigEntryDto | null;
+  entry: AgentConfigDto | null;
 }

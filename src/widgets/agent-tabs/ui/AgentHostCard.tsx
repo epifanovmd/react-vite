@@ -43,28 +43,28 @@ export const AgentHostCard: FC<AgentHostCardProps> = ({ agent, host }) => (
         value={agent.startedAt ? formatAgo(agent.startedAt) : undefined}
       />
       <InfoField
-        label={agent.online ? "На связи с" : "Последняя связь"}
-        value={formatMoment(
-          agent.online ? agent.connectedAt : agent.lastSeenAt,
-        )}
+        label="Последняя связь"
+        value={formatMoment(agent.lastSeenAt)}
       />
       <InfoField
         label="Зарегистрирован"
         value={formatMoment(agent.enrolledAt)}
       />
       <InfoField
-        label="Статус агента"
-        value={agent.statusAt ? formatAgo(agent.statusAt) : undefined}
-        emptyText="не присылал"
+        label="Желаемое"
+        value={
+          agent.appliedRev === undefined
+            ? undefined
+            : agent.appliedRev === agent.desiredRev
+              ? `применено (версия ${agent.desiredRev})`
+              : `применено ${agent.appliedRev} из ${agent.desiredRev}`
+        }
+        emptyText="агент не сообщал"
       />
       <InfoField
-        label="Процесс сервера"
-        value={
-          agent.session && (
-            <span className="font-mono">{agent.session.instance}</span>
-          )
-        }
-        emptyText="нет соединения"
+        label="Очередь на узле"
+        value={agent.outbox ? `${agent.outbox} не доставлено` : undefined}
+        emptyText="пусто"
       />
       <InfoField
         label="Метки"

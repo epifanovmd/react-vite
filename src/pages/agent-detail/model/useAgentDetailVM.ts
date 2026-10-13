@@ -42,7 +42,6 @@ export const useAgentDetailVM = (agentId: string) => {
 
   useEffect(() => {
     if (!canView) return;
-    void store.loadAlerts();
     void store.loadRelease();
   }, [canView, store]);
 
@@ -95,7 +94,7 @@ export const useAgentDetailVM = (agentId: string) => {
     access: {
       canManage,
       canConfig: userStore.can(AGENT_PERMISSIONS.CONFIG),
-      canFetch: userStore.can(AGENT_PERMISSIONS.FETCH),
+      canCommand: userStore.can(AGENT_PERMISSIONS.COMMAND),
       canLogs: userStore.can(AGENT_PERMISSIONS.LOGS),
     } satisfies IAgentTabsAccess,
   };

@@ -1,6 +1,6 @@
 import { formatJson, parseJsonText, schemaSkeleton } from "@entities/agent";
 import { IMainApi } from "@shared/api";
-import type { IAgentConfigEntryDto } from "@shared/api/gen/main/model";
+import type { AgentConfigDto } from "@shared/api/gen/main/model";
 import { getErrorBody, notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm, useZodForm } from "@shared/ui";
@@ -26,7 +26,7 @@ const invalidText = (error: { message: string }): string => {
 
 interface UseWorkerConfigEditorOptions {
   /** Сервер принял новую версию. */
-  onSaved?: (entry: IAgentConfigEntryDto) => void;
+  onSaved?: (entry: AgentConfigDto) => void;
   /** Ключ удалён (агент ещё удаляет его у себя). */
   onDeleted?: (target: IWorkerConfigTarget) => void;
 }
@@ -34,8 +34,8 @@ interface UseWorkerConfigEditorOptions {
 /** Текст редактора: заданное значение или заготовка по схеме ключа. */
 const initialText = (target: IWorkerConfigTarget): string =>
   formatJson(
-    target.entry?.config
-      ? target.entry.config.data
+    target.entry && target.entry.data !== undefined
+      ? target.entry.data
       : schemaSkeleton(target.manifest?.schema),
   );
 
@@ -72,7 +72,7 @@ export const useWorkerConfigEditorVM = ({
       target.agentId,
       target.worker,
       target.key,
-      { data: parsed.value },
+      parsed.value,
     );
 
     if (res.error) {
@@ -86,7 +86,7 @@ export const useWorkerConfigEditorVM = ({
     }
 
     toast.success(
-      `${target.worker}/${target.key}: версия ${res.data.status.version ?? "—"} задана`,
+      `${target.worker}/${target.key}: версия ${res.data.version} задана`,
     );
     onSaved?.(res.data);
     setTarget(null);

@@ -33,12 +33,10 @@ const store = {
   isLoading: false,
   error: null,
   load: vi.fn(),
-  loadAlerts: vi.fn(),
   loadRelease: vi.fn(),
   updateCandidate: vi.fn(),
   upsert: vi.fn(),
   remove: vi.fn(),
-  applyAlert: vi.fn(),
 };
 let permissions: string[];
 
@@ -64,11 +62,10 @@ afterEach(() => {
 });
 
 describe("useAgentsVM", () => {
-  it("с правом просмотра грузит агентов, проблемы и сборки", () => {
+  it("с правом просмотра грузит агентов и сборки", () => {
     renderHook(() => useAgentsVM());
 
     expect(store.load).toHaveBeenCalled();
-    expect(store.loadAlerts).toHaveBeenCalled();
     expect(store.loadRelease).toHaveBeenCalled();
   });
 

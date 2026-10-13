@@ -33,25 +33,29 @@ const agent: AgentDto = {
   labels: { zone: "eu" },
   online: true,
   revoked: false,
-  address: "203.0.113.10",
+  remoteIp: "203.0.113.10",
   version: "1.0.0",
   enrolledAt: now - 86_400_000,
   lastSeenAt: now,
   host: { hostname: "node-01", os: "linux", arch: "amd64", kernel: "6.8.0" },
-  alerts: [],
+  alerts: [
+    { kind: "workerUnhealthy", message: "база недоступна", worker: "kv" },
+  ],
   outbox: 2,
+  desiredRev: 3,
+  appliedRev: 3,
   workers: [
     {
       name: "kv",
       state: "running",
       version: "1.0.0",
+      release: false,
+      restarts: 0,
       health: { ok: false, message: "база недоступна" },
       manifest: {
-        version: "1.0.0",
         configs: [{ key: "main", description: "Подключение к базе" }],
-        routes: [{ method: "GET", path: "/keys/{key}" }],
+        commands: [{ type: "kv.get" }],
         events: [{ type: "backup.done" }],
-        jobs: [],
         requests: [],
       },
     },
@@ -82,22 +86,8 @@ const api = {
     data: { items: [{ id: "n-1", name: "alpha", agentId: "a-1" }], total: 1 },
   })),
   getAgent: vi.fn(async () => ({ data: agent })),
-  getAgentAlerts: vi.fn(async () => ({
-    data: [
-      {
-        key: "workerUnhealthy:kv",
-        type: "workerUnhealthy",
-        agentId: "a-1",
-        agentName: "node-01",
-        active: true,
-        message: "база недоступна",
-        since: now,
-        worker: "kv",
-      },
-    ],
-  })),
   getAgentRelease: vi.fn(async () => ({
-    data: { manifest: null, candidates: [], workerCandidates: [] },
+    data: { bundle: false, workers: [] },
   })),
   getAgentMetrics: vi.fn(async () => ({
     data: [{ ...agent.metrics, at: now - 1000 }],
@@ -177,8 +167,10 @@ describe("AgentDetail", () => {
     expect(await screen.findByText("Подключение к базе")).toBeInTheDocument();
     expect(screen.getByText("не задан")).toBeInTheDocument();
 
-    openTab("Запрос");
-    expect(await screen.findByText("/keys/{key}")).toBeInTheDocument();
+    openTab("Команды");
+    expect(
+      await screen.findByText("Итоги отправленных команд появятся здесь."),
+    ).toBeInTheDocument();
 
     openTab("События");
     expect(await screen.findByText("backup.done")).toBeInTheDocument();

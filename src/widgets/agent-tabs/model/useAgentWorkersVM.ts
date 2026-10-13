@@ -1,6 +1,5 @@
 import {
   agentWorkers,
-  IAgentsStore,
   isAgentLive,
   useAgentLiveMetrics,
   workerMetrics,
@@ -31,12 +30,10 @@ export interface IWorkerRowAccess {
 
 /**
  * Воркеры агента: состояние, самочувствие, отложенная замена и метрики из
- * последней точки; действия — встроенные действия агента (кроме встроенного
- * воркера: он часть агента). `canManage` — право на действия (его считает
- * страница).
+ * последней точки; действия — команды агенту. `canManage` — право на
+ * действия (его считает страница).
  */
 export const useAgentWorkersVM = (agent: AgentDto, canManage: boolean) => {
-  const store = IAgentsStore.useInstance();
   const actions = useWorkerActions();
   const live = useAgentLiveMetrics(agent.id);
   const latest =
@@ -45,15 +42,14 @@ export const useAgentWorkersVM = (agent: AgentDto, canManage: boolean) => {
       : agent.metrics;
 
   const pendingOf = (worker: IAgentWorkerDto): string | null =>
-    worker.pending ?? store.deferredOf(agent.id, worker.name)?.pending ?? null;
+    actions.pendingOf(agent, worker);
 
   const accessOf = (worker: IAgentWorkerDto): IWorkerRowAccess => {
-    const can = canManage && isAgentLive(agent) && !worker.builtin;
-    const candidate = store.workerCandidate(agent.id, worker.name);
+    const can = canManage && isAgentLive(agent);
 
     return {
       canRestart: can,
-      updateTo: can && worker.release && candidate ? candidate.target : null,
+      updateTo: (can && worker.release && worker.updateAvailable) || null,
       canReplaceNow: can && (!!pendingOf(worker) || !!worker.health?.busy),
     };
   };
@@ -68,8 +64,7 @@ export const useAgentWorkersVM = (agent: AgentDto, canManage: boolean) => {
     actions,
     accessOf,
     /** Новая версия воркера; неизвестна — `null`. */
-    updateTargetOf: (worker: IAgentWorkerDto) =>
-      store.workerCandidate(agent.id, worker.name)?.target ?? null,
+    updateTargetOf: (worker: IAgentWorkerDto) => worker.updateAvailable ?? null,
     /** Меняется вместе с правом — колонки таблицы пересобираются по нему. */
     accessKey: String(canManage),
   };

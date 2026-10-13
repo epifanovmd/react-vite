@@ -40,7 +40,7 @@ const WORKER_STATE: Record<string, IStatusView> = {
 export const workerStateView = (state: string): IStatusView =>
   WORKER_STATE[state] ?? unknownView(state);
 
-/** Самочувствие по ответу `GET /health`; ответа нет — `null`. */
+/** Самочувствие по пульсу воркера; пульса не было — `null`. */
 export const workerHealthView = (
   worker: IAgentWorkerDto,
 ): IStatusView | null => {

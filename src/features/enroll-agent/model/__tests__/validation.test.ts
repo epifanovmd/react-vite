@@ -78,11 +78,11 @@ describe("enroll-agent validation", () => {
 
   it("состояние токена", () => {
     const token = {
-      revokedAt: null,
-      expiresAt: null,
+      revokedAt: undefined,
+      expiresAt: undefined,
       maxUses: 1,
       uses: 0,
-    } as Parameters<typeof enrollmentTokenState>[0];
+    } as unknown as Parameters<typeof enrollmentTokenState>[0];
 
     expect(enrollmentTokenState(token)).toBe("active");
     expect(enrollmentTokenState({ ...token, uses: 1 })).toBe("used");

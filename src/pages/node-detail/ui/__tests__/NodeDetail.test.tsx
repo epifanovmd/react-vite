@@ -34,24 +34,27 @@ const agent: AgentDto = {
   labels: {},
   online: true,
   revoked: false,
-  address: "198.51.100.7",
+  remoteIp: "198.51.100.7",
   version: "1.0.0",
   enrolledAt: now,
   lastSeenAt: now,
   host: { hostname: "alpha", os: "linux", arch: "amd64" },
-  alerts: [],
+  desiredRev: 2,
+  alerts: [
+    {
+      kind: "configFailed",
+      worker: "echo",
+      key: "settings",
+      message: "нет цели",
+    },
+  ],
   workers: [
     {
       name: "echo",
       state: "running",
+      release: false,
+      restarts: 0,
       health: { ok: true },
-      configs: {
-        settings: {
-          version: 2,
-          ok: false,
-          error: { code: "CONFIG_REJECTED", message: "нет цели" },
-        },
-      },
     },
   ],
 };
@@ -91,7 +94,6 @@ const node = (patch: Partial<NodeDto> = {}): NodeDto => ({
 const api = {
   getNodeById: vi.fn(async () => ({ data: node() })),
   getAgent: vi.fn(async () => ({ data: agent })),
-  getAgentAlerts: vi.fn(async () => ({ data: [] })),
   getAgentRelease: vi.fn(async () => ({ data: null })),
   getAgentMetrics: vi.fn(async () => ({ data: [] })),
 };

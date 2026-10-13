@@ -1,70 +1,73 @@
 import { IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type {
+  AgentCommandDto,
   AgentDto,
-  IAgentWorkerActionResultDto,
   IAgentWorkerDto,
 } from "@shared/api/gen/main/model";
-import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm } from "@shared/ui";
-import { useState } from "react";
+
+import { useAgentCommand } from "./useAgentCommand";
 
 type TWorkerAction = "restart" | "update";
+
+const COMMAND_TYPE: Record<TWorkerAction, string> = {
+  restart: "worker.restart",
+  update: "worker.update",
+};
 
 const isBusyWorker = (worker: IAgentWorkerDto): boolean =>
   !!worker.health?.busy;
 
+const versionOf = (result: unknown): string | null =>
+  typeof result === "object" &&
+  result !== null &&
+  "version" in result &&
+  typeof result.version === "string"
+    ? result.version
+    : null;
+
 /**
- * Действия с воркером агента: перезапуск и обновление сборкой с сервера. Свободный
- * воркер заменяется сразу; занятый — после окончания работы: ответ приходит
- * сразу (`deferred`), строка показывает ожидание, итог — событием
- * `agent:action` (`useWorkerActionResults`). «Заменить сейчас» (`force`) —
- * сразу, прерывая работу.
+ * Действия с воркером агента: перезапуск и обновление сборкой с сервера —
+ * команды агенту. Свободный воркер заменяется сразу; занятый — после окончания
+ * работы (строка показывает ожидание, итог — тостом, когда придёт).
+ * «Заменить сейчас» (`force`) — сразу, прерывая работу.
  */
 export const useWorkerActions = () => {
   const api = IMainApi.useInstance();
   const store = IAgentsStore.useInstance();
   const toast = INotificationService.useInstance();
   const confirm = useConfirm();
-  const [busy, setBusy] = useState<string[]>([]);
+  const command = useAgentCommand();
 
-  const send = async (
+  const report = (
     action: TWorkerAction,
-    agent: AgentDto,
     worker: IAgentWorkerDto,
-    request: () => Promise<{
-      data?: IAgentWorkerActionResultDto;
-      error?: unknown;
-    }>,
-  ): Promise<IAgentWorkerActionResultDto | null> => {
-    const key = `${action}:${worker.name}`;
+    done: AgentCommandDto | null,
+  ) => {
+    if (!done) return;
+    if (done.ok) {
+      const version = versionOf(done.result);
 
-    setBusy(prev => [...prev, key]);
-
-    const res = await request();
-
-    setBusy(prev => prev.filter(item => item !== key));
-    if (res.error || !res.data) {
-      notifyApiError(toast, res.error);
-
-      return null;
-    }
-    if (res.data.deferred && res.data.actionId) {
-      store.trackDeferred({
-        actionId: res.data.actionId,
-        agentId: agent.id,
-        worker: worker.name,
-        pending: res.data.pending ?? action,
+      toast.success(
+        action === "update"
+          ? `Воркер «${worker.name}» работает на версии ${version ?? "?"}`
+          : `Воркер «${worker.name}» перезапущен`,
+      );
+    } else {
+      toast.error(done.error?.message ?? "Агент не выполнил команду", {
+        title: `Воркер «${worker.name}» ${action === "update" ? "не обновлён" : "не перезапущен"}`,
       });
+    }
+  };
+
+  const onQueued = (worker: IAgentWorkerDto, force: boolean) => () => {
+    if (!force && isBusyWorker(worker)) {
       toast.info(
         `Воркер «${worker.name}» занят — агент заменит его, когда освободится`,
       );
-
-      return null;
     }
-
-    return res.data;
   };
 
   const restart = async (
@@ -87,11 +90,15 @@ export const useWorkerActions = () => {
 
     if (!ok) return;
 
-    const res = await send("restart", agent, worker, () =>
-      api.restartAgentWorker(agent.id, worker.name, { force }),
+    report(
+      "restart",
+      worker,
+      await command.run(
+        `restart:${worker.name}`,
+        () => api.restartAgentWorker(agent.id, worker.name, { force }),
+        onQueued(worker, force),
+      ),
     );
-
-    if (res) toast.success(`Воркер «${worker.name}» перезапущен`);
   };
 
   const update = async (
@@ -120,17 +127,35 @@ export const useWorkerActions = () => {
 
     if (!ok) return;
 
-    const res = await send("update", agent, worker, () =>
-      api.updateAgentWorker(agent.id, worker.name, { force }),
+    report(
+      "update",
+      worker,
+      await command.run(
+        `update:${worker.name}`,
+        () =>
+          api.updateAgentWorker(agent.id, worker.name, {
+            force,
+            ...(target && { version: target }),
+          }),
+        onQueued(worker, force),
+      ),
     );
+  };
 
-    if (res) {
-      toast.success(
-        res.version
-          ? `Воркер «${worker.name}» работает на версии ${res.version}`
-          : `Воркер «${worker.name}» обновлён`,
-      );
+  /** Ждущая замена воркера (поставленная здесь или видная агенту). */
+  const pendingOf = (
+    agent: AgentDto,
+    worker: IAgentWorkerDto,
+  ): TWorkerAction | null => {
+    if (worker.pending) return worker.pending;
+    if (store.pendingCommand(agent.id, COMMAND_TYPE.update, worker.name)) {
+      return "update";
     }
+    if (store.pendingCommand(agent.id, COMMAND_TYPE.restart, worker.name)) {
+      return "restart";
+    }
+
+    return null;
   };
 
   /** Заменить сейчас: отложенное обновление или перезапуск — без ожидания. */
@@ -138,22 +163,19 @@ export const useWorkerActions = () => {
     agent: AgentDto,
     worker: IAgentWorkerDto,
     target: string | null,
-  ) => {
-    const pending =
-      worker.pending ?? store.deferredOf(agent.id, worker.name)?.pending;
-
-    return pending === "update"
+  ) =>
+    pendingOf(agent, worker) === "update"
       ? update(agent, worker, target, true)
       : restart(agent, worker, true);
-  };
 
   return {
     restart,
     update,
     replaceNow,
+    pendingOf,
     /** Идёт ли это действие с воркером. */
     isBusy: (action: TWorkerAction, worker: string) =>
-      busy.includes(`${action}:${worker}`),
+      command.isBusy(`${action}:${worker}`),
   };
 };
 

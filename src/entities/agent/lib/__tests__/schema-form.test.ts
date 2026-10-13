@@ -114,11 +114,11 @@ describe("schema form", () => {
 
 describe("agentErrorText", () => {
   it("ошибки по манифесту — с префиксом AGENT_ и без; другие — null", () => {
-    expect(agentErrorText("AGENT_ROUTE_UNDECLARED")?.title).toBe(
-      "Маршрут не объявлен",
+    expect(agentErrorText("AGENT_COMMAND_UNDECLARED")?.title).toBe(
+      "Команда не объявлена",
     );
-    expect(agentErrorText("JOB_UNKNOWN")?.title).toBe("Неизвестный тип задачи");
-    expect(agentErrorText("AGENT_REQUEST_INVALID")?.hint).toContain("схему");
+    expect(agentErrorText("TIMEOUT")?.title).toBe("Срок вышел");
+    expect(agentErrorText("AGENT_COMMAND_INVALID")?.hint).toContain("схему");
     expect(agentErrorText("AGENT_OFFLINE")).toBeNull();
     expect(agentErrorText(null)).toBeNull();
   });

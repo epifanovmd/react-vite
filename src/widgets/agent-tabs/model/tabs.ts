@@ -3,7 +3,7 @@ export const AGENT_TABS = [
   "overview",
   "workers",
   "configs",
-  "fetch",
+  "commands",
   "events",
   "logs",
 ] as const;

@@ -6,10 +6,17 @@ import { INotificationService } from "@shared/lib/notifications";
 import { useConfirm } from "@shared/ui";
 import { useState } from "react";
 
+import { useAgentCommand } from "./useAgentCommand";
+
 type TAgentAction = "revoke" | "remove" | "rotate" | "update";
 
-/** Итог обновления приходит после запуска новой версии: ждём без срока. */
-const NO_TIMEOUT = { timeout: 0 };
+const versionOf = (result: unknown): string | null =>
+  typeof result === "object" &&
+  result !== null &&
+  "version" in result &&
+  typeof result.version === "string"
+    ? result.version
+    : null;
 
 interface UseAgentActionsOptions {
   /** Агент удалён (например, уйти со страницы агента). */
@@ -18,7 +25,7 @@ interface UseAgentActionsOptions {
 
 /**
  * Действия с агентом: отзыв, удаление, смена ключа и обновление — с
- * подтверждением. Смена ключа и обновление ждут итога от агента.
+ * подтверждением. Смена ключа и обновление — команды агенту: ждут его итога.
  */
 export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
   const api = IMainApi.useInstance();
@@ -26,6 +33,7 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
   const store = IAgentsStore.useInstance();
   const confirm = useConfirm();
   const [busy, setBusy] = useState<string[]>([]);
+  const command = useAgentCommand();
 
   const run = async <T>(
     action: TAgentAction,
@@ -94,10 +102,15 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
 
     if (!ok) return;
 
-    const res = await run("rotate", agent, () => api.rotateAgentKey(agent.id));
+    const done = await command.run(`rotate:${agent.id}`, () =>
+      api.rotateAgentKey(agent.id),
+    );
 
-    if (res.ok) {
-      toast.success(`Ключ агента «${agent.name}» сменён`);
+    if (done?.ok) toast.success(`Ключ агента «${agent.name}» сменён`);
+    else if (done) {
+      toast.error(done.error?.message ?? "Агент не сменил ключ", {
+        title: `Ключ агента «${agent.name}» не сменён`,
+      });
     }
   };
 
@@ -116,14 +129,19 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
 
     toast.info(`Агент «${agent.name}» обновляется`);
 
-    const res = await run("update", agent, () =>
-      api.updateAgent(agent.id, NO_TIMEOUT),
+    // Итог присылает уже новая версия после перезапуска.
+    const done = await command.run(`update:${agent.id}`, () =>
+      api.updateAgent(agent.id, target ? { version: target } : {}),
     );
 
-    if (res.data) {
+    if (done?.ok) {
       toast.success(
-        `Агент «${agent.name}» работает на версии ${res.data.version}`,
+        `Агент «${agent.name}» работает на версии ${versionOf(done.result) ?? target ?? "?"}`,
       );
+    } else if (done) {
+      toast.error(done.error?.message ?? "Агент не обновился", {
+        title: `Агент «${agent.name}» не обновлён`,
+      });
     }
   };
 
@@ -134,7 +152,8 @@ export const useAgentActions = ({ onDeleted }: UseAgentActionsOptions = {}) => {
     update,
     /** Идёт ли это действие с агентом. */
     isBusy: (action: TAgentAction, agentId: string) =>
-      busy.includes(`${action}:${agentId}`),
+      busy.includes(`${action}:${agentId}`) ||
+      command.isBusy(`${action}:${agentId}`),
   };
 };
 

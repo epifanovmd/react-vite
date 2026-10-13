@@ -1,6 +1,6 @@
 import { IMainApi } from "@shared/api";
 import type {
-  AgentAlertDto,
+  AgentCommandDto,
   AgentDto,
   IAgentReleaseDto,
 } from "@shared/api/gen/main/model";
@@ -8,29 +8,34 @@ import { CollectionHolder, EntityHolder } from "@shared/lib/holders";
 import { injectable } from "inversify";
 import { makeAutoObservable, observable } from "mobx";
 
-import {
-  agentVersion,
-  alertKey,
-  onlineAgentFirst,
-  workerOf,
-} from "../lib/agent";
-import { IAgentsStore, type IDeferredWorkerAction } from "./types";
-
-/** Отложенная замена и видел ли её агент в своём статусе (`pending`). */
-interface IDeferredEntry {
-  action: IDeferredWorkerAction;
-  seen: boolean;
-}
+import { agentVersion, onlineAgentFirst, workerOf } from "../lib/agent";
+import { IAgentAlert, IAgentsStore, IAgentUpdateCandidate } from "./types";
 
 /** Агентов немного — одним списком (больше сервер не отдаёт за раз). */
 const AGENTS_LIMIT = 100;
 
-const versionsOf = (agent: AgentDto): string =>
-  [
-    agentVersion(agent),
-    agent.update?.latest ?? "",
-    ...agent.workers.map(w => `${w.name}@${w.version ?? ""}`),
-  ].join(",");
+const agentCandidate = (agent: AgentDto): IAgentUpdateCandidate | null =>
+  agent.updateAvailable
+    ? {
+        agentId: agent.id,
+        current: agentVersion(agent) ?? undefined,
+        target: agent.updateAvailable,
+      }
+    : null;
+
+const workerCandidates = (agent: AgentDto): IAgentUpdateCandidate[] =>
+  agent.workers.flatMap(worker =>
+    worker.updateAvailable
+      ? [
+          {
+            agentId: agent.id,
+            worker: worker.name,
+            current: worker.version,
+            target: worker.updateAvailable,
+          },
+        ]
+      : [],
+  );
 
 @injectable()
 export class AgentsStore implements IAgentsStore {
@@ -45,16 +50,11 @@ export class AgentsStore implements IAgentsStore {
     keyExtractor: agent => agent.id,
   });
 
-  private _alerts = new CollectionHolder<AgentAlertDto>({
-    onFetch: () => this._api.getAgentAlerts(),
-    keyExtractor: alertKey,
-  });
-
   private _release = new EntityHolder<IAgentReleaseDto>({
     onFetch: () => this._api.getAgentRelease(),
   });
 
-  private _deferred = observable.map<string, IDeferredEntry>();
+  private _commands = observable.map<string, AgentCommandDto>();
 
   constructor(@IMainApi() private _api: IMainApi) {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -72,12 +72,28 @@ export class AgentsStore implements IAgentsStore {
     return this._list.error;
   }
 
-  get alerts() {
-    return [...this._alerts.items].sort((a, b) => b.since - a.since);
+  get alerts(): IAgentAlert[] {
+    return this.agents.flatMap(agent =>
+      agent.alerts.map(alert => ({
+        ...alert,
+        agentId: agent.id,
+        agentName: agent.name,
+      })),
+    );
   }
 
   get release() {
     return this._release.data;
+  }
+
+  get candidates(): IAgentUpdateCandidate[] {
+    return this.agents
+      .filter(agent => !agent.revoked)
+      .flatMap(agent => {
+        const own = agentCandidate(agent);
+
+        return [...(own ? [own] : []), ...workerCandidates(agent)];
+      });
   }
 
   async load() {
@@ -85,14 +101,6 @@ export class AgentsStore implements IAgentsStore {
       await this._list.refresh();
     } else {
       await this._list.load();
-    }
-  }
-
-  async loadAlerts() {
-    if (this._alerts.isSuccess) {
-      await this._alerts.refresh();
-    } else {
-      await this._alerts.load();
     }
   }
 
@@ -122,100 +130,57 @@ export class AgentsStore implements IAgentsStore {
 
   updateCandidate(agentId: string) {
     const agent = this.byId(agentId);
-    const candidate = this._release.data?.candidates.find(
-      c => c.agentId === agentId,
-    );
 
-    // Сборки могли устареть: агент уже обновился, а сборки ещё не перечитаны.
-    if (!candidate || (agent && agentVersion(agent) === candidate.target)) {
-      return null;
-    }
-
-    return candidate;
+    return agent ? agentCandidate(agent) : null;
   }
 
   workerCandidate(agentId: string, worker: string) {
     const agent = this.byId(agentId);
     const current = agent ? workerOf(agent, worker) : undefined;
-    const candidate = this._release.data?.workerCandidates.find(
-      c => c.agentId === agentId && c.worker === worker,
-    );
 
-    if (!candidate || current?.version === candidate.target) return null;
+    if (!agent || !current?.updateAvailable) return null;
 
-    return candidate;
+    return {
+      agentId,
+      worker,
+      current: current.version,
+      target: current.updateAvailable,
+    };
   }
 
   upsert(agent: AgentDto) {
-    const before = this.byId(agent.id);
-
     this._list.upsertItem(agent.id, agent);
-    this._pruneDeferred(agent);
-
-    // Сменилась версия агента или воркеров — кандидаты на обновление другие.
-    if (
-      before &&
-      this._release.isFilled &&
-      versionsOf(before) !== versionsOf(agent)
-    ) {
-      void this.loadRelease();
-    }
   }
 
   remove(id: string) {
     this._list.removeItem(id);
-    this._alerts.removeItem(alert => alert.agentId === id);
   }
 
-  applyAlert(alert: AgentAlertDto) {
-    if (alert.active === false) {
-      this._alerts.removeItem(alertKey(alert));
-    } else {
-      this._alerts.upsertItem(alertKey(alert), alert);
-    }
+  trackCommand(command: AgentCommandDto) {
+    if (command.status !== "done") this._commands.set(command.id, command);
   }
 
-  trackDeferred(action: IDeferredWorkerAction) {
-    this._deferred.set(action.actionId, { action, seen: false });
+  settleCommand(id: string) {
+    this._commands.delete(id);
   }
 
-  settleDeferred(actionId: string) {
-    const entry = this._deferred.get(actionId);
-
-    this._deferred.delete(actionId);
-
-    return entry?.action;
-  }
-
-  deferredOf(agentId: string, worker: string) {
-    for (const { action } of this._deferred.values()) {
-      if (action.agentId === agentId && action.worker === worker) {
-        return action;
+  pendingCommand(agentId: string, type: string, worker?: string) {
+    for (const command of this._commands.values()) {
+      if (
+        command.agentId === agentId &&
+        command.type === type &&
+        (worker === undefined || command.worker === worker)
+      ) {
+        return command;
       }
     }
 
     return undefined;
   }
 
-  /**
-   * Итог замены мог потеряться (обрыв сокета): ожидание снимается, когда
-   * агент сначала показал замену в статусе, а потом перестал.
-   */
-  private _pruneDeferred(agent: AgentDto) {
-    for (const [id, entry] of this._deferred) {
-      if (entry.action.agentId !== agent.id) continue;
-
-      const pending = workerOf(agent, entry.action.worker)?.pending;
-
-      if (pending) entry.seen = true;
-      else if (entry.seen) this._deferred.delete(id);
-    }
-  }
-
   reset() {
-    this._deferred.clear();
+    this._commands.clear();
     this._list.reset();
-    this._alerts.reset();
     this._release.reset();
   }
 }

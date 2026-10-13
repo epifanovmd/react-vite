@@ -1,14 +1,10 @@
-import { configuredWorkers } from "@entities/agent";
+import { agentWorkers } from "@entities/agent";
 import {
   type IWorkerConfigTarget,
   useWorkerConfigEditorVM,
 } from "@features/edit-worker-config";
 import { IMainApi } from "@shared/api";
-import type {
-  AgentConfigStatusDto,
-  AgentDto,
-  IAgentConfigEntryDto,
-} from "@shared/api/gen/main/model";
+import type { AgentConfigDto, AgentDto } from "@shared/api/gen/main/model";
 import { useCollection } from "@shared/lib/holders";
 import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 
@@ -20,42 +16,43 @@ export interface IWorkerConfigGroup {
   items: IWorkerConfigTarget[];
 }
 
-/** Статус события `agent:config`: агент удалил ключ. */
-const CONFIG_DELETED = "deleted";
-
 const entryKey = (entry: { worker: string; key: string }) =>
   `${entry.worker}/${entry.key}`;
 
 /**
  * Настройки воркеров агента: ключи из манифестов воркеров вместе с заданными
  * на сервере значениями и статусом применения; статус обновляется событием
- * `agent:config`, удалённый агентом ключ (`deleted`) пропадает. Ключ, которого нет в манифесте, тоже показывается — его
+ * `agent:config`, удалённый ключ (`deleted`) пропадает. Ключ, которого нет в манифесте, тоже показывается — его
  * можно удалить.
  */
 export const useAgentConfigsVM = (agent: AgentDto, canConfig: boolean) => {
   const api = IMainApi.useInstance();
-  const entries = useCollection<IAgentConfigEntryDto, string>({
+  const entries = useCollection<AgentConfigDto, string>({
     queryFn: id => api.getAgentConfigs(id),
     keyExtractor: entryKey,
     watch: [agent.id],
   });
 
   useSocketRoom("agent", agent.id, () => void entries.refresh(agent.id));
-  useSocketEvent<[AgentConfigStatusDto]>("agent:config", status => {
-    if (status.agentId !== agent.id) return;
-    // Агент удалил ключ у себя — ключа больше нет.
-    if (status.state === CONFIG_DELETED) {
-      entries.removeItem(entryKey(status));
+  useSocketEvent<[AgentConfigDto]>("agent:config", config => {
+    if (config.agentId !== agent.id) return;
+    if (config.deleted) {
+      entries.removeItem(entryKey(config));
 
       return;
     }
 
     const current = entries.items.find(
-      entry => entryKey(entry) === entryKey(status),
+      entry => entryKey(entry) === entryKey(config),
     );
 
-    if (current) {
-      entries.upsertItem(entryKey(status), { ...current, status });
+    // Значение событие не несёт: оно остаётся прежним (или перечитывается).
+    if (current && current.version === config.version) {
+      entries.upsertItem(entryKey(config), {
+        ...current,
+        ...config,
+        data: current.data,
+      });
     } else {
       void entries.refresh(agent.id);
     }
@@ -70,7 +67,7 @@ export const useAgentConfigsVM = (agent: AgentDto, canConfig: boolean) => {
     entries.items.find(entry => entry.worker === worker && entry.key === key) ??
     null;
 
-  const groups: IWorkerConfigGroup[] = configuredWorkers(agent).map(worker => {
+  const groups: IWorkerConfigGroup[] = agentWorkers(agent).map(worker => {
     const declared = worker.manifest?.configs ?? [];
     const declaredKeys = new Set(declared.map(config => config.key));
     const extra = entries.items.filter(

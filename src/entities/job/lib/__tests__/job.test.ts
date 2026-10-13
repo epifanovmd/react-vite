@@ -45,9 +45,11 @@ describe("jobErrorText", () => {
   it("ошибки по манифесту воркера — понятным текстом, остальные — как есть", () => {
     expect(
       jobErrorText(
-        job({ error: { code: "JOB_UNKNOWN", message: "unknown job type" } }),
+        job({
+          error: { code: "AGENT_COMMAND_INVALID", message: "/steps too big" },
+        }),
       ),
-    ).toContain("не объявил этот тип задачи");
+    ).toContain("не подходят под схему");
     expect(
       jobErrorText(job({ error: { code: "JOB_TIMEOUT", message: "Срок" } })),
     ).toBe("Срок");

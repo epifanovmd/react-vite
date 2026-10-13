@@ -58,8 +58,6 @@ const agents = {
   })),
   upsert: vi.fn(),
   remove: vi.fn(),
-  applyAlert: vi.fn(),
-  loadAlerts: vi.fn(),
   loadRelease: vi.fn(),
 };
 const api = {};

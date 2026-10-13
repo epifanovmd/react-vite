@@ -1,11 +1,9 @@
-import type {
-  IAgentLogEntryDto,
-  TAgentLogLevel,
-} from "@shared/api/gen/main/model";
+import type { IAgentLogEntryDto } from "@shared/api/gen/main/model";
 
 import { formatClock } from "./format";
 
-export type { TAgentLogLevel };
+/** Уровень журнала агента. */
+export type TAgentLogLevel = "debug" | "info" | "warn" | "error";
 
 /** Уровни лога агента — от подробного к важному. */
 export const AGENT_LOG_LEVELS: readonly TAgentLogLevel[] = [
@@ -33,7 +31,8 @@ export const isLogLevelShown = (
   entry: IAgentLogEntry,
   level: TAgentLogLevel,
 ): boolean =>
-  AGENT_LOG_LEVELS.indexOf(entry.level) >= AGENT_LOG_LEVELS.indexOf(level);
+  AGENT_LOG_LEVELS.indexOf(entry.level as TAgentLogLevel) >=
+  AGENT_LOG_LEVELS.indexOf(level);
 
 /** Новые записи — в конец, старые сверх `keep` отбрасываются. */
 export const appendLogEntries = (

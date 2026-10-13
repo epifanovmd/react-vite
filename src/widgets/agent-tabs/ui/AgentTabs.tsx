@@ -1,5 +1,4 @@
-import { WorkerFetchConsole } from "@features/fetch-agent-worker";
-import { useWorkerActionResults } from "@features/manage-agent";
+import { WorkerCommandConsole } from "@features/send-worker-command";
 import type { AgentDto } from "@shared/api/gen/main/model";
 import { cn } from "@shared/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui";
@@ -25,16 +24,13 @@ interface AgentTabsProps {
 const TAB_CONTENT_CLASS = "pt-4";
 
 /**
- * Вкладки агента: обзор, воркеры, настройки, запрос к воркеру (с правом),
+ * Вкладки агента: обзор, воркеры, настройки, команды воркерам (с правом),
  * события и журнал.
  */
 export const AgentTabs: FC<AgentTabsProps> = observer(
   ({ agent, access, value, onValueChange }) => {
-    // Без права на запросы вкладки нет — открытая сбрасывается на обзор.
-    const tab = value === "fetch" && !access.canFetch ? "overview" : value;
-
-    // Итоги отложенных замен воркеров — на любой вкладке.
-    useWorkerActionResults(agent.id);
+    // Без права на команды вкладки нет — открытая сбрасывается на обзор.
+    const tab = value === "commands" && !access.canCommand ? "overview" : value;
 
     return (
       <Tabs
@@ -48,7 +44,9 @@ export const AgentTabs: FC<AgentTabsProps> = observer(
           <TabsTrigger value="overview">Обзор</TabsTrigger>
           <TabsTrigger value="workers">Воркеры</TabsTrigger>
           <TabsTrigger value="configs">Настройки</TabsTrigger>
-          {access.canFetch && <TabsTrigger value="fetch">Запрос</TabsTrigger>}
+          {access.canCommand && (
+            <TabsTrigger value="commands">Команды</TabsTrigger>
+          )}
           <TabsTrigger value="events">События</TabsTrigger>
           <TabsTrigger value="logs">Журнал</TabsTrigger>
         </TabsList>
@@ -61,9 +59,9 @@ export const AgentTabs: FC<AgentTabsProps> = observer(
         <TabsContent value="configs" className={TAB_CONTENT_CLASS}>
           <AgentConfigsTab agent={agent} canConfig={access.canConfig} />
         </TabsContent>
-        {access.canFetch && (
-          <TabsContent value="fetch" className={TAB_CONTENT_CLASS}>
-            <WorkerFetchConsole agent={agent} />
+        {access.canCommand && (
+          <TabsContent value="commands" className={TAB_CONTENT_CLASS}>
+            <WorkerCommandConsole agent={agent} />
           </TabsContent>
         )}
         <TabsContent value="events" className={TAB_CONTENT_CLASS}>
