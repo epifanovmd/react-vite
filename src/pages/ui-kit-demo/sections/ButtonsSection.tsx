@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CopyButton,
   IconButton,
 } from "@shared/ui";
 import {
@@ -62,6 +63,31 @@ export const ButtonsSection: FC = () => (
         <AsyncButton size="sm" variant="outline" onClick={() => wait(1200)}>
           Async (1.2s)
         </AsyncButton>
+      </div>
+      <div>
+        <p className="text-xs text-muted-foreground mb-2">
+          CopyButton — копирование длинного текста (.env, команды) кнопкой в ряд
+          с другими
+        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <CopyButton
+            size="sm"
+            variant="ghost"
+            text={
+              "AGENT_SERVER_URL=https://api.example.com\nAGENT_ENROLL_TOKEN=abc.def"
+            }
+          />
+          <Button size="sm" variant="ghost" leftIcon={<Download size={15} />}>
+            Скачать .env
+          </Button>
+          <CopyButton
+            size="sm"
+            variant="outline"
+            text="curl -fsSL https://api.example.com/install.sh | sudo sh"
+          >
+            Скопировать команду
+          </CopyButton>
+        </div>
       </div>
       <div>
         <p className="text-xs text-muted-foreground mb-2">Icon Buttons</p>

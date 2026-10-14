@@ -3,6 +3,7 @@ import {
   Alert,
   Button,
   CopyableText,
+  CopyButton,
   Form,
   InputFormField,
   NumberInputFormField,
@@ -131,11 +132,15 @@ export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
               text={vm.link.url}
               className="break-all font-mono text-sm"
             />
-            <CopyableText
-              text={`curl -fsSL '${vm.link.url}' | tar -xz && cd agent`}
-              displayText="Скопировать команду скачивания"
-              className="self-start text-sm"
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <CopyButton
+                variant="ghost"
+                size="sm"
+                text={`curl -fsSL '${vm.link.url}' | tar -xz && cd agent`}
+              >
+                Скопировать команду скачивания
+              </CopyButton>
+            </div>
           </div>
         )}
         {vm.env && (
@@ -149,12 +154,8 @@ export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
             <pre className="overflow-auto whitespace-pre-wrap break-all rounded-lg bg-muted p-3 text-xs">
               {vm.env.env}
             </pre>
-            <div className="flex flex-wrap gap-2">
-              <CopyableText
-                text={vm.env.env}
-                displayText="Скопировать"
-                className="self-start text-sm"
-              />
+            <div className="flex flex-wrap items-center gap-2">
+              <CopyButton variant="ghost" size="sm" text={vm.env.env} />
               <Button
                 type="button"
                 variant="ghost"
