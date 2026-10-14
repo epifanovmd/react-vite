@@ -6,8 +6,8 @@ import type { AgentInstallMode } from "./agentInstallMode.ts";
 export interface ICreateNodeInstallCommandBody {
   /**
    * Способ установки: `systemd` (по умолчанию) — служба от root, `rootless` —
-   * агент пользователя без root, `run` — без установки, агент на переднем плане
-   * (контейнер); `rootless` и `run` — команда без sudo.
+   * агент пользователя без root, `run` — без установки, агент на переднем плане,
+   * `docker` — Docker Compose из архива агента; кроме `systemd` — команда без sudo.
    */
   mode?: AgentInstallMode;
   /** Адрес сервера для агента; без него — `AGENT_PUBLIC_URL` / `APP_PUBLIC_URL`. */

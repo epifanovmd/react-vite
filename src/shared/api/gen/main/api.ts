@@ -22,6 +22,9 @@ import type {
   GetUserOptionsParams,
   GetUsersParams,
   IAgentInstallCommandDto,
+  IAgentInstallOptionsDto,
+  IAgentIssuedEnvDto,
+  IAgentIssuedLinkDto,
   IAgentLogsDto,
   IAgentMetricsPointDto,
   IAgentReleaseDto,
@@ -47,6 +50,12 @@ import type {
   IGenerateNonceRequestDto,
   IGenerateNonceResponseDto,
   IInstallCommandBody,
+  IIssueAgentArchiveBody,
+  IIssueAgentBody,
+  IIssueAgentLinkBody,
+  IIssueNodeAgentArchiveBody,
+  IIssueNodeAgentBody,
+  IIssueNodeAgentLinkBody,
   INodeInstallCommandDto,
   INodeJobStartedDto,
   INodeSshAccessBody,
@@ -1337,6 +1346,79 @@ export const getRestApi = () => {
   };
 
   /**
+   * Адрес бэкенда для агентов и архивы агента по платформам (есть ли запуск в Docker Compose).
+   * @summary Варианты установки агента
+   */
+  const getAgentInstallOptions = (
+    options?: SecondParameter<typeof mainMutator<IAgentInstallOptionsDto>>,
+  ) => {
+    return mainMutator<IAgentInstallOptionsDto>(
+      { url: `/api/v1/agent-enrollment/install-options`, method: "GET" },
+      options,
+    );
+  };
+
+  /**
+   * Токен регистрации и `.env` с адресом, токеном и именем — для архива агента или образа
+   * (`--env-file`). Токен — только в этом ответе.
+   * @summary Выдать токен и .env агента
+   */
+  const issueAgentEnv = (
+    iIssueAgentBody: IIssueAgentBody,
+    options?: SecondParameter<typeof mainMutator<IAgentIssuedEnvDto>>,
+  ) => {
+    return mainMutator<IAgentIssuedEnvDto>(
+      {
+        url: `/api/v1/agent-enrollment/issue/env`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iIssueAgentBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Архив агента под платформу с `.env` (адрес, одноразовый токен, имя): распаковать и
+   * запустить — службой, на месте или в Docker. Архив на сервере не хранится.
+   * @summary Выдать архив агента с токеном
+   */
+  const issueAgentArchive = (
+    iIssueAgentArchiveBody: IIssueAgentArchiveBody,
+    options?: SecondParameter<typeof mainMutator<string>>,
+  ) => {
+    return mainMutator<string>(
+      {
+        url: `/api/v1/agent-enrollment/issue/archive`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iIssueAgentArchiveBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Одноразовая ссылка на архив агента с токеном (для передачи человеку): скачать можно один
+   * раз и до срока, токен создаётся при скачивании.
+   * @summary Выдать ссылку на архив агента
+   */
+  const issueAgentLink = (
+    iIssueAgentLinkBody: IIssueAgentLinkBody,
+    options?: SecondParameter<typeof mainMutator<IAgentIssuedLinkDto>>,
+  ) => {
+    return mainMutator<IAgentIssuedLinkDto>(
+      {
+        url: `/api/v1/agent-enrollment/issue/link`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iIssueAgentLinkBody,
+      },
+      options,
+    );
+  };
+
+  /**
    * Каталог сборок воркеров проекта (`AGENT_BUNDLE_DIR/release`).
    * @summary Сборки воркеров
    */
@@ -1685,6 +1767,69 @@ export const getRestApi = () => {
   };
 
   /**
+   * `.env` агента узла: адрес, одноразовый токен с меткой узла (агент привяжется к узлу), имя
+   * агента — для архива агента или образа (`--env-file`). Токен — только в этом ответе.
+   * @summary Выдать .env агента узла
+   */
+  const issueNodeAgentEnv = (
+    id: Uuid,
+    iIssueNodeAgentBody: IIssueNodeAgentBody,
+    options?: SecondParameter<typeof mainMutator<IAgentIssuedEnvDto>>,
+  ) => {
+    return mainMutator<IAgentIssuedEnvDto>(
+      {
+        url: `/api/v1/nodes/${id}/agent/issue/env`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iIssueNodeAgentBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Архив агента под платформу с `.env` агента узла: распаковать и запустить — службой, на
+   * месте или в Docker.
+   * @summary Выдать архив агента узла
+   */
+  const issueNodeAgentArchive = (
+    id: Uuid,
+    iIssueNodeAgentArchiveBody: IIssueNodeAgentArchiveBody,
+    options?: SecondParameter<typeof mainMutator<string>>,
+  ) => {
+    return mainMutator<string>(
+      {
+        url: `/api/v1/nodes/${id}/agent/issue/archive`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iIssueNodeAgentArchiveBody,
+      },
+      options,
+    );
+  };
+
+  /**
+   * Одноразовая ссылка на архив агента узла: скачать можно один раз и до срока, токен с
+   * меткой узла создаётся при скачивании.
+   * @summary Выдать ссылку на архив агента узла
+   */
+  const issueNodeAgentLink = (
+    id: Uuid,
+    iIssueNodeAgentLinkBody: IIssueNodeAgentLinkBody,
+    options?: SecondParameter<typeof mainMutator<IAgentIssuedLinkDto>>,
+  ) => {
+    return mainMutator<IAgentIssuedLinkDto>(
+      {
+        url: `/api/v1/nodes/${id}/agent/issue/link`,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        data: iIssueNodeAgentLinkBody,
+      },
+      options,
+    );
+  };
+
+  /**
    * Установить агента по SSH (задача): установщик с этого сервера и
    * одноразовый токен файлом. Прогресс и журнал — в задаче (`jobId`,
    * комната узла). SSH-данные шифруются и в открытом виде не хранятся. Уже
@@ -1970,6 +2115,10 @@ export const getRestApi = () => {
     getAgentEnrollmentTokens,
     revokeAgentEnrollmentToken,
     createAgentInstallCommand,
+    getAgentInstallOptions,
+    issueAgentEnv,
+    issueAgentArchive,
+    issueAgentLink,
     getAgentRelease,
     restartAgentWorker,
     updateAgentWorker,
@@ -1989,6 +2138,9 @@ export const getRestApi = () => {
     assignNodeOwner,
     unassignNodeOwner,
     createNodeInstallCommand,
+    issueNodeAgentEnv,
+    issueNodeAgentArchive,
+    issueNodeAgentLink,
     installNodeAgent,
     uninstallNodeAgent,
     registerBiometric,
@@ -2229,6 +2381,18 @@ export type CreateAgentInstallCommandResult = NonNullable<
     ReturnType<ReturnType<typeof getRestApi>["createAgentInstallCommand"]>
   >
 >;
+export type GetAgentInstallOptionsResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentInstallOptions"]>>
+>;
+export type IssueAgentEnvResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["issueAgentEnv"]>>
+>;
+export type IssueAgentArchiveResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["issueAgentArchive"]>>
+>;
+export type IssueAgentLinkResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["issueAgentLink"]>>
+>;
 export type GetAgentReleaseResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["getAgentRelease"]>>
 >;
@@ -2285,6 +2449,15 @@ export type UnassignNodeOwnerResult = NonNullable<
 >;
 export type CreateNodeInstallCommandResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["createNodeInstallCommand"]>>
+>;
+export type IssueNodeAgentEnvResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["issueNodeAgentEnv"]>>
+>;
+export type IssueNodeAgentArchiveResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["issueNodeAgentArchive"]>>
+>;
+export type IssueNodeAgentLinkResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof getRestApi>["issueNodeAgentLink"]>>
 >;
 export type InstallNodeAgentResult = NonNullable<
   Awaited<ReturnType<ReturnType<typeof getRestApi>["installNodeAgent"]>>

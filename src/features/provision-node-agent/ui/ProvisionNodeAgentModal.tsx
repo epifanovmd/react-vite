@@ -10,7 +10,7 @@ import {
 } from "@shared/ui";
 import { Link } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import type { ProvisionNodeAgentVM } from "../model/useProvisionNodeAgentVM";
 import { InstallCommandPanel } from "./InstallCommandPanel";
@@ -18,6 +18,8 @@ import { NodeSshForm } from "./NodeSshForm";
 
 interface ProvisionNodeAgentModalProps {
   vm: ProvisionNodeAgentVM;
+  /** Вкладка «Архив»: выдача архива агента узла (её собирает страница). */
+  archive?: ReactNode;
 }
 
 const FORM_ID = "node-ssh-form";
@@ -25,7 +27,7 @@ const FORM_ID = "node-ssh-form";
 const TEXT = {
   install: {
     title: "Установка агента",
-    description: "Командой на узле или сервером по SSH",
+    description: "Командой на узле, архивом для получателя или сервером по SSH",
     submit: "Установить",
     started:
       "Установка запущена. Узел выйдет на связь сам, как только агент запустится; ход — на карточке узла.",
@@ -42,9 +44,10 @@ const TEXT = {
 
 /** Установка или удаление агента узла; открывается методами VM. */
 export const ProvisionNodeAgentModal: FC<ProvisionNodeAgentModalProps> =
-  observer(({ vm }) => {
+  observer(({ vm, archive }) => {
     const text = TEXT[vm.mode];
     const sshVisible = vm.mode === "uninstall" || vm.way === "ssh";
+    const ways = ["command", ...(archive ? ["archive"] : []), "ssh"];
 
     return (
       <Modal open={vm.node !== null} onOpenChange={open => !open && vm.close()}>
@@ -90,16 +93,24 @@ export const ProvisionNodeAgentModal: FC<ProvisionNodeAgentModalProps> =
             <Tabs
               value={vm.way}
               onValueChange={way =>
-                vm.setWay(way === "ssh" ? "ssh" : "command")
+                vm.setWay(
+                  ways.includes(way) ? (way as typeof vm.way) : "command",
+                )
               }
             >
               <TabsList>
                 <TabsTrigger value="command">Команда</TabsTrigger>
+                {archive && <TabsTrigger value="archive">Архив</TabsTrigger>}
                 <TabsTrigger value="ssh">По SSH</TabsTrigger>
               </TabsList>
               <TabsContent value="command" className="pt-4">
                 <InstallCommandPanel vm={vm} />
               </TabsContent>
+              {archive && (
+                <TabsContent value="archive" className="pt-4">
+                  {archive}
+                </TabsContent>
+              )}
               <TabsContent value="ssh" className="pt-4">
                 <NodeSshForm vm={vm} formId={FORM_ID} />
               </TabsContent>

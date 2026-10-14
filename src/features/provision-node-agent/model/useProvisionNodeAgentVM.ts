@@ -20,8 +20,8 @@ import {
 /** Что делаем с агентом: ставим или удаляем. */
 export type TProvisionMode = "install" | "uninstall";
 
-/** Способ установки: команда на узле или вход сервера по SSH. */
-export type TInstallWay = "command" | "ssh";
+/** Способ установки: команда на узле, архив для получателя или вход сервера по SSH. */
+export type TInstallWay = "command" | "archive" | "ssh";
 
 /** Срок одноразового токена по умолчанию — сутки. */
 const DEFAULT_EXPIRES_MINUTES = 1440;

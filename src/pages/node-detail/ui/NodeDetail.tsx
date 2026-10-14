@@ -2,6 +2,7 @@ import { AgentAlertsCard } from "@entities/agent";
 import { NODE_PERMISSIONS, NodeStatusBadge } from "@entities/node";
 import { PermissionGate } from "@entities/user";
 import { AssignNodeOwnerModal } from "@features/assign-node-owner";
+import { AgentIssuePanel } from "@features/issue-agent";
 import { NodeFormModal } from "@features/manage-node";
 import { ProvisionNodeAgentModal } from "@features/provision-node-agent";
 import { ownPermission } from "@shared/lib/access";
@@ -111,7 +112,17 @@ export const NodeDetail: FC<NodeDetailProps> = observer(({ nodeId }) => {
       </PermissionGate>
       <NodeFormModal vm={vm.form} />
       <AssignNodeOwnerModal vm={vm.owner} />
-      <ProvisionNodeAgentModal vm={vm.provision} />
+      <ProvisionNodeAgentModal
+        vm={vm.provision}
+        archive={
+          vm.provision.node && (
+            <AgentIssuePanel
+              key={vm.provision.node.id}
+              target={{ node: vm.provision.node }}
+            />
+          )
+        }
+      />
     </PageLayout>
   );
 });

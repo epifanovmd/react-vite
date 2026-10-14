@@ -5,4 +5,5 @@ export const AgentInstallMode = {
   systemd: "systemd",
   rootless: "rootless",
   run: "run",
+  docker: "docker",
 } as const;
