@@ -22,9 +22,9 @@ import {
 export type TIssueTarget = { node: NodeDto } | { node?: undefined };
 
 /**
- * Выдача агента получателю: архив под платформу с `.env` (адрес, одноразовый токен, имя) —
- * файлом или одноразовой ссылкой, либо только `.env` (для общего архива или образа).
- * Варианты (платформы, есть ли запуск в Docker) — с сервера.
+ * Выдача агента получателю: архив агента (все платформы) с `.env` (адрес, одноразовый токен,
+ * имя) — файлом или одноразовой ссылкой, либо только `.env` (для общего архива или образа).
+ * Что в архиве (платформы, есть ли запуск в Docker) — с сервера.
  */
 export const useIssueAgentVM = (target: TIssueTarget) => {
   const api = IMainApi.useInstance();
@@ -35,7 +35,6 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
   const [busy, setBusy] = useState<"archive" | "link" | "env" | null>(null);
   const form = useZodForm(issueAgentSchema, {
     defaultValues: {
-      platform: "",
       name: target.node?.name ?? "",
       expiresInMinutes: DEFAULT_ISSUE_MINUTES,
       maxUses: 1,
@@ -55,22 +54,12 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
         return;
       }
       setOptions(res.data);
-      const first =
-        res.data.archives.find(a => a.platform === "linux-amd64") ??
-        res.data.archives[0];
-
-      if (first && !form.getValues("platform")) {
-        form.setValue("platform", first.platform);
-      }
     });
 
     return () => {
       alive = false;
     };
-  }, [api, toast, form]);
-
-  const archiveOf = (platform: string) =>
-    options?.archives.find(a => a.platform === platform);
+  }, [api, toast]);
 
   const run = async <T>(
     kind: "archive" | "link" | "env",
@@ -93,8 +82,7 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
   };
 
   const downloadArchive = async (data: TIssueAgentValues) => {
-    const platform = data.platform as never;
-    const body = { ...issueBody(data), platform };
+    const body = issueBody(data);
     const blob = await run<unknown>("archive", () =>
       nodeId
         ? api.issueNodeAgentArchive(nodeId, body, { responseType: "blob" })
@@ -105,18 +93,14 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
     );
 
     if (!blob) return;
-    downloadBlob(
-      blob as Blob,
-      archiveOf(data.platform)?.file ?? `agent-${data.platform}.tar.gz`,
-    );
+    downloadBlob(blob as Blob, options?.archive?.file ?? "agent.tar.gz");
     toast.success("Токен в архиве одноразовый — передайте архив получателю", {
       title: "Архив с токеном скачан",
     });
   };
 
   const createLink = async (data: TIssueAgentValues) => {
-    const platform = data.platform as never;
-    const body = { ...issueBody(data), platform };
+    const body = issueBody(data);
     const created = await run<IAgentIssuedLinkDto>("link", () =>
       nodeId
         ? api.issueNodeAgentLink(nodeId, body)
@@ -144,7 +128,6 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
   return {
     form,
     options,
-    archiveOf,
     forNode: !!nodeId,
     busy,
     link,

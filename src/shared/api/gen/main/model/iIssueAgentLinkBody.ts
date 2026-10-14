@@ -1,5 +1,4 @@
 import type { RecordStringString } from "./recordStringString.ts";
-import type { TAgentArchivePlatform } from "./tAgentArchivePlatform.ts";
 
 export interface IIssueAgentLinkBody {
   /** Имя агента (`AGENT_NAME` в `.env`); нет — имя машины. */
@@ -12,8 +11,6 @@ export interface IIssueAgentLinkBody {
   expiresInMinutes?: number;
   /** Адрес API для агента; без него — `AGENT_PUBLIC_URL`. */
   baseUrl?: string;
-  /** Платформа: `linux-amd64`, `linux-arm64` (`install-options` — какие есть). */
-  platform: TAgentArchivePlatform;
   /** Срок ссылки, мин (по умолчанию сутки); токен создаётся при скачивании. */
   linkExpiresInMinutes?: number;
 }

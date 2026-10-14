@@ -50,10 +50,8 @@ import type {
   IGenerateNonceRequestDto,
   IGenerateNonceResponseDto,
   IInstallCommandBody,
-  IIssueAgentArchiveBody,
   IIssueAgentBody,
   IIssueAgentLinkBody,
-  IIssueNodeAgentArchiveBody,
   IIssueNodeAgentBody,
   IIssueNodeAgentLinkBody,
   INodeInstallCommandDto,
@@ -1346,7 +1344,7 @@ export const getRestApi = () => {
   };
 
   /**
-   * Адрес бэкенда для агентов и архивы агента по платформам (есть ли запуск в Docker Compose).
+   * Адрес бэкенда для агентов и архив агента: платформы, есть ли запуск в Docker Compose.
    * @summary Варианты установки агента
    */
   const getAgentInstallOptions = (
@@ -1379,12 +1377,12 @@ export const getRestApi = () => {
   };
 
   /**
-   * Архив агента под платформу с `.env` (адрес, одноразовый токен, имя): распаковать и
+   * Архив агента (все платформы) с `.env` (адрес, одноразовый токен, имя): распаковать и
    * запустить — службой, на месте или в Docker. Архив на сервере не хранится.
    * @summary Выдать архив агента с токеном
    */
   const issueAgentArchive = (
-    iIssueAgentArchiveBody: IIssueAgentArchiveBody,
+    iIssueAgentBody: IIssueAgentBody,
     options?: SecondParameter<typeof mainMutator<string>>,
   ) => {
     return mainMutator<string>(
@@ -1392,7 +1390,7 @@ export const getRestApi = () => {
         url: `/api/v1/agent-enrollment/issue/archive`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: iIssueAgentArchiveBody,
+        data: iIssueAgentBody,
       },
       options,
     );
@@ -1788,13 +1786,13 @@ export const getRestApi = () => {
   };
 
   /**
-   * Архив агента под платформу с `.env` агента узла: распаковать и запустить — службой, на
+   * Архив агента (все платформы) с `.env` агента узла: распаковать и запустить — службой, на
    * месте или в Docker.
    * @summary Выдать архив агента узла
    */
   const issueNodeAgentArchive = (
     id: Uuid,
-    iIssueNodeAgentArchiveBody: IIssueNodeAgentArchiveBody,
+    iIssueNodeAgentBody: IIssueNodeAgentBody,
     options?: SecondParameter<typeof mainMutator<string>>,
   ) => {
     return mainMutator<string>(
@@ -1802,7 +1800,7 @@ export const getRestApi = () => {
         url: `/api/v1/nodes/${id}/agent/issue/archive`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        data: iIssueNodeAgentArchiveBody,
+        data: iIssueNodeAgentBody,
       },
       options,
     );

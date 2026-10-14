@@ -7,12 +7,10 @@ import {
   InputFormField,
   NumberInputFormField,
   PLAIN_NUMBER_FORMAT,
-  SegmentedFormField,
 } from "@shared/ui";
 import { Download, FileText, Link2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
-import { useWatch } from "react-hook-form";
 
 import { type TIssueTarget, useIssueAgentVM } from "../model/useIssueAgentVM";
 import { platformLabel, type TIssueAgentForm } from "../model/validation";
@@ -31,17 +29,17 @@ const runHints = (compose: boolean): string[] => [
 ];
 
 /**
- * Архив агента для получателя: архив под платформу с `.env` (адрес, одноразовый токен, имя) —
- * файлом или одноразовой ссылкой; только `.env` — для общего архива или образа.
+ * Архив агента для получателя: архив (все платформы, нужная выбирается при запуске) с `.env`
+ * (адрес, одноразовый токен, имя) — файлом или одноразовой ссылкой; только `.env` — для общего
+ * архива или образа.
  */
 export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
   ({ target }) => {
     const vm = useIssueAgentVM(target);
-    const platform = useWatch({ control: vm.form.control, name: "platform" });
-    const archives = vm.options?.archives ?? [];
-    const compose = !!vm.archiveOf(platform)?.compose;
+    const archive = vm.options?.archive;
+    const compose = !!archive?.compose;
 
-    if (vm.options && !archives.length) {
+    if (vm.options && !archive) {
       return (
         <Alert variant="warning">
           На сервере нет архивов агента (AGENT_BUNDLE_DIR) — их собирает образ
@@ -57,19 +55,18 @@ export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
           .env с адресом сервера и одноразовым токеном. Получатель распаковывает
           его и запускает как удобно: службой, на месте или в Docker.
         </p>
+        {archive && (
+          <p className="text-sm">
+            {archive.file}
+            {archive.platforms.length > 0 &&
+              ` — ${archive.platforms.map(platformLabel).join(", ")}`}
+          </p>
+        )}
         <Form
           form={vm.form}
           onSubmit={vm.downloadArchive}
           className="flex flex-col gap-4"
         >
-          <SegmentedFormField<TIssueAgentForm>
-            name="platform"
-            label="Платформа"
-            options={archives.map(a => ({
-              value: a.platform,
-              label: platformLabel(a.platform),
-            }))}
-          />
           <InputFormField<TIssueAgentForm>
             name="name"
             label="Имя агента"

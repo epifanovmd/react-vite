@@ -11,24 +11,17 @@ import { issueAgentSchema, platformLabel } from "../validation";
 
 const node = { id: "n-1", name: "alpha" } as NodeDto;
 
-const archives = [
-  {
-    platform: "linux-arm64",
-    file: "agent-prod-1.1.0-linux-arm64.tar.gz",
-    size: 10,
-    compose: true,
-  },
-  {
-    platform: "linux-amd64",
-    file: "agent-prod-1.1.0-linux-amd64.tar.gz",
-    size: 10,
-    compose: true,
-  },
-];
+const archive = {
+  file: "agent-prod-1.2.0.tar.gz",
+  version: "1.2.0",
+  platforms: ["linux/amd64", "linux/arm64"],
+  size: 10,
+  compose: true,
+};
 
 const api = {
   getAgentInstallOptions: vi.fn(async () => ({
-    data: { server: "https://api.example.com", archives },
+    data: { server: "https://api.example.com", archive },
   })),
   issueAgentArchive: vi.fn(async () => ({ data: new Blob(["x"]) })),
   issueNodeAgentArchive: vi.fn(async () => ({ data: new Blob(["x"]) })),
@@ -63,7 +56,6 @@ const api = {
 };
 const toast = { success: vi.fn(), error: vi.fn() };
 const values = {
-  platform: "linux-amd64",
   name: "",
   expiresInMinutes: 1440,
   maxUses: 3,
@@ -84,16 +76,16 @@ afterEach(() => {
 });
 
 describe("useIssueAgentVM", () => {
-  it("варианты с сервера: платформа по умолчанию — linux-amd64, имя — имя узла", async () => {
+  it("варианты с сервера: архив агента, имя — имя узла", async () => {
     const { result } = renderHook(() => useIssueAgentVM({ node }));
 
     await waitFor(() => expect(result.current.options).not.toBeNull());
-    expect(result.current.form.getValues("platform")).toBe("linux-amd64");
+    expect(result.current.options?.archive?.platforms).toHaveLength(2);
     expect(result.current.form.getValues("name")).toBe("alpha");
     expect(result.current.forNode).toBe(true);
   });
 
-  it("архив узла — двоичный ответ, файл с именем архива платформы", async () => {
+  it("архив узла — двоичный ответ, файл с именем архива", async () => {
     const { result } = renderHook(() => useIssueAgentVM({ node }));
 
     await waitFor(() => expect(result.current.options).not.toBeNull());
@@ -101,7 +93,6 @@ describe("useIssueAgentVM", () => {
     expect(api.issueNodeAgentArchive).toHaveBeenCalledWith(
       "n-1",
       {
-        platform: "linux-amd64",
         name: "vps",
         expiresInMinutes: 1440,
         baseUrl: undefined,
@@ -110,7 +101,7 @@ describe("useIssueAgentVM", () => {
     );
     expect(utils.downloadBlob).toHaveBeenCalledWith(
       expect.any(Blob),
-      "agent-prod-1.1.0-linux-amd64.tar.gz",
+      "agent-prod-1.2.0.tar.gz",
     );
   });
 
@@ -120,7 +111,7 @@ describe("useIssueAgentVM", () => {
     await waitFor(() => expect(result.current.options).not.toBeNull());
     await act(() => result.current.createLink(values));
     expect(api.issueAgentLink).toHaveBeenCalledWith(
-      expect.objectContaining({ platform: "linux-amd64", maxUses: 3 }),
+      expect.objectContaining({ maxUses: 3 }),
     );
     expect(result.current.link?.url).toMatch(/issued\/i$/);
     await act(() => result.current.createEnv(values));
@@ -140,7 +131,7 @@ describe("проверка и подписи", () => {
     expect(
       issueAgentSchema.safeParse({ ...values, baseUrl: "api" }).success,
     ).toBe(false);
-    expect(platformLabel("linux-arm64")).toBe("Linux ARM64");
-    expect(platformLabel("darwin-amd64")).toBe("macOS x86-64");
+    expect(platformLabel("linux/arm64")).toBe("Linux ARM64");
+    expect(platformLabel("darwin/amd64")).toBe("macOS x86-64");
   });
 });

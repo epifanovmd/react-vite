@@ -3,9 +3,8 @@ import { z } from "zod";
 /** Срок токена по умолчанию — сутки, мин. */
 export const DEFAULT_ISSUE_MINUTES = 1440;
 
-/** Выдача агента: платформа архива, имя агента, срок и число регистраций токена, адрес. */
+/** Выдача агента: имя агента, срок и число регистраций токена, адрес. */
 export const issueAgentSchema = z.object({
-  platform: z.string().min(1, "Выберите платформу"),
   name: z
     .string()
     .trim()
@@ -36,9 +35,9 @@ export const issueBody = (data: TIssueAgentValues) => ({
   baseUrl: data.baseUrl || undefined,
 });
 
-/** Подпись платформы архива. */
+/** Подпись платформы архива (`linux/amd64`). */
 export const platformLabel = (platform: string): string => {
-  const [os, arch] = platform.split("-");
+  const [os, arch] = platform.split("/");
   const system = os === "darwin" ? "macOS" : "Linux";
 
   return `${system} ${arch === "arm64" ? "ARM64" : "x86-64"}`;
