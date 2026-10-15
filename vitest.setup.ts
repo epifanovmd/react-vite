@@ -15,9 +15,13 @@ class ResizeObserverMock implements ResizeObserver {
 
 globalThis.ResizeObserver = ResizeObserverMock;
 
+// jsdom не реализует прокрутку окна (её вызывает роутер при навигации).
+window.scrollTo = () => undefined;
+
 // Сообщения Zod — как у пользователя (русская локаль приложения).
 applyZodLocale();
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });

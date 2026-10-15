@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   type DynamicFormResult,
   dynamicFormSchema,
-  type DynamicFormValues,
 } from "./dynamic-form-schema";
 import { DynamicFormFields } from "./DynamicFormFields";
 import { FormExampleLayout } from "./FormExampleLayout";

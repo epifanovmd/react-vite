@@ -2,7 +2,7 @@ import { IHolderError, PagedFetchFn } from "../holder.types";
 import { useHolderRef } from "../hooks/use-holder-ref";
 import { useLatestFn } from "../hooks/use-latest-fn";
 import { useWatchEffect, WatchOptions } from "../hooks/watch-effect";
-import { IPagedHolderPagination, PagedHolder } from "./paged-holder";
+import { PagedHolder } from "./paged-holder";
 
 export interface UsePagedOptions<TItem, TArgs = void> {
   queryFn?: PagedFetchFn<TItem, TArgs>;

@@ -4,7 +4,7 @@
 
 - [Architecture](project_architecture.md) — FSD-дерево src/, стек, DI, layer-boundary правила
 - [Path aliases](project_aliases.md) — @app, @pages, @widgets, @features, @entities, @shared
-- [Build & Environment](project_build.md) — команды, git hooks, Docker, CI
+- [Build & Environment](project_build.md) — порты, команды (`yarn verify`), env и dev-прокси API/сокета, lefthook, Docker (`make local-*`, BUILD_MODE), CI (ci.yml → deploy.yml), версия сборки
 
 ## API и сессия
 

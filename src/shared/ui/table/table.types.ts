@@ -24,6 +24,8 @@ import type {
 export type { ColumnFilterConfig, ColumnFilterOption };
 
 declare module "@tanstack/react-table" {
+  // Параметры расширяемого интерфейса должны совпадать с исходными.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData, TValue> {
     filter?: ColumnFilterConfig<TValue>;
     /** Текстовое имя колонки для aria-label и списка видимости, если `header` — не строка. */

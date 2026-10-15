@@ -1,5 +1,4 @@
 import {
-  ApiResponseDto,
   IProfileUpdateRequestDto,
   KnownRole,
   PrivacySettingsDto,

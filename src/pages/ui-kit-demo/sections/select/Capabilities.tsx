@@ -10,6 +10,7 @@ export const Capabilities: FC = () => {
   const [clearable, setClearable] = useState<string | null>("option2");
   const [multi, setMulti] = useState<string[]>(["apple", "mango"]);
   const [multiComma, setMultiComma] = useState<string[]>(["apple", "orange"]);
+  const [selectedLog, setSelectedLog] = useState<string[]>([]);
   const [deselectedLog, setDeselectedLog] = useState<string[]>([]);
   const [focusCount, setFocusCount] = useState(0);
   const [blurCount, setBlurCount] = useState(0);
@@ -128,13 +129,17 @@ export const Capabilities: FC = () => {
               value={multiSelect}
               onChange={setMultiSelect}
               placeholder="Выберите фрукты"
-              onSelect={(v, opt) => console.log("onSelect:", v, opt.label)}
+              onSelect={(_v, opt) =>
+                setSelectedLog(prev => [...prev.slice(-4), `${opt.label}`])
+              }
               onDeselect={(v, opt) =>
                 setDeselectedLog(prev => [...prev.slice(-4), `${opt.label} ×`])
               }
             />
             <p className="text-[10px] text-muted-foreground mt-1">
-              выбрано: {multiSelect.join(", ") || "—"} | deselect:{" "}
+              выбрано: {multiSelect.join(", ") || "—"} | select:{" "}
+              {selectedLog.length > 0 ? selectedLog.join(", ") : "—"} |
+              deselect:{" "}
               {deselectedLog.length > 0 ? deselectedLog.join(", ") : "—"}
             </p>
           </DemoField>

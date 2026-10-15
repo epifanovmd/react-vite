@@ -21,8 +21,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
 
@@ -30,9 +28,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-
-    "sourceMap": true,
-    "removeComments": true,
 
     "paths": {
       "@app": ["./src/app"],
@@ -49,6 +44,5 @@
       "@shared/*": ["./src/shared/*"]
     }
   },
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules", "build", "dist"]
+  "include": ["./src/**/*", "./vitest.setup.ts"]
 }

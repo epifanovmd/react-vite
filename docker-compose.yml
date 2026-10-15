@@ -1,7 +1,15 @@
 services:
   react-vite:
-    build: .
-    image: react-vite:latest
+    build:
+      context: .
+      args:
+        # Режим сборки vite (.env.[mode]): на сервере — production, make local-up — docker.
+        BUILD_MODE: ${BUILD_MODE:-production}
+        # Версия сборки — из make (git describe, коммит, время сборки).
+        APP_VERSION: ${APP_VERSION:-}
+        APP_COMMIT: ${APP_COMMIT:-}
+        APP_BUILT_AT: ${APP_BUILT_AT:-}
+    image: react-vite:${TAG:-latest}
     container_name: react-vite
     ports:
       - "${APP_PORT:-4173}:80"

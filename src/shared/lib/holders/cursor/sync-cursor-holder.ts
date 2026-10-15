@@ -288,7 +288,7 @@ export class SyncCursorHolder<
       );
 
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }

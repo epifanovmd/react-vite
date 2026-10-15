@@ -10,6 +10,7 @@ export const RefApi: FC = () => {
   const [scrollIdx, setScrollIdx] = useState(0);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [nativeTag, setNativeTag] = useState<string | null>(null);
 
   return (
     <DemoCard
@@ -36,6 +37,7 @@ export const RefApi: FC = () => {
               ? "🔴 blur"
               : "⚪ idle"}
           {selectedTag && ` | scrollTo: index ${selectedTag}`}
+          {nativeTag && ` | nativeElement: <${nativeTag}>`}
         </p>
         <div className="flex flex-wrap gap-2 items-center">
           <button
@@ -73,10 +75,12 @@ export const RefApi: FC = () => {
           <button
             className="rounded-md border px-3 py-1 text-xs hover:bg-accent"
             onClick={() =>
-              console.log("nativeElement:", ref.current?.nativeElement)
+              setNativeTag(
+                ref.current?.nativeElement?.tagName.toLowerCase() ?? "—",
+              )
             }
           >
-            nativeElement (console)
+            nativeElement
           </button>
         </div>
       </div>

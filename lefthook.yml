@@ -1,3 +1,4 @@
+# Быстрые проверки — на коммит (только изменённые файлы), полные — на push.
 pre-commit:
   parallel: false
   jobs:
@@ -11,6 +12,9 @@ pre-commit:
       run: yarn prettier --write {staged_files}
       stage_fixed: true
 
+pre-push:
+  parallel: true
+  jobs:
     - name: typecheck
       run: yarn typecheck
 

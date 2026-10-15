@@ -16,6 +16,14 @@ import {
 } from "@simplewebauthn/types";
 import { useCallback, useEffect, useState } from "react";
 
+/** Ошибка браузера/WebAuthn (Error или DOMException) — иначе `null`. */
+const asError = (err: unknown): Error | DOMException | null =>
+  err instanceof Error || err instanceof DOMException ? err : null;
+
+/** Текст ошибки или запасное сообщение. */
+const errorMessage = (err: unknown, fallback: string): string =>
+  asError(err)?.message || fallback;
+
 export const usePasskeyAuth = (onSuccess: () => void) => {
   const storage = IStorageService.useInstance();
   const [support, setSupport] = useState(false);
@@ -53,8 +61,8 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
             optionsJSON:
               optionsRes.data as PublicKeyCredentialCreationOptionsJSON,
           });
-        } catch (err: any) {
-          if (err?.name === "InvalidStateError") {
+        } catch (err: unknown) {
+          if (asError(err)?.name === "InvalidStateError") {
             // Аутентификатор уже зарегистрирован — считаем успехом
             storage.setItem(PASSKEY_LOGIN_STORAGE_KEY, login);
             setProfileId(login);
@@ -62,7 +70,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
             return { ok: true };
           }
 
-          const error = err?.message ?? "Registration cancelled";
+          const error = errorMessage(err, "Registration cancelled");
 
           setError(error);
 
@@ -91,8 +99,8 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
         setError(error);
 
         return { ok: false, error };
-      } catch (err: any) {
-        const error = err?.message ?? "Passkey registration failed";
+      } catch (err: unknown) {
+        const error = errorMessage(err, "Passkey registration failed");
 
         setError(error);
 
@@ -136,8 +144,8 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
         authResp = await startAuthentication({
           optionsJSON: optionsRes.data as PublicKeyCredentialRequestOptionsJSON,
         });
-      } catch (err: any) {
-        const error = err?.message ?? "Registration cancelled";
+      } catch (err: unknown) {
+        const error = errorMessage(err, "Registration cancelled");
 
         setError(error);
 
@@ -166,8 +174,8 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
       setError(error);
 
       return { ok: false, error };
-    } catch (err: any) {
-      const error = err?.message ?? "Passkey authentication failed";
+    } catch (err: unknown) {
+      const error = errorMessage(err, "Passkey authentication failed");
 
       setError(error);
 

@@ -26,7 +26,9 @@ const defineApi = (name: string, input: Options["input"]): Options => ({
   },
   input,
   hooks: {
-    afterAllFilesWrite: ["prettier --parser typescript --write"],
+    // Генерированный код в .prettierignore (его не трогает общий prettier), поэтому
+    // форматируется здесь — без учёта .prettierignore.
+    afterAllFilesWrite: ["prettier --ignore-path .gitignore --write"],
   },
 });
 

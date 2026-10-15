@@ -4,7 +4,7 @@ import { ThemeProvider } from "@shared/lib/theme";
 import { ModalProvider, TooltipProvider } from "@shared/ui";
 import { RouterProvider } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
-import { StrictMode, useEffect } from "react";
+import { useEffect } from "react";
 
 import { IAppDataStore } from "./app-data.types";
 import { PendingScreen } from "./PendingScreen";

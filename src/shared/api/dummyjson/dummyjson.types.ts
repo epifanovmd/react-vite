@@ -56,13 +56,13 @@ export interface DummyJsonProduct {
   thumbnail: string;
 }
 
-export interface DummyJsonList<TItem> {
+export interface DummyJsonList {
   total: number;
   skip: number;
   limit: number;
 }
 
-export interface DummyJsonProductList extends DummyJsonList<DummyJsonProduct> {
+export interface DummyJsonProductList extends DummyJsonList {
   products: DummyJsonProduct[];
 }
 

@@ -2,68 +2,76 @@ import mdx from "@mdx-js/rollup";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import dotenv from "dotenv";
+import { readFileSync } from "fs";
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { cjsInterop } from "vite-plugin-cjs-interop";
 
-const projectRootDir = path.resolve(__dirname);
+const root = path.resolve(__dirname);
 
-// .local-файлы приоритетнее (как в самом Vite): локальные оверрайды без коммита.
-dotenv.config({
-  path: [
-    `.env.${process.env.NODE_ENV}.local`,
-    `.env.${process.env.NODE_ENV}`,
-    ".env.local",
-    ".env",
-  ],
-});
+/** Бэкенд по умолчанию (локальный rest-api-template-app), если VITE_BASE_URL не задан. */
+const DEFAULT_API_URL = "http://localhost:8181";
+/** Порт dev-сервера по умолчанию, если VITE_PORT не задан. */
+const DEFAULT_PORT = 3000;
 
-const { VITE_HOST, VITE_PORT, VITE_BASE_URL } = process.env;
+/** Алиасы слоёв FSD; те же пути — в `paths` tsconfig.json. */
+export const alias = {
+  "@app": path.resolve(root, "src/app"),
+  "@pages": path.resolve(root, "src/pages"),
+  "@widgets": path.resolve(root, "src/widgets"),
+  "@features": path.resolve(root, "src/features"),
+  "@entities": path.resolve(root, "src/entities"),
+  "@shared": path.resolve(root, "src/shared"),
+};
 
-const HOST = VITE_HOST;
-const PORT = VITE_PORT ? Number(VITE_PORT) : 3000;
+const packageVersion: string = JSON.parse(
+  readFileSync(path.resolve(root, "package.json"), "utf8"),
+).version;
 
-export default defineConfig({
-  plugins: [
-    tanstackRouter({
-      routesDirectory: "./src/app/routes",
-      generatedRouteTree: "./src/app/routeTree.gen.ts",
-    }),
-    react(),
-    mdx(),
-    cjsInterop({
-      // List of CJS dependencies that require interop
-      dependencies: ["lodash", "inversify-inject-decorators"],
-    }),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      "@app": path.resolve(projectRootDir, "src/app"),
-      "@pages": path.resolve(projectRootDir, "src/pages"),
-      "@widgets": path.resolve(projectRootDir, "src/widgets"),
-      "@features": path.resolve(projectRootDir, "src/features"),
-      "@entities": path.resolve(projectRootDir, "src/entities"),
-      "@shared": path.resolve(projectRootDir, "src/shared"),
-    },
-  },
-  server: {
-    host: HOST,
-    port: PORT,
-    watch: {
-      ignored: ["**/src/app/routeTree.gen.ts"],
-    },
-    proxy: {
-      "/api": {
-        target: VITE_BASE_URL,
-        changeOrigin: true,
+/**
+ * Версия сборки фронта (`WEB_BUILD`): из окружения сборки (make — git
+ * describe, коммит, время), вне её — версия package.json.
+ */
+export const define = {
+  __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || packageVersion),
+  __APP_COMMIT__: JSON.stringify(process.env.APP_COMMIT || ""),
+  __APP_BUILT_AT__: JSON.stringify(process.env.APP_BUILT_AT || ""),
+};
+
+export default defineConfig(({ mode }) => {
+  // Те же файлы, что видит клиент: .env.[mode].local поверх .env.[mode].
+  const env = loadEnv(mode, root, "VITE_");
+  const host = env.VITE_HOST || undefined;
+  const port = env.VITE_PORT ? Number(env.VITE_PORT) : undefined;
+  const apiTarget = env.VITE_BASE_URL || DEFAULT_API_URL;
+  const socketTarget = env.VITE_SOCKET_BASE_URL || apiTarget;
+
+  return {
+    plugins: [
+      tanstackRouter({
+        routesDirectory: "./src/app/routes",
+        generatedRouteTree: "./src/app/routeTree.gen.ts",
+      }),
+      react(),
+      mdx(),
+      cjsInterop({ dependencies: ["lodash", "inversify-inject-decorators"] }),
+      tailwindcss(),
+    ],
+    resolve: { alias },
+    define,
+    server: {
+      host,
+      port: port ?? DEFAULT_PORT,
+      watch: { ignored: ["**/src/app/routeTree.gen.ts"] },
+      // API и Socket.IO — через dev-сервер (тот же origin, CORS не нужен).
+      proxy: {
+        "/api": { target: apiTarget, changeOrigin: true },
+        "/socket.io": { target: socketTarget, changeOrigin: true, ws: true },
       },
     },
-  },
-  preview: {
-    allowedHosts: [],
-    host: HOST,
-    port: PORT,
-  },
+    // Страницы грузятся лениво; общий чанк с клиентом API крупный,
+    // проверка размера чанков не нужна.
+    build: { chunkSizeWarningLimit: Infinity },
+    preview: { host, port },
+  };
 });

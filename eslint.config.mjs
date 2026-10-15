@@ -9,13 +9,17 @@ import { boundariesConfig } from "./eslint.boundaries.mjs";
 import { namingConfig } from "./eslint.naming.mjs";
 
 export default tseslint.config(
-  { ignores: ["dist", "src/shared/api/gen/**", "src/app/routeTree.gen.ts"] },
+  {
+    ignores: [
+      "dist",
+      "coverage",
+      "src/shared/api/gen/**",
+      "src/app/routeTree.gen.ts",
+    ],
+  },
   {
     extends: [eslint.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-    },
     plugins: {
       "@typescript-eslint": tseslint.plugin,
       "simple-import-sort": simpleImportSort,
@@ -26,12 +30,7 @@ export default tseslint.config(
     rules: {
       // react-hooks: только базовые правила, без React Compiler
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": [
-        "error",
-        {
-          additionalHooks: "(useMyCustomHook|useMyOtherCustomHook)",
-        },
-      ],
+      "react-hooks/exhaustive-deps": "error",
 
       // react-refresh
       "react-refresh/only-export-components": [
@@ -46,15 +45,24 @@ export default tseslint.config(
       // react
       "react/display-name": "off",
       "react/prop-types": "off",
-      "react/jsx-uses-react": "error",
       "react/jsx-uses-vars": "error",
+
+      // Логи — только осознанно: исключение отмечается eslint-disable с причиной.
+      "no-console": "error",
 
       "no-undef": "off",
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          ignoreRestSiblings: true,
+        },
+      ],
 
       // typescript eslint
-      "@typescript-eslint/ban-types": "off",
       "@typescript-eslint/no-empty-interface": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-empty-function": "off",

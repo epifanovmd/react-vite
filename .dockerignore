@@ -1,24 +1,31 @@
 # Зависимости — устанавливаются внутри образа
 node_modules
 
-# Артефакты сборки — генерируются внутри образа
+# Артефакты сборки и тестов — генерируются внутри образа
 dist
+coverage
+.tanstack
+.eslintcache
 
-# Git и инструменты разработки
+# Git, CI и инструменты разработки
 .git
 .gitignore
+.github
 .claude
-.husky
 .vscode
 .idea
 
-# Env разработки и деплоя; сборке нужен только .env.production
+# Документация — сборке не нужна
+*.md
+
+# Env разработки и деплоя; сборке нужен только .env.[BUILD_MODE]: .env.production
+# (сервер) или .env.docker (make local-up)
 .env.development
-.env.development.local
 .env.local
 .env.*.local
 .env.deploy*
 .env.example
+.env.docker.example
 
 # Логи и временные файлы
 *.log
