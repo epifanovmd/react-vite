@@ -1,6 +1,7 @@
 import { ADMIN_PERMISSIONS, PermissionGate } from "@entities/user";
 import { CreateApiKeyButton } from "@features/create-api-key";
 import type { ApiKeyDto } from "@shared/api/gen/main/model";
+import { useLatestRef } from "@shared/lib/hooks";
 import { formatter } from "@shared/lib/utils";
 import {
   Badge,
@@ -13,18 +14,28 @@ import {
   Pagination,
   Table,
 } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { Ban } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { FC, useMemo } from "react";
+import { FC, type RefObject, useMemo } from "react";
 
-import { useAdminApiKeysVM } from "../model/useAdminApiKeysVM";
+import {
+  type AdminApiKeysVM,
+  useAdminApiKeysVM,
+} from "../model/useAdminApiKeysVM";
 
 const isExpired = (key: ApiKeyDto) =>
   !!key.expiresAt && new Date(key.expiresAt) < new Date();
 
 const column = createColumnHelper<ApiKeyDto>();
 
-const createColumns = (onRevoke: ((key: ApiKeyDto) => void) | null) => [
+interface ApiKeyColumnsOptions {
+  /** VM — через ref: колонки стабильны, ячейки не перемонтируются. */
+  vm: RefObject<AdminApiKeysVM>;
+  canRevoke: boolean;
+}
+
+const createColumns = ({ vm, canRevoke }: ApiKeyColumnsOptions) => [
   column.accessor("name", {
     header: "Ключ",
     cell: ({ row }) => (
@@ -84,11 +95,11 @@ const createColumns = (onRevoke: ((key: ApiKeyDto) => void) | null) => [
     size: 60,
     meta: { align: "right" },
     cell: ({ row }) =>
-      row.original.revokedAt || !onRevoke ? null : (
+      row.original.revokedAt || !canRevoke ? null : (
         <IconButton
           aria-label="Отозвать"
           variant="destructive"
-          onClick={() => onRevoke(row.original)}
+          onClick={() => void vm.current.revoke(row.original)}
         >
           <Ban size={15} />
         </IconButton>
@@ -101,10 +112,13 @@ const header = (
 );
 
 const AdminApiKeysContent: FC = observer(() => {
-  const { keys, revoke, onCreated, canCreate, canRevoke } = useAdminApiKeysVM();
+  const vm = useAdminApiKeysVM();
+  const { keys, onCreated, canCreate, canRevoke } = vm;
+  const vmRef = useLatestRef(vm);
+  // Права меняют только колонку действий: пересборка — по флагу.
   const columns = useMemo(
-    () => createColumns(canRevoke ? revoke : null),
-    [canRevoke, revoke],
+    () => createColumns({ vm: vmRef, canRevoke }),
+    [vmRef, canRevoke],
   );
 
   return (
@@ -143,10 +157,17 @@ const AdminApiKeysContent: FC = observer(() => {
   );
 });
 
-export const AdminApiKeysPage: FC = () => (
-  <PageLayout header={header} fill>
-    <PermissionGate permission={ADMIN_PERMISSIONS.APIKEY_VIEW}>
-      <AdminApiKeysContent />
-    </PermissionGate>
-  </PageLayout>
-);
+export const AdminApiKeysPage: FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <PageLayout header={header} fill>
+      <PermissionGate
+        permission={ADMIN_PERMISSIONS.APIKEY_VIEW}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
+        <AdminApiKeysContent />
+      </PermissionGate>
+    </PageLayout>
+  );
+};

@@ -1,4 +1,3 @@
-import { useLatestRef } from "@shared/lib/hooks";
 import * as React from "react";
 
 import {
@@ -21,7 +20,7 @@ export interface ModalProviderProps {
 
 export const ModalProvider = ({ children }: ModalProviderProps) => {
   const [modals, setModals] = React.useState<ModalEntry[]>([]);
-  const modalsRef = useLatestRef(modals);
+  const modalsRef = React.useRef<ModalEntry[]>([]);
   const timersRef = React.useRef(new Set<ReturnType<typeof setTimeout>>());
 
   React.useEffect(() => {
@@ -33,22 +32,37 @@ export const ModalProvider = ({ children }: ModalProviderProps) => {
     };
   }, []);
 
-  const scheduleRemoval = React.useCallback((id: string) => {
-    const timer = setTimeout(() => {
-      timersRef.current.delete(timer);
-      setModals(prev => prev.filter(m => m.id !== id));
-    }, CLOSE_ANIMATION_DURATION);
+  /** Синхронно обновляет список: open/close в одном обработчике видят друг друга. */
+  const updateModals = React.useCallback(
+    (update: (prev: ModalEntry[]) => ModalEntry[]) => {
+      modalsRef.current = update(modalsRef.current);
+      setModals(modalsRef.current);
+    },
+    [],
+  );
 
-    timersRef.current.add(timer);
-  }, []);
+  const scheduleRemoval = React.useCallback(
+    (id: string) => {
+      const timer = setTimeout(() => {
+        timersRef.current.delete(timer);
+        updateModals(prev => prev.filter(m => m.id !== id));
+      }, CLOSE_ANIMATION_DURATION);
 
-  const openModal = React.useCallback((options: ModalOptions): string => {
-    const id = generateId();
+      timersRef.current.add(timer);
+    },
+    [updateModals],
+  );
 
-    setModals(prev => [...prev, { id, open: true, options }]);
+  const openModal = React.useCallback(
+    (options: ModalOptions): string => {
+      const id = generateId();
 
-    return id;
-  }, []);
+      updateModals(prev => [...prev, { id, open: true, options }]);
+
+      return id;
+    },
+    [updateModals],
+  );
 
   const closeModal = React.useCallback(
     (id: string) => {
@@ -56,18 +70,18 @@ export const ModalProvider = ({ children }: ModalProviderProps) => {
 
       if (!entry?.open) return;
 
-      setModals(prev =>
+      updateModals(prev =>
         prev.map(m => (m.id === id ? { ...m, open: false } : m)),
       );
       entry.options.onClose?.();
       scheduleRemoval(id);
     },
-    [modalsRef, scheduleRemoval],
+    [updateModals, scheduleRemoval],
   );
 
   const closeAll = React.useCallback(() => {
     modalsRef.current.forEach(m => closeModal(m.id));
-  }, [modalsRef, closeModal]);
+  }, [closeModal]);
 
   const confirm = React.useCallback<ModalContextValue["confirm"]>(
     options =>

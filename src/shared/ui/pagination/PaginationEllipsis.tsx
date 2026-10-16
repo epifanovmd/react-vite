@@ -2,7 +2,7 @@ import { cn } from "@shared/lib/utils/cn";
 import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
 
-import { CONTROL_HEIGHT } from "../foundation/control-size";
+import { CONTROL_HEIGHT } from "../foundation";
 import { type PaginationSize } from "./pagination.types";
 
 export interface PaginationEllipsisProps {

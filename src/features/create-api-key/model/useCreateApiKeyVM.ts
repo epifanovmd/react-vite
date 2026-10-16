@@ -3,7 +3,7 @@ import type { ApiKeyDto } from "@shared/api/gen/main/model";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 
 const SCOPE = /^(\*|[a-z][a-z0-9_-]*(:[a-z0-9_.*/-]+)?)$/;
@@ -32,24 +32,39 @@ interface UseCreateApiKeyOptions {
 export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(false);
+  const [isSubmitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [secret, setSecret] = useState<string | null>(null);
   const form = useZodForm(createApiKeySchema, {
     defaultValues: { name: "", scopes: "worker:*" },
   });
 
+  /** Окно не закрывается, пока создаётся ключ: иначе секрет потеряется. */
+  const setOpen = (next: boolean) => {
+    if (!next && submittingRef.current) return;
+    setOpenState(next);
+  };
+
   const openDialog = () => {
     form.reset({ name: "", scopes: "worker:*", expiresAt: undefined });
     setSecret(null);
-    setOpen(true);
+    setOpenState(true);
   };
 
   const submit = async (data: TCreateApiKeyValues) => {
-    const res = await api.createApiKey({
-      name: data.name,
-      scopes: data.scopes,
-      expiresAt: data.expiresAt?.toISOString(),
-    });
+    submittingRef.current = true;
+    setSubmitting(true);
+    const res = await api
+      .createApiKey({
+        name: data.name,
+        scopes: data.scopes,
+        expiresAt: data.expiresAt?.toISOString(),
+      })
+      .finally(() => {
+        submittingRef.current = false;
+        setSubmitting(false);
+      });
 
     if (!res.data) {
       notifyApiError(toast, res.error);
@@ -61,5 +76,5 @@ export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
     onCreated(res.data.apiKey);
   };
 
-  return { open, setOpen, openDialog, form, submit, secret };
+  return { open, setOpen, openDialog, form, submit, secret, isSubmitting };
 };

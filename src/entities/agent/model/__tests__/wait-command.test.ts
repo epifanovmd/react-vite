@@ -1,4 +1,5 @@
 import type { AgentCommandDto } from "@shared/api/gen/main/model";
+import { HttpError } from "@shared/lib/http";
 import { describe, expect, it, vi } from "vitest";
 
 import { waitAgentCommand } from "../wait-command";
@@ -43,6 +44,17 @@ describe("waitAgentCommand", () => {
 
     expect((await waiting).status).toBe("done");
     vi.useRealTimers();
+  });
+
+  it("ошибка клиента (4xx) — без повторов, последнее известное", async () => {
+    const getAgentCommand = vi.fn().mockResolvedValue({
+      error: new HttpError({ status: 404, message: "Команда не найдена" }),
+    });
+
+    const result = await waitAgentCommand({ getAgentCommand }, command());
+
+    expect(result.status).toBe("pending");
+    expect(getAgentCommand).toHaveBeenCalledTimes(1);
   });
 
   it("завершённая сразу — без запросов; отмена — последнее известное", async () => {

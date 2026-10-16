@@ -20,8 +20,16 @@ const header = (
 export const JobsPage: FC = observer(() => {
   const { agent: agentId = null } = jobsRoute.useSearch();
   const navigate = jobsRoute.useNavigate();
-  const { jobs, isLoading, busyId, cancel, agentOf, agentFilter, canRunDemo } =
-    useJobsVM(agentId);
+  const {
+    jobs,
+    isLoading,
+    error,
+    busyId,
+    cancel,
+    agentOf,
+    agentFilter,
+    canRunDemo,
+  } = useJobsVM(agentId);
 
   return (
     <PageLayout header={header}>
@@ -48,6 +56,7 @@ export const JobsPage: FC = observer(() => {
           <JobList
             jobs={jobs}
             isLoading={isLoading}
+            error={error}
             busyId={busyId}
             agentOf={agentOf}
             onCancel={cancel}

@@ -1,5 +1,6 @@
 import { IAuthStore } from "@entities/auth";
 import {
+  Alert,
   Button,
   Card,
   CardDescription,
@@ -34,6 +35,12 @@ export const SignUpForm: FC<SignUpFormProps> = observer(
           <CardTitle className="text-xl font-bold">Создать аккаунт</CardTitle>
           <CardDescription>Заполните данные для регистрации</CardDescription>
         </CardHeader>
+
+        {auth.error && (
+          <Alert variant="destructive" className="mb-4">
+            {auth.error}
+          </Alert>
+        )}
 
         <Form
           form={form}

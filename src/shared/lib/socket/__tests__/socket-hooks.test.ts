@@ -1,10 +1,15 @@
 import { iocContainer } from "@shared/lib/di";
-import { renderHook } from "@testing-library/react";
+import { act, render, renderHook, screen } from "@testing-library/react";
+import { createElement, useLayoutEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useSocketEvent, useSocketRoom } from "../hooks";
+import { useSocketEvent, useSocketRoom, useSocketStatus } from "../hooks";
 import { createFakeSocket, type IFakeSocket } from "../testing";
-import { ISocketTransport } from "../transport";
+import {
+  ISocketTransport,
+  type SocketStatusListener,
+  type SocketTransportState,
+} from "../transport";
 
 let socket: IFakeSocket;
 
@@ -70,5 +75,55 @@ describe("useSocketRoom", () => {
     hook.rerender({ id: null });
     expect(rooms("room:unsubscribe")).toHaveLength(2);
     expect(rooms("room:subscribe")).toHaveLength(3);
+  });
+});
+
+describe("useSocketStatus", () => {
+  /** Статус сокета, который тест меняет вручную. */
+  const withStatus = (initial: SocketTransportState["status"]) => {
+    const listeners = new Set<SocketStatusListener>();
+    let state: SocketTransportState = { status: initial, error: null };
+
+    Object.defineProperty(socket, "state", { get: () => state });
+    socket.onStatusChange = listener => {
+      listeners.add(listener);
+
+      return () => listeners.delete(listener);
+    };
+
+    return (status: SocketTransportState["status"]) => {
+      state = { status, error: null };
+      listeners.forEach(listener => listener(state));
+    };
+  };
+
+  it("следует за сменой статуса и отписывается при размонтировании", () => {
+    const setStatus = withStatus("connecting");
+    const hook = renderHook(() => useSocketStatus().status);
+
+    expect(hook.result.current).toBe("connecting");
+
+    act(() => setStatus("connected"));
+    expect(hook.result.current).toBe("connected");
+
+    hook.unmount();
+    expect(() => setStatus("error")).not.toThrow();
+  });
+
+  it("не теряет смену статуса между рендером и подпиской", () => {
+    const setStatus = withStatus("connecting");
+    const Status = () =>
+      createElement("output", null, useSocketStatus().status);
+    const Changer = () => {
+      useLayoutEffect(() => setStatus("connected"), []);
+
+      return null;
+    };
+
+    render(
+      createElement("div", null, createElement(Status), createElement(Changer)),
+    );
+
+    expect(screen.getByRole("status").textContent).toBe("connected");
   });
 });

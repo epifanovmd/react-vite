@@ -15,7 +15,12 @@ export const useChangeAvatar = () => {
       const uploaded = await api.uploadFile({ file });
       const avatarId = uploaded.data?.[0]?.id;
 
-      if (!avatarId) return { data: null, error: uploaded.error };
+      if (!avatarId) {
+        return {
+          data: null,
+          error: uploaded.error ?? { message: "Файл не загружен" },
+        };
+      }
 
       return userStore.updateProfile({ avatarId });
     },

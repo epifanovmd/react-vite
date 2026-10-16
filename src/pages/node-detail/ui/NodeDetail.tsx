@@ -13,6 +13,7 @@ import {
   PageLayout,
   PageLoader,
 } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { AgentTabs, type TAgentTab } from "@widgets/agent-tabs";
 import { observer } from "mobx-react-lite";
 import { FC, useState } from "react";
@@ -31,6 +32,7 @@ interface NodeDetailProps {
 
 /** Карточка узла: шапка с действиями, ход установки, сведения и вкладки агента. */
 export const NodeDetail: FC<NodeDetailProps> = observer(({ nodeId }) => {
+  const navigate = useNavigate();
   const vm = useNodeDetailVM(nodeId);
   const { node, agent } = vm;
   // Журнал — на всю высоту экрана с прокруткой внутри, остальное — страница.
@@ -55,7 +57,10 @@ export const NodeDetail: FC<NodeDetailProps> = observer(({ nodeId }) => {
         )
       }
     >
-      <PermissionGate permission={ownPermission(NODE_PERMISSIONS.VIEW)}>
+      <PermissionGate
+        permission={ownPermission(NODE_PERMISSIONS.VIEW)}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
         {!node ? (
           vm.isError ? (
             <PageEmpty icon="error" title="Узел не найден" />

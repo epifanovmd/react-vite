@@ -1,5 +1,9 @@
 import type { JobRunDto } from "@shared/api/gen/main/model";
-import { createInjectDecorator, SupportInitialize } from "@shared/lib/di";
+import {
+  createDisposer,
+  createInjectDecorator,
+  SupportInitialize,
+} from "@shared/lib/di";
 import { INotificationService } from "@shared/lib/notifications";
 import { ISocketTransport } from "@shared/lib/socket";
 import { injectable } from "inversify";
@@ -11,7 +15,7 @@ export const IJobRealtime = createInjectDecorator<IJobRealtime>("IJobRealtime");
 
 export type IJobRealtime = SupportInitialize;
 
-/** Обновления задач по сокету и тост о завершении или сбое. */
+/** Обновления задач по сокету и тост о завершении или сбое; после переподключения список перечитывается. */
 @injectable()
 export class JobRealtime implements IJobRealtime {
   constructor(
@@ -21,21 +25,34 @@ export class JobRealtime implements IJobRealtime {
   ) {}
 
   initialize() {
-    return this._socket.on<[JobRunDto]>("job:updated", job => {
-      const before = this._jobs.byId(job.id);
+    const disposers = createDisposer();
+    let connected = this._socket.state.status === "connected";
 
-      this._jobs.upsert(job);
+    disposers.add(
+      this._socket.onConnect(() => {
+        if (connected && this._jobs.isLoaded) void this._jobs.load();
+        connected = true;
+      }),
+      this._socket.on<[JobRunDto]>("job:updated", this._onJobUpdated),
+    );
 
-      // Тост только на переход в конечное состояние, не на каждый прогресс.
-      if (before?.status === job.status) return;
-
-      if (job.status === "completed") {
-        this._notifications.success(job.title, { title: "Задача выполнена" });
-      } else if (job.status === "failed") {
-        this._notifications.error(jobErrorText(job) ?? job.title, {
-          title: "Задача не выполнена",
-        });
-      }
-    });
+    return disposers.dispose;
   }
+
+  private readonly _onJobUpdated = (job: JobRunDto) => {
+    const before = this._jobs.byId(job.id);
+
+    this._jobs.upsert(job);
+
+    // Тост только на переход в конечное состояние, не на каждый прогресс.
+    if (before?.status === job.status) return;
+
+    if (job.status === "completed") {
+      this._notifications.success(job.title, { title: "Задача выполнена" });
+    } else if (job.status === "failed") {
+      this._notifications.error(jobErrorText(job) ?? job.title, {
+        title: "Задача не выполнена",
+      });
+    }
+  };
 }

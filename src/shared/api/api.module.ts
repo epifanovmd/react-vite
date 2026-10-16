@@ -1,8 +1,7 @@
-// Контракт, а не бочка: бочка уведомлений тянет ещё и UI-компоненты.
 import type { IInjectDecorator } from "@shared/lib/di";
-import { INotificationService } from "@shared/lib/notifications/notification.types";
+import { INotificationService } from "@shared/lib/notifications";
 import type { ITokenSession } from "@shared/lib/session";
-import { ITokenProvider } from "@shared/lib/socket/contract";
+import { ITokenProvider } from "@shared/lib/socket";
 import { IStorageService } from "@shared/lib/storage";
 import { ContainerModule, ResolutionContext } from "inversify";
 

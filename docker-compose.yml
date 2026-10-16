@@ -12,5 +12,6 @@ services:
     image: react-vite:${TAG:-latest}
     container_name: react-vite
     ports:
-      - "${APP_PORT:-4173}:80"
+      # Внутри контейнера nginx без root слушает 8080.
+      - "${APP_PORT:-4173}:8080"
     restart: unless-stopped

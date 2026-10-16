@@ -102,3 +102,62 @@ describe("ModalProvider.confirm", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
+
+const SyncHarness = ({ onClose }: { onClose: () => void }) => {
+  const modal = useModal();
+
+  const openAndClose = () => {
+    const id = modal.openModal({ title: "Мгновенное окно", onClose });
+
+    modal.closeModal(id);
+  };
+
+  const openAndCloseTwice = () => {
+    const id = modal.openModal({ title: "Дважды", onClose });
+
+    modal.closeModal(id);
+    modal.closeModal(id);
+  };
+
+  return (
+    <>
+      <button type="button" onClick={openAndClose}>
+        открыть и закрыть
+      </button>
+      <button type="button" onClick={openAndCloseTwice}>
+        закрыть дважды
+      </button>
+    </>
+  );
+};
+
+describe("ModalProvider.closeModal в одном обработчике", () => {
+  it("закрывает окно, открытое в том же обработчике", () => {
+    const onClose = vi.fn();
+
+    render(
+      <ModalProvider>
+        <SyncHarness onClose={onClose} />
+      </ModalProvider>,
+    );
+
+    fireEvent.click(screen.getByText("открыть и закрыть"));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("повторный closeModal не вызывает onClose второй раз", () => {
+    const onClose = vi.fn();
+
+    render(
+      <ModalProvider>
+        <SyncHarness onClose={onClose} />
+      </ModalProvider>,
+    );
+
+    fireEvent.click(screen.getByText("закрыть дважды"));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});

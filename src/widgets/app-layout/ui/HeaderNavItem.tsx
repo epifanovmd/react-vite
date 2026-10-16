@@ -1,4 +1,4 @@
-import { cn } from "@shared/lib/utils/cn";
+import { cn } from "@shared/lib/utils";
 import { Badge } from "@shared/ui";
 import { Link } from "@tanstack/react-router";
 import { FC } from "react";
@@ -7,7 +7,7 @@ import { NAV_ICON_SIZE, NavItem } from "../model/constants";
 
 interface HeaderNavItemProps {
   item: NavItem;
-  /** Vertical full-width variant for the mobile menu. */
+  /** Вертикальный вариант на всю ширину — для мобильного меню. */
   list?: boolean;
   onClick?: () => void;
 }

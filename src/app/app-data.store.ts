@@ -3,7 +3,7 @@ import { IAuthStore } from "@entities/auth";
 import { IJobRealtime, IJobStore } from "@entities/job";
 import { INodesStore } from "@entities/node";
 import { ISessionStore, IUserRealtime, IUserStore } from "@entities/user";
-import { createDisposer } from "@shared/lib/di";
+import { createDisposer, type Disposer } from "@shared/lib/di";
 import { ISocketTransport } from "@shared/lib/socket";
 import { injectable } from "inversify";
 import { makeAutoObservable, reaction } from "mobx";
@@ -32,42 +32,50 @@ export class AppDataStore implements IAppDataStore {
   initialize() {
     const disposers = createDisposer();
 
-    // Сессия — до роутера: его beforeLoad тогда синхронны, и редирект на вход
-    // не попадает в гонку перехода (маршрут бросал undefined — пустой экран).
     if (this._authStore.isIdle) {
       this._authStore.restore().finally(this._markRestored);
     } else {
       this._markRestored();
     }
 
+    if (this._authStore.isAuthenticated) this._startSession(disposers);
+
     return [
       reaction(
         () => this._authStore.isAuthenticated,
         isAuthenticated => {
           if (isAuthenticated) {
-            this._userStore.load();
-
-            disposers.add(
-              this._socketTransport.initialize(),
-              this._userRealtime.initialize(),
-              this._jobRealtime.initialize(),
-            );
+            this._startSession(disposers);
           } else {
-            disposers.dispose();
-            // Данные прежнего пользователя (права, сессии, задачи) не должны
-            // пережить выход: следующий вход в этой вкладке — другой человек.
-            this._userStore.reset();
-            this._sessionStore.reset();
-            this._jobStore.reset();
-            this._agentsStore.reset();
-            this._nodesStore.reset();
-
-            router.navigate({ to: "/sign-in" });
+            this._endSession(disposers);
           }
         },
       ),
       disposers.dispose,
     ];
+  }
+
+  /** Вход: профиль, сокет и realtime-подписки живут до выхода или dispose. */
+  private _startSession(disposers: Disposer) {
+    this._userStore.load();
+
+    disposers.add(
+      this._socketTransport.initialize(),
+      this._userRealtime.initialize(),
+      this._jobRealtime.initialize(),
+    );
+  }
+
+  /** Выход: данные прежнего пользователя не переживают его — следующий вход может быть другим человеком. */
+  private _endSession(disposers: Disposer) {
+    disposers.dispose();
+    this._userStore.reset();
+    this._sessionStore.reset();
+    this._jobStore.reset();
+    this._agentsStore.reset();
+    this._nodesStore.reset();
+
+    router.navigate({ to: "/sign-in" });
   }
 
   private _markRestored() {

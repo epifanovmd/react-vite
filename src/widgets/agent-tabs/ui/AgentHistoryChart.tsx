@@ -1,4 +1,4 @@
-import { formatAxisTime, type IHostPoint } from "@entities/agent";
+import { formatAxisTime, formatMoment, type IHostPoint } from "@entities/agent";
 import { Card, type ChartSeries, LineChart } from "@shared/ui";
 import { FC } from "react";
 
@@ -12,9 +12,6 @@ interface AgentHistoryChartProps {
   withDate: boolean;
   domain?: [number, number];
 }
-
-const formatMoment = (value: Date | number | string): string =>
-  new Date(value).toLocaleString("ru-RU");
 
 /** График истории метрик за период. */
 export const AgentHistoryChart: FC<AgentHistoryChartProps> = ({
@@ -36,7 +33,7 @@ export const AgentHistoryChart: FC<AgentHistoryChartProps> = ({
       grid="y"
       legend={series.length > 1 ? "top" : false}
       formatValue={format}
-      formatX={formatMoment}
+      formatX={value => formatMoment(new Date(value).getTime())}
       xAxis={{ tickFormat: value => formatAxisTime(value, withDate) }}
       yAxis={{ tickFormat: format, tickCount: 4, domain }}
       loading={isLoading}

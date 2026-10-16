@@ -43,6 +43,8 @@ export const useHomeVM = () => {
     canViewNodes,
     counts: countNodes(store.nodes),
     isLoading: store.isLoading && !store.isLoaded,
+    /** Ошибка загрузки узлов: показывается вместо пустой сводки. */
+    error: store.error,
     troubled: store.nodes
       .filter(node => node.status === "error" || node.status === "offline")
       .slice(0, TROUBLED_LIMIT),

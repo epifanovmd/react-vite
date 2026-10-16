@@ -1,5 +1,5 @@
 import { useLatestRef } from "@shared/lib/hooks";
-import { type RefObject, useEffect } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 
 import { type HotkeyBinding, runHotkeys } from "./run-hotkeys";
 
@@ -11,29 +11,50 @@ export interface UseHotkeysOptions {
   target?: RefObject<HTMLElement | null>;
 }
 
+interface IHotkeysSubscription {
+  element: HTMLElement | Document;
+  dispose: () => void;
+}
+
 /**
  * Горячие клавиши: `useHotkeys([["mod+k", open], [["backspace", "delete"], remove]])`.
  * Привязки можно передавать inline — обработчики читаются в момент нажатия.
  * В полях ввода сочетания игнорируются, пока у привязки нет `allowInInputs`.
+ * Элемент `target` сверяется после каждого коммита: появившийся позже или
+ * заменённый элемент подхватывается без смены ref.
  */
 export const useHotkeys = (
   bindings: HotkeyBinding[],
   { enabled = true, target }: UseHotkeysOptions = {},
 ): void => {
   const bindingsRef = useLatestRef(bindings);
+  const subscriptionRef = useRef<IHotkeysSubscription | null>(null);
 
   useEffect(() => {
-    if (!enabled) return undefined;
+    const element = enabled ? (target ? target.current : document) : null;
 
-    const element = target ? target.current : document;
+    if (subscriptionRef.current?.element === element) return;
 
-    if (!element) return undefined;
+    subscriptionRef.current?.dispose();
+    subscriptionRef.current = null;
+
+    if (!element) return;
 
     const handleKeyDown = (event: Event) =>
       runHotkeys(bindingsRef.current, event as KeyboardEvent);
 
     element.addEventListener("keydown", handleKeyDown);
+    subscriptionRef.current = {
+      element,
+      dispose: () => element.removeEventListener("keydown", handleKeyDown),
+    };
+  });
 
-    return () => element.removeEventListener("keydown", handleKeyDown);
-  }, [enabled, target, bindingsRef]);
+  useEffect(
+    () => () => {
+      subscriptionRef.current?.dispose();
+      subscriptionRef.current = null;
+    },
+    [],
+  );
 };

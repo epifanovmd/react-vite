@@ -1,3 +1,3 @@
-import { type ControlSize } from "../foundation/control-size";
+import { type ControlSize } from "../foundation";
 
 export type PaginationSize = ControlSize;

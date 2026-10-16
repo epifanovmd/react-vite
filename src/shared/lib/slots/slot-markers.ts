@@ -12,8 +12,7 @@ const nestedStatics = (component: unknown) => {
 
 /**
  * Маркеры слотов: сами не рендерятся, несут метаданные владельца и наследуют
- * статики вложенного compound — `BottomSheet.Footer.PrimaryButton` появляется
- * без ручной сборки.
+ * статики вложенного compound — `Owner.Slot.Nested` доступен без ручной сборки.
  */
 export const createSlotMarkers = (
   ownerName: string,

@@ -13,7 +13,6 @@ export const NotFoundPage: FC = () => {
 
   return (
     <div className="flex min-h-dvh w-full flex-col items-center justify-center gap-8 p-8 text-center">
-      {/* 404 */}
       <div className="relative select-none">
         <p className="text-[10rem] font-black leading-none tracking-tighter text-muted/40 sm:text-[14rem]">
           404
@@ -30,7 +29,6 @@ export const NotFoundPage: FC = () => {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-3">
         <Button
           variant="outline"
@@ -45,7 +43,6 @@ export const NotFoundPage: FC = () => {
         </Button>
       </div>
 
-      {/* Quick links */}
       <div className="flex flex-col items-center gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
           Быстрый переход

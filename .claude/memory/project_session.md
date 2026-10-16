@@ -73,9 +73,12 @@ TokenSession`: память, реактивная стратегия, сверх
 
 Контейнер собирается прямо в тестах (vitest, jsdom): `api-module-wiring.test.ts`
 грузит `apiModule` и подставляет заглушки `IStorageService` и
-`INotificationService`. DI-модули импортируют контракты напрямую
-(`notifications/notification.types`), а не бочки — бочка уведомлений тянет ещё
-и UI-компоненты.
+`INotificationService`. DI-модули импортируют контракты через публичные
+бочки (`@shared/lib/notifications`, `@shared/lib/socket`); контракт уведомлений
+(`notification.types.ts`, включая `ToastAction`) от UI не зависит.
+
+Гонка поколений: `clear()` и внешнее удаление токенов увеличивают счётчик
+поколений `TokenSession`; ответ refresh, пришедший после этого, отбрасывается.
 
 ## Правки хранилища извне
 

@@ -44,10 +44,19 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # Связь с хостом бывает нестабильной: таймауты и повторы подключения.
+      # Ключ хоста — из секрета SSH_KNOWN_HOSTS (вывод ssh-keyscan, сверенный
+      # с сервером); без него — ssh-keyscan при каждом деплое (доверие первому ответу).
       - name: SSH к хосту
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
           host=$(sed -n 's/^SSH_HOST=//p' .env.deploy)
           printf 'Host *\n  ConnectTimeout 20\n  ConnectionAttempts 5\n  ServerAliveInterval 15\n  ServerAliveCountMax 8\n' >> ~/.ssh/config
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' >> ~/.ssh/known_hosts
+            exit 0
+          fi
+          echo "::warning::Секрет SSH_KNOWN_HOSTS не задан — ключ хоста берётся ssh-keyscan без проверки"
           for i in 1 2 3 4 5; do
             keys=$(ssh-keyscan -T 15 "$host" 2>/dev/null) && [ -n "$keys" ] && break
             sleep 5

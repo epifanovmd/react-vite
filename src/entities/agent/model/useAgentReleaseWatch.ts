@@ -1,5 +1,6 @@
+import { useEvent } from "@shared/lib/hooks";
 import { reaction } from "mobx";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import { IAgentsStore, type IAgentUpdateCandidate } from "./types";
 import { useAgentsRealtime } from "./useAgentsRealtime";
@@ -23,9 +24,9 @@ export const useAgentReleaseWatch = (
   { onUpdateAvailable }: IAgentReleaseWatchHandlers = {},
 ): void => {
   const store = IAgentsStore.useInstance();
-  const notify = useRef(onUpdateAvailable);
-
-  notify.current = onUpdateAvailable;
+  const notify = useEvent((candidate: IAgentUpdateCandidate) =>
+    onUpdateAvailable?.(candidate),
+  );
 
   useAgentsRealtime(enabled);
   useEffect(() => {
@@ -42,12 +43,12 @@ export const useAgentReleaseWatch = (
 
         if (known) {
           for (const [key, candidate] of found) {
-            if (!known.has(key)) notify.current?.(candidate);
+            if (!known.has(key)) notify(candidate);
           }
         }
         known = new Set(found.keys());
       },
       { fireImmediately: true },
     );
-  }, [enabled, store]);
+  }, [enabled, notify, store]);
 };

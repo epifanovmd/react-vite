@@ -28,6 +28,8 @@ export const DashboardNodesCard: FC<DashboardNodesCardProps> = observer(
       >
         {vm.isLoading ? (
           <Skeleton className="h-24 w-full" />
+        ) : vm.error && counts.total === 0 ? (
+          <Empty size="sm" icon="error" title={vm.error.message} />
         ) : counts.total === 0 ? (
           <Empty
             size="sm"

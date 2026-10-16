@@ -58,4 +58,31 @@ describe("useAsyncOptions", () => {
     await flush();
     expect(fetch).toHaveBeenCalledOnce();
   });
+
+  it("смена fetchKey при открытом списке перезагружает опции", async () => {
+    vi.useFakeTimers();
+    let key = 1;
+    const fetch = vi.fn(async (query: string) => [`${query}-${key}`]);
+    const { result, rerender } = renderHook(
+      ({ fetchKey }: { fetchKey: number }) =>
+        useAsyncOptions({
+          fetch,
+          fetchKey,
+          loadOnce: true,
+          getOption: value => ({ value, label: value }),
+        }),
+      { initialProps: { fetchKey: 1 } },
+    );
+
+    act(() => result.current.onOpenChange?.(true));
+    await flush();
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(result.current.options[0].value).toBe("-1");
+
+    key = 2;
+    rerender({ fetchKey: 2 });
+    await flush();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(result.current.options[0].value).toBe("-2");
+  });
 });

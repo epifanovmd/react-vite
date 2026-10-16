@@ -1,7 +1,6 @@
 import { localPoint } from "@visx/event";
-import { useTooltip } from "@visx/tooltip";
 import type { KeyboardEvent, MouseEvent, TouchEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { nearestIndex } from "../utils/scales";
 
@@ -34,9 +33,19 @@ export interface UseChartTooltipResult {
 
 type PointerLikeEvent = MouseEvent<SVGElement> | TouchEvent<SVGElement>;
 
+/** Индекс в границах `[0, length - 1]`; без данных — `undefined`. */
+const clampIndex = (
+  index: number | undefined,
+  length: number,
+): number | undefined =>
+  index === undefined || length === 0
+    ? undefined
+    : Math.min(Math.max(index, 0), length - 1);
+
 /**
  * Тултип снапится к ближайшей позиции данных: читатель целится в дату,
  * а не в двухпиксельную линию. С клавиатуры — те же позиции стрелками.
+ * Хранится только индекс: координаты считаются в рендере из текущих данных.
  */
 export const useChartTooltip = ({
   positions,
@@ -44,18 +53,11 @@ export const useChartTooltip = ({
   topOf,
   onSelect,
 }: UseChartTooltipOptions): UseChartTooltipResult => {
-  const { tooltipData, tooltipLeft, tooltipTop, showTooltip, hideTooltip } =
-    useTooltip<number>();
+  const [storedIndex, setStoredIndex] = useState<number | undefined>();
+  const tooltipData = clampIndex(storedIndex, positions.length);
 
-  const show = useCallback(
-    (index: number) =>
-      showTooltip({
-        tooltipData: index,
-        tooltipLeft: positions[index],
-        tooltipTop: topOf(index),
-      }),
-    [positions, showTooltip, topOf],
-  );
+  const show = useCallback((index: number) => setStoredIndex(index), []);
+  const hideTooltip = useCallback(() => setStoredIndex(undefined), []);
 
   const handlePointer = useCallback(
     (event: PointerLikeEvent) => {
@@ -111,11 +113,13 @@ export const useChartTooltip = ({
   }, [onSelect, tooltipData]);
 
   const active =
-    tooltipData === undefined ||
-    tooltipLeft === undefined ||
-    tooltipTop === undefined
+    tooltipData === undefined
       ? null
-      : { index: tooltipData, left: tooltipLeft, top: tooltipTop };
+      : {
+          index: tooltipData,
+          left: positions[tooltipData],
+          top: topOf(tooltipData),
+        };
 
   return {
     active,

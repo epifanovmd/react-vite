@@ -1,4 +1,8 @@
-import { agentVersion, IAgentsStore } from "@entities/agent";
+import {
+  agentVersion,
+  commandResultVersion,
+  IAgentsStore,
+} from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type { AgentDto } from "@shared/api/gen/main/model";
 import { notifyApiError } from "@shared/lib/http";
@@ -10,13 +14,8 @@ import { useAgentCommand } from "./useAgentCommand";
 
 type TAgentAction = "revoke" | "remove" | "rotate" | "update";
 
-const versionOf = (result: unknown): string | null =>
-  typeof result === "object" &&
-  result !== null &&
-  "version" in result &&
-  typeof result.version === "string"
-    ? result.version
-    : null;
+/** Версия из итога команды — общий хелпер сущности агента. */
+const versionOf = commandResultVersion;
 
 interface UseAgentActionsOptions {
   /** Агент удалён (например, уйти со страницы агента). */

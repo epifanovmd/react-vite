@@ -36,6 +36,14 @@ export const useAgentLog = (agentId: string | null) => {
   const [level, setLevel] = useState<TAgentLogLevel>("info");
   const [source, setSource] = useState<string>(ALL_LOG_SOURCES);
   const [entries, setEntries] = useState<IAgentLogEntry[]>([]);
+  const [entriesOf, setEntriesOf] = useState(agentId);
+
+  // Другой агент без ремаунта: записи и источники прежнего не показываются.
+  if (entriesOf !== agentId) {
+    setEntriesOf(agentId);
+    setEntries([]);
+    setSource(ALL_LOG_SOURCES);
+  }
   // Переподключение: сервер снова слушает с уровня по умолчанию.
   const [joins, setJoins] = useState(0);
 

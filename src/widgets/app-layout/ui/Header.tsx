@@ -13,7 +13,6 @@ import { ProfileMenu } from "./ProfileMenu";
 export const Header: FC = observer(() => {
   const {
     displayName,
-    initials,
     avatarUrl,
     subtitle,
     visibleGroups,
@@ -53,7 +52,6 @@ export const Header: FC = observer(() => {
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <ProfileMenu
             displayName={displayName}
-            initials={initials}
             avatarUrl={avatarUrl}
             subtitle={subtitle}
           />
@@ -65,7 +63,7 @@ export const Header: FC = observer(() => {
         onOpenChange={setMobileOpen}
         visibleGroups={visibleGroups}
         displayName={displayName}
-        initials={initials}
+        avatarUrl={avatarUrl}
         subtitle={subtitle}
       />
     </header>

@@ -1,7 +1,22 @@
 import { createInjectDecorator } from "@shared/lib/di";
 import type * as React from "react";
 
-import type { ToastAction } from "./NotificationToast";
+/** Кнопка в тосте; `dismiss: false` оставляет тост открытым после нажатия. */
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "destructive"
+    | "success"
+    | "warning"
+    | "info"
+    | "outline"
+    | "ghost"
+    | "link";
+  dismiss?: boolean;
+}
 
 export interface NotificationOptions {
   id?: string;

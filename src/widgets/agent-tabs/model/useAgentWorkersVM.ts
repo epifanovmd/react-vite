@@ -1,5 +1,6 @@
 import {
   agentWorkers,
+  freshestMetricsPoint,
   isAgentLive,
   useAgentLiveMetrics,
   workerMetrics,
@@ -36,10 +37,7 @@ export interface IWorkerRowAccess {
 export const useAgentWorkersVM = (agent: AgentDto, canManage: boolean) => {
   const actions = useWorkerActions();
   const live = useAgentLiveMetrics(agent.id);
-  const latest =
-    live.latest && live.latest.at >= (agent.metrics?.at ?? 0)
-      ? live.latest
-      : agent.metrics;
+  const latest = freshestMetricsPoint(live.latest, agent.metrics);
 
   const pendingOf = (worker: IAgentWorkerDto): string | null =>
     actions.pendingOf(agent, worker);

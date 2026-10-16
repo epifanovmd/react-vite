@@ -3,18 +3,28 @@ import { IMainApi } from "@shared/api";
 import type { AgentCommandDto } from "@shared/api/gen/main/model";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Команда агенту от пользователя: поставить, отметить как ждущую (строки
  * агента и воркера показывают ожидание) и дождаться итога. Ошибка постановки —
- * тост, `null`.
+ * тост, `null`; уход с экрана прерывает ожидание — тоже `null`, как и итог,
+ * который сервер не отдал (ошибка 4xx).
  */
 export const useAgentCommand = () => {
   const api = IMainApi.useInstance();
   const store = IAgentsStore.useInstance();
   const toast = INotificationService.useInstance();
   const [busy, setBusy] = useState<string[]>([]);
+  const aborts = useRef(new Set<AbortController>());
+
+  useEffect(() => {
+    const set = aborts.current;
+
+    return () => {
+      for (const abort of set) abort.abort();
+    };
+  }, []);
 
   const run = async (
     key: string,
@@ -22,6 +32,9 @@ export const useAgentCommand = () => {
     onQueued?: (command: AgentCommandDto) => void,
   ): Promise<AgentCommandDto | null> => {
     setBusy(prev => [...prev, key]);
+    const abort = new AbortController();
+
+    aborts.current.add(abort);
     try {
       const res = await request();
 
@@ -32,14 +45,18 @@ export const useAgentCommand = () => {
       }
       store.trackCommand(res.data);
       onQueued?.(res.data);
-      const done = await waitAgentCommand(api, res.data);
+      const done = await waitAgentCommand(api, res.data, abort.signal);
 
       store.settleCommand(done.id);
+      if (abort.signal.aborted || done.status !== "done") return null;
       void store.fetch(done.agentId);
 
       return done;
     } finally {
-      setBusy(prev => prev.filter(item => item !== key));
+      aborts.current.delete(abort);
+      if (!abort.signal.aborted) {
+        setBusy(prev => prev.filter(item => item !== key));
+      }
     }
   };
 

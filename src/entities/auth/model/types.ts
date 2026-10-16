@@ -33,5 +33,8 @@ export interface IAuthStore {
   verify2FA(password: string): Promise<void>;
   signUp(params: TSignUpRequestDto): Promise<void>;
   restore(tokens?: ITokensDto): Promise<void>;
+  /** Выход пользователя: серверный signOut, затем локальный. */
+  logout(): Promise<void>;
+  /** Локальный выход без запроса к серверу. */
   signOut(): void;
 }

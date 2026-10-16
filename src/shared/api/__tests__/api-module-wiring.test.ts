@@ -1,6 +1,6 @@
-import { INotificationService } from "@shared/lib/notifications/notification.types";
+import { INotificationService } from "@shared/lib/notifications";
 import type { ITokenSession } from "@shared/lib/session";
-import { ITokenProvider } from "@shared/lib/socket/contract";
+import { ITokenProvider } from "@shared/lib/socket";
 import { IStorageService } from "@shared/lib/storage";
 import { Container } from "inversify";
 

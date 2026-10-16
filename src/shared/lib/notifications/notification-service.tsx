@@ -40,6 +40,7 @@ export class NotificationService implements INotificationService {
     return this._show("loading", message, options);
   }
 
+  /** Тост загрузки, затем успех или ошибка; сбой в `messages` снимает тост, а не роняет промис. */
   promise<T>(
     promise: Promise<T>,
     messages: PromiseMessages<T>,
@@ -47,24 +48,27 @@ export class NotificationService implements INotificationService {
   ): Promise<T> {
     const id = this.loading(messages.loading, options);
 
-    promise.then(
-      value => {
-        const text =
-          typeof messages.success === "function"
-            ? messages.success(value)
-            : messages.success;
+    promise
+      .then(
+        value => {
+          const text =
+            typeof messages.success === "function"
+              ? messages.success(value)
+              : messages.success;
 
-        this.success(text, { ...options, id });
-      },
-      (error: unknown) => {
-        const text =
-          typeof messages.error === "function"
-            ? messages.error(error)
-            : messages.error;
+          this.success(text, { ...options, id });
+        },
+        (error: unknown) => {
+          const text =
+            typeof messages.error === "function"
+              ? messages.error(error)
+              : messages.error;
 
-        this.error(text, { ...options, id });
-      },
-    );
+          this.error(text, { ...options, id });
+        },
+      )
+      // Текст тоста не собрался — снимаем бесконечный тост загрузки.
+      .catch(() => this.dismiss(id));
 
     return promise;
   }

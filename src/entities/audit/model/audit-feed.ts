@@ -25,6 +25,8 @@ export class AuditFeed {
   });
 
   private _cursor: string | null = null;
+  /** Поколение загрузки: ответы прежних `load`/`loadMore` не применяются. */
+  private _generation = 0;
 
   constructor(private _fetch: AuditPageFetcher) {
     makeAutoObservable<this, "_fetch">(
@@ -62,11 +64,14 @@ export class AuditFeed {
   }
 
   async load() {
+    const generation = ++this._generation;
+
+    this._cursor = null;
     this._holder.setLoading();
 
     const res = await this._fetch(undefined, AUDIT_PAGE_SIZE);
 
-    if (isCancelResponse(res)) return;
+    if (generation !== this._generation || isCancelResponse(res)) return;
 
     runInAction(() => {
       if (res.error || !res.data) {
@@ -81,13 +86,16 @@ export class AuditFeed {
   }
 
   async loadMore() {
-    if (!this._cursor || this._holder.isLoadingMore) return;
+    if (!this._cursor || this._holder.isLoading || this._holder.isLoadingMore)
+      return;
+
+    const generation = this._generation;
 
     this._holder.setLoadingOlder();
 
     const res = await this._fetch(this._cursor, AUDIT_PAGE_SIZE);
 
-    if (isCancelResponse(res)) return;
+    if (generation !== this._generation || isCancelResponse(res)) return;
 
     runInAction(() => {
       if (res.error || !res.data) {

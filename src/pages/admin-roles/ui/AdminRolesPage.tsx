@@ -8,6 +8,7 @@ import {
   PageLayout,
   Skeleton,
 } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
@@ -68,10 +69,17 @@ const AdminRolesContent: FC = observer(() => {
   );
 });
 
-export const AdminRolesPage: FC = () => (
-  <PageLayout header={header}>
-    <PermissionGate permission={ADMIN_PERMISSIONS.ROLE_VIEW}>
-      <AdminRolesContent />
-    </PermissionGate>
-  </PageLayout>
-);
+export const AdminRolesPage: FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <PageLayout header={header}>
+      <PermissionGate
+        permission={ADMIN_PERMISSIONS.ROLE_VIEW}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
+        <AdminRolesContent />
+      </PermissionGate>
+    </PageLayout>
+  );
+};

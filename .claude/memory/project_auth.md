@@ -21,6 +21,12 @@ index.ts               Public API: authModule, AuthStatus, IAuthStore, loginVali
 (см. `project_session.md`), привязка к бэкенду — `shared/api/main/main-session.ts`
 (см. `project_api.md`). Passkey — в features (см. ниже).
 
+## Выход и статус
+
+- `logout()` — кнопка «Выйти» (`features/sign-out`): `api.signOut({ notifyErrors: false })`, ошибка игнорируется, затем локальный `signOut()`. `signOut()` — только локально (истёкшая сессия, guard, удаление аккаунта, `signOutAll`).
+- `AuthStore` подписан на `session.onTokenChange`: непустой токен при `Unauthenticated` без 2FA → `Authenticated` (повтор refresh после временной ошибки restore, вход в другой вкладке). Ложный вход после `clear()` исключает счётчик поколений в `TokenSession` (ответ refresh, начатого до clear, не применяется).
+- `signUp` пишет ошибку в `verifyError` (геттер `error`) и сбрасывает её в начале; пустой ответ — «Неизвестная ошибка».
+
 ## Token lifecycle
 
 ```

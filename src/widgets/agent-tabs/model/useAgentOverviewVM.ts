@@ -1,4 +1,5 @@
 import {
+  freshestMetricsPoint,
   pointHost,
   useAgentLiveMetrics,
   useAgentMetricsHistory,
@@ -12,10 +13,7 @@ import type { AgentDto } from "@shared/api/gen/main/model";
 export const useAgentOverviewVM = (agent: AgentDto) => {
   const live = useAgentLiveMetrics(agent.id);
   const history = useAgentMetricsHistory(agent.id);
-  const fresher =
-    live.latest && live.latest.at >= (agent.metrics?.at ?? 0)
-      ? live.latest
-      : agent.metrics;
+  const fresher = freshestMetricsPoint(live.latest, agent.metrics);
 
   return {
     live,

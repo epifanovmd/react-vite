@@ -1,10 +1,9 @@
+import { useDeleteFile } from "@features/delete-file";
 import { IMainApi } from "@shared/api";
 import type { IFileDto } from "@shared/api/gen/main/model";
 import { usePaged } from "@shared/lib/holders";
-import { notifyApiError } from "@shared/lib/http";
-import { INotificationService } from "@shared/lib/notifications";
-import { ISocketTransport } from "@shared/lib/socket";
-import { useConfirm } from "@shared/ui";
+import { useLatestRef } from "@shared/lib/hooks";
+import { ISocketTransport, useSocketEvent } from "@shared/lib/socket";
 import { useEffect } from "react";
 
 const PAGE_SIZE = 20;
@@ -12,12 +11,11 @@ const PAGE_SIZE = 20;
 export const useFilesVM = () => {
   const api = IMainApi.useInstance();
   const socket = ISocketTransport.useInstance();
-  const toast = INotificationService.useInstance();
-  const confirm = useConfirm();
 
   const files = usePaged<IFileDto>({
     pageSize: PAGE_SIZE,
     keyExtractor: f => f.id,
+    autoLoad: true,
     queryFn: async ({ offset, limit }) => {
       const { data, error } = await api.getMyFiles({ offset, limit });
 
@@ -28,48 +26,33 @@ export const useFilesVM = () => {
     },
   });
 
-  useEffect(() => {
-    files.load().then();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const reload = () => files.reload({ refresh: true }).then();
 
   // Изменения с других устройств и итог обработки приходят по сокету.
+  // Сервер закончил обработку (статус, миниатюра) — обновить файл на месте.
+  useSocketEvent<[IFileDto]>("file:processed", file =>
+    files.updateItem(file.id, file),
+  );
+  // Загрузка и удаление сдвигают страницы — перечитать текущую.
+  useSocketEvent("file:uploaded", reload);
+  useSocketEvent("file:deleted", reload);
+
+  // События за время обрыва потеряны: после переподключения — перечитать.
+  // Первое подключение (сокет ещё не был на связи при открытии) — не повод.
+  const reloadRef = useLatestRef(reload);
+
   useEffect(() => {
-    const reload = () => files.reload({ refresh: true }).then();
-    const unsubscribe = [
-      // Сервер закончил обработку (статус, миниатюра) — обновить файл на месте.
-      socket.on<[IFileDto]>("file:processed", file =>
-        files.updateItem(file.id, file),
-      ),
-      // Загрузка и удаление сдвигают страницы — перечитать текущую.
-      socket.on("file:uploaded", reload),
-      socket.on("file:deleted", reload),
-    ];
+    let wasConnected = socket.state.status === "connected";
 
-    return () => unsubscribe.forEach(off => off());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket]);
-
-  const remove = async (file: IFileDto) => {
-    const ok = await confirm({
-      title: "Удалить файл?",
-      description: file.name,
-      confirmLabel: "Удалить",
-      confirmVariant: "destructive",
+    return socket.onConnect(() => {
+      if (wasConnected) reloadRef.current();
+      wasConnected = true;
     });
+  }, [socket, reloadRef]);
 
-    if (!ok) return;
-
-    const res = await api.deleteFile(file.id);
-
-    if (res.error) {
-      notifyApiError(toast, res.error);
-
-      return;
-    }
-
-    await files.reload({ refresh: true });
-  };
+  const remove = useDeleteFile({
+    onDeleted: () => files.reload({ refresh: true }),
+  });
 
   const onUploaded = () => {
     files.goToPage(1, { refresh: true }).then();
@@ -77,3 +60,5 @@ export const useFilesVM = () => {
 
   return { files, remove, onUploaded };
 };
+
+export type FilesVM = ReturnType<typeof useFilesVM>;

@@ -1,6 +1,7 @@
 import { ADMIN_PERMISSIONS, PermissionGate, UserAvatar } from "@entities/user";
 import { EditUserPrivilegesModal } from "@features/edit-user-privileges";
 import type { UserDto } from "@shared/api/gen/main/model";
+import { useLatestRef } from "@shared/lib/hooks";
 import { formatter } from "@shared/lib/utils";
 import {
   Badge,
@@ -13,18 +14,19 @@ import {
   Pagination,
   Table,
 } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { Search, ShieldCheck, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { FC, useMemo } from "react";
+import { FC, type RefObject, useMemo } from "react";
 
-import { useAdminUsersVM } from "../model/useAdminUsersVM";
+import { type AdminUsersVM, useAdminUsersVM } from "../model/useAdminUsersVM";
 
 interface ColumnActions {
+  /** VM — через ref: колонки стабильны, ячейки не перемонтируются. */
+  vm: RefObject<AdminUsersVM>;
   canEditPrivileges: boolean;
   canDelete: boolean;
   currentUserId?: string;
-  onEdit: (user: UserDto) => void;
-  onDelete: (user: UserDto) => void;
 }
 
 const column = createColumnHelper<UserDto>();
@@ -37,11 +39,10 @@ const displayName = (user: UserDto): string =>
   "Без имени";
 
 const createColumns = ({
+  vm,
   canEditPrivileges,
   canDelete,
   currentUserId,
-  onEdit,
-  onDelete,
 }: ColumnActions) => [
   column.display({
     id: "user",
@@ -103,7 +104,10 @@ const createColumns = ({
       row.original.id !== currentUserId && (canEditPrivileges || canDelete) ? (
         <div className="flex justify-end gap-1">
           {canEditPrivileges && (
-            <IconButton aria-label="Права" onClick={() => onEdit(row.original)}>
+            <IconButton
+              aria-label="Права"
+              onClick={() => vm.current.edit(row.original)}
+            >
               <ShieldCheck size={15} />
             </IconButton>
           )}
@@ -111,7 +115,7 @@ const createColumns = ({
             <IconButton
               aria-label="Удалить"
               variant="destructive"
-              onClick={() => onDelete(row.original)}
+              onClick={() => void vm.current.remove(row.original)}
             >
               <Trash2 size={15} />
             </IconButton>
@@ -127,18 +131,13 @@ const header = (
 
 const AdminUsersContent: FC = observer(() => {
   const vm = useAdminUsersVM();
-  const { users } = vm;
+  const { users, canEditPrivileges, canDelete, currentUserId } = vm;
+  const vmRef = useLatestRef(vm);
+  // Права и текущий пользователь меняют только колонку действий.
   const columns = useMemo(
     () =>
-      createColumns({
-        canEditPrivileges: vm.canEditPrivileges,
-        canDelete: vm.canDelete,
-        currentUserId: vm.currentUserId,
-        onEdit: vm.edit,
-        onDelete: vm.remove,
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [vm.canEditPrivileges, vm.canDelete, vm.currentUserId],
+      createColumns({ vm: vmRef, canEditPrivileges, canDelete, currentUserId }),
+    [vmRef, canEditPrivileges, canDelete, currentUserId],
   );
 
   return (
@@ -186,10 +185,17 @@ const AdminUsersContent: FC = observer(() => {
   );
 });
 
-export const AdminUsersPage: FC = () => (
-  <PageLayout header={header} fill>
-    <PermissionGate permission={ADMIN_PERMISSIONS.USER_VIEW}>
-      <AdminUsersContent />
-    </PermissionGate>
-  </PageLayout>
-);
+export const AdminUsersPage: FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <PageLayout header={header} fill>
+      <PermissionGate
+        permission={ADMIN_PERMISSIONS.USER_VIEW}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
+        <AdminUsersContent />
+      </PermissionGate>
+    </PageLayout>
+  );
+};

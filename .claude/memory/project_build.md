@@ -22,7 +22,7 @@ type: project
 yarn dev                 # vite — dev server :3000
 yarn build               # vite build → dist/ (--mode <mode> — другой .env.[mode])
 yarn preview             # vite preview (алиас — yarn prod)
-yarn verify              # lint + typecheck + test + build
+yarn verify              # lint + format:check + typecheck + test:coverage + build
 yarn test / test:dev / test:coverage
 yarn typecheck           # tsc --noEmit && tsc --noEmit -p tsconfig.node.json (vite/vitest/orval конфиги)
 yarn lint / lint:fix     # eslint --cache (кэш — .eslintcache, в .gitignore)
@@ -42,7 +42,9 @@ yarn check-packages-updates
 - `vite.config.ts` читает env через `loadEnv(mode, root, "VITE_")` (`.env.[mode].local`
   поверх `.env.[mode]`); без `VITE_BASE_URL` / `VITE_PORT` — `DEFAULT_API_URL`
   (`http://localhost:8181`) и `DEFAULT_PORT` (3000). Экспортирует `alias` и `define` —
-  их берёт `vitest.config.ts` (без mergeConfig, только плагин react).
+  их берёт `vitest.config.ts` (без mergeConfig, только плагин react). `vite build` в режиме
+  ≠ development без `VITE_BASE_URL` / `VITE_SOCKET_BASE_URL` / `VITE_APP_NAME` падает сразу
+  (`assertBuildEnv`) — свежему клону без `.env.production` `yarn build`/`verify` не пройти.
 - Типы env и `__APP_*__` — `src/vite-env.d.ts`.
 - `src/shared/config/env.ts`: в dev (`import.meta.env.DEV`) `BASE_URL` и `SOCKET_BASE_URL` =
   `window.location.origin` — dev-сервер проксирует `/api` → `VITE_BASE_URL` и `/socket.io`
@@ -60,10 +62,13 @@ yarn check-packages-updates
 
 `Dockerfile`: deps (`yarn install --ignore-scripts` — `prepare` = `lefthook install`, без git
 в образе падает) → builder (`ARG APP_VERSION/APP_COMMIT/APP_BUILT_AT`, `ARG BUILD_MODE=production`
-→ `yarn build --mode $BUILD_MODE`, `VITE_*` из `.env.$BUILD_MODE`) → `nginx:1.27-alpine` с
-`nginx.conf` (SPA-fallback, `/assets` immutable, `index.html` no-cache, gzip). docker-compose:
+→ `yarn build --mode $BUILD_MODE`, `VITE_*` из `.env.$BUILD_MODE`) →
+`nginxinc/nginx-unprivileged:1.27-alpine` (без root, слушает **8080**) с `nginx.conf`
+(SPA-fallback, `/assets` immutable, `index.html` no-cache, gzip, `server_tokens off`;
+nosniff / X-Frame-Options DENY / Referrer-Policy — `always` и повторены в каждом `location`:
+`add_header` в location отменяет серверные). docker-compose:
 build-arg `BUILD_MODE` (по умолчанию production), образ `react-vite:${TAG:-latest}`, порт
-`${APP_PORT:-4173}:80`. `.dockerignore` пропускает `.env.production` и `.env.docker`,
+`${APP_PORT:-4173}:8080`. `.dockerignore` пропускает `.env.production` и `.env.docker`,
 режет прочие env, `*.md`, coverage, .tanstack, .github.
 
 `Makefile` (`make help` — шапка файла до `LOCAL_GOALS`):
@@ -77,12 +82,13 @@ build-arg `BUILD_MODE` (по умолчанию production), образ `react-v
 
 ## CI (.github/workflows/)
 
-- `ci.yml` — push/PR в `main`: `verify` (install `--ignore-scripts`, lint, typecheck, test,
+- `ci.yml` — push/PR в `main`: `verify` (install `--ignore-scripts`, lint, format:check,
+  typecheck, test:coverage — пороги холдеров проверяются только с `--coverage`,
   сборка `--mode docker` с `.env.docker.example`); затем для push в `main` при заданной
   переменной `DEPLOY_ENV` — `deploy` (`uses: deploy.yml`, `secrets: inherit`).
 - `deploy.yml` — `workflow_call` или вручную, только с `main`: checkout `fetch-depth: 0` →
-  `.env.deploy` из `DEPLOY_ENV` (CRLF срезается) → ssh-agent (`SSH_PRIVATE_KEY`), ssh-keyscan с
-  повторами → `make sync` (3 попытки) → секрет `PRODUCTION_ENV` в `ENV_FILE` и `make env` (без
+  `.env.deploy` из `DEPLOY_ENV` (CRLF срезается) → ssh-agent (`SSH_PRIVATE_KEY`), known_hosts из
+  секрета `SSH_KNOWN_HOSTS`, без него — ssh-keyscan с повторами и `::warning::` (TOFU) → `make sync` (3 попытки) → секрет `PRODUCTION_ENV` в `ENV_FILE` и `make env` (без
   секрета — файл на хосте) → `make build up`.
 
 ## Версия сборки
@@ -98,3 +104,6 @@ build args docker-compose.yml → `ARG` в Dockerfile.
   `@shared/ui/...` изнутри сегмента — ошибка boundaries (self-alias import).
 - `no-console` — error; исключения (ErrorBoundary, dev-предупреждения холдеров) —
   `eslint-disable-next-line no-console -- <причина>`.
+- `src/index.tsx`: `vite:preloadError` (старые чанки 404 после деплоя) → `preventDefault` +
+  `location.reload()`; защита от цикла — время перезагрузки в sessionStorage
+  (`app:preload-reload-at`, окно 10 с), без sessionStorage — без перезагрузки.

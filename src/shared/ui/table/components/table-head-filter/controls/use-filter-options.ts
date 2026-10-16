@@ -21,6 +21,12 @@ const fetchNothing = async (): Promise<ColumnFilterOption[]> => EMPTY_OPTIONS;
 
 const identity = (option: ColumnFilterOption): SelectOption<string> => option;
 
+/** Текстовая форма подписи для поиска и триггера, когда подпись — строка или число. */
+const toTextLabel = (label: ColumnFilterOption["label"]): string | undefined =>
+  typeof label === "string" || typeof label === "number"
+    ? String(label)
+    : undefined;
+
 /** Источник опций для select/multiselect-фильтров: статический список или async-поиск. */
 export const useFilterOptions = ({
   column,
@@ -37,6 +43,7 @@ export const useFilterOptions = ({
 
     return source.map(option => ({
       ...option,
+      textLabel: toTextLabel(option.label),
       label: createElement(FilterOptionLabel, {
         label: option.label,
         count: uniqueValues.get(option.value) ?? 0,

@@ -1,4 +1,4 @@
-import { Maybe } from "@shared/lib/di/types";
+import { Maybe } from "@shared/lib/di";
 import { formatter } from "@shared/lib/utils";
 import { computed, makeObservable } from "mobx";
 

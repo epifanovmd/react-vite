@@ -10,8 +10,9 @@ export interface IDataModel<TData> {
 }
 
 /**
- * Модель поверх DTO. Сам DTO не копируется и не оборачивается: `_data` —
- * `observable.ref`, реакция идёт на замену объекта целиком. Геттеры
+ * Модель поверх DTO. Принимает DTO или функцию, его возвращающую
+ * (`LambdaValue`); DTO не копируется и не оборачивается. `data` — computed:
+ * с функцией модель следует за источником без пересоздания. Геттеры
  * наследников помечаются `computed` явно в их `makeObservable`.
  */
 export class DataModelBase<TData> implements IDataModel<TData> {

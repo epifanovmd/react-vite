@@ -15,6 +15,8 @@ import { AuthStatus, IAuthStore } from "./types";
 
 const AuthStatusModel = createEnumModelBase<typeof AuthStatus>(AuthStatus);
 
+const UNKNOWN_ERROR = "Неизвестная ошибка";
+
 /** Стор аутентификации и сессии: состояние, переходы и вызовы auth-эндпоинтов API. */
 @injectable()
 class AuthStore implements IAuthStore {
@@ -33,6 +35,7 @@ class AuthStore implements IAuthStore {
 
     // При форсированном завершении сессии (refresh не удался) — signOut
     this._session.onSessionExpired(() => this.signOut());
+    this._session.onTokenChange(this._onTokenChange);
   }
 
   get error() {
@@ -75,7 +78,7 @@ class AuthStore implements IAuthStore {
     }
 
     if (!res.data) {
-      this.verifyError = "Unknown error";
+      this.verifyError = UNKNOWN_ERROR;
       this._setStatus(AuthStatus.Unauthenticated);
 
       return;
@@ -114,7 +117,7 @@ class AuthStore implements IAuthStore {
     }
 
     if (!res.data) {
-      this.verifyError = "Unknown error";
+      this.verifyError = UNKNOWN_ERROR;
       this._setStatus(AuthStatus.Unauthenticated);
 
       return;
@@ -130,10 +133,12 @@ class AuthStore implements IAuthStore {
 
   async signUp(params: TSignUpRequestDto) {
     this._setStatus(AuthStatus.Loading);
+    this.verifyError = undefined;
 
     const res = await this._api.signUp(params);
 
     if (res.error || !res.data) {
+      this.verifyError = res.error?.message ?? UNKNOWN_ERROR;
       this._setStatus(AuthStatus.Unauthenticated);
 
       return;
@@ -160,12 +165,30 @@ class AuthStore implements IAuthStore {
     this._setStatus(ok ? AuthStatus.Authenticated : AuthStatus.Unauthenticated);
   }
 
+  /** Выход пользователя: закрыть сессию на сервере (ошибка не мешает), затем локально. */
+  async logout() {
+    await this._api.signOut({ notifyErrors: false });
+    this.signOut();
+  }
+
+  /** Локальный выход без запроса к серверу — для принудительных путей. */
   signOut() {
     this._session.clear();
     this.twoFactorToken = null;
     this.twoFactorHint = undefined;
     this.verifyError = undefined;
     this._setStatus(AuthStatus.Unauthenticated);
+  }
+
+  /** Токен пришёл вне вызовов стора (повтор refresh, другая вкладка) — сессия есть. */
+  private _onTokenChange(accessToken: string) {
+    if (
+      accessToken &&
+      this.status === AuthStatus.Unauthenticated &&
+      !this.isTwoFactorRequired
+    ) {
+      this._setStatus(AuthStatus.Authenticated);
+    }
   }
 
   private _setStatus(status: AuthStatus) {

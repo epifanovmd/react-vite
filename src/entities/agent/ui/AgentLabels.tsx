@@ -1,4 +1,4 @@
-import { cn } from "@shared/lib/utils/cn";
+import { cn } from "@shared/lib/utils";
 import { CodeChip } from "@shared/ui";
 import { FC } from "react";
 

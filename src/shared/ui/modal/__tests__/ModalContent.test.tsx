@@ -121,6 +121,47 @@ describe("ModalContent", () => {
     expect(onConfirmError).toHaveBeenCalledWith(error);
     expect(onOpenChange).not.toHaveBeenCalled();
   });
+  it("пока идёт подтверждение, крестик, ESC и клик по оверлею не закрывают окно", async () => {
+    const onCancel = vi.fn();
+    const onOpenChange = vi.fn();
+    let resolve: () => void = () => undefined;
+
+    render(
+      <Modal open onOpenChange={onOpenChange}>
+        <Modal.Content
+          title="Удалить?"
+          onCancel={onCancel}
+          onConfirm={() =>
+            new Promise<void>(r => {
+              resolve = r;
+            })
+          }
+        />
+      </Modal>,
+    );
+
+    await flushOutsideListeners();
+    fireEvent.click(screen.getByRole("button", { name: "Подтвердить" }));
+
+    const close = screen.getByRole("button", { name: "Закрыть" });
+
+    expect(close).toBeDisabled();
+    fireEvent.click(close);
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: "Escape",
+    });
+    fireEvent.pointerDown(document.body);
+
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolve();
+    });
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(onCancel).not.toHaveBeenCalled();
+  });
 });
 
 describe("ModalContent layout", () => {

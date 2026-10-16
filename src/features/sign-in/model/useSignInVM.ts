@@ -1,16 +1,17 @@
 import { IAuthStore } from "@entities/auth";
 import { useZodForm } from "@shared/ui";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { signInFormValidationSchema, TSignInForm } from "./validation";
 
 export const useSignInVM = (onSuccess: () => void) => {
   const authStore = IAuthStore.useInstance();
+  const [twoFactorPassword, setTwoFactorPassword] = useState("");
 
   const form = useZodForm(signInFormValidationSchema, {
     defaultValues: {
-      login: "epifanovmd@gmail.com",
-      password: "Epifan123",
+      login: "",
+      password: "",
     },
   });
 
@@ -25,8 +26,20 @@ export const useSignInVM = (onSuccess: () => void) => {
     [onSuccess, authStore],
   );
 
+  /** Подтверждает второй фактор отдельным паролем; при успехе — `onSuccess`. */
+  const verifyTwoFactor = useCallback(async () => {
+    await authStore.verify2FA(twoFactorPassword);
+
+    if (authStore.isAuthenticated) {
+      onSuccess();
+    }
+  }, [onSuccess, authStore, twoFactorPassword]);
+
   return {
     form,
     handleLogin,
+    twoFactorPassword,
+    setTwoFactorPassword,
+    verifyTwoFactor,
   };
 };

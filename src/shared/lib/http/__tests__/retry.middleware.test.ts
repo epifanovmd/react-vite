@@ -126,4 +126,31 @@ describe("retry", () => {
     expect(res.data).toBe("ok");
     expect(delays).toEqual([0, 1]);
   });
+
+  it("пауза перед повтором снимает слушатель отмены после таймера", async () => {
+    let signal: AbortSignal | undefined;
+    let add: ReturnType<typeof vi.spyOn> | undefined;
+    let remove: ReturnType<typeof vi.spyOn> | undefined;
+    let calls = 0;
+    const transport = createFakeTransport((_, s) => {
+      calls += 1;
+      if (calls === 1) {
+        signal = s;
+        add = vi.spyOn(s, "addEventListener");
+        remove = vi.spyOn(s, "removeEventListener");
+        throw new NetworkError();
+      }
+
+      return ok("ok");
+    });
+    const res = await createTestClient(transport, {
+      middlewares: [retry(noDelay)],
+    }).request({ url: "/a" });
+
+    expect(res.data).toBe("ok");
+    expect(signal).toBeDefined();
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(remove?.mock.calls[0][1]).toBe(add?.mock.calls[0][1]);
+  });
 });

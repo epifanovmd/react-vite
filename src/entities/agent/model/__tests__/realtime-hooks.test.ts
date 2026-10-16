@@ -10,7 +10,7 @@ import { makeAgent } from "../../lib/__tests__/agent-fixture";
 import { AgentsStore } from "../store";
 import { IAgentsStore } from "../types";
 import { useAgentLiveMetrics } from "../useAgentLiveMetrics";
-import { useAgentLog } from "../useAgentLog";
+import { ALL_LOG_SOURCES, useAgentLog } from "../useAgentLog";
 import { useAgentsRealtime } from "../useAgentsRealtime";
 
 const point = (at: number): IAgentMetricsPointDto => ({
@@ -110,6 +110,38 @@ describe("useAgentLiveMetrics", () => {
     expect(result.current.points.map(p => p.at)).toEqual([now - 2000, now]);
     expect(result.current.latest?.at).toBe(now);
   });
+
+  it("смена агента без ремаунта: точки прежнего не показываются и не попадают в окно нового", async () => {
+    const now = Date.now();
+    let finish!: (value: unknown) => void;
+
+    api.getAgentMetrics
+      .mockResolvedValueOnce({ data: [point(now - 2000)] })
+      .mockReturnValueOnce(
+        new Promise(resolve => {
+          finish = resolve;
+        }),
+      );
+
+    const { result, rerender } = renderHook(
+      ({ id }) => useAgentLiveMetrics(id),
+      { initialProps: { id: "a-1" } },
+    );
+
+    await waitFor(() => {
+      rerender({ id: "a-1" });
+      expect(result.current.points).toHaveLength(1);
+    });
+
+    rerender({ id: "a-2" });
+    expect(result.current.points).toEqual([]);
+
+    await act(async () => finish({ data: [point(now - 1000)] }));
+    await waitFor(() => {
+      rerender({ id: "a-2" });
+      expect(result.current.points.map(p => p.at)).toEqual([now - 1000]);
+    });
+  });
 });
 
 describe("useAgentLog", () => {
@@ -140,6 +172,27 @@ describe("useAgentLog", () => {
     expect(
       socket.emitted.filter(e => e.event === "agent:log-level").at(-1)?.args[0],
     ).toEqual({ agentId: "a-1", level: "debug" });
+  });
+
+  it("смена агента без ремаунта: записи прежнего сбрасываются", () => {
+    const { result, rerender } = renderHook(({ id }) => useAgentLog(id), {
+      initialProps: { id: "a-1" },
+    });
+
+    act(() =>
+      socket.fire("agent:log", {
+        agentId: "a-1",
+        entries: [{ at: 1, level: "info", source: "kv", msg: "старый" }],
+      }),
+    );
+    act(() => result.current.setSource("kv"));
+    expect(result.current.entries).toHaveLength(1);
+
+    rerender({ id: "a-2" });
+
+    expect(result.current.entries).toEqual([]);
+    expect(result.current.sources).toEqual([]);
+    expect(result.current.source).toBe(ALL_LOG_SOURCES);
   });
 
   it("пока сервер не впустил в комнату, уровень повторяется", () => {

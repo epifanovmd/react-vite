@@ -1,19 +1,16 @@
 import { Alert, type AlertVariant } from "@shared/ui/alert";
-import { Button, type ButtonProps } from "@shared/ui/button";
+import { Button } from "@shared/ui/button";
 import { clsx } from "clsx";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "react-hot-toast";
 import { twMerge } from "tailwind-merge";
 
+import type { ToastAction } from "./notification.types";
+
 export type ToastVariant = "success" | "error" | "warning" | "info" | "loading";
 
-export interface ToastAction {
-  label: string;
-  onClick: () => void;
-  variant?: ButtonProps["variant"];
-  dismiss?: boolean;
-}
+export type { ToastAction } from "./notification.types";
 
 export interface CustomToastProps {
   id: string;

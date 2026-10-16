@@ -20,16 +20,13 @@ export const App = observer(() => {
     return () => {
       disposer(dispose);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialize]);
 
   return (
     <ThemeProvider>
       <TooltipProvider>
         <NotificationProvider>
           <ModalProvider>
-            {/* Роутер — после восстановления сессии: его beforeLoad тогда
-                синхронны, и редирект на вход не попадает в гонку перехода. */}
             {appData.isRestored ? (
               <RouterProvider router={router} />
             ) : (

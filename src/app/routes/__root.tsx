@@ -1,13 +1,11 @@
 import { IAuthStore } from "@entities/auth";
+import { ErrorPage, NotFoundPage } from "@pages/errors";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { memo } from "react";
 
-import { ErrorPage, NotFoundPage } from "../../pages/errors";
-
 export const Route = createRootRoute({
-  // Сессию восстанавливает App до запуска роутера; здесь — только запасной
-  // путь. Без ожидания beforeLoad синхронный: асинхронный давал роутеру
-  // показать экран ожидания, и редирект с `_app` попадал в гонку перехода.
+  // Запасной путь: роутер монтируется после `IAppDataStore.isRestored`, к этому
+  // моменту статус уже не Idle и restore здесь не вызывается.
   beforeLoad: () => {
     const auth = IAuthStore.getInstance();
 

@@ -31,3 +31,18 @@ describe("DateFormatter.formatDiff", () => {
     ).toBe("2 дня назад");
   });
 });
+
+describe("DateFormatter: невалидная дата", () => {
+  it("форматтеры возвращают пустую строку, а не бросают", () => {
+    expect(formatter.format("не дата")).toBe("");
+    expect(formatter.formatDate("не дата")).toBe("");
+    expect(formatter.formatTime("не дата")).toBe("");
+    expect(formatter.formatChartTime("не дата")).toBe("");
+    expect(formatter.formatInputDate("не дата")).toBe("");
+    expect(formatter.formatDiff("не дата")).toBe("");
+  });
+
+  it("isExpired для невалидной даты — false", () => {
+    expect(formatter.isExpired("не дата")).toBe(false);
+  });
+});

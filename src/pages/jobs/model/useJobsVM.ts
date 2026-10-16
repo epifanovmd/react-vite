@@ -27,10 +27,10 @@ export const useJobsVM = (agentId: string | null = null) => {
   const canViewAgents = userStore.can(AGENT_PERMISSIONS.VIEW);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // Стор — singleton: эффект срабатывает один раз при открытии.
   useEffect(() => {
-    jobs.load().then();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void jobs.load();
+  }, [jobs]);
 
   // Имена исполнителей — из списка агентов (только с правом на агентов).
   useEffect(() => {

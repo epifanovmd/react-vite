@@ -4,7 +4,7 @@ import { type IRoleDto, KnownRole } from "@shared/api/gen/main/model";
 import { pluralize } from "@shared/lib/utils";
 import { Button, Card, IconButton } from "@shared/ui";
 import { Trash2 } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 interface RolePermissionsCardProps {
   role: IRoleDto;
@@ -18,6 +18,9 @@ interface RolePermissionsCardProps {
 }
 
 const namesOf = (role: IRoleDto) => role.permissions.map(p => p.name);
+
+/** Отпечаток набора прав: не зависит от порядка и от пересоздания объекта роли. */
+const keyOf = (names: string[]) => [...names].sort().join("\n");
 
 /** Встроенные роли: на них опирается сервер, удалять их нельзя. */
 const SYSTEM_ROLES = new Set<string>(Object.values(KnownRole));
@@ -36,9 +39,16 @@ export const RolePermissionsCard: FC<RolePermissionsCardProps> = ({
   const [selected, setSelected] = useState<string[]>(() => namesOf(role));
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => setSelected(namesOf(role)), [role]);
-
   const saved = namesOf(role);
+  const savedKey = keyOf(saved);
+  const [syncedKey, setSyncedKey] = useState(savedKey);
+
+  // Правки сбрасываются только при смене набора прав роли, а не её объекта.
+  if (syncedKey !== savedKey) {
+    setSyncedKey(savedKey);
+    setSelected(saved);
+  }
+
   const dirty =
     selected.length !== saved.length || selected.some(p => !saved.includes(p));
 

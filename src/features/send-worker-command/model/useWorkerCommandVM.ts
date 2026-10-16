@@ -135,6 +135,17 @@ export const useWorkerCommandVM = (agent: AgentDto) => {
     return "value" in parsed ? { value: parsed.value } : null;
   };
 
+  /** Ждёт итог команды в фоне: отправка формы его не ждёт. */
+  const track = (queued: AgentCommandDto) => {
+    const abort = new AbortController();
+
+    aborts.current.add(abort);
+    void waitAgentCommand(api, queued, abort.signal).then(done => {
+      aborts.current.delete(abort);
+      if (!abort.signal.aborted) put(done);
+    });
+  };
+
   const submit = async (values: TWorkerCommandForm) => {
     const args = argsOf(values);
 
@@ -160,13 +171,7 @@ export const useWorkerCommandVM = (agent: AgentDto) => {
     }
 
     put(res.data);
-    const abort = new AbortController();
-
-    aborts.current.add(abort);
-    const done = await waitAgentCommand(api, res.data, abort.signal);
-
-    aborts.current.delete(abort);
-    if (!abort.signal.aborted) put(done);
+    track(res.data);
   };
 
   const cancel = async (target: AgentCommandDto) => {

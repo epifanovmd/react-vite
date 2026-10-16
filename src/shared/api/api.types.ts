@@ -1,5 +1,5 @@
 import type { ITokenSource } from "@shared/lib/http";
-import type { INotificationService } from "@shared/lib/notifications/notification.types";
+import type { INotificationService } from "@shared/lib/notifications";
 
 /** Общий вход фабрик HTTP-клиентов; стек middleware каждый выбирает сам. */
 export interface ApiClientDeps {

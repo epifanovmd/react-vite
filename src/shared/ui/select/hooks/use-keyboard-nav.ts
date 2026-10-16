@@ -16,7 +16,8 @@ export interface UseKeyboardNavOptions {
   /** Индекс подсветки после сброса по `resetKey` (по умолчанию -1). */
   resetIndex?: number;
   /** Прокрутка к подсвеченному с клавиатуры пункту; по умолчанию —
-   *  `scrollIntoView` n-го `[role="option"]` внутри `listRef`. */
+   *  `scrollIntoView` пункта с `data-nav-index` внутри `listRef`, а без
+   *  разметки — n-го `[role="option"]` (верно только для плоского списка). */
   scrollToIndex?: (index: number) => void;
 }
 
@@ -33,6 +34,14 @@ const OPEN_KEYS = new Set(["ArrowDown", "ArrowUp", "Enter", " "]);
 
 const isPrintableKey = (e: React.KeyboardEvent): boolean =>
   e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+/** Пункт по навигационному индексу: `data-nav-index`, иначе n-й `[role="option"]`. */
+const findOptionElement = (
+  list: HTMLElement | null,
+  index: number,
+): HTMLElement | undefined =>
+  list?.querySelector<HTMLElement>(`[data-nav-index="${index}"]`) ??
+  list?.querySelectorAll<HTMLElement>('[role="option"]')[index];
 
 /** Ближайший не-disabled индекс от `from` в направлении `step`; -1 если нет. */
 const findEnabled = (
@@ -187,10 +196,7 @@ export const useKeyboardNav = ({
       return;
     }
 
-    const item =
-      listRef.current?.querySelectorAll<HTMLElement>('[role="option"]')[
-        focusedIndex
-      ];
+    const item = findOptionElement(listRef.current, focusedIndex);
 
     item?.scrollIntoView?.({ block: "nearest" });
   }, [focusedIndex, latest]);

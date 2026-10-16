@@ -7,6 +7,7 @@ import {
   agentVersion,
   agentWorkers,
   alertKey,
+  commandResultVersion,
   isAgentLive,
   onlineAgentFirst,
   workerOf,
@@ -90,5 +91,15 @@ describe("agent lib", () => {
       }),
     ).toBe("a/configFailed/echo/s");
     expect(alertKey({ agentId: "a", kind: "offline" })).toBe("a/offline//");
+  });
+});
+
+describe("commandResultVersion", () => {
+  it("версия из итога команды; не строка или нет поля — null", () => {
+    expect(commandResultVersion({ version: "1.2.0" })).toBe("1.2.0");
+    expect(commandResultVersion({ version: 1 })).toBeNull();
+    expect(commandResultVersion({})).toBeNull();
+    expect(commandResultVersion(null)).toBeNull();
+    expect(commandResultVersion("1.2.0")).toBeNull();
   });
 });

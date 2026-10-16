@@ -1,3 +1,6 @@
+import { isValid } from "date-fns";
+import { useEffect, useRef } from "react";
+
 import { CalendarLayout } from "./CalendarLayout";
 import { useCalendarNavigation, useSingleCalendarDays } from "./hooks";
 import type { CalendarLocaleProps, DateBoundsProps } from "./types";
@@ -7,7 +10,10 @@ export interface CalendarProps extends CalendarLocaleProps, DateBoundsProps {
   selected?: Date;
   onSelect?: (date: Date) => void;
   onDateHover?: (date: Date | undefined) => void;
-  /** Стартовый месяц/год (по умолчанию — месяц `selected` или текущий). */
+  /**
+   * Стартовый месяц/год (по умолчанию — месяц `selected` или текущий).
+   * Дальше видимый месяц следует за сменой `selected`.
+   */
   defaultMonth?: number;
   defaultYear?: number;
   className?: string;
@@ -35,6 +41,17 @@ export const Calendar = ({
     minDate,
     maxDate,
   });
+
+  const { showDate } = nav;
+  const selectedTime =
+    selected && isValid(selected) ? selected.getTime() : undefined;
+  const prevSelectedTime = useRef(selectedTime);
+
+  useEffect(() => {
+    if (prevSelectedTime.current === selectedTime) return;
+    prevSelectedTime.current = selectedTime;
+    if (selectedTime !== undefined) showDate(new Date(selectedTime));
+  }, [selectedTime, showDate]);
 
   const days = useSingleCalendarDays({
     selected,

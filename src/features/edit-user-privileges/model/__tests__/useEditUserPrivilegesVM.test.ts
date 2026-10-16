@@ -37,6 +37,24 @@ afterEach(() => {
 });
 
 describe("useEditUserPrivilegesVM", () => {
+  it("без пользователя сохранение не уходит и успехом не считается", async () => {
+    const onSaved = vi.fn();
+    const toast = iocContainer.get<{ success: () => void }>(
+      INotificationService.Tid,
+    );
+    const { result } = renderHook(() =>
+      useEditUserPrivilegesVM({ user: null, onSaved }),
+    );
+
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(api.setPrivileges).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
   it("сохраняет права пользователя, открытого после первого рендера", async () => {
     const onSaved = vi.fn();
     const { result, rerender } = renderHook(

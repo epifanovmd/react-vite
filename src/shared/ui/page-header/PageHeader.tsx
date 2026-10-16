@@ -1,7 +1,7 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-import { PAGE_CONTAINER_CLASS } from "../page-layout/page-container";
+import { PAGE_CONTAINER_CLASS } from "../page-layout";
 
 export type PageHeaderHeading = "h1" | "h2" | "h3";
 

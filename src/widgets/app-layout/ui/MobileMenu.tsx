@@ -7,13 +7,14 @@ import { User, X } from "lucide-react";
 import { NavGroup } from "../model/constants";
 import { AppLogo } from "./AppLogo";
 import { HeaderNavItem } from "./HeaderNavItem";
+import { ProfileAvatar } from "./ProfileAvatar";
 
 interface MobileMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   visibleGroups: NavGroup[];
   displayName: string;
-  initials: string;
+  avatarUrl?: string;
   subtitle?: string;
 }
 
@@ -22,7 +23,7 @@ export const MobileMenu = ({
   onOpenChange,
   visibleGroups,
   displayName,
-  initials,
+  avatarUrl,
   subtitle,
 }: MobileMenuProps) => {
   const close = () => onOpenChange(false);
@@ -70,9 +71,7 @@ export const MobileMenu = ({
             onClick={close}
             className="flex items-center gap-2.5 rounded-lg p-2 transition-colors hover:bg-accent data-[status=active]:bg-accent"
           >
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand/70 text-xs font-semibold text-brand-foreground ring-1 ring-inset ring-white/15">
-              {initials}
-            </div>
+            <ProfileAvatar name={displayName} src={avatarUrl} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold text-foreground">
                 {displayName}

@@ -2,7 +2,7 @@ import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
-import { DIALOG_OVERLAY_CLASS } from "../../foundation/dialog-parts";
+import { DIALOG_OVERLAY_CLASS } from "../../foundation";
 
 export type DrawerOverlayProps = React.ComponentPropsWithoutRef<
   typeof DrawerPrimitive.Overlay

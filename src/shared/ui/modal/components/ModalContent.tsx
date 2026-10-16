@@ -43,7 +43,8 @@ export interface ModalContentProps
 
   /**
    * Режим подтверждения: пока промис не завершится, кнопка показывает
-   * ожидание; после успеха окно закрывается. Если промис отклонён, окно
+   * ожидание, а крестик, ESC и клик по оверлею окно не закрывают; после
+   * успеха окно закрывается. Если промис отклонён, окно
    * остаётся открытым, ошибка уходит в `onConfirmError`, а без него —
    * пробрасывается дальше.
    */
@@ -130,6 +131,7 @@ const ModalContent = React.forwardRef<
     };
 
     const handleDismiss = () => {
+      if (confirmLoading) return;
       if (isConfirmMode) onCancel?.();
       setOpen(false);
     };
@@ -137,7 +139,7 @@ const ModalContent = React.forwardRef<
     const handleEscapeKeyDown = (event: KeyboardEvent) => {
       onEscapeKeyDown?.(event);
 
-      if (disableInteractOutside) {
+      if (disableInteractOutside || confirmLoading) {
         event.preventDefault();
 
         return;
@@ -150,7 +152,7 @@ const ModalContent = React.forwardRef<
       event => {
         onPointerDownOutside?.(event);
 
-        if (disableInteractOutside) {
+        if (disableInteractOutside || confirmLoading) {
           event.preventDefault();
 
           return;
@@ -224,6 +226,7 @@ const ModalContent = React.forwardRef<
                 CLOSE_BUTTON_CLASS,
                 fullScreenOnMobile && MODAL_CLOSE_FULL_SCREEN_MOBILE_CLASS,
               )}
+              disabled={confirmLoading}
               onClick={handleDismiss}
             >
               <X size={14} aria-hidden />

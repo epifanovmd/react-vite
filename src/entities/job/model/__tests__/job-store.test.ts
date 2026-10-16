@@ -81,4 +81,38 @@ describe("JobStore", () => {
     expect(getJob).toHaveBeenCalledWith("j-1");
     expect(store.byId("j-1")?.cancelRequested).toBe(true);
   });
+
+  it("fetch отдаёт ошибку запроса, а не только «нет задачи»", async () => {
+    const error = { message: "Сервер недоступен", status: 503 };
+    const store = createStore({
+      getJob: vi.fn().mockResolvedValue({ error }),
+    } as Partial<IMainApi>);
+
+    const res = await store.fetch("j-1");
+
+    expect(res).toEqual({ data: null, error });
+  });
+
+  it("fetch отдаёт задачу и кладёт её в список", async () => {
+    const store = createStore({
+      getJob: vi.fn().mockResolvedValue({ data: job("j-1") }),
+    } as Partial<IMainApi>);
+
+    const res = await store.fetch("j-1");
+
+    expect(res).toEqual({ data: job("j-1"), error: null });
+    expect(store.byId("j-1")?.id).toBe("j-1");
+  });
+
+  it("isLoaded — список запрашивали; reset возвращает в исходное", async () => {
+    const store = createStore({
+      listJobs: vi.fn().mockResolvedValue({ data: { items: [] } }),
+    } as Partial<IMainApi>);
+
+    expect(store.isLoaded).toBe(false);
+    await store.load();
+    expect(store.isLoaded).toBe(true);
+    store.reset();
+    expect(store.isLoaded).toBe(false);
+  });
 });

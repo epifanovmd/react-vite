@@ -2,7 +2,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-import { DIALOG_TITLE_CLASS } from "../../foundation/dialog-parts";
+import { DIALOG_TITLE_CLASS } from "../../foundation";
 
 export type ModalTitleProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Title

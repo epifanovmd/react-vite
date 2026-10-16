@@ -2,7 +2,7 @@ import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
-import { DIALOG_DESCRIPTION_CLASS } from "../../foundation/dialog-parts";
+import { DIALOG_DESCRIPTION_CLASS } from "../../foundation";
 
 export type DrawerDescriptionProps = React.ComponentPropsWithoutRef<
   typeof DrawerPrimitive.Description

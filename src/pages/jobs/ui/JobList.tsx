@@ -8,6 +8,7 @@ import {
   JobStatusBadge,
 } from "@entities/job";
 import type { JobRunDto } from "@shared/api/gen/main/model";
+import type { IHolderError } from "@shared/lib/holders";
 import { formatBytes, formatter } from "@shared/lib/utils";
 import { Button, Collapse, Empty, Progress, Skeleton } from "@shared/ui";
 import { Link } from "@tanstack/react-router";
@@ -19,6 +20,8 @@ import type { IJobAgentRef } from "../model/useJobsVM";
 interface JobListProps {
   jobs: JobRunDto[];
   isLoading: boolean;
+  /** Ошибка загрузки списка: показывается вместо пустого состояния. */
+  error?: IHolderError | null;
   /** Задача, по которой идёт отмена. */
   busyId: string | null;
   /** Агент-исполнитель; `null` — нет агента или нет права. */
@@ -168,6 +171,7 @@ const JobRow: FC<JobRowProps> = ({ job, busy, agent, onCancel }) => {
 export const JobList: FC<JobListProps> = ({
   jobs,
   isLoading,
+  error,
   busyId,
   agentOf,
   onCancel,
@@ -175,6 +179,8 @@ export const JobList: FC<JobListProps> = ({
 }) => {
   if (isLoading && jobs.length === 0)
     return <Skeleton className="h-24 w-full" />;
+  if (error && jobs.length === 0)
+    return <Empty size="sm" icon="error" title={error.message} />;
   if (jobs.length === 0) {
     return (
       <Empty

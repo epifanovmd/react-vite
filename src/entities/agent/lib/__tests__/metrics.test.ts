@@ -2,6 +2,7 @@ import type { IAgentMetricsPointDto } from "@shared/api/gen/main/model";
 import { describe, expect, it } from "vitest";
 
 import {
+  freshestMetricsPoint,
   hasHostMetric,
   hostMetrics,
   hostPoints,
@@ -95,5 +96,19 @@ describe("agent metrics", () => {
     expect(readMetric(data, "name")).toBe("x");
     expect(readMetric(data, "dump")).toBeUndefined();
     expect(metricFields([1, 2])).toEqual([]);
+  });
+});
+
+describe("freshestMetricsPoint", () => {
+  it("живая точка, если не старше снимка; иначе снимок", () => {
+    const old = point(1);
+    const fresh = point(2);
+
+    expect(freshestMetricsPoint(fresh, old)).toBe(fresh);
+    expect(freshestMetricsPoint(old, fresh)).toBe(fresh);
+    expect(freshestMetricsPoint(fresh, fresh)).toBe(fresh);
+    expect(freshestMetricsPoint(undefined, old)).toBe(old);
+    expect(freshestMetricsPoint(fresh, undefined)).toBe(fresh);
+    expect(freshestMetricsPoint(undefined, undefined)).toBeUndefined();
   });
 });

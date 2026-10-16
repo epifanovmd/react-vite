@@ -115,6 +115,16 @@ describe("HomePage", () => {
     expect(screen.getByText("нет связи")).toBeInTheDocument();
   });
 
+  it("ошибка загрузки узлов — показывается ошибка, а не «Узлов пока нет»", async () => {
+    api.getNodes.mockResolvedValueOnce({
+      error: { message: "Сервер недоступен" },
+    } as never);
+    renderPage();
+
+    expect(await screen.findByText("Сервер недоступен")).toBeInTheDocument();
+    expect(screen.queryByText("Узлов пока нет")).toBeNull();
+  });
+
   it("без права на узлы — в профиль", () => {
     permissions.length = 0;
     renderPage();

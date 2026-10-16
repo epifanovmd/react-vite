@@ -46,6 +46,7 @@ const SelectListItemInner = ({
     <div
       id={id}
       role="option"
+      data-nav-index={index}
       aria-selected={selected}
       aria-disabled={disabled || undefined}
       aria-setsize={setSize}

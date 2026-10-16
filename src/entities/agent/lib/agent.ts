@@ -62,3 +62,12 @@ export const alertKey = (alert: {
   key?: string;
 }): string =>
   [alert.agentId, alert.kind, alert.worker ?? "", alert.key ?? ""].join("/");
+
+/** Версия из итога команды агенту (`{ version }`); нет — `null`. */
+export const commandResultVersion = (result: unknown): string | null =>
+  typeof result === "object" &&
+  result !== null &&
+  "version" in result &&
+  typeof result.version === "string"
+    ? result.version
+    : null;

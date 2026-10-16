@@ -3,6 +3,16 @@ import type { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 import type { ColumnFilterConfig } from "../../../table.types";
 import { getColumnDefId } from "../column-id";
 
+/** Листовые колонки: группы раскрываются рекурсивно. */
+const getLeafColumnDefs = (
+  columns: ColumnDef<any, any>[],
+): ColumnDef<any, any>[] =>
+  columns.flatMap(column => {
+    const children = (column as { columns?: ColumnDef<any, any>[] }).columns;
+
+    return children ? getLeafColumnDefs(children) : [column];
+  });
+
 const getQueryKey = (column: ColumnDef<any, any>): string | undefined => {
   const filter = column.meta?.filter as ColumnFilterConfig | undefined;
 
@@ -17,7 +27,7 @@ export const toColumnFiltersState = <T>(
 
   const state: ColumnFiltersState = [];
 
-  for (const column of columns) {
+  for (const column of getLeafColumnDefs(columns)) {
     const id = getColumnDefId(column);
     const queryKey = getQueryKey(column);
 
@@ -36,11 +46,12 @@ export const toFilterMap = <T>(
   filters: ColumnFiltersState,
 ): Partial<T> => {
   const map: Record<string, unknown> = {};
+  const leaves = getLeafColumnDefs(columns);
 
   for (const filter of filters) {
     if (filter.value === undefined) continue;
 
-    const column = columns.find(c => getColumnDefId(c) === filter.id);
+    const column = leaves.find(c => getColumnDefId(c) === filter.id);
     const queryKey = (column && getQueryKey(column)) ?? filter.id;
 
     map[queryKey] = filter.value;

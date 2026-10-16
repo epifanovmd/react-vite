@@ -31,7 +31,13 @@ interface SignInFormProps {
 export const SignInForm: FC<SignInFormProps> = observer(
   ({ onSuccess, onForgotPassword, onSignUp }) => {
     const auth = IAuthStore.useInstance();
-    const { form, handleLogin } = useSignInVM(onSuccess);
+    const {
+      form,
+      handleLogin,
+      twoFactorPassword,
+      setTwoFactorPassword,
+      verifyTwoFactor,
+    } = useSignInVM(onSuccess);
     const passkey = usePasskeyAuth(onSuccess);
 
     const passkeyError = passkey.error ?? (auth.error || null);
@@ -82,7 +88,9 @@ export const SignInForm: FC<SignInFormProps> = observer(
           {auth.isTwoFactorRequired ? (
             <TwoFactorPrompt
               hint={auth.twoFactorHint}
-              onVerify={() => auth.verify2FA(form.getValues("password"))}
+              password={twoFactorPassword}
+              onPasswordChange={setTwoFactorPassword}
+              onVerify={verifyTwoFactor}
             />
           ) : (
             <FormSubmit className="w-full" loading={auth.isLoading}>

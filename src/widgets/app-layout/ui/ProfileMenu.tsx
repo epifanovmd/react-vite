@@ -17,7 +17,6 @@ import { ProfileAvatar } from "./ProfileAvatar";
 
 interface ProfileMenuProps {
   displayName: string;
-  initials: string;
   avatarUrl?: string;
   subtitle?: string;
 }
@@ -27,7 +26,6 @@ const SIGN_OUT_CLASS =
 
 export const ProfileMenu: FC<ProfileMenuProps> = ({
   displayName,
-  initials,
   avatarUrl,
   subtitle,
 }) => (
@@ -37,7 +35,7 @@ export const ProfileMenu: FC<ProfileMenuProps> = ({
         type="button"
         className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-accent data-[state=open]:bg-accent"
       >
-        <ProfileAvatar initials={initials} src={avatarUrl} />
+        <ProfileAvatar name={displayName} src={avatarUrl} />
         <span className="hidden max-w-[140px] truncate text-sm font-medium text-foreground sm:block">
           {displayName}
         </span>
@@ -51,7 +49,7 @@ export const ProfileMenu: FC<ProfileMenuProps> = ({
 
     <DropdownMenuContent align="end" className="w-52">
       <DropdownMenuLabel className="flex items-center gap-3 p-2 font-normal">
-        <ProfileAvatar initials={initials} src={avatarUrl} size="md" />
+        <ProfileAvatar name={displayName} src={avatarUrl} size="md" />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">
             {displayName}

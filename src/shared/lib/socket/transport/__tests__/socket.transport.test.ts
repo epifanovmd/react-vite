@@ -349,6 +349,45 @@ describe("SocketTransport", () => {
     expect(connectMock).toHaveBeenCalledTimes(2);
   });
 
+  it("подписки on/onConnect переживают disconnect → connect", async () => {
+    const transport = createTransport();
+    const onEvent = vi.fn();
+    const onConnect = vi.fn();
+
+    transport.initialize();
+    transport.on("job:updated", onEvent);
+    transport.onConnect(onConnect);
+    transport.disconnect();
+
+    const connecting = transport.connect();
+
+    io.accept();
+    await connecting;
+    io.fire("job:updated", { id: 1 });
+
+    expect(onConnect).toHaveBeenCalledTimes(1);
+    expect(onEvent).toHaveBeenCalledWith({ id: 1 });
+  });
+
+  it("отписка владельца снимает обработчик и с будущего сокета", async () => {
+    const transport = createTransport();
+    const onEvent = vi.fn();
+
+    transport.initialize();
+    const off = transport.on("job:updated", onEvent);
+
+    transport.disconnect();
+    off();
+
+    const connecting = transport.connect();
+
+    io.accept();
+    await connecting;
+    io.fire("job:updated", { id: 1 });
+
+    expect(onEvent).not.toHaveBeenCalled();
+  });
+
   it("очередь emit отправляется после подключения", () => {
     const transport = createTransport();
 

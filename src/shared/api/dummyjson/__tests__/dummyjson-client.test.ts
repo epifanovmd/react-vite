@@ -3,7 +3,7 @@ import {
   createFakeTransport,
   ok,
 } from "@shared/lib/http/testing/fake-transport";
-import type { INotificationService } from "@shared/lib/notifications/notification.types";
+import type { INotificationService } from "@shared/lib/notifications";
 
 import { DummyJsonApi } from "../dummyjson.api";
 import {

@@ -1,6 +1,7 @@
 import { AuditEventTable } from "@entities/audit";
 import { ADMIN_PERMISSIONS, PermissionGate } from "@entities/user";
 import { PageHeader, PageLayout, Select } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
@@ -44,10 +45,17 @@ const AdminAuditContent: FC = observer(() => {
   );
 });
 
-export const AdminAuditPage: FC = () => (
-  <PageLayout header={header}>
-    <PermissionGate permission={ADMIN_PERMISSIONS.AUDIT_VIEW}>
-      <AdminAuditContent />
-    </PermissionGate>
-  </PageLayout>
-);
+export const AdminAuditPage: FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <PageLayout header={header}>
+      <PermissionGate
+        permission={ADMIN_PERMISSIONS.AUDIT_VIEW}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
+        <AdminAuditContent />
+      </PermissionGate>
+    </PageLayout>
+  );
+};

@@ -105,6 +105,53 @@ describe("useIssueAgentVM", () => {
     );
   });
 
+  it("пока идёт одна выдача, другие не запускаются", async () => {
+    let finish: (value: { data: Blob }) => void = () => undefined;
+
+    api.issueNodeAgentArchive.mockImplementationOnce(
+      () => new Promise(resolve => (finish = resolve)),
+    );
+
+    const { result } = renderHook(() => useIssueAgentVM({ node }));
+
+    await waitFor(() => expect(result.current.options).not.toBeNull());
+
+    let archiveDone: Promise<void> = Promise.resolve();
+
+    act(() => {
+      archiveDone = result.current.downloadArchive(values);
+    });
+    expect(result.current.busy).toBe("archive");
+
+    await act(() => result.current.createLink(values));
+    await act(() => result.current.createEnv(values));
+    expect(api.issueNodeAgentLink).not.toHaveBeenCalled();
+    expect(api.issueNodeAgentEnv).not.toHaveBeenCalled();
+    expect(result.current.busy).toBe("archive");
+
+    await act(async () => {
+      finish({ data: new Blob(["x"]) });
+      await archiveDone;
+    });
+    expect(result.current.busy).toBeNull();
+
+    await act(() => result.current.createLink(values));
+    expect(api.issueNodeAgentLink).toHaveBeenCalledTimes(1);
+  });
+
+  it("ошибка вариантов установки — тост", async () => {
+    api.getAgentInstallOptions.mockResolvedValueOnce({
+      error: { message: "Нет доступа", status: 403 },
+    } as never);
+
+    const { result } = renderHook(() => useIssueAgentVM({ node }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("Нет доступа"),
+    );
+    expect(result.current.options).toBeNull();
+  });
+
   it("без узла: число регистраций уходит с запросом; ссылка и .env сохраняются", async () => {
     const { result } = renderHook(() => useIssueAgentVM({}));
 

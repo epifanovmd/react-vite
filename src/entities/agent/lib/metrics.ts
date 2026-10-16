@@ -238,6 +238,13 @@ export const hostMetrics = (host: unknown): IAgentHostMetrics | undefined => {
   };
 };
 
+/** Самая свежая точка: живая из комнаты агента или снимок из карточки (`agent.metrics`). */
+export const freshestMetricsPoint = (
+  live: IAgentMetricsPointDto | undefined,
+  snapshot: IAgentMetricsPointDto | undefined,
+): IAgentMetricsPointDto | undefined =>
+  live && live.at >= (snapshot?.at ?? 0) ? live : snapshot;
+
 /** Метрики узла точки; нет — `undefined`. */
 export const pointHost = (
   point: IAgentMetricsPointDto | undefined,

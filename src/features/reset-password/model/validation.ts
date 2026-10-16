@@ -1,8 +1,9 @@
+import { passwordValidation } from "@entities/auth";
 import { refineFormField } from "@shared/lib/validation";
 import { z } from "zod";
 
 const resetPasswordFormBaseSchema = z.object({
-  password: z.string().min(6, "Пароль должен содержать минимум 6 символов"),
+  password: passwordValidation,
   confirmPassword: z.string().min(1, "Подтвердите пароль"),
 });
 

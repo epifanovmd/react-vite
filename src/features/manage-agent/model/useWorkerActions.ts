@@ -1,4 +1,4 @@
-import { IAgentsStore } from "@entities/agent";
+import { commandResultVersion, IAgentsStore } from "@entities/agent";
 import { IMainApi } from "@shared/api";
 import type {
   AgentCommandDto,
@@ -20,13 +20,8 @@ const COMMAND_TYPE: Record<TWorkerAction, string> = {
 const isBusyWorker = (worker: IAgentWorkerDto): boolean =>
   !!worker.health?.busy;
 
-const versionOf = (result: unknown): string | null =>
-  typeof result === "object" &&
-  result !== null &&
-  "version" in result &&
-  typeof result.version === "string"
-    ? result.version
-    : null;
+/** Версия из итога команды — общий хелпер сущности агента. */
+const versionOf = commandResultVersion;
 
 /**
  * Действия с воркером агента: перезапуск и обновление сборкой с сервера —

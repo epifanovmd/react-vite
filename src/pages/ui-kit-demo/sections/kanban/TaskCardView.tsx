@@ -1,4 +1,4 @@
-import { cn } from "@shared/lib/utils/cn";
+import { cn } from "@shared/lib/utils";
 import { Avatar, Badge, type KanbanCardRenderMeta } from "@shared/ui";
 import { GripVertical, Lock } from "lucide-react";
 import type { FC } from "react";

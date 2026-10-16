@@ -154,6 +154,49 @@ describe("useHotkeys", () => {
     expect(onRename).toHaveBeenCalledTimes(1);
   });
 
+  it("target, появившийся после первого рендера, начинает слушать сочетания", () => {
+    const onRename = vi.fn();
+    const Lazy = ({ shown }: { shown: boolean }) => {
+      const ref = React.useRef<HTMLDivElement>(null);
+
+      useHotkeys([["f2", onRename]], { target: ref });
+
+      return shown ? <div ref={ref} tabIndex={0} data-testid="area" /> : null;
+    };
+
+    const { rerender } = render(<Lazy shown={false} />);
+
+    rerender(<Lazy shown />);
+    fireEvent.keyDown(screen.getByTestId("area"), { key: "F2" });
+
+    expect(onRename).toHaveBeenCalledTimes(1);
+  });
+
+  it("смена элемента target переносит подписку на новый элемент", () => {
+    const onRename = vi.fn();
+    const Swap = ({ second }: { second: boolean }) => {
+      const ref = React.useRef<HTMLDivElement>(null);
+
+      useHotkeys([["f2", onRename]], { target: ref });
+
+      return second ? (
+        <section ref={ref} data-testid="second" />
+      ) : (
+        <div ref={ref} data-testid="first" />
+      );
+    };
+
+    const { rerender } = render(<Swap second={false} />);
+    const first = screen.getByTestId("first");
+
+    rerender(<Swap second />);
+    fireEvent.keyDown(first, { key: "F2" });
+    expect(onRename).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(screen.getByTestId("second"), { key: "F2" });
+    expect(onRename).toHaveBeenCalledTimes(1);
+  });
+
   it("не срабатывает во время IME-композиции", () => {
     const onTrigger = vi.fn();
 

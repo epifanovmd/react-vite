@@ -24,6 +24,10 @@ const asError = (err: unknown): Error | DOMException | null =>
 const errorMessage = (err: unknown, fallback: string): string =>
   asError(err)?.message || fallback;
 
+/** Пользователь закрыл системный диалог passkey — не ошибка. */
+const isDialogCanceled = (err: unknown): boolean =>
+  asError(err)?.name === "NotAllowedError";
+
 export const usePasskeyAuth = (onSuccess: () => void) => {
   const storage = IStorageService.useInstance();
   const [support, setSupport] = useState(false);
@@ -70,7 +74,9 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
             return { ok: true };
           }
 
-          const error = errorMessage(err, "Registration cancelled");
+          if (isDialogCanceled(err)) return { ok: false };
+
+          const error = errorMessage(err, "Не удалось создать passkey");
 
           setError(error);
 
@@ -94,13 +100,13 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
           return { ok: true };
         }
 
-        const error = "Passkey registration was not verified by the server";
+        const error = "Сервер не подтвердил passkey";
 
         setError(error);
 
         return { ok: false, error };
       } catch (err: unknown) {
-        const error = errorMessage(err, "Passkey registration failed");
+        const error = errorMessage(err, "Не удалось создать passkey");
 
         setError(error);
 
@@ -117,7 +123,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
     error?: string;
   }> => {
     if (!profileId) {
-      const error = "No passkey registered on this device";
+      const error = "На этом устройстве нет passkey";
 
       setError(error);
 
@@ -135,7 +141,7 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
       if (optionsRes.error) {
         setError(optionsRes.error.message);
 
-        return { ok: true, error: optionsRes.error.message };
+        return { ok: false, error: optionsRes.error.message };
       }
 
       let authResp;
@@ -145,7 +151,9 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
           optionsJSON: optionsRes.data as PublicKeyCredentialRequestOptionsJSON,
         });
       } catch (err: unknown) {
-        const error = errorMessage(err, "Registration cancelled");
+        if (isDialogCanceled(err)) return { ok: false };
+
+        const error = errorMessage(err, "Не удалось войти с passkey");
 
         setError(error);
 
@@ -169,13 +177,13 @@ export const usePasskeyAuth = (onSuccess: () => void) => {
         return { ok: true };
       }
 
-      const error = "Authentication was not verified by the server";
+      const error = "Сервер не подтвердил вход с passkey";
 
       setError(error);
 
       return { ok: false, error };
     } catch (err: unknown) {
-      const error = errorMessage(err, "Passkey authentication failed");
+      const error = errorMessage(err, "Не удалось войти с passkey");
 
       setError(error);
 

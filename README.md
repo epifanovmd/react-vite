@@ -98,15 +98,15 @@ yarn dev            # http://localhost:3000
 
 **Проверки**
 
-| Команда                        | Что делает                                                         |
-| ------------------------------ | ------------------------------------------------------------------ |
-| `yarn verify`                  | всё перед merge: lint, typecheck, тесты и сборка                   |
-| `yarn lint` / `lint:fix`       | ESLint, включая границы слоёв FSD / с автоисправлением             |
-| `yarn format` / `format:check` | Prettier по проекту (исключения — `.prettierignore`, `.gitignore`) |
-| `yarn typecheck`               | проверка типов: приложение и конфиги сборки                        |
-| `yarn test`                    | тесты (Vitest)                                                     |
-| `yarn test:dev`                | тесты в режиме watch                                               |
-| `yarn test:coverage`           | тесты с отчётом покрытия                                           |
+| Команда                        | Что делает                                                          |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `yarn verify`                  | всё перед merge: lint, формат, typecheck, тесты с покрытием, сборка |
+| `yarn lint` / `lint:fix`       | ESLint, включая границы слоёв FSD / с автоисправлением              |
+| `yarn format` / `format:check` | Prettier по проекту (исключения — `.prettierignore`, `.gitignore`)  |
+| `yarn typecheck`               | проверка типов: приложение и конфиги сборки                         |
+| `yarn test`                    | тесты (Vitest)                                                      |
+| `yarn test:dev`                | тесты в режиме watch                                                |
+| `yarn test:coverage`           | тесты с отчётом покрытия                                            |
 
 **Makefile** — Docker и деплой; список целей — `make help`.
 
@@ -155,19 +155,21 @@ MAIN_SWAGGER=http://localhost:8181/api-docs/swagger.json yarn generate
 ### Проверки
 
 ```sh
-yarn verify          # lint + typecheck + test + build
+yarn verify          # lint + format:check + typecheck + test:coverage + build
 yarn test:coverage   # с порогом покрытия холдеров (100%)
 yarn format:check
 ```
 
 Git-хуки (lefthook): на коммит — eslint и prettier по изменённым файлам, на push —
 typecheck и тесты. CI (GitHub Actions, workflow `CI`) на pull request и push в `main` —
-lint, typecheck, тесты и сборка.
+то же, что `yarn verify`.
 
 ### Деплой
 
-`Dockerfile` собирает статику и отдаёт её nginx (`nginx.conf`: SPA-fallback на
-`index.html`, долгий кэш `/assets`).
+`Dockerfile` собирает статику и отдаёт её непривилегированным nginx на порту 8080
+внутри контейнера (`nginx.conf`: SPA-fallback на `index.html`, долгий кэш `/assets`,
+заголовки безопасности). Сборка вне режима development требует `VITE_BASE_URL`,
+`VITE_SOCKET_BASE_URL` и `VITE_APP_NAME`.
 
 Деплой по SSH — исходники на хост (rsync, исключения — `.deployignore`) и сборка там же:
 
@@ -186,6 +188,8 @@ GitHub Actions: после проверок на push в `main` workflow `CI` в
 репозитория `DEPLOY_ENV` — содержимое `.env.deploy` — и секрет `SSH_PRIVATE_KEY`. Адрес
 API для сборки — секрет `PRODUCTION_ENV` (содержимое `.env.production`): кладётся на
 хост при каждом деплое; без него используется файл, уже лежащий на хосте (`make env`).
+Ключ хоста — секрет `SSH_KNOWN_HOSTS` (вывод `ssh-keyscan <хост>`, сверенный с
+отпечатком сервера); без него ключ берётся `ssh-keyscan` при деплое, с предупреждением.
 
 ### Лицензия
 

@@ -98,6 +98,7 @@ export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
               type="submit"
               leftIcon={<Download size={15} />}
               loading={vm.busy === "archive"}
+              disabled={!!vm.busy}
             >
               Скачать архив
             </Button>
@@ -106,6 +107,7 @@ export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
               variant="outline"
               leftIcon={<Link2 size={15} />}
               loading={vm.busy === "link"}
+              disabled={!!vm.busy}
               onClick={() => void vm.form.handleSubmit(vm.createLink)()}
             >
               Ссылка для передачи
@@ -115,6 +117,7 @@ export const AgentIssuePanel: FC<AgentIssuePanelProps> = observer(
               variant="outline"
               leftIcon={<FileText size={15} />}
               loading={vm.busy === "env"}
+              disabled={!!vm.busy}
               onClick={() => void vm.form.handleSubmit(vm.createEnv)()}
             >
               Только .env

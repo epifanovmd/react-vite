@@ -19,7 +19,7 @@ import { INotificationService } from "@shared/lib/notifications";
 import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 import { useNavigate } from "@tanstack/react-router";
 import type { IAgentTabsAccess } from "@widgets/agent-tabs";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * Карточка узла: узел и его агент из сторов (обновляются событиями комнат
@@ -67,7 +67,9 @@ export const useNodeDetailVM = (nodeId: string) => {
   // Задача установки целиком (с журналом); дальше — `job:updated`.
   const job = useEntity<true, string>({
     queryFn: async id => {
-      const data = await jobs.fetch(id);
+      const { data, error } = await jobs.fetch(id);
+
+      if (error) return { error };
 
       return data
         ? { data: true }
@@ -97,13 +99,27 @@ export const useNodeDetailVM = (nodeId: string) => {
     },
     canView,
   );
+  // Узел удалили (не мы) или он стал недоступен — уход к списку.
+  const leaveDeleted = () => {
+    store.remove(nodeId);
+    toast.warning("Узел удалён или больше недоступен");
+    void navigate({ to: "/nodes" });
+  };
+  // Своё удаление в процессе: событие раньше ответа HTTP не дублирует уход.
+  const deleting = useRef<{ id: string; deletedMeanwhile: boolean } | null>(
+    null,
+  );
+
   useSocketEvent<[{ id: string }]>(
     "node:deleted",
     ({ id }) => {
       if (id !== nodeId) return;
-      store.remove(id);
-      toast.warning("Узел удалён или больше недоступен");
-      void navigate({ to: "/nodes" });
+      if (deleting.current?.id === id) {
+        deleting.current.deletedMeanwhile = true;
+
+        return;
+      }
+      leaveDeleted();
     },
     canView,
   );
@@ -120,12 +136,27 @@ export const useNodeDetailVM = (nodeId: string) => {
   const provision = useProvisionNodeAgentVM({
     onStarted: () => void card.refresh(nodeId),
   });
-  const removeNode = useDeleteNode({
+  const deleteNode = useDeleteNode({
     onDeleted: deleted => {
       store.remove(deleted.id);
       void navigate({ to: "/nodes" });
     },
   });
+  /** Удаление узла; событие `node:deleted` на время запроса откладывается. */
+  const removeNode = async (target: NodeDto): Promise<boolean> => {
+    const current = { id: target.id, deletedMeanwhile: false };
+
+    deleting.current = current;
+    try {
+      const ok = await deleteNode(target);
+
+      if (!ok && current.deletedMeanwhile) leaveDeleted();
+
+      return ok;
+    } finally {
+      if (deleting.current === current) deleting.current = null;
+    }
+  };
   const agentActions = useAgentActions();
 
   const agent = agentId ? (agents.byId(agentId) ?? null) : null;

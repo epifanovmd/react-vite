@@ -1,6 +1,6 @@
 import { AgentAlertsCard, AlertAgentLink } from "@entities/agent";
 import { PageHeader, PageLayout, PageLoader } from "@shared/ui";
-import { Navigate } from "@tanstack/react-router";
+import { Link, Navigate } from "@tanstack/react-router";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
@@ -21,7 +21,14 @@ export const HomePage: FC = observer(() => {
       <DashboardNodesCard vm={vm} />
       <AgentAlertsCard
         alerts={vm.alerts}
-        renderAgent={alert => <AlertAgentLink alert={alert} />}
+        renderAgent={alert => (
+          <AlertAgentLink
+            alert={alert}
+            renderLink={({ agentId, ...props }) => (
+              <Link to="/agents/$agentId" params={{ agentId }} {...props} />
+            )}
+          />
+        )}
       />
     </PageLayout>
   );

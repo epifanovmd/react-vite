@@ -47,7 +47,7 @@ export const useEditUserPrivilegesVM = ({
     mutationFn: async () =>
       user
         ? api.setPrivileges(user.id, { roles, permissions })
-        : { data: null, error: null },
+        : { data: null, error: { message: "Пользователь не выбран" } },
     onSuccess: saved => {
       toast.success("Права пользователя сохранены");
       onSaved(saved);
@@ -69,6 +69,7 @@ export const useEditUserPrivilegesVM = ({
       setRoles(list => toggle(list, name, on)),
     setPermissions,
     isSaving: save.isLoading,
-    save: () => save.mutate(),
+    /** Без пользователя сохранять нечего — запрос не уходит. */
+    save: () => (user ? save.mutate() : Promise.resolve(undefined)),
   };
 };

@@ -45,7 +45,14 @@ export const useManagePasskeysVM = () => {
     mutationFn: async () => {
       const options = await api.generateRegistrationOptions();
 
-      if (!options.data) return { data: null, error: options.error };
+      if (!options.data) {
+        return {
+          data: null,
+          error: options.error ?? {
+            message: "Сервер не выдал параметры passkey",
+          },
+        };
+      }
 
       let attestation: RegistrationResponseJSON;
 
@@ -68,7 +75,15 @@ export const useManagePasskeysVM = () => {
 
       const verified = await api.verifyRegistration({ data: attestation });
 
-      return { data: verified.data?.verified ?? null, error: verified.error };
+      if (verified.error) return { data: null, error: verified.error };
+      if (!verified.data?.verified) {
+        return {
+          data: null,
+          error: { message: "Сервер не подтвердил passkey" },
+        };
+      }
+
+      return { data: true, error: null };
     },
     onSuccess: async () => {
       const login = userStore.user?.email ?? userStore.user?.phone;

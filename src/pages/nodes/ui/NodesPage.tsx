@@ -4,6 +4,7 @@ import { AgentIssuePanel } from "@features/issue-agent";
 import { NodeFormModal } from "@features/manage-node";
 import { ProvisionNodeAgentModal } from "@features/provision-node-agent";
 import { Button, PageHeader, PageLayout } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { FC } from "react";
@@ -13,6 +14,7 @@ import { NodesTable } from "./NodesTable";
 import { NodesToolbar } from "./NodesToolbar";
 
 export const NodesPage: FC = observer(() => {
+  const navigate = useNavigate();
   const vm = useNodesVM();
 
   return (
@@ -34,7 +36,10 @@ export const NodesPage: FC = observer(() => {
         />
       }
     >
-      <PermissionGate permission={vm.viewPermission}>
+      <PermissionGate
+        permission={vm.viewPermission}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
         <NodesToolbar vm={vm} />
         <NodesTable vm={vm} />
       </PermissionGate>

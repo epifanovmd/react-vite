@@ -111,4 +111,20 @@ describe("JobList", () => {
 
     expect(screen.getByText("Нет задач этого агента.")).toBeInTheDocument();
   });
+
+  it("ошибка загрузки — показывается ошибка, а не «пусто»", () => {
+    render(
+      <JobList
+        jobs={[]}
+        isLoading={false}
+        error={{ message: "Сервер недоступен" }}
+        busyId={null}
+        agentOf={() => null}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Сервер недоступен")).toBeInTheDocument();
+    expect(screen.queryByText("Задач пока нет")).toBeNull();
+  });
 });

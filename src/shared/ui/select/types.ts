@@ -36,8 +36,6 @@ export interface SelectDataProps<V extends SelectValue = string> {
   onOpenChange?: (open: boolean) => void;
 }
 
-// ─── Filter / Render ──────────────────────────────────────────────────────
-
 export type FilterOptionPredicate<V extends SelectValue = string> = (
   query: string,
   option: SelectOption<V>,
@@ -62,14 +60,10 @@ export interface TagRenderInfo<V extends SelectValue = string> {
   onRemove: () => void;
 }
 
-// ─── LabelInValue ─────────────────────────────────────────────────────────
-
 export interface LabeledValue<V extends SelectValue = string> {
   value: V;
   label?: string;
 }
-
-// ─── Ref API ──────────────────────────────────────────────────────────────
 
 export interface SelectRef {
   focus: () => void;
@@ -82,8 +76,6 @@ export interface SelectRef {
 
 /** @deprecated используйте `SelectRef`. */
 export type ISelectRef = SelectRef;
-
-// ─── Dropdown positioning ─────────────────────────────────────────────────
 
 export type DropdownSide = "top" | "right" | "bottom" | "left";
 export type DropdownAlign = "start" | "center" | "end";
@@ -109,8 +101,6 @@ export interface DropdownPlacementProps {
   maxHeight?: number;
 }
 
-// ─── Creatable / Virtual ──────────────────────────────────────────────────
-
 /** Создание опции из строки поиска. Вернувшееся значение (сразу или через
  *  Promise) выбирается; `undefined` — ничего не выбирать (например, отказ). */
 export type SelectCreateHandler<V extends SelectValue = string> = (
@@ -123,8 +113,6 @@ export interface SelectVirtualConfig {
   /** Опций за пределами видимой области (по умолчанию 8). */
   overscan?: number;
 }
-
-// ─── Appearance ───────────────────────────────────────────────────────────
 
 export interface SelectTriggerAppearance extends VariantProps<
   typeof selectTriggerVariants
@@ -183,8 +171,6 @@ interface SelectBaseProps<V extends SelectValue = string>
    *  Группы отображаются плоско — заголовок группы становится строкой списка. */
   virtual?: boolean | SelectVirtualConfig;
 }
-
-// ─── Value modes (discriminated union) ────────────────────────────────────
 
 interface SelectSingleProps<V extends SelectValue = string> {
   multi?: false;
@@ -265,8 +251,6 @@ export type GroupedSelectProps<V extends SelectValue = string> = Omit<
 > & {
   groups: SelectOptionGroup<V>[];
 };
-
-// ─── Autocomplete ───────────────────────────────────────────────────────────
 
 type AutocompleteOmittedProps =
   | "search"

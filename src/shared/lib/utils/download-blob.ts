@@ -1,3 +1,6 @@
+/** Задержка отзыва object URL: Firefox/Safari начинают загрузку асинхронно после `click()`. */
+const REVOKE_DELAY_MS = 1000;
+
 export const downloadBlob = (blob: Blob, name: string) => {
   const href = URL.createObjectURL(blob);
 
@@ -9,5 +12,5 @@ export const downloadBlob = (blob: Blob, name: string) => {
   link.click();
 
   document.body.removeChild(link);
-  URL.revokeObjectURL(href);
+  setTimeout(() => URL.revokeObjectURL(href), REVOKE_DELAY_MS);
 };

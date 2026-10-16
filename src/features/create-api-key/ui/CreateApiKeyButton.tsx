@@ -24,9 +24,8 @@ interface CreateApiKeyButtonProps {
 export const CreateApiKeyButton: FC<CreateApiKeyButtonProps> = ({
   onCreated,
 }) => {
-  const { open, setOpen, openDialog, form, submit, secret } = useCreateApiKeyVM(
-    { onCreated },
-  );
+  const { open, setOpen, openDialog, form, submit, secret, isSubmitting } =
+    useCreateApiKeyVM({ onCreated });
 
   return (
     <>
@@ -44,13 +43,17 @@ export const CreateApiKeyButton: FC<CreateApiKeyButtonProps> = ({
               <Button onClick={() => setOpen(false)}>Готово</Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setOpen(false)}>
+                <Button
+                  variant="outline"
+                  disabled={isSubmitting}
+                  onClick={() => setOpen(false)}
+                >
                   Отмена
                 </Button>
                 <Button
                   type="submit"
                   form="create-api-key-form"
-                  loading={form.formState.isSubmitting}
+                  loading={isSubmitting}
                 >
                   Создать
                 </Button>

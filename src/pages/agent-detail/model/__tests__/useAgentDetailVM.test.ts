@@ -8,12 +8,13 @@ import { iocContainer } from "@shared/lib/di";
 import { INotificationService } from "@shared/lib/notifications";
 import { ISocketTransport } from "@shared/lib/socket";
 import { createFakeSocket, type IFakeSocket } from "@shared/lib/socket/testing";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useAgentDetailVM } from "../useAgentDetailVM";
 
 const navigate = vi.fn();
+const confirm = vi.fn();
 
 vi.mock("@tanstack/react-router", async importOriginal => ({
   ...(await importOriginal<object>()),
@@ -21,7 +22,7 @@ vi.mock("@tanstack/react-router", async importOriginal => ({
 }));
 vi.mock("@shared/ui", async importOriginal => ({
   ...(await importOriginal<object>()),
-  useConfirm: () => vi.fn(),
+  useConfirm: () => confirm,
 }));
 
 const agent = {
@@ -47,8 +48,9 @@ const nodes = {
   isLoaded: false,
   load: vi.fn(),
 };
-const toast = { warning: vi.fn() };
+const toast = { warning: vi.fn(), success: vi.fn(), error: vi.fn() };
 let socket: IFakeSocket;
+const api = { deleteAgent: vi.fn() };
 let permissions: string[];
 
 beforeEach(() => {
@@ -63,7 +65,7 @@ beforeEach(() => {
   iocContainer
     .bind(IUserStore.Tid)
     .toConstantValue(createFakeAccess({ permissions }));
-  iocContainer.bind(IMainApi.Tid).toConstantValue({});
+  iocContainer.bind(IMainApi.Tid).toConstantValue(api);
   iocContainer.bind(INotificationService.Tid).toConstantValue(toast);
   iocContainer.bind(ISocketTransport.Tid).toConstantValue(socket);
 });
@@ -126,5 +128,56 @@ describe("useAgentDetailVM", () => {
 
     expect(nodes.load).toHaveBeenCalled();
     expect(result.current.node?.name).toBe("alpha");
+  });
+  it("своё удаление: событие «удалён» раньше ответа — без предупреждения и двойного перехода", async () => {
+    let respond: (value: object) => void = () => undefined;
+
+    confirm.mockResolvedValue(true);
+    api.deleteAgent.mockReturnValue(
+      new Promise(resolve => (respond = resolve)),
+    );
+
+    const { result } = renderHook(() => useAgentDetailVM("a-1"));
+    let removing: Promise<unknown> = Promise.resolve();
+
+    act(() => {
+      removing = result.current.actions.remove(agent);
+    });
+    await waitFor(() => expect(api.deleteAgent).toHaveBeenCalled());
+    act(() => socket.fire("agent:deleted", { id: "a-1" }));
+    await act(async () => {
+      respond({});
+      await removing;
+    });
+
+    expect(toast.warning).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith({ to: "/agents" });
+  });
+
+  it("удаление не прошло, а событие «удалён» пришло — предупреждение и уход", async () => {
+    let respond: (value: object) => void = () => undefined;
+
+    confirm.mockResolvedValue(true);
+    api.deleteAgent.mockReturnValue(
+      new Promise(resolve => (respond = resolve)),
+    );
+
+    const { result } = renderHook(() => useAgentDetailVM("a-1"));
+    let removing: Promise<unknown> = Promise.resolve();
+
+    act(() => {
+      removing = result.current.actions.remove(agent);
+    });
+    await waitFor(() => expect(api.deleteAgent).toHaveBeenCalled());
+    act(() => socket.fire("agent:deleted", { id: "a-1" }));
+    await act(async () => {
+      respond({ error: { message: "Не найден" } });
+      await removing;
+    });
+
+    expect(toast.warning).toHaveBeenCalledWith("Агент удалён");
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith({ to: "/agents" });
   });
 });

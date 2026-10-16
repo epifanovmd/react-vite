@@ -83,6 +83,18 @@ export class UserSocketService implements IUserSocketService {
       );
     }
 
+    if (handlers.onReconnect) {
+      const { onReconnect } = handlers;
+      let connected = this._transport.state.status === "connected";
+
+      disposers.add(
+        this._transport.onConnect(() => {
+          if (connected) onReconnect();
+          connected = true;
+        }),
+      );
+    }
+
     return disposers.dispose;
   }
 }

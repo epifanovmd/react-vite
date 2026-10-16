@@ -10,11 +10,15 @@ export interface IJobStore {
   readonly activeCount: number;
   readonly isLoading: boolean;
   readonly error: IHolderError | null;
+  /** Список уже запрашивали (после `reset` — нет). */
+  readonly isLoaded: boolean;
 
   byId(id: string): JobRunDto | undefined;
   load(): Promise<void>;
   /** Подтянуть задачу по id — экран видит её, не дожидаясь события сокета. */
-  fetch(id: string): Promise<JobRunDto | null>;
+  fetch(
+    id: string,
+  ): Promise<{ data: JobRunDto | null; error: IHolderError | null }>;
   /** Событие `job:updated`: задача добавляется или обновляется на месте. */
   upsert(job: JobRunDto): void;
   cancel(id: string): Promise<{ error: IHolderError | null }>;

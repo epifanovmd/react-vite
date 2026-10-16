@@ -2,7 +2,7 @@ import { IMainApi } from "@shared/api";
 import type { JobRunDto } from "@shared/api/gen/main/model";
 import { CollectionHolder, MutationHolder } from "@shared/lib/holders";
 import { injectable } from "inversify";
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 import { isJobActive, newestJobFirst } from "../lib/job";
 import { IJobStore } from "./types";
@@ -43,6 +43,10 @@ export class JobStore implements IJobStore {
     return this._list.error;
   }
 
+  get isLoaded() {
+    return !this._list.isIdle;
+  }
+
   byId(id: string) {
     return this._list.get(id);
   }
@@ -56,11 +60,11 @@ export class JobStore implements IJobStore {
   }
 
   async fetch(id: string) {
-    const { data } = await this._api.getJob(id);
+    const { data, error } = await this._api.getJob(id);
 
-    if (data) runInAction(() => this.upsert(data));
+    if (data) this.upsert(data);
 
-    return data ?? null;
+    return { data: data ?? null, error: error ?? null };
   }
 
   upsert(job: JobRunDto) {

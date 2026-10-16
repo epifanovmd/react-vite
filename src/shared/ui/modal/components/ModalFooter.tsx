@@ -1,7 +1,7 @@
 import { cn } from "@shared/lib/utils/cn";
 import * as React from "react";
 
-import { DIALOG_FOOTER_CLASS } from "../../foundation/dialog-parts";
+import { DIALOG_FOOTER_CLASS } from "../../foundation";
 
 export type ModalFooterProps = React.HTMLAttributes<HTMLDivElement>;
 

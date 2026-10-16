@@ -33,8 +33,9 @@ export const useSeriesVisibility = <Datum>(
         }
 
         const next = [...current, key];
+        const hiddenCount = next.filter(item => keys.includes(item)).length;
 
-        return next.length >= keys.length ? current : next;
+        return hiddenCount >= keys.length ? current : next;
       }),
     [keys],
   );

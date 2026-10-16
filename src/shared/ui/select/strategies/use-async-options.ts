@@ -55,7 +55,6 @@ export const useAsyncOptions = <TData, V extends SelectValue>({
     [run, fetchRef, cacheEmpty],
   );
 
-  // fetchOnMount / смена fetchKey — не зависит от open
   React.useEffect(() => {
     emptyQueryCacheRef.current = null;
 
@@ -66,7 +65,6 @@ export const useAsyncOptions = <TData, V extends SelectValue>({
     return cancel;
   }, [enabled, fetchOnMount, fetchKey, load, cancel]);
 
-  // open / query — основной fetch
   React.useEffect(() => {
     if (!enabled || !open) return;
 
@@ -93,6 +91,7 @@ export const useAsyncOptions = <TData, V extends SelectValue>({
     enabled,
     open,
     query,
+    fetchKey,
     debounce,
     minQueryLength,
     load,
@@ -100,7 +99,6 @@ export const useAsyncOptions = <TData, V extends SelectValue>({
     setOptions,
   ]);
 
-  // refetchInterval — поллинг пока открыт
   React.useEffect(() => {
     if (!enabled || !refetchInterval || !open) return;
 

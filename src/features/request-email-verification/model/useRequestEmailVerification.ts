@@ -1,4 +1,5 @@
 import { IUserStore } from "@entities/user";
+import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useCallback, useState } from "react";
 
@@ -14,7 +15,7 @@ export const useRequestEmailVerification = () => {
       const response = await userStore.requestVerifyEmail();
 
       if (response.error) {
-        toast.error(response.error.message);
+        notifyApiError(toast, response.error);
       } else {
         toast.success("Письмо с подтверждением отправлено");
       }

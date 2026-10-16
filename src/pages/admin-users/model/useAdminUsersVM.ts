@@ -1,13 +1,11 @@
 import { ADMIN_PERMISSIONS, IUserStore } from "@entities/user";
+import { useDeleteUser } from "@features/delete-user";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IMainApi } from "@shared/api";
 import type { UserDto } from "@shared/api/gen/main/model";
 import { usePaged } from "@shared/lib/holders";
 import { useCloseWhenForbidden } from "@shared/lib/hooks";
-import { notifyApiError } from "@shared/lib/http";
-import { INotificationService } from "@shared/lib/notifications";
 import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
-import { useConfirm } from "@shared/ui";
 import { useState } from "react";
 
 const PAGE_SIZE = 20;
@@ -15,9 +13,7 @@ const SEARCH_DEBOUNCE = 300;
 
 export const useAdminUsersVM = () => {
   const api = IMainApi.useInstance();
-  const toast = INotificationService.useInstance();
   const userStore = IUserStore.useInstance();
-  const confirm = useConfirm();
   const [search, setSearch] = useState("");
   const [query] = useDebouncedValue(search.trim(), SEARCH_DEBOUNCE);
   const [editing, setEditing] = useState<UserDto | null>(null);
@@ -70,26 +66,9 @@ export const useAdminUsersVM = () => {
 
   useCloseWhenForbidden(!!editing, canEditPrivileges, () => setEditing(null));
 
-  const remove = async (user: UserDto) => {
-    const ok = await confirm({
-      title: "Удалить пользователя?",
-      description: user.email ?? user.username ?? user.id,
-      confirmLabel: "Удалить",
-      confirmVariant: "destructive",
-    });
-
-    if (!ok) return;
-
-    const res = await api.deleteUser(user.id);
-
-    if (res.error) {
-      notifyApiError(toast, res.error);
-
-      return;
-    }
-
-    await users.reload({ refresh: true });
-  };
+  const remove = useDeleteUser({
+    onDeleted: () => users.reload({ refresh: true }),
+  });
 
   return {
     users,
@@ -105,3 +84,5 @@ export const useAdminUsersVM = () => {
     currentUserId: userStore.user?.id,
   };
 };
+
+export type AdminUsersVM = ReturnType<typeof useAdminUsersVM>;

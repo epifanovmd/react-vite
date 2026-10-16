@@ -1,5 +1,6 @@
 import { FileUploader } from "@features/upload-file";
 import type { EFileStatus, IFileDto } from "@shared/api/gen/main/model";
+import { useLatestRef } from "@shared/lib/hooks";
 import { formatBytes, formatter } from "@shared/lib/utils";
 import {
   Badge,
@@ -15,9 +16,9 @@ import {
 } from "@shared/ui";
 import { Download, ExternalLink, File, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { FC, useMemo } from "react";
+import { FC, type RefObject, useMemo } from "react";
 
-import { useFilesVM } from "../model/useFilesVM";
+import { type FilesVM, useFilesVM } from "../model/useFilesVM";
 
 const STATUS: Record<
   EFileStatus,
@@ -31,7 +32,12 @@ const STATUS: Record<
 
 const column = createColumnHelper<IFileDto>();
 
-const createColumns = (onDelete: (file: IFileDto) => void) => [
+interface FileColumnsOptions {
+  /** VM — через ref: колонки стабильны, ячейки не перемонтируются. */
+  vm: RefObject<FilesVM>;
+}
+
+const createColumns = ({ vm }: FileColumnsOptions) => [
   column.accessor("name", {
     header: "Файл",
     cell: ({ row }) => {
@@ -108,7 +114,7 @@ const createColumns = (onDelete: (file: IFileDto) => void) => [
           <IconButton
             aria-label="Удалить"
             variant="destructive"
-            onClick={() => onDelete(file)}
+            onClick={() => void vm.current.remove(file)}
           >
             <Trash2 size={15} />
           </IconButton>
@@ -123,8 +129,10 @@ const header = (
 );
 
 export const FilesPage: FC = observer(() => {
-  const { files, remove, onUploaded } = useFilesVM();
-  const columns = useMemo(() => createColumns(remove), [remove]);
+  const vm = useFilesVM();
+  const { files, onUploaded } = vm;
+  const vmRef = useLatestRef(vm);
+  const columns = useMemo(() => createColumns({ vm: vmRef }), [vmRef]);
 
   return (
     <PageLayout header={header} fill>

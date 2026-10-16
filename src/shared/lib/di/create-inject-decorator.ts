@@ -67,8 +67,16 @@ const createInjectDecorator = <TInterface>(
     ) as TInterface;
   };
 
-  const useInstance = () =>
-    useRef(injectDecoratorFactory.getInstance()).current;
+  /** Экземпляр берётся из контейнера один раз на жизнь компонента. */
+  const useInstance = (): TInterface => {
+    const ref = useRef<{ instance: TInterface } | null>(null);
+
+    if (!ref.current) {
+      ref.current = { instance: injectDecoratorFactory.getInstance() };
+    }
+
+    return ref.current.instance;
+  };
 
   injectDecoratorFactory.useInstance = useInstance;
 

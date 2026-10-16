@@ -1,4 +1,4 @@
-import { Maybe } from "@shared/lib/di/types";
+import { Maybe } from "@shared/lib/di";
 import { getEnumNamesAndValues } from "@shared/lib/utils/enum-values";
 import { LambdaValue } from "@shared/lib/utils/lambda-value";
 import { stringCapitalize } from "@shared/lib/utils/string";

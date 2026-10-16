@@ -336,6 +336,28 @@ describe("TokenSession", () => {
     });
   });
 
+  it("выход во время refresh: его ответ не воскрешает токены", async () => {
+    const storage = new MemoryTokenStorage();
+    let resolve: (grant: TokenGrant) => void = () => {};
+    const { session } = createSession({
+      storage,
+      refresh: () =>
+        new Promise<TokenGrant>(r => {
+          resolve = r;
+        }),
+    });
+
+    session.setTokens(pair("1"));
+    const pending = session.refreshToken();
+
+    session.clear();
+    resolve(pair("2"));
+    await pending;
+
+    expect(session.isAuthorized).toBe(false);
+    expect(storage.read()).toBeNull();
+  });
+
   it("restoreSession поднимает сессию по сохранённому refresh-токену", async () => {
     const storage = new MemoryTokenStorage();
 
@@ -503,6 +525,28 @@ describe("TokenSession: правки хранилища извне", () => {
 
     shared.writeOutside(pair("1"));
     expect(session.isAuthorized).toBe(false);
+  });
+
+  it("сессию завершили снаружи, пока шёл refresh, — его ответ не воскрешает токены", async () => {
+    const shared = createShared();
+    let resolve: (grant: TokenGrant) => void = () => {};
+    const { session } = createSession({
+      storage: shared.storage,
+      refresh: () =>
+        new Promise<TokenGrant>(r => {
+          resolve = r;
+        }),
+    });
+
+    session.setTokens(pair("1"));
+    const pending = session.refreshToken();
+
+    shared.writeOutside(null);
+    resolve(pair("2"));
+    await pending;
+
+    expect(session.isAuthorized).toBe(false);
+    expect(shared.storage.read()).toBeNull();
   });
 
   it("хранилище без subscribe работает как раньше", () => {

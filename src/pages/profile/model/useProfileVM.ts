@@ -6,10 +6,10 @@ export const useProfileVM = () => {
 
   const [isEditOpen, setEditOpen] = useState(false);
 
+  // Стор — singleton: эффект срабатывает один раз при открытии.
   useEffect(() => {
-    userStore.load().then();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void userStore.load();
+  }, [userStore]);
 
   const openEdit = useCallback(() => setEditOpen(true), []);
   const closeEdit = useCallback(() => setEditOpen(false), []);

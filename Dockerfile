@@ -23,9 +23,10 @@ ARG BUILD_MODE=production
 RUN APP_VERSION=$APP_VERSION APP_COMMIT=$APP_COMMIT APP_BUILT_AT=$APP_BUILT_AT \
     yarn build --mode $BUILD_MODE
 
-FROM nginx:1.27-alpine AS runner
+# nginx без root: слушает 8080 (непривилегированный порт).
+FROM nginxinc/nginx-unprivileged:1.27-alpine AS runner
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1
+    CMD wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1

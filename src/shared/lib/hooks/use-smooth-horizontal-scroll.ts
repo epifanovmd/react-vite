@@ -47,6 +47,7 @@ export const useSmoothHorizontalScroll = (
 
         if (Math.abs(diff) < 0.5) {
           el.scrollLeft = target;
+          targetRef.current = null;
           rafRef.current = null;
 
           return;

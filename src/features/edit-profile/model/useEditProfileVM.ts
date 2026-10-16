@@ -1,4 +1,5 @@
 import { IUserStore } from "@entities/user";
+import { notifyApiError } from "@shared/lib/http";
 import { useLeaveConfirmation } from "@shared/lib/navigation";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
@@ -53,7 +54,7 @@ export const useEditProfileVM = ({
     });
 
     if (res.error) {
-      toast.error(res.error.message);
+      notifyApiError(toast, res.error);
 
       return;
     }

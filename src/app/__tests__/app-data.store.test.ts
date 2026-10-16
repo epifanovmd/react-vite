@@ -1,3 +1,4 @@
+import { disposer } from "@shared/lib/di";
 import { observable, runInAction } from "mobx";
 import { describe, expect, it, vi } from "vitest";
 
@@ -138,5 +139,62 @@ describe("AppDataStore — восстановление сессии", () => {
 
     expect(auth.restore).not.toHaveBeenCalled();
     expect(store.isRestored).toBe(true);
+  });
+});
+
+describe("AppDataStore — повторная инициализация", () => {
+  const create = () => {
+    const auth = observable(
+      { isAuthenticated: true, isIdle: false, restore: vi.fn() },
+      { restore: false },
+    );
+    const socket = { initialize: vi.fn(() => vi.fn()) };
+    const userStore = { load: vi.fn(), reset: vi.fn() };
+    const stub = { initialize: vi.fn(() => vi.fn()), reset: vi.fn() };
+    const store = new AppDataStore(
+      auth as any,
+      socket as any,
+      stub as any,
+      userStore as any,
+      stub as any,
+      stub as any,
+      stub as any,
+      stub as any,
+      stub as any,
+    );
+
+    return { auth, socket, userStore, store };
+  };
+
+  it("уже авторизован при initialize — сокет и realtime стартуют сразу", () => {
+    const { socket, userStore, store } = create();
+
+    store.initialize();
+
+    expect(socket.initialize).toHaveBeenCalledOnce();
+    expect(userStore.load).toHaveBeenCalledOnce();
+  });
+
+  it("dispose и повторный initialize (StrictMode) — сессия стартует заново", () => {
+    const { socket, store } = create();
+    const stopSocket = vi.fn();
+
+    socket.initialize.mockReturnValueOnce(stopSocket);
+    disposer(store.initialize());
+
+    expect(stopSocket).toHaveBeenCalledOnce();
+
+    store.initialize();
+
+    expect(socket.initialize).toHaveBeenCalledTimes(2);
+  });
+
+  it("не авторизован при initialize — на вход не уводит и данные не сбрасывает", () => {
+    const { auth, userStore, store } = create();
+
+    runInAction(() => (auth.isAuthenticated = false));
+    store.initialize();
+
+    expect(userStore.reset).not.toHaveBeenCalled();
   });
 });

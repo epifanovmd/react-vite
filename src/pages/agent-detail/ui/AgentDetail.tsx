@@ -13,6 +13,7 @@ import {
   PageLayout,
   PageLoader,
 } from "@shared/ui";
+import { useNavigate } from "@tanstack/react-router";
 import { AgentTabs, type TAgentTab } from "@widgets/agent-tabs";
 import { observer } from "mobx-react-lite";
 import { FC, useState } from "react";
@@ -27,6 +28,7 @@ interface AgentDetailProps {
 
 /** Агент: шапка с действиями, проблемы и вкладки агента. */
 export const AgentDetail: FC<AgentDetailProps> = observer(({ agentId }) => {
+  const navigate = useNavigate();
   const vm = useAgentDetailVM(agentId);
   const { agent } = vm;
   // Журнал — на всю высоту экрана с прокруткой внутри, остальное — страница.
@@ -51,7 +53,10 @@ export const AgentDetail: FC<AgentDetailProps> = observer(({ agentId }) => {
         )
       }
     >
-      <PermissionGate permission={AGENT_PERMISSIONS.VIEW}>
+      <PermissionGate
+        permission={AGENT_PERMISSIONS.VIEW}
+        onDenied={() => void navigate({ to: "/", replace: true })}
+      >
         {!agent ? (
           vm.isError ? (
             <PageEmpty icon="error" title="Агент не найден" />

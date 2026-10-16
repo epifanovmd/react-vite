@@ -24,7 +24,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "prod": "yarn preview",
-    "verify": "yarn lint && yarn typecheck && yarn test && yarn build",
+    "verify": "yarn lint && yarn format:check && yarn typecheck && yarn test:coverage && yarn build",
     "test": "vitest run",
     "test:dev": "vitest",
     "test:coverage": "vitest run --coverage",

@@ -1,7 +1,7 @@
 /* eslint-disable check-file/filename-naming-convention -- инстанс-модуль, не компонент */
+import { ErrorPage } from "@pages/errors";
 import { createRouter } from "@tanstack/react-router";
 
-import { ErrorPage } from "../pages/errors";
 import { PendingScreen } from "./PendingScreen";
 import { routeTree } from "./routeTree.gen";
 

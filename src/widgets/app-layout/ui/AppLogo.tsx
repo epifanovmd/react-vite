@@ -1,5 +1,5 @@
 import { APP_NAME } from "@shared/config/env";
-import { cn } from "@shared/lib/utils/cn";
+import { cn } from "@shared/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
 import * as React from "react";

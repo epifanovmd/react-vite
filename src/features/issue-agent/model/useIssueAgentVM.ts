@@ -5,11 +5,12 @@ import type {
   IAgentIssuedLinkDto,
   NodeDto,
 } from "@shared/api/gen/main/model";
+import { useEntity } from "@shared/lib/holders";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { downloadBlob } from "@shared/lib/utils";
 import { useZodForm } from "@shared/ui";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   DEFAULT_ISSUE_MINUTES,
@@ -17,6 +18,8 @@ import {
   issueBody,
   type TIssueAgentValues,
 } from "./validation";
+
+type TIssueKind = "archive" | "link" | "env";
 
 /** Кому выдаём агента: узлу (токен с меткой узла) или просто агента (раздел агентов). */
 export type TIssueTarget = { node: NodeDto } | { node?: undefined };
@@ -29,10 +32,10 @@ export type TIssueTarget = { node: NodeDto } | { node?: undefined };
 export const useIssueAgentVM = (target: TIssueTarget) => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
-  const [options, setOptions] = useState<IAgentInstallOptionsDto | null>(null);
   const [link, setLink] = useState<IAgentIssuedLinkDto | null>(null);
   const [env, setEnv] = useState<IAgentIssuedEnvDto | null>(null);
-  const [busy, setBusy] = useState<"archive" | "link" | "env" | null>(null);
+  const [busy, setBusy] = useState<TIssueKind | null>(null);
+  const busyRef = useRef<TIssueKind | null>(null);
   const form = useZodForm(issueAgentSchema, {
     defaultValues: {
       name: target.node?.name ?? "",
@@ -43,40 +46,37 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
   });
   const nodeId = target.node?.id;
 
-  useEffect(() => {
-    let alive = true;
+  const installOptions = useEntity<IAgentInstallOptionsDto>({
+    queryFn: async () => {
+      const res = await api.getAgentInstallOptions();
 
-    void api.getAgentInstallOptions().then(res => {
-      if (!alive) return;
-      if (res.error) {
-        notifyApiError(toast, res.error);
+      if (res.error) notifyApiError(toast, res.error);
 
-        return;
-      }
-      setOptions(res.data);
-    });
+      return res;
+    },
+    autoLoad: true,
+  });
 
-    return () => {
-      alive = false;
-    };
-  }, [api, toast]);
-
+  /** Одна выдача за раз: пока идёт любая, остальные не запускаются. */
   const run = async <T>(
-    kind: "archive" | "link" | "env",
+    kind: TIssueKind,
     request: () => Promise<{ data?: T; error?: unknown }>,
   ): Promise<T | null> => {
+    if (busyRef.current) return null;
+    busyRef.current = kind;
     setBusy(kind);
     try {
       const res = await request();
 
       if (res.error) {
-        notifyApiError(toast, res.error as never);
+        notifyApiError(toast, res.error);
 
         return null;
       }
 
       return res.data ?? null;
     } finally {
+      busyRef.current = null;
       setBusy(null);
     }
   };
@@ -93,7 +93,12 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
     );
 
     if (!blob) return;
-    downloadBlob(blob as Blob, options?.archive?.file ?? "agent.tar.gz");
+    if (!(blob instanceof Blob)) {
+      toast.error("Сервер вернул не архив");
+
+      return;
+    }
+    downloadBlob(blob, installOptions.data?.archive?.file ?? "agent.tar.gz");
     toast.success("Токен в архиве одноразовый — передайте архив получателю", {
       title: "Архив с токеном скачан",
     });
@@ -127,7 +132,10 @@ export const useIssueAgentVM = (target: TIssueTarget) => {
 
   return {
     form,
-    options,
+    /** Варианты установки с сервера; геттер — чтение из observable холдера. */
+    get options() {
+      return installOptions.data;
+    },
     forNode: !!nodeId,
     busy,
     link,

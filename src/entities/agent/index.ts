@@ -6,6 +6,7 @@ export {
   agentVersion,
   agentWorkers,
   alertKey,
+  commandResultVersion,
   isAgentLive,
   workerOf,
   workersSummary,
@@ -48,6 +49,7 @@ export type {
   IMetricsPeriod,
 } from "./lib/metrics";
 export {
+  freshestMetricsPoint,
   hasHostMetric,
   hostMetrics,
   hostPoints,
@@ -94,7 +96,10 @@ export { AgentAlertsCard } from "./ui/AgentAlertsCard";
 export { AgentLabels } from "./ui/AgentLabels";
 export { AgentRxTx } from "./ui/AgentRxTx";
 export { AgentStatusBadge } from "./ui/AgentStatusBadge";
-export { AlertAgentLink } from "./ui/AlertAgentLink";
+export {
+  AlertAgentLink,
+  type IAlertAgentLinkRenderProps,
+} from "./ui/AlertAgentLink";
 export { ConfigStateBadge } from "./ui/ConfigStateBadge";
 export { SchemaHint } from "./ui/SchemaHint";
 export { WorkerHealthBadge } from "./ui/WorkerHealthBadge";

@@ -6,14 +6,15 @@ import {
 } from "@entities/agent";
 import { INodesStore, NODE_PERMISSIONS } from "@entities/node";
 import { IUserStore } from "@entities/user";
-import { useAgentActions } from "@features/manage-agent";
+import { type AgentActions, useAgentActions } from "@features/manage-agent";
+import type { AgentDto } from "@shared/api/gen/main/model";
 import { ownPermission } from "@shared/lib/access";
 import { useEntity } from "@shared/lib/holders";
 import { INotificationService } from "@shared/lib/notifications";
 import { useSocketEvent, useSocketRoom } from "@shared/lib/socket";
 import { useNavigate } from "@tanstack/react-router";
 import type { IAgentTabsAccess } from "@widgets/agent-tabs";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * Карточка агента: данные из стора (обновляются событиями), проблемы, сборки,
@@ -55,19 +56,51 @@ export const useAgentDetailVM = (agentId: string) => {
   useSocketRoom("agent", canView ? agentId : null, () => {
     void card.refresh(agentId);
   });
+  // Агента удалили (не мы) — уход к списку.
+  const leaveDeleted = () => {
+    toast.warning("Агент удалён");
+    void navigate({ to: "/agents" });
+  };
+  // Своё удаление в процессе: событие раньше ответа HTTP не дублирует уход.
+  const deleting = useRef<{
+    id: string;
+    deletedMeanwhile: boolean;
+    done: boolean;
+  } | null>(null);
+
   useSocketEvent<[{ id: string }]>(
     "agent:deleted",
     ({ id }) => {
       if (id !== agentId) return;
-      toast.warning("Агент удалён");
-      void navigate({ to: "/agents" });
+      if (deleting.current?.id === id) {
+        deleting.current.deletedMeanwhile = true;
+
+        return;
+      }
+      leaveDeleted();
     },
     canView,
   );
 
-  const actions = useAgentActions({
-    onDeleted: () => void navigate({ to: "/agents" }),
+  const agentActions = useAgentActions({
+    onDeleted: deleted => {
+      if (deleting.current?.id === deleted.id) deleting.current.done = true;
+      void navigate({ to: "/agents" });
+    },
   });
+  /** Удаление агента; событие `agent:deleted` на время запроса откладывается. */
+  const remove = async (target: AgentDto) => {
+    const current = { id: target.id, deletedMeanwhile: false, done: false };
+
+    deleting.current = current;
+    try {
+      await agentActions.remove(target);
+      if (!current.done && current.deletedMeanwhile) leaveDeleted();
+    } finally {
+      if (deleting.current === current) deleting.current = null;
+    }
+  };
+  const actions: AgentActions = { ...agentActions, remove };
 
   const agent = store.byId(agentId) ?? null;
   const candidate = store.updateCandidate(agentId);

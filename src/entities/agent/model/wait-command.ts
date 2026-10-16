@@ -8,6 +8,7 @@ const RETRY_PAUSE_MS = 2_000;
 
 const pause = (ms: number, signal?: AbortSignal) =>
   new Promise<void>(resolve => {
+    if (signal?.aborted) return resolve();
     const timer = setTimeout(resolve, ms);
 
     signal?.addEventListener("abort", () => {
@@ -18,8 +19,8 @@ const pause = (ms: number, signal?: AbortSignal) =>
 
 /**
  * Итог команды агенту: длинные запросы `GET …/commands/{id}?waitSeconds=`,
- * пока команда не завершится (сбой связи — повтор). Отмена — `signal`;
- * тогда — последнее известное состояние.
+ * пока команда не завершится (сбой связи и 5xx — повтор, ошибка клиента 4xx —
+ * выход). Отмена — `signal`; тогда — последнее известное состояние.
  */
 export const waitAgentCommand = async (
   api: Pick<IMainApi, "getAgentCommand">,
@@ -37,6 +38,7 @@ export const waitAgentCommand = async (
     );
 
     if (data) current = data;
+    else if (error?.isClientError) break;
     else if (error) await pause(RETRY_PAUSE_MS, signal);
   }
 

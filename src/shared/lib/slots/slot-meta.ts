@@ -58,7 +58,7 @@ export interface ResolveContext {
   ownerName: string;
 }
 
-// `typeof` — модуль поднимается и вне RN-рантайма (тесты на node).
+// `typeof` — вне сборки Vite (тесты на node) `DEV` может быть не задан.
 export const isDev = () =>
   typeof import.meta.env.DEV !== "undefined" && import.meta.env.DEV;
 

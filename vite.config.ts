@@ -38,9 +38,29 @@ export const define = {
   __APP_BUILT_AT__: JSON.stringify(process.env.APP_BUILT_AT || ""),
 };
 
-export default defineConfig(({ mode }) => {
+/** VITE_*, без которых сборка нерабочая: адреса API и сокета, имя приложения. */
+const REQUIRED_BUILD_ENV = [
+  "VITE_BASE_URL",
+  "VITE_SOCKET_BASE_URL",
+  "VITE_APP_NAME",
+] as const;
+
+/** Останавливает сборку, если в env режима нет обязательных VITE_*. */
+const assertBuildEnv = (env: Record<string, string>, mode: string) => {
+  const missing = REQUIRED_BUILD_ENV.filter(key => !env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Сборка --mode ${mode}: не заданы ${missing.join(", ")} (.env.${mode} или .env.${mode}.local)`,
+    );
+  }
+};
+
+export default defineConfig(({ command, mode }) => {
   // Те же файлы, что видит клиент: .env.[mode].local поверх .env.[mode].
   const env = loadEnv(mode, root, "VITE_");
+
+  if (command === "build" && mode !== "development") assertBuildEnv(env, mode);
   const host = env.VITE_HOST || undefined;
   const port = env.VITE_PORT ? Number(env.VITE_PORT) : undefined;
   const apiTarget = env.VITE_BASE_URL || DEFAULT_API_URL;

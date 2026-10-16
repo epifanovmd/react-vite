@@ -38,6 +38,9 @@ export class UserRealtime implements IUserRealtime {
       onSessionTerminated: ({ sessionId }) => {
         this._sessionStore.handleSessionTerminated(sessionId);
       },
+      onReconnect: () => {
+        this._userStore.refresh().then();
+      },
     });
   }
 }

@@ -119,7 +119,7 @@ describe("FileDrop validation", () => {
     );
   });
 
-  it("без multiple и maxFiles по-прежнему молча берёт первый файл", () => {
+  it("без multiple берёт первый файл, остальные отклоняет с причиной count", () => {
     const onFiles = vi.fn();
     const onReject = vi.fn();
 
@@ -131,6 +131,6 @@ describe("FileDrop validation", () => {
     dropFiles(screen.getByRole("button"), [a, b]);
 
     expect(onFiles).toHaveBeenCalledWith([a]);
-    expect(onReject).not.toHaveBeenCalled();
+    expect(onReject).toHaveBeenCalledWith([b], [{ file: b, reason: "count" }]);
   });
 });

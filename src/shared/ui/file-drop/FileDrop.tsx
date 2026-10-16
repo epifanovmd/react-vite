@@ -106,7 +106,7 @@ const FileDrop = React.forwardRef<HTMLDivElement, FileDropProps>(
       const { accepted, rejections } = validateFiles(files, {
         accept,
         maxSize,
-        maxFiles,
+        maxFiles: multiple ? maxFiles : Math.min(maxFiles ?? 1, 1),
       });
 
       if (rejections.length) {
@@ -115,7 +115,7 @@ const FileDrop = React.forwardRef<HTMLDivElement, FileDropProps>(
           rejections,
         );
       }
-      if (accepted.length) onFiles(multiple ? accepted : accepted.slice(0, 1));
+      if (accepted.length) onFiles(accepted);
     };
 
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {

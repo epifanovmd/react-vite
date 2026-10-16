@@ -1,5 +1,7 @@
+import { createFakeSocket } from "@shared/lib/socket/testing";
 import { describe, expect, it, vi } from "vitest";
 
+import { UserSocketService } from "../../api/user-socket";
 import { UserRealtime } from "../realtime";
 
 const setup = () => {
@@ -40,6 +42,53 @@ describe("UserRealtime", () => {
     const { handlers, userStore } = setup();
 
     handlers.onProfileUpdated({ userId: "u2", avatarUrl: null });
+
+    expect(userStore.refresh).not.toHaveBeenCalled();
+  });
+});
+
+describe("UserRealtime — переподключение", () => {
+  const create = (status: "connected" | "connecting") => {
+    const socket = createFakeSocket();
+
+    Object.assign(socket, { state: { status, error: null } });
+
+    const userStore = {
+      user: { id: "u1" },
+      refresh: vi.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    const dispose = new UserRealtime(
+      new UserSocketService(socket),
+      userStore as never,
+      {} as never,
+    ).initialize();
+
+    return { socket, userStore, dispose };
+  };
+
+  it("после обрыва пользователь перечитывается: права и профиль за обрыв не теряются", () => {
+    const { socket, userStore } = create("connected");
+
+    socket.reconnect();
+
+    expect(userStore.refresh).toHaveBeenCalledOnce();
+  });
+
+  it("первое подключение — без лишнего запроса", () => {
+    const { socket, userStore } = create("connecting");
+
+    socket.reconnect();
+    expect(userStore.refresh).not.toHaveBeenCalled();
+
+    socket.reconnect();
+    expect(userStore.refresh).toHaveBeenCalledOnce();
+  });
+
+  it("после dispose переподключение не трогает стор", () => {
+    const { socket, userStore, dispose } = create("connected");
+
+    dispose();
+    socket.reconnect();
 
     expect(userStore.refresh).not.toHaveBeenCalled();
   });
