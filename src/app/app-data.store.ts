@@ -1,7 +1,4 @@
-import { IAgentsStore } from "@entities/agent";
 import { IAuthStore } from "@entities/auth";
-import { IJobRealtime, IJobStore } from "@entities/job";
-import { INodesStore } from "@entities/node";
 import { ISessionStore, IUserRealtime, IUserStore } from "@entities/user";
 import { createDisposer, type Disposer } from "@shared/lib/di";
 import { ISocketTransport } from "@shared/lib/socket";
@@ -21,10 +18,6 @@ export class AppDataStore implements IAppDataStore {
     @IUserRealtime() private _userRealtime: IUserRealtime,
     @IUserStore() private _userStore: IUserStore,
     @ISessionStore() private _sessionStore: ISessionStore,
-    @IJobRealtime() private _jobRealtime: IJobRealtime,
-    @IJobStore() private _jobStore: IJobStore,
-    @IAgentsStore() private _agentsStore: IAgentsStore,
-    @INodesStore() private _nodesStore: INodesStore,
   ) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -62,7 +55,6 @@ export class AppDataStore implements IAppDataStore {
     disposers.add(
       this._socketTransport.initialize(),
       this._userRealtime.initialize(),
-      this._jobRealtime.initialize(),
     );
   }
 
@@ -71,9 +63,6 @@ export class AppDataStore implements IAppDataStore {
     disposers.dispose();
     this._userStore.reset();
     this._sessionStore.reset();
-    this._jobStore.reset();
-    this._agentsStore.reset();
-    this._nodesStore.reset();
 
     router.navigate({ to: "/sign-in" });
   }

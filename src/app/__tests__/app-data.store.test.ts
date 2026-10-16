@@ -17,9 +17,6 @@ const setup = () => {
   );
   const userStore = { load: vi.fn(), reset: vi.fn() };
   const sessionStore = { reset: vi.fn() };
-  const jobStore = { reset: vi.fn() };
-  const agentsStore = { reset: vi.fn() };
-  const nodesStore = { reset: vi.fn() };
   const initializer = { initialize: vi.fn(() => vi.fn()) };
   const store = new AppDataStore(
     auth as any,
@@ -27,22 +24,17 @@ const setup = () => {
     initializer as any,
     userStore as any,
     sessionStore as any,
-    initializer as any,
-    jobStore as any,
-    agentsStore as any,
-    nodesStore as any,
   );
 
   store.initialize();
   runInAction(() => (auth.isAuthenticated = true));
 
-  return { auth, userStore, sessionStore, jobStore, agentsStore, nodesStore };
+  return { auth, userStore, sessionStore };
 };
 
 describe("AppDataStore", () => {
   it("выход сбрасывает данные пользователя: следующий вход не видит прежних прав", () => {
-    const { auth, userStore, sessionStore, jobStore, agentsStore, nodesStore } =
-      setup();
+    const { auth, userStore, sessionStore } = setup();
 
     expect(userStore.load).toHaveBeenCalledOnce();
 
@@ -50,9 +42,6 @@ describe("AppDataStore", () => {
 
     expect(userStore.reset).toHaveBeenCalledOnce();
     expect(sessionStore.reset).toHaveBeenCalledOnce();
-    expect(jobStore.reset).toHaveBeenCalledOnce();
-    expect(agentsStore.reset).toHaveBeenCalledOnce();
-    expect(nodesStore.reset).toHaveBeenCalledOnce();
   });
 });
 
@@ -91,10 +80,6 @@ describe("AppDataStore — восстановление сессии", () => {
       stub as any,
       stub as any,
       stub as any,
-      stub as any,
-      stub as any,
-      stub as any,
-      stub as any,
     );
 
     store.initialize();
@@ -129,10 +114,6 @@ describe("AppDataStore — восстановление сессии", () => {
       stub as any,
       stub as any,
       stub as any,
-      stub as any,
-      stub as any,
-      stub as any,
-      stub as any,
     );
 
     store.initialize();
@@ -156,10 +137,6 @@ describe("AppDataStore — повторная инициализация", () =>
       socket as any,
       stub as any,
       userStore as any,
-      stub as any,
-      stub as any,
-      stub as any,
-      stub as any,
       stub as any,
     );
 

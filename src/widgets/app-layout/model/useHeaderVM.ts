@@ -1,41 +1,13 @@
-import {
-  AGENT_PERMISSIONS,
-  IAgentsStore,
-  useAgentReleaseWatch,
-} from "@entities/agent";
 import { IUserStore } from "@entities/user";
-import { INotificationService } from "@shared/lib/notifications";
 import { useState } from "react";
 
 import { NAV_GROUPS } from "./constants";
 
-/**
- * Шапка: профиль и разделы по правам. Новые версии агентов и воркеров
- * отслеживаются всю сессию: у раздела агентов — значок с числом доступных
- * обновлений, новая версия — уведомление.
- */
+/** Шапка: профиль и разделы по правам. */
 export const useHeaderVM = () => {
   const userStore = IUserStore.useInstance();
-  const agents = IAgentsStore.useInstance();
-  const toast = INotificationService.useInstance();
   const { user, model } = userStore;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const canAgents = userStore.can(AGENT_PERMISSIONS.VIEW);
-
-  useAgentReleaseWatch(canAgents, {
-    onUpdateAvailable: candidate => {
-      const name = agents.byId(candidate.agentId)?.name ?? candidate.agentId;
-
-      toast.info(
-        candidate.worker
-          ? `Воркер «${candidate.worker}» агента «${name}»: есть версия ${candidate.target}.`
-          : `Агент «${name}» нашёл версию ${candidate.target} (сейчас ${candidate.current ?? "?"}).`,
-        { title: "Новая версия" },
-      );
-    },
-  });
-
-  const updates = canAgents ? agents.candidates.length : 0;
 
   const displayName = model?.displayName ?? "Admin";
   const initials = model?.initials ?? "A";
@@ -47,19 +19,11 @@ export const useHeaderVM = () => {
 
   const visibleGroups = NAV_GROUPS.map(group => ({
     ...group,
-    items: group.items
-      .filter(
-        item =>
-          !item.permission ||
-          [item.permission]
-            .flat()
-            .some(permission => userStore.can(permission)),
-      )
-      .map(item =>
-        item.to === "/agents" && updates > 0
-          ? { ...item, badge: updates }
-          : item,
-      ),
+    items: group.items.filter(
+      item =>
+        !item.permission ||
+        [item.permission].flat().some(permission => userStore.can(permission)),
+    ),
   })).filter(group => group.items.length > 0);
 
   return {

@@ -108,7 +108,7 @@ const createColumns = ({ vm, canRevoke }: ApiKeyColumnsOptions) => [
 ];
 
 const header = (
-  <PageHeader title="API-ключи" subtitle="Доступ для воркеров и интеграций" />
+  <PageHeader title="API-ключи" subtitle="Доступ для сервисов и интеграций" />
 );
 
 const AdminApiKeysContent: FC = observer(() => {

@@ -73,9 +73,7 @@ export const ButtonsSection: FC = () => (
           <CopyButton
             size="sm"
             variant="ghost"
-            text={
-              "AGENT_SERVER_URL=https://api.example.com\nAGENT_ENROLL_TOKEN=abc.def"
-            }
+            text={"API_URL=https://api.example.com\nAPI_TOKEN=abc.def"}
           />
           <Button size="sm" variant="ghost" leftIcon={<Download size={15} />}>
             Скачать .env

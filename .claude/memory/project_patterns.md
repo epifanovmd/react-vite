@@ -151,15 +151,13 @@ Page — тонкая композиция: делегирует данные в
 ## Действия над записью списка — features (с 15.10.2026)
 
 - Сценарии «подтвердить → запрос → тост/ошибка» живут в features, а не в VM страниц:
-  `manage-node` (`useDeleteNode`), `manage-roles` (`useCreateRoleVM`, `useSaveRolePermissions`,
+  `manage-roles` (`useCreateRoleVM`, `useSaveRolePermissions`,
   `useDeleteRole`, `newRoleSchema`), `delete-user` (`useDeleteUser`), `revoke-api-key`
   (`useRevokeApiKey`), `delete-file` (`useDeleteFile`). Хук принимает колбэк результата
   (`onDeleted/onRevoked/onSaved/onCreated`, промис дожидается) и возвращает действие
   `(item) => Promise<boolean>`; VM страницы только обновляет список. DI не нужен.
 - Колонки таблиц страниц: `useLatestRef(vm)` + `createColumns({ vm: vmRef, ...флаги })`,
   `useMemo` по `vmRef` и примитивным флагам прав — без eslint-disable (files, admin-users,
-  admin-api-keys); nodes/agents — по `accessKey`.
-- Своё удаление на карточке (node-detail, agent-detail): пока идёт запрос, `*:deleted` для
-  этого id откладывается (ref `deleting`); не удалось, а событие было — предупреждение и уход.
+  admin-api-keys).
 - Переподключение сокета без комнаты (files): `socket.onConnect` в эффекте, перечитать список
   только если сокет уже был на связи (первое подключение — не повод).

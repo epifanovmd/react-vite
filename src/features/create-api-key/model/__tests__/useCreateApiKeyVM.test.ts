@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useCreateApiKeyVM } from "../useCreateApiKeyVM";
 
-const apiKey = { id: "k-1", name: "echo" };
+const apiKey = { id: "k-1", name: "reports" };
 const api = { createApiKey: vi.fn() };
 const toast = { error: vi.fn(), success: vi.fn() };
 
@@ -38,8 +38,8 @@ describe("useCreateApiKeyVM", () => {
 
     act(() => {
       submitting = result.current.submit({
-        name: "echo",
-        scopes: ["worker:*"],
+        name: "reports",
+        scopes: ["reports:export"],
       });
     });
     act(() => result.current.setOpen(false));

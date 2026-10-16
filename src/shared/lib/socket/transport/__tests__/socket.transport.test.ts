@@ -355,7 +355,7 @@ describe("SocketTransport", () => {
     const onConnect = vi.fn();
 
     transport.initialize();
-    transport.on("job:updated", onEvent);
+    transport.on("item:updated", onEvent);
     transport.onConnect(onConnect);
     transport.disconnect();
 
@@ -363,7 +363,7 @@ describe("SocketTransport", () => {
 
     io.accept();
     await connecting;
-    io.fire("job:updated", { id: 1 });
+    io.fire("item:updated", { id: 1 });
 
     expect(onConnect).toHaveBeenCalledTimes(1);
     expect(onEvent).toHaveBeenCalledWith({ id: 1 });
@@ -374,7 +374,7 @@ describe("SocketTransport", () => {
     const onEvent = vi.fn();
 
     transport.initialize();
-    const off = transport.on("job:updated", onEvent);
+    const off = transport.on("item:updated", onEvent);
 
     transport.disconnect();
     off();
@@ -383,7 +383,7 @@ describe("SocketTransport", () => {
 
     io.accept();
     await connecting;
-    io.fire("job:updated", { id: 1 });
+    io.fire("item:updated", { id: 1 });
 
     expect(onEvent).not.toHaveBeenCalled();
   });

@@ -37,7 +37,7 @@ export const CreateApiKeyButton: FC<CreateApiKeyButtonProps> = ({
         <ModalContent
           size="md"
           title={secret ? "Ключ создан" : "Новый API-ключ"}
-          description={secret ? undefined : "Для внешних воркеров и интеграций"}
+          description={secret ? undefined : "Для внешних сервисов и интеграций"}
           footer={
             secret ? (
               <Button onClick={() => setOpen(false)}>Готово</Button>
@@ -81,12 +81,12 @@ export const CreateApiKeyButton: FC<CreateApiKeyButtonProps> = ({
               <InputFormField<TCreateApiKeyForm>
                 name="name"
                 label="Название"
-                placeholder="echo-worker"
+                placeholder="reports-export"
               />
               <InputFormField<TCreateApiKeyForm>
                 name="scopes"
                 label="Scopes через запятую"
-                placeholder="worker:demo.echo, worker:*"
+                placeholder="reports:export, reports:*"
               />
               <DatePickerFormField<TCreateApiKeyForm>
                 name="expiresAt"

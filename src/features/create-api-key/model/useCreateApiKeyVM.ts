@@ -37,7 +37,7 @@ export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
   const submittingRef = useRef(false);
   const [secret, setSecret] = useState<string | null>(null);
   const form = useZodForm(createApiKeySchema, {
-    defaultValues: { name: "", scopes: "worker:*" },
+    defaultValues: { name: "", scopes: "" },
   });
 
   /** Окно не закрывается, пока создаётся ключ: иначе секрет потеряется. */
@@ -47,7 +47,7 @@ export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
   };
 
   const openDialog = () => {
-    form.reset({ name: "", scopes: "worker:*", expiresAt: undefined });
+    form.reset({ name: "", scopes: "", expiresAt: undefined });
     setSecret(null);
     setOpenState(true);
   };
