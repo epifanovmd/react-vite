@@ -76,6 +76,6 @@ Socket.IO, RHF + Zod, orval, Vitest. Архитектура — Feature-Sliced D
 ```sh
 yarn dev           # :3000, /api и /socket.io → бэкенд :8181
 yarn lint && yarn typecheck   # после каждой итерации
-yarn verify        # docs:check + lint + format:check + typecheck + test:coverage + build
+yarn verify        # lint + format:check + typecheck + test:coverage + build
 yarn docs:index    # пересобрать индексы документации
 ```

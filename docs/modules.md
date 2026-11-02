@@ -1,4 +1,4 @@
-<!-- Сгенерировано scripts/docs/check.mjs (yarn docs:index). Не редактировать вручную. -->
+<!-- Сгенерировано scripts/docs/index.mjs (yarn docs:index). Не редактировать вручную. -->
 
 # Модули
 
@@ -12,31 +12,14 @@
 | [app](../src/app/README.md)               | Композиционный корень — DI, восстановление сессии до роутера, провайдеры, файловые маршруты TanStack Router и guards периметров. |
 | [app/styles](../src/app/styles/README.md) | Глобальные стили — вход Tailwind 4 (CSS-first), темы, токены, утилиты движения и их gotcha.                                      |
 
-## pages
+## entities
 
-| Модуль                                                          | О чём                                                                                                |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [pages/activity](../src/pages/activity/README.md)               | «Мой журнал» — лента событий безопасности текущего пользователя.                                     |
-| [pages/admin-api-keys](../src/pages/admin-api-keys/README.md)   | Админка API-ключей — список с пагинацией, создание и отзыв.                                          |
-| [pages/admin-audit](../src/pages/admin-audit/README.md)         | Общий журнал аудита всех пользователей с фильтрами по типу и автору.                                 |
-| [pages/admin-roles](../src/pages/admin-roles/README.md)         | Админка ролей — создание, матрица прав каждой роли, удаление.                                        |
-| [pages/admin-users](../src/pages/admin-users/README.md)         | Админка пользователей — поиск, пагинация, правка прав и удаление.                                    |
-| [pages/errors](../src/pages/errors/README.md)                   | Страницы ошибки роутера и 404.                                                                       |
-| [pages/files](../src/pages/files/README.md)                     | «Мои файлы» — загрузка, список с пагинацией и статусом обработки, удаление.                          |
-| [pages/forgot-password](../src/pages/forgot-password/README.md) | Страница запроса сброса пароля.                                                                      |
-| [pages/profile](../src/pages/profile/README.md)                 | «Мой профиль» — карточка пользователя, редактирование, аватар, приватность.                          |
-| [pages/reset-password](../src/pages/reset-password/README.md)   | Страница установки нового пароля по токену из письма.                                                |
-| [pages/security](../src/pages/security/README.md)               | «Безопасность» — пароль, email, username, 2FA, passkeys, сессии, удаление аккаунта.                  |
-| [pages/sign-in](../src/pages/sign-in/README.md)                 | Страница входа.                                                                                      |
-| [pages/sign-up](../src/pages/sign-up/README.md)                 | Страница регистрации.                                                                                |
-| [pages/ui-kit-demo](../src/pages/ui-kit-demo/README.md)         | Публичная документация UI-кита на /ui — сайдбар с поиском и группами, страницы разделов с примерами. |
-
-## widgets
-
-| Модуль                                                      | О чём                                                                                     |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [widgets/app-layout](../src/widgets/app-layout/README.md)   | Каркас авторизованной части — шапка с навигацией по правам, меню профиля, мобильное меню. |
-| [widgets/auth-layout](../src/widgets/auth-layout/README.md) | Лейаут экранов авторизации — центрированная колонка с логотипом и названием приложения.   |
+| Модуль                                                      | О чём                                                                                                                                     |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [entities/audit](../src/entities/audit/README.md)           | Журнал аудита — курсорная лента событий, подписи типов и таблица событий.                                                                 |
+| [entities/auth](../src/entities/auth/README.md)             | Аутентификация — статус входа, вход/регистрация/2FA/восстановление/выход, guard текущей сессии, общие валидации логина и пароля.          |
+| [entities/permission](../src/entities/permission/README.md) | Каталог прав с сервера и матрица прав «Нет / Свои / Все» с шаблонами групп для редакторов ролей и прав пользователей.                     |
+| [entities/user](../src/entities/user/README.md)             | Текущий пользователь — профиль, роли, права (can/scope/canOn/accessKey), приватность, сессии устройств, реалтайм-события, PermissionGate. |
 
 ## features
 
@@ -67,14 +50,24 @@
 | [features/toggle-theme](../src/features/toggle-theme/README.md)                             | Переключение светлой и тёмной темы.                                                |
 | [features/upload-file](../src/features/upload-file/README.md)                               | Загрузка файлов через API или напрямую в хранилище с прогрессом.                   |
 
-## entities
+## pages
 
-| Модуль                                                      | О чём                                                                                                                                     |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [entities/audit](../src/entities/audit/README.md)           | Журнал аудита — курсорная лента событий, подписи типов и таблица событий.                                                                 |
-| [entities/auth](../src/entities/auth/README.md)             | Аутентификация — статус входа, вход/регистрация/2FA/восстановление/выход, guard текущей сессии, общие валидации логина и пароля.          |
-| [entities/permission](../src/entities/permission/README.md) | Каталог прав с сервера и матрица прав «Нет / Свои / Все» с шаблонами групп для редакторов ролей и прав пользователей.                     |
-| [entities/user](../src/entities/user/README.md)             | Текущий пользователь — профиль, роли, права (can/scope/canOn/accessKey), приватность, сессии устройств, реалтайм-события, PermissionGate. |
+| Модуль                                                          | О чём                                                                                                |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [pages/activity](../src/pages/activity/README.md)               | «Мой журнал» — лента событий безопасности текущего пользователя.                                     |
+| [pages/admin-api-keys](../src/pages/admin-api-keys/README.md)   | Админка API-ключей — список с пагинацией, создание и отзыв.                                          |
+| [pages/admin-audit](../src/pages/admin-audit/README.md)         | Общий журнал аудита всех пользователей с фильтрами по типу и автору.                                 |
+| [pages/admin-roles](../src/pages/admin-roles/README.md)         | Админка ролей — создание, матрица прав каждой роли, удаление.                                        |
+| [pages/admin-users](../src/pages/admin-users/README.md)         | Админка пользователей — поиск, пагинация, правка прав и удаление.                                    |
+| [pages/errors](../src/pages/errors/README.md)                   | Страницы ошибки роутера и 404.                                                                       |
+| [pages/files](../src/pages/files/README.md)                     | «Мои файлы» — загрузка, список с пагинацией и статусом обработки, удаление.                          |
+| [pages/forgot-password](../src/pages/forgot-password/README.md) | Страница запроса сброса пароля.                                                                      |
+| [pages/profile](../src/pages/profile/README.md)                 | «Мой профиль» — карточка пользователя, редактирование, аватар, приватность.                          |
+| [pages/reset-password](../src/pages/reset-password/README.md)   | Страница установки нового пароля по токену из письма.                                                |
+| [pages/security](../src/pages/security/README.md)               | «Безопасность» — пароль, email, username, 2FA, passkeys, сессии, удаление аккаунта.                  |
+| [pages/sign-in](../src/pages/sign-in/README.md)                 | Страница входа.                                                                                      |
+| [pages/sign-up](../src/pages/sign-up/README.md)                 | Страница регистрации.                                                                                |
+| [pages/ui-kit-demo](../src/pages/ui-kit-demo/README.md)         | Публичная документация UI-кита на /ui — сайдбар с поиском и группами, страницы разделов с примерами. |
 
 ## shared
 
@@ -104,3 +97,10 @@
 | [shared/lib/validation](../src/shared/lib/validation/README.md)       | Хелперы Zod для форм — русская локаль сообщений, необязательное число, типизированный refine, boolean-discriminated union.               |
 | [shared/lib/webrtc](../src/shared/lib/webrtc/README.md)               | DI-абстракция WebRTC-примитивов — peer connection, SDP offer/answer, ICE-кандидаты.                                                      |
 | [shared/ui](../src/shared/ui/README.md)                               | UI-кит на Radix UI + cva + tailwind-merge — инвентарь компонентов, foundation, правила и gotcha кита.                                    |
+
+## widgets
+
+| Модуль                                                      | О чём                                                                                     |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [widgets/app-layout](../src/widgets/app-layout/README.md)   | Каркас авторизованной части — шапка с навигацией по правам, меню профиля, мобильное меню. |
+| [widgets/auth-layout](../src/widgets/auth-layout/README.md) | Лейаут экранов авторизации — центрированная колонка с логотипом и названием приложения.   |

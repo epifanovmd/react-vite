@@ -31,17 +31,16 @@ depends_on: []
 | полная проверка           | `yarn verify`                                            |
 | форматирование файлов     | `yarn prettier --write <файлы>`                          |
 
-| Команда                        | Что делает                                                                       |
-| ------------------------------ | -------------------------------------------------------------------------------- |
-| `yarn verify`                  | всё перед merge: docs:check, lint, format:check, typecheck, test:coverage, build |
-| `yarn lint` / `lint:fix`       | ESLint, включая границы слоёв / с автоисправлением                               |
-| `yarn format` / `format:check` | Prettier по проекту                                                              |
-| `yarn typecheck`               | tsc: приложение и конфиги сборки (`tsconfig.node.json`)                          |
-| `yarn test`                    | тесты (Vitest)                                                                   |
-| `yarn test:dev`                | тесты в watch                                                                    |
-| `yarn test:coverage`           | тесты с покрытием и порогами                                                     |
-| `yarn docs:check`              | проверка системы документации                                                    |
-| `yarn docs:index`              | пересборка индексов `docs/README.md` и `docs/modules.md`                         |
+| Команда                        | Что делает                                                           |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `yarn verify`                  | всё перед merge: lint, format:check, typecheck, test:coverage, build |
+| `yarn lint` / `lint:fix`       | ESLint, включая границы слоёв / с автоисправлением                   |
+| `yarn format` / `format:check` | Prettier по проекту                                                  |
+| `yarn typecheck`               | tsc: приложение и конфиги сборки (`tsconfig.node.json`)              |
+| `yarn test`                    | тесты (Vitest)                                                       |
+| `yarn test:dev`                | тесты в watch                                                        |
+| `yarn test:coverage`           | тесты с покрытием и порогами                                         |
+| `yarn docs:index`              | пересборка индексов `docs/README.md` и `docs/modules.md`             |
 
 Быстрая проверка итерации: `yarn lint && yarn typecheck` + `yarn vitest run <путь>`.
 

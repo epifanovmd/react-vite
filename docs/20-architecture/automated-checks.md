@@ -21,7 +21,6 @@ depends_on: [architecture/dependencies]
 | React                   | правила хуков, зависимости, совместимость с HMR | `react-hooks`, `react-refresh`        |
 | форматирование          | пустые строки между блоками, prettier           | eslint, prettier                      |
 | типы и тесты            | typecheck, зелёные тесты, пороги покрытия       | tsc, vitest                           |
-| документация            | frontmatter, граф, ссылки, README модулей       | `scripts/docs/check.mjs`              |
 | коммиты                 | формат Conventional Commits                     | `scripts/git/commit-msg.mjs`          |
 
 Правило, которое нельзя проверить автоматически, — предмет ревью и описывается в

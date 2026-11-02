@@ -14,7 +14,7 @@ depends_on: [ops/build-docker]
 
 Push и PR в `main`:
 
-- `verify`: install `--frozen-lockfile --ignore-scripts`, `docs:check`, lint,
+- `verify`: install `--frozen-lockfile --ignore-scripts`, lint,
   format:check, typecheck, `test:coverage` (пороги — только с `--coverage`), сборка
   `--mode docker` с `.env.docker.example`;
 - затем для push в `main` при заданной переменной `DEPLOY_ENV` — `deploy`

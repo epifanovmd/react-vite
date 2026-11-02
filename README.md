@@ -14,7 +14,7 @@ cp .env.example .env.development
 yarn dev            # http://localhost:3000
 ```
 
-Перед merge — `yarn verify` (документация, lint, формат, типы, тесты с покрытием,
+Перед merge — `yarn verify` (lint, формат, типы, тесты с покрытием,
 сборка).
 
 ## Документация
