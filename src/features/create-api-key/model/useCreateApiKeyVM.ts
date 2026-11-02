@@ -1,48 +1,49 @@
 import { IMainApi } from "@shared/api";
-import type { ApiKeyDto } from "@shared/api/gen/main/model";
+import type { ApiKeyDto, ICreatedApiKeyDto } from "@shared/api/gen/main/model";
+import { useMutation } from "@shared/lib/holders";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
-import { useRef, useState } from "react";
-import { z } from "zod";
+import { useState } from "react";
 
-const SCOPE = /^(\*|[a-z][a-z0-9_-]*(:[a-z0-9_.*/-]+)?)$/;
-
-export const createApiKeySchema = z.object({
-  name: z.string().trim().min(1, "Введите название.").max(100),
-  scopes: z
-    .string()
-    .transform(value => value.split(/[\s,]+/).filter(Boolean))
-    .pipe(
-      z
-        .array(z.string().regex(SCOPE, "Неверный scope."))
-        .min(1, "Укажите хотя бы один scope."),
-    ),
-  expiresAt: z.date().optional(),
-});
-
-export type TCreateApiKeyForm = z.input<typeof createApiKeySchema>;
-type TCreateApiKeyValues = z.output<typeof createApiKeySchema>;
+import { createApiKeySchema, type TCreateApiKeyValues } from "./validation";
 
 interface UseCreateApiKeyOptions {
   onCreated: (apiKey: ApiKeyDto) => void;
 }
 
-/** Создание ключа; секрет сервер отдаёт один раз — он показывается до закрытия. */
+/**
+ * Создание ключа; секрет сервер отдаёт один раз — он показывается до закрытия.
+ * Потребитель — `observer`.
+ */
 export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
   const api = IMainApi.useInstance();
   const toast = INotificationService.useInstance();
   const [open, setOpenState] = useState(false);
-  const [isSubmitting, setSubmitting] = useState(false);
-  const submittingRef = useRef(false);
   const [secret, setSecret] = useState<string | null>(null);
   const form = useZodForm(createApiKeySchema, {
     defaultValues: { name: "", scopes: "" },
   });
 
+  const create = useMutation<TCreateApiKeyValues, ICreatedApiKeyDto>({
+    mutationFn: data =>
+      api.createApiKey({
+        name: data.name,
+        scopes: data.scopes,
+        expiresAt: data.expiresAt?.toISOString(),
+      }),
+    onSuccess: created => {
+      if (!created) return;
+
+      setSecret(created.key);
+      onCreated(created.apiKey);
+    },
+    onError: error => notifyApiError(toast, error),
+  });
+
   /** Окно не закрывается, пока создаётся ключ: иначе секрет потеряется. */
   const setOpen = (next: boolean) => {
-    if (!next && submittingRef.current) return;
+    if (!next && create.isLoading) return;
     setOpenState(next);
   };
 
@@ -53,28 +54,16 @@ export const useCreateApiKeyVM = ({ onCreated }: UseCreateApiKeyOptions) => {
   };
 
   const submit = async (data: TCreateApiKeyValues) => {
-    submittingRef.current = true;
-    setSubmitting(true);
-    const res = await api
-      .createApiKey({
-        name: data.name,
-        scopes: data.scopes,
-        expiresAt: data.expiresAt?.toISOString(),
-      })
-      .finally(() => {
-        submittingRef.current = false;
-        setSubmitting(false);
-      });
-
-    if (!res.data) {
-      notifyApiError(toast, res.error);
-
-      return;
-    }
-
-    setSecret(res.data.key);
-    onCreated(res.data.apiKey);
+    await create.mutate(data);
   };
 
-  return { open, setOpen, openDialog, form, submit, secret, isSubmitting };
+  return {
+    open,
+    setOpen,
+    openDialog,
+    form,
+    submit,
+    secret,
+    isSubmitting: create.isLoading,
+  };
 };

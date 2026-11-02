@@ -10,94 +10,95 @@ import {
   ModalContent,
 } from "@shared/ui";
 import { Plus } from "lucide-react";
+import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
-import {
-  TCreateApiKeyForm,
-  useCreateApiKeyVM,
-} from "../model/useCreateApiKeyVM";
+import { useCreateApiKeyVM } from "../model/useCreateApiKeyVM";
+import type { TCreateApiKeyForm } from "../model/validation";
 
 interface CreateApiKeyButtonProps {
   onCreated: (apiKey: ApiKeyDto) => void;
 }
 
-export const CreateApiKeyButton: FC<CreateApiKeyButtonProps> = ({
-  onCreated,
-}) => {
-  const { open, setOpen, openDialog, form, submit, secret, isSubmitting } =
-    useCreateApiKeyVM({ onCreated });
+export const CreateApiKeyButton: FC<CreateApiKeyButtonProps> = observer(
+  ({ onCreated }) => {
+    const { open, setOpen, openDialog, form, submit, secret, isSubmitting } =
+      useCreateApiKeyVM({ onCreated });
 
-  return (
-    <>
-      <Button leftIcon={<Plus size={15} />} onClick={openDialog}>
-        Новый ключ
-      </Button>
+    return (
+      <>
+        <Button leftIcon={<Plus size={15} />} onClick={openDialog}>
+          Новый ключ
+        </Button>
 
-      <Modal open={open} onOpenChange={setOpen}>
-        <ModalContent
-          size="md"
-          title={secret ? "Ключ создан" : "Новый API-ключ"}
-          description={secret ? undefined : "Для внешних сервисов и интеграций"}
-          footer={
-            secret ? (
-              <Button onClick={() => setOpen(false)}>Готово</Button>
+        <Modal open={open} onOpenChange={setOpen}>
+          <ModalContent
+            size="md"
+            title={secret ? "Ключ создан" : "Новый API-ключ"}
+            description={
+              secret ? undefined : "Для внешних сервисов и интеграций"
+            }
+            footer={
+              secret ? (
+                <Button onClick={() => setOpen(false)}>Готово</Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    disabled={isSubmitting}
+                    onClick={() => setOpen(false)}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    type="submit"
+                    form="create-api-key-form"
+                    loading={isSubmitting}
+                  >
+                    Создать
+                  </Button>
+                </>
+              )
+            }
+          >
+            {secret ? (
+              <div className="flex flex-col gap-3">
+                <Alert variant="warning">
+                  Скопируйте ключ сейчас — повторно он не показывается.
+                </Alert>
+                <CopyableText
+                  text={secret}
+                  className="break-all font-mono text-sm"
+                />
+              </div>
             ) : (
-              <>
-                <Button
-                  variant="outline"
-                  disabled={isSubmitting}
-                  onClick={() => setOpen(false)}
-                >
-                  Отмена
-                </Button>
-                <Button
-                  type="submit"
-                  form="create-api-key-form"
-                  loading={isSubmitting}
-                >
-                  Создать
-                </Button>
-              </>
-            )
-          }
-        >
-          {secret ? (
-            <div className="flex flex-col gap-3">
-              <Alert variant="warning">
-                Скопируйте ключ сейчас — повторно он не показывается.
-              </Alert>
-              <CopyableText
-                text={secret}
-                className="break-all font-mono text-sm"
-              />
-            </div>
-          ) : (
-            <Form
-              id="create-api-key-form"
-              form={form}
-              onSubmit={submit}
-              className="flex flex-col gap-4"
-            >
-              <InputFormField<TCreateApiKeyForm>
-                name="name"
-                label="Название"
-                placeholder="reports-export"
-              />
-              <InputFormField<TCreateApiKeyForm>
-                name="scopes"
-                label="Scopes через запятую"
-                placeholder="reports:export, reports:*"
-              />
-              <DatePickerFormField<TCreateApiKeyForm>
-                name="expiresAt"
-                label="Действует до (необязательно)"
-                minDate={new Date()}
-                clearable
-              />
-            </Form>
-          )}
-        </ModalContent>
-      </Modal>
-    </>
-  );
-};
+              <Form
+                id="create-api-key-form"
+                form={form}
+                onSubmit={submit}
+                className="flex flex-col gap-4"
+              >
+                <InputFormField<TCreateApiKeyForm>
+                  name="name"
+                  label="Название"
+                  placeholder="reports-export"
+                />
+                <InputFormField<TCreateApiKeyForm>
+                  name="scopes"
+                  label="Scopes через запятую"
+                  placeholder="reports:export, reports:*"
+                />
+                <DatePickerFormField<TCreateApiKeyForm>
+                  name="expiresAt"
+                  label="Действует до (необязательно)"
+                  minDate={new Date()}
+                  clearable
+                />
+              </Form>
+            )}
+          </ModalContent>
+        </Modal>
+      </>
+    );
+  },
+);

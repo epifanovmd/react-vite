@@ -1,5 +1,6 @@
 import { IMainApi } from "@shared/api";
 import { iocContainer } from "@shared/lib/di";
+import { HttpError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -53,6 +54,46 @@ describe("useCreateApiKeyVM", () => {
     expect(result.current.open).toBe(true);
     expect(result.current.secret).toBe("secret-1");
     expect(onCreated).toHaveBeenCalledWith(apiKey);
+
+    act(() => result.current.setOpen(false));
+    expect(result.current.open).toBe(false);
+  });
+
+  it("ошибка 4xx — тост, секрета нет, после ответа окно закрывается", async () => {
+    let finish: (value: unknown) => void = () => undefined;
+
+    api.createApiKey.mockImplementation(
+      () => new Promise(resolve => (finish = resolve)),
+    );
+
+    const onCreated = vi.fn();
+    const { result, rerender } = renderHook(() =>
+      useCreateApiKeyVM({ onCreated }),
+    );
+
+    act(() => result.current.openDialog());
+
+    let submitting: Promise<void> = Promise.resolve();
+
+    act(() => {
+      submitting = result.current.submit({ name: "reports", scopes: ["*"] });
+    });
+    rerender();
+    expect(result.current.isSubmitting).toBe(true);
+
+    await act(async () => {
+      finish({
+        data: null,
+        error: new HttpError({ status: 409, message: "Имя занято" }),
+      });
+      await submitting;
+    });
+    rerender();
+
+    expect(result.current.isSubmitting).toBe(false);
+    expect(toast.error).toHaveBeenCalledWith("Имя занято");
+    expect(result.current.secret).toBeNull();
+    expect(onCreated).not.toHaveBeenCalled();
 
     act(() => result.current.setOpen(false));
     expect(result.current.open).toBe(false);

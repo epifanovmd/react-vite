@@ -15,16 +15,19 @@ summary: Создание API-ключа с однократным показо�
 
 ## Устройство
 
-- `model/useCreateApiKeyVM.ts` — схема `createApiKeySchema`, форма и состояние модалки:
+- `model/validation.ts` — `createApiKeySchema`, типы формы `TCreateApiKeyForm` /
+  `TCreateApiKeyValues`.
+- `model/useCreateApiKeyVM.ts` — форма, создание через `useMutation`, состояние модалки:
   - `openDialog` сбрасывает форму и прежний секрет;
   - `submit` → `IMainApi.createApiKey({ name, scopes, expiresAt })`; при успехе `secret = res.data.key`, вызов `onCreated(res.data.apiKey)`;
-  - `setOpen(false)` игнорируется, пока запрос в работе (`submittingRef`).
+  - `setOpen(false)` игнорируется, пока запрос в работе (`isLoading` холдера мутации);
+    `CreateApiKeyButton` — `observer`.
 - Валидация: `scopes` вводятся строкой через запятую/пробелы, схема превращает их в массив (`transform` + `pipe`) и проверяет каждый regex-ом `*` или `name[:action]`; минимум один scope. `expiresAt` — `Date`, уходит в ISO.
 - Тип формы — `z.input` (строка scopes), обработчик получает `z.output` (массив).
 
 ## Зависимости
 
-- `@shared/api` (`IMainApi`, `ApiKeyDto`), `@shared/lib/http`, `@shared/lib/notifications`, `@shared/ui` (`Modal`, `Form`, `DatePickerFormField`, `CopyableText`, `Alert`).
+- `@shared/api` (`IMainApi`, `ApiKeyDto`), `@shared/lib/holders` (`useMutation`), `mobx-react-lite`, `@shared/lib/http`, `@shared/lib/notifications`, `@shared/ui` (`Modal`, `Form`, `DatePickerFormField`, `CopyableText`, `Alert`).
 - Используется: `pages/admin-api-keys`.
 
 ## Gotcha
