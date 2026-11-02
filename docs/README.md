@@ -177,3 +177,4 @@
 ## Предложения в inbox
 
 - [2026-11-02-props-types-placement](inbox/2026-11-02-props-types-placement.md)
+- [2026-11-02-unused-code-reserve](inbox/2026-11-02-unused-code-reserve.md)
