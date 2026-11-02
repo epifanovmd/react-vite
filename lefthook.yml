@@ -1,4 +1,5 @@
-# Быстрые проверки — на коммит (только изменённые файлы), полные — на push.
+# Быстрые проверки — на коммит (только изменённые файлы), формат сообщения — commit-msg,
+# полные — на push.
 pre-commit:
   parallel: false
   jobs:
@@ -11,6 +12,11 @@ pre-commit:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,css,md,html,yml,yaml}"
       run: yarn prettier --write {staged_files}
       stage_fixed: true
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: node scripts/git/commit-msg.mjs {1}
 
 pre-push:
   parallel: true

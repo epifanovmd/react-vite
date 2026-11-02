@@ -1,3 +1,8 @@
+---
+module: shared/lib/slots
+summary: Schema-driven compound components — слоты с метаданными владельца, разбор children за один проход.
+---
+
 # Compound slots
 
 Schema-driven compound components. A slot marker is tagged with owner metadata
