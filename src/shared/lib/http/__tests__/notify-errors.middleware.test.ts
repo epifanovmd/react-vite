@@ -8,6 +8,7 @@ import {
   TimeoutError,
 } from "../core/errors";
 import {
+  isHandledGlobally,
   notifyApiError,
   notifyErrors,
 } from "../middleware/notify-errors.middleware";
@@ -139,5 +140,22 @@ describe("notifyApiError", () => {
     notifyApiError(notifications, null);
 
     expect(notifications.error).not.toHaveBeenCalled();
+  });
+});
+
+describe("isHandledGlobally", () => {
+  it("сеть, таймаут, 5xx и отмена — показаны глобально, 4xx и прочие — нет", () => {
+    expect(isHandledGlobally(new NetworkError())).toBe(true);
+    expect(isHandledGlobally(new TimeoutError())).toBe(true);
+    expect(
+      isHandledGlobally(new HttpError({ status: 503, message: "Недоступен" })),
+    ).toBe(true);
+    expect(isHandledGlobally(new CanceledError())).toBe(true);
+    expect(
+      isHandledGlobally(
+        new HttpError({ status: 400, message: "Ссылка устарела" }),
+      ),
+    ).toBe(false);
+    expect(isHandledGlobally(new Error("Сбой"))).toBe(false);
   });
 });

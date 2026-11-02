@@ -16,7 +16,9 @@ summary: Установка нового пароля по токену из п�
 ## Устройство
 
 - `model/useResetPasswordVM.ts` (`{ token, onSuccess }`) — `submit` → `IMainApi.resetPassword({ token, password })`; успех — `onSuccess()`, ошибка — текст в локальном `error`.
-- Ошибка выводится `Alert` над формой, а не тостом (`notifyApiError` не используется).
+- Ошибка 4xx (например, устаревшая ссылка) выводится `Alert` над формой; сеть, таймаут,
+  5xx и отмена в форму не попадают (`isHandledGlobally`) — их уже показал тост
+  `notifyErrors`.
 - `model/validation.ts` — пароль по `passwordValidation`, совпадение с повтором через `refineFormField`. У поля пароля `rules={{ deps: "confirmPassword" }}` — повтор перепроверяется при изменении пароля.
 
 ## Зависимости
@@ -24,7 +26,3 @@ summary: Установка нового пароля по токену из п�
 - `@entities/auth` (`passwordValidation`).
 - `@shared/api` (`IMainApi`), `@shared/lib/validation` (`refineFormField`), `@shared/ui` (`Card`, `Alert`, `Form`, `FormSubmit`).
 - Используется: `pages/reset-password`.
-
-## Gotcha
-
-- `Alert` показывает `res.error.message` для любой ошибки, включая сеть/5xx, которые уже показал тостом middleware `notifyErrors`, — сообщение будет дважды.

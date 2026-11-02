@@ -54,6 +54,22 @@ export const notifyErrors = (
 };
 
 /**
+ * Ошибку уже показал `notifyErrors` (сеть, таймаут, 5xx) или это отмена —
+ * экрану её показывать не нужно. Верно только для запросов через клиент с
+ * `notifyErrors` в стеке и без `notifyErrors: false` в вызове.
+ */
+export const isHandledGlobally = (raw: unknown): boolean => {
+  const error = toApiError(raw);
+
+  return (
+    error.isCanceled ||
+    error.isNetworkError ||
+    error.isTimeout ||
+    error.isServerError
+  );
+};
+
+/**
  * Тост об ошибке, которую экран обрабатывает сам: 4xx и ошибки вне
  * HTTP-клиента. Сеть, таймаут и 5xx уже показал `notifyErrors`, отмена — не ошибка.
  */
@@ -77,16 +93,7 @@ export const notifyApiError = (
     return;
   }
 
-  const error = toApiError(raw);
+  if (isHandledGlobally(raw)) return;
 
-  if (
-    error.isCanceled ||
-    error.isNetworkError ||
-    error.isTimeout ||
-    error.isServerError
-  ) {
-    return;
-  }
-
-  notifications.error(error.message);
+  notifications.error(toApiError(raw).message);
 };

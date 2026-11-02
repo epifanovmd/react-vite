@@ -25,7 +25,9 @@ summary: HTTP-движок без знания эндпоинтов — клие
 | `testing/`              | `createFakeTransport`, `createTestClient` — тесты без сети                   |
 | `create-http-client.ts` | `createHttpClient`                                                           |
 
-Также `notifyApiError(notifications, error)` — показ ошибки 4xx экраном.
+Также `notifyApiError(notifications, error)` — показ ошибки 4xx экраном тостом;
+`isHandledGlobally(error)` — ошибку уже показал `notifyErrors` или это отмена (для
+экранов, которые выводят ошибку в форме).
 
 ## Пайплайн
 

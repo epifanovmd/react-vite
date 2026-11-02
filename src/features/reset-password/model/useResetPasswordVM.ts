@@ -1,4 +1,5 @@
 import { IMainApi } from "@shared/api";
+import { isHandledGlobally } from "@shared/lib/http";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
 
@@ -27,7 +28,7 @@ export const useResetPasswordVM = ({
     const res = await api.resetPassword({ token, password: data.password });
 
     if (res.error) {
-      setError(res.error.message);
+      if (!isHandledGlobally(res.error)) setError(res.error.message);
     } else {
       onSuccess();
     }
