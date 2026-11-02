@@ -40,6 +40,6 @@ summary: Чистые утилиты без React и DI — классы Tailwin
   `setDefaultOptions({ locale: ru })` в `src/index.tsx`. В тестах без этой настройки — английские.
 - `downloadBlob` отзывает object URL через 1 с: Firefox/Safari начинают загрузку
   асинхронно после `click()`.
-- `formatBytes` не возвращает меньше «1 КБ» — для 0 байт тоже «1 КБ».
+- `formatBytes`: 0 байт — «0 КБ», остальное меньше килобайта округляется до «1 КБ».
 - `describeUserAgent` проверяет Edge и Opera раньше Chrome, Chrome раньше Safari —
   их User-Agent содержит подстроки друг друга.

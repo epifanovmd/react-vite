@@ -4,6 +4,7 @@ const GB = MB * 1024;
 
 /** Размер файла по-русски: «1.4 ГБ», «12.3 МБ», «300 КБ». */
 export const formatBytes = (bytes: number): string => {
+  if (bytes <= 0) return "0 КБ";
   if (bytes >= GB) return `${(bytes / GB).toFixed(1)} ГБ`;
   if (bytes >= MB) return `${(bytes / MB).toFixed(1)} МБ`;
 

@@ -10,6 +10,10 @@ describe("formatBytes", () => {
     expect(formatBytes(12.3 * 1024 * 1024)).toBe("12.3 МБ");
     expect(formatBytes(1.4 * 1024 ** 3)).toBe("1.4 ГБ");
   });
+
+  it("пустой файл — 0 КБ, а не 1 КБ", () => {
+    expect(formatBytes(0)).toBe("0 КБ");
+  });
 });
 
 describe("formatDuration", () => {
