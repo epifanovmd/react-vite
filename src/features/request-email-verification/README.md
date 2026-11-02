@@ -15,13 +15,13 @@ summary: Повторная отправка письма для подтвер�
 
 ## Устройство
 
-- `model/useRequestEmailVerification.ts` — `requestVerification` → `IUserStore.requestVerifyEmail()`; успех — тост «Письмо с подтверждением отправлено», ошибка — `notifyApiError`. `isLoading` — локальный `useState`, сбрасывается в `finally`.
+- `model/useRequestEmailVerification.ts` — `requestVerification` → `IUserStore.requestVerifyEmail()`; успех — тост «Письмо с подтверждением отправлено», ошибка — `notifyApiError`. `isLoading` — из `useMutation`; кнопка — `observer`.
 - Решение, показывать ли кнопку, принимает страница.
 
 ## Зависимости
 
 - `@entities/user` (`IUserStore`).
-- `@shared/lib/http`, `@shared/lib/notifications`, `@shared/ui` (`Button`).
+- `@shared/lib/holders` (`useMutation`), `mobx-react-lite`, `@shared/lib/http`, `@shared/lib/notifications`, `@shared/ui` (`Button`).
 - Используется: `pages/profile`.
 
 ## Gotcha

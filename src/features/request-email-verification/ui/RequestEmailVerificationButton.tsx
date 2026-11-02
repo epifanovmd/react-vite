@@ -1,10 +1,11 @@
 import { Button } from "@shared/ui";
 import { MailCheck } from "lucide-react";
+import { observer } from "mobx-react-lite";
 import { FC } from "react";
 
 import { useRequestEmailVerification } from "../model/useRequestEmailVerification";
 
-export const RequestEmailVerificationButton: FC = () => {
+export const RequestEmailVerificationButton: FC = observer(() => {
   const { isLoading, requestVerification } = useRequestEmailVerification();
 
   return (
@@ -18,4 +19,4 @@ export const RequestEmailVerificationButton: FC = () => {
       Подтвердить
     </Button>
   );
-};
+});

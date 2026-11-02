@@ -1,28 +1,23 @@
 import { IUserStore } from "@entities/user";
+import { useMutation } from "@shared/lib/holders";
 import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
-import { useCallback, useState } from "react";
 
+/** Повторная отправка письма подтверждения email. Потребитель — `observer`. */
 export const useRequestEmailVerification = () => {
   const userStore = IUserStore.useInstance();
   const toast = INotificationService.useInstance();
-  const [isLoading, setLoading] = useState(false);
 
-  const requestVerification = useCallback(async () => {
-    setLoading(true);
+  const request = useMutation<void, unknown>({
+    mutationFn: () => userStore.requestVerifyEmail(),
+    onSuccess: () => toast.success("Письмо с подтверждением отправлено"),
+    onError: error => notifyApiError(toast, error),
+  });
 
-    try {
-      const response = await userStore.requestVerifyEmail();
-
-      if (response.error) {
-        notifyApiError(toast, response.error);
-      } else {
-        toast.success("Письмо с подтверждением отправлено");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [userStore, toast]);
-
-  return { isLoading, requestVerification };
+  return {
+    isLoading: request.isLoading,
+    requestVerification: async () => {
+      await request.mutate();
+    },
+  };
 };

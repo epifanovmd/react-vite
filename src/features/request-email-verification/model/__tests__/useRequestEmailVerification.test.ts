@@ -46,4 +46,39 @@ describe("useRequestEmailVerification", () => {
     expect(toast.error).not.toHaveBeenCalled();
     expect(toast.success).not.toHaveBeenCalled();
   });
+
+  it("успех — тост об отправке; во время запроса isLoading", async () => {
+    let resolve: (value: unknown) => void = () => {};
+    const toast = { error: vi.fn(), success: vi.fn() };
+    const userStore = {
+      requestVerifyEmail: vi.fn(() => new Promise(r => (resolve = r))),
+    };
+
+    iocContainer.bind(IUserStore.Tid).toConstantValue(userStore);
+    iocContainer.bind(INotificationService.Tid).toConstantValue(toast);
+
+    const { result, rerender } = renderHook(() =>
+      useRequestEmailVerification(),
+    );
+    let pending: Promise<void> = Promise.resolve();
+
+    act(() => {
+      pending = result.current.requestVerification();
+    });
+    rerender();
+
+    expect(result.current.isLoading).toBe(true);
+
+    await act(async () => {
+      resolve({ data: undefined, error: null });
+      await pending;
+    });
+    rerender();
+
+    expect(result.current.isLoading).toBe(false);
+    expect(toast.success).toHaveBeenCalledWith(
+      "Письмо с подтверждением отправлено",
+    );
+    expect(toast.error).not.toHaveBeenCalled();
+  });
 });
