@@ -40,7 +40,6 @@ depends_on: []
 | `yarn test`                    | тесты (Vitest)                                                       |
 | `yarn test:dev`                | тесты в watch                                                        |
 | `yarn test:coverage`           | тесты с покрытием и порогами                                         |
-| `yarn docs:index`              | пересборка индексов `docs/README.md` и `docs/modules.md`             |
 
 Быстрая проверка итерации: `yarn lint && yarn typecheck` + `yarn vitest run <путь>`.
 

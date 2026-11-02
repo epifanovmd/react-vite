@@ -63,7 +63,7 @@ Socket.IO, RHF + Zod, orval, Vitest. Архитектура — Feature-Sliced D
 
 ## Защищённые правила
 
-`CLAUDE.md`, `README.md`, `docs/**` (кроме `docs/inbox/`), `.claude/`, `scripts/{docs,git}`,
+`CLAUDE.md`, `README.md`, `docs/**` (кроме `docs/inbox/`), `.claude/`,
 `lefthook.yml`, `eslint*.mjs` меняются **только по явному указанию пользователя**
 ([protection](docs/00-meta/protection.md)).
 
@@ -77,5 +77,4 @@ Socket.IO, RHF + Zod, orval, Vitest. Архитектура — Feature-Sliced D
 yarn dev           # :3000, /api и /socket.io → бэкенд :8181
 yarn lint && yarn typecheck   # после каждой итерации
 yarn verify        # lint + format:check + typecheck + test:coverage + build
-yarn docs:index    # пересобрать индексы документации
 ```
