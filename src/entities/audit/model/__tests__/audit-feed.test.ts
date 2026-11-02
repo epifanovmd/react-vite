@@ -174,3 +174,60 @@ describe("AuditFeed — устаревшие ответы", () => {
     expect(feed.isLoadingMore).toBe(false);
   });
 });
+
+describe("AuditFeed — ошибка подгрузки", () => {
+  it("ошибка loadMore не становится ошибкой ленты: события остаются, ошибка — отдельно", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(page(["e-1"], "c-1"))
+      .mockResolvedValueOnce({ data: null, error: { message: "Сбой" } });
+    const feed = new AuditFeed(fetch);
+
+    await feed.load();
+    await feed.loadMore();
+
+    expect(feed.items.map(e => e.id)).toEqual(["e-1"]);
+    expect(feed.error).toBeNull();
+    expect(feed.loadMoreError?.message).toBe("Сбой");
+    expect(feed.hasMore).toBe(true);
+  });
+
+  it("успешный повтор loadMore снимает ошибку подгрузки", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(page(["e-1"], "c-1"))
+      .mockResolvedValueOnce({ data: null, error: { message: "Сбой" } })
+      .mockResolvedValueOnce(page(["e-2"], null));
+    const feed = new AuditFeed(fetch);
+
+    await feed.load();
+    await feed.loadMore();
+    await feed.loadMore();
+
+    expect(feed.items.map(e => e.id)).toEqual(["e-1", "e-2"]);
+    expect(feed.loadMoreError).toBeNull();
+  });
+
+  it("перезагрузка ленты не показывает прежнюю ошибку подгрузки", async () => {
+    const reload = deferred<unknown>();
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(page(["e-1"], "c-1"))
+      .mockResolvedValueOnce({ data: null, error: { message: "Сбой" } })
+      .mockReturnValueOnce(reload.promise);
+    const feed = new AuditFeed(fetch);
+
+    await feed.load();
+    await feed.loadMore();
+
+    const loading = feed.load();
+
+    expect(feed.loadMoreError).toBeNull();
+
+    reload.resolve({ data: null, error: { message: "Журнал недоступен" } });
+    await loading;
+
+    expect(feed.error?.message).toBe("Журнал недоступен");
+    expect(feed.loadMoreError).toBeNull();
+  });
+});

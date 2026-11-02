@@ -1,6 +1,13 @@
 import type { AuditEventDto } from "@shared/api/gen/main/model";
 import { describeUserAgent, formatter } from "@shared/lib/utils";
-import { Badge, Button, createColumnHelper, Empty, Table } from "@shared/ui";
+import {
+  Alert,
+  Badge,
+  Button,
+  createColumnHelper,
+  Empty,
+  Table,
+} from "@shared/ui";
 import { observer } from "mobx-react-lite";
 import { FC, useMemo } from "react";
 
@@ -102,6 +109,11 @@ export const AuditEventTable: FC<AuditEventTableProps> = observer(
           getRowId={e => e.id}
           aria-label="Журнал действий"
         />
+        {feed.loadMoreError && (
+          <Alert variant="destructive" className="self-center">
+            {feed.loadMoreError.message}
+          </Alert>
+        )}
         {feed.hasMore && (
           <Button
             variant="outline"

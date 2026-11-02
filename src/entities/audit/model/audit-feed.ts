@@ -52,8 +52,19 @@ export class AuditFeed {
     return this._holder.hasMore;
   }
 
+  /** Ошибка первой страницы — ленты нет. */
   get error() {
-    return this._holder.error ?? this._holder.loadMoreError;
+    return this._holder.error;
+  }
+
+  /**
+   * Ошибка подгрузки следующей страницы — загруженные события остаются. Относится
+   * только к живой ленте: при перезагрузке и ошибке первой страницы не показывается.
+   */
+  get loadMoreError() {
+    if (this._holder.isLoading || this._holder.error) return null;
+
+    return this._holder.loadMoreError;
   }
 
   /** Новое событие (из сокета) — в начало ленты; уже показанное не дублируется. */
