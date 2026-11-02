@@ -30,8 +30,7 @@ export const useEditPrivacy = () => {
 
   useEffect(() => {
     userStore.loadPrivacy().then();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userStore]);
 
   const change = async (
     key: keyof PrivacySettingsDto,

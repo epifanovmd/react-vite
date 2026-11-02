@@ -19,8 +19,7 @@ export const useManageSessionsVM = () => {
 
   useEffect(() => {
     sessions.load().then();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sessions]);
 
   const terminateOthers = useMutation<void, unknown>({
     mutationFn: () => sessions.terminateOtherSessions(),
