@@ -4,13 +4,8 @@ import { notifyApiError } from "@shared/lib/http";
 import { INotificationService } from "@shared/lib/notifications";
 import { useZodForm } from "@shared/ui";
 import { useState } from "react";
-import { z } from "zod";
 
-export const deleteAccountSchema = z.object({
-  password: z.string().min(1, "Введите пароль."),
-});
-
-export type TDeleteAccountForm = z.infer<typeof deleteAccountSchema>;
+import { deleteAccountSchema, type TDeleteAccountForm } from "./validation";
 
 export const useDeleteAccountVM = () => {
   const userStore = IUserStore.useInstance();

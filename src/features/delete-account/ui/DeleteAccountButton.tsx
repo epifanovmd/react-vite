@@ -2,10 +2,8 @@ import { Button, Form, InputFormField, Modal, ModalContent } from "@shared/ui";
 import { Trash2 } from "lucide-react";
 import { FC } from "react";
 
-import {
-  TDeleteAccountForm,
-  useDeleteAccountVM,
-} from "../model/useDeleteAccountVM";
+import { useDeleteAccountVM } from "../model/useDeleteAccountVM";
+import type { TDeleteAccountForm } from "../model/validation";
 
 export const DeleteAccountButton: FC = () => {
   const { open, setOpen, openDialog, form, submit } = useDeleteAccountVM();

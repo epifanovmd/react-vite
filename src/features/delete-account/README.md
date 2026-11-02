@@ -15,7 +15,8 @@ summary: Удаление собственного аккаунта с подт�
 
 ## Устройство
 
-- `model/useDeleteAccountVM.ts` — схема `deleteAccountSchema` (непустой пароль), форма, состояние модалки:
+- `model/validation.ts` — `deleteAccountSchema` (непустой пароль), `TDeleteAccountForm`.
+- `model/useDeleteAccountVM.ts` — форма, состояние модалки:
   - `openDialog` сбрасывает пароль и открывает модалку;
   - `submit` → `IUserStore.deleteMyAccount(password)`; при успехе закрывает модалку, тост, `IAuthStore.signOut()`.
 - Ошибка — `notifyApiError`, модалка остаётся открытой.
