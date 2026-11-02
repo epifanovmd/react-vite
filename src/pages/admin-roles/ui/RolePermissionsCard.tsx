@@ -1,9 +1,11 @@
 import { PermissionMatrix } from "@entities/permission";
 import { ALL_PERMISSIONS } from "@entities/user";
 import { type IRoleDto, KnownRole } from "@shared/api/gen/main/model";
+import { useMutation } from "@shared/lib/holders";
 import { pluralize } from "@shared/lib/utils";
 import { Button, Card, IconButton } from "@shared/ui";
 import { Trash2 } from "lucide-react";
+import { observer } from "mobx-react-lite";
 import { FC, useState } from "react";
 
 interface RolePermissionsCardProps {
@@ -28,66 +30,67 @@ const SYSTEM_ROLES = new Set<string>(Object.values(KnownRole));
 const PERMISSION_WORDS = { one: "право", few: "права", many: "прав" };
 
 /** Права одной роли: уровни правятся локально и сохраняются кнопкой. */
-export const RolePermissionsCard: FC<RolePermissionsCardProps> = ({
-  role,
-  canUpdate,
-  canDelete,
-  canGrantAll,
-  onSave,
-  onDelete,
-}) => {
-  const [selected, setSelected] = useState<string[]>(() => namesOf(role));
-  const [saving, setSaving] = useState(false);
+export const RolePermissionsCard: FC<RolePermissionsCardProps> = observer(
+  ({ role, canUpdate, canDelete, canGrantAll, onSave, onDelete }) => {
+    const [selected, setSelected] = useState<string[]>(() => namesOf(role));
+    const savePermissions = useMutation<string[], boolean>({
+      mutationFn: async permissions => ({
+        data: await onSave(role, permissions),
+      }),
+    });
 
-  const saved = namesOf(role);
-  const savedKey = keyOf(saved);
-  const [syncedKey, setSyncedKey] = useState(savedKey);
+    const saved = namesOf(role);
+    const savedKey = keyOf(saved);
+    const [syncedKey, setSyncedKey] = useState(savedKey);
 
-  // Правки сбрасываются только при смене набора прав роли, а не её объекта.
-  if (syncedKey !== savedKey) {
-    setSyncedKey(savedKey);
-    setSelected(saved);
-  }
+    // Правки сбрасываются только при смене набора прав роли, а не её объекта.
+    if (syncedKey !== savedKey) {
+      setSyncedKey(savedKey);
+      setSelected(saved);
+    }
 
-  const dirty =
-    selected.length !== saved.length || selected.some(p => !saved.includes(p));
+    const dirty =
+      selected.length !== saved.length ||
+      selected.some(p => !saved.includes(p));
 
-  const save = async () => {
-    setSaving(true);
-    await onSave(role, selected);
-    setSaving(false);
-  };
+    const save = () => savePermissions.mutate(selected);
 
-  return (
-    <Card
-      title={<span className="font-mono">{role.name}</span>}
-      description={pluralize(role.permissions.length, PERMISSION_WORDS, true)}
-      extra={
-        canDelete &&
-        !SYSTEM_ROLES.has(role.name) && (
-          <IconButton
-            aria-label={`Удалить роль ${role.name}`}
-            variant="destructive"
-            onClick={() => onDelete(role)}
-          >
-            <Trash2 size={15} />
-          </IconButton>
-        )
-      }
-      footer={
-        canUpdate && (
-          <Button size="sm" disabled={!dirty} loading={saving} onClick={save}>
-            Сохранить
-          </Button>
-        )
-      }
-    >
-      <PermissionMatrix
-        value={selected}
-        onChange={setSelected}
-        readOnly={!canUpdate}
-        isLocked={name => name === ALL_PERMISSIONS && !canGrantAll}
-      />
-    </Card>
-  );
-};
+    return (
+      <Card
+        title={<span className="font-mono">{role.name}</span>}
+        description={pluralize(role.permissions.length, PERMISSION_WORDS, true)}
+        extra={
+          canDelete &&
+          !SYSTEM_ROLES.has(role.name) && (
+            <IconButton
+              aria-label={`Удалить роль ${role.name}`}
+              variant="destructive"
+              onClick={() => onDelete(role)}
+            >
+              <Trash2 size={15} />
+            </IconButton>
+          )
+        }
+        footer={
+          canUpdate && (
+            <Button
+              size="sm"
+              disabled={!dirty}
+              loading={savePermissions.isLoading}
+              onClick={save}
+            >
+              Сохранить
+            </Button>
+          )
+        }
+      >
+        <PermissionMatrix
+          value={selected}
+          onChange={setSelected}
+          readOnly={!canUpdate}
+          isLocked={name => name === ALL_PERMISSIONS && !canGrantAll}
+        />
+      </Card>
+    );
+  },
+);
