@@ -1,10 +1,9 @@
+import { cn } from "@shared/lib/utils";
 import { Alert, type AlertVariant } from "@shared/ui/alert";
 import { Button } from "@shared/ui/button";
-import { clsx } from "clsx";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "react-hot-toast";
-import { twMerge } from "tailwind-merge";
 
 import type { ToastAction } from "./notification.types";
 
@@ -46,13 +45,11 @@ export const NotificationToast: React.FC<CustomToastProps> = ({
 
   return (
     <div
-      className={twMerge(
-        clsx(
-          "min-w-[280px] max-w-[400px] rounded-lg bg-card shadow-lg",
-          visible
-            ? "animate-in slide-in-from-right-5 fade-in duration-300 ease-out"
-            : "animate-out slide-out-to-right-5 fade-out duration-200 ease-in fill-mode-forwards",
-        ),
+      className={cn(
+        "min-w-[280px] max-w-[400px] rounded-lg bg-card shadow-lg",
+        visible
+          ? "animate-in slide-in-from-right-5 fade-in duration-300 ease-out"
+          : "animate-out slide-out-to-right-5 fade-out duration-200 ease-in fill-mode-forwards",
       )}
     >
       <Alert

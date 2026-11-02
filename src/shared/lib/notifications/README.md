@@ -32,7 +32,7 @@ summary: Тосты — DI-сервис уведомлений на react-hot-to
 
 ## Зависимости
 
-- `@shared/lib/di`, `@shared/ui/alert`, `@shared/ui/button`, `react-hot-toast`, `lucide-react`.
+- `@shared/lib/di`, `@shared/lib/utils` (`cn`), `@shared/ui/alert`, `@shared/ui/button`, `react-hot-toast`, `lucide-react`.
 - Регистрация — `src/app/app.module.ts`; `NotificationProvider` — в `src/app/App.tsx`.
 - Потребители: почти все `features/*/model` и ряд `pages`, `entities/user/ui/PermissionGate.tsx`,
   `shared/lib/http` (`notify-errors.middleware.ts`) через `shared/api/api.module.ts`.
