@@ -11,10 +11,11 @@ argument-hint: "[что за модуль и зачем]"
 2. Проверить, нет ли уже подходящего модуля: [docs/modules.md](../../../docs/modules.md).
 3. Структура — по [recipes](../../../docs/50-tech/recipes.md): `index.ts` (public API),
    сегменты только нужные, без `components/hooks/types/utils`.
-4. DI — `<slice>.module.ts` и регистрация в `src/app/app.module.ts`, если есть биндинги.
+4. DI — `<slice>.module.ts` и регистрация в композиционном корне
+   ([architecture/di](../../../docs/20-architecture/di.md)), если есть биндинги.
 5. `README.md` по [шаблону](../../../docs/00-meta/templates/module-readme.md).
-6. Маршрут для page — файл в `src/app/routes/`; пункт навигации — в
-   `widgets/app-layout` с правом.
-7. `yarn docs:index`, `yarn lint && yarn typecheck`.
+6. Экран — регистрация и пункт навигации по эталону
+   [recipes](../../../docs/50-tech/recipes.md).
+7. `yarn docs:index` и быстрая проверка ([ops/commands](../../../docs/70-ops/commands.md)).
 
 Модуль: $ARGUMENTS

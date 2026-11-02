@@ -24,6 +24,12 @@ depends_on: [architecture/fsd-layers]
 
 ## Файлы
 
+Регистр имени задаёт `eslint.naming.mjs` по трём правилам: имя на `use|create|build` +
+заглавную букву — camelCase и совпадает с экспортом (`use<Name>VM.ts`,
+`create<Thing>.tsx`); прочие `.tsx` — PascalCase; прочие `.ts` — kebab-case. Средние
+расширения (`.test`, `.types`) не учитываются, поэтому тест компонента —
+`ComponentName.test.tsx`, тест модуля — `module-name.test.ts`.
+
 | Содержимое                      | Соглашение                            | Пример                             |
 | ------------------------------- | ------------------------------------- | ---------------------------------- |
 | React-компонент                 | `PascalCase.tsx`                      | `<Component>.tsx`                  |
@@ -38,7 +44,7 @@ depends_on: [architecture/fsd-layers]
 | DI-регистрация                  | `<slice>.module.ts`                   | `<slice>.module.ts`                |
 | public API                      | `index.ts`                            | `<layer>/<slice>/index.ts`         |
 | контракт Dependency Inversion   | `<name>.contract.ts`                  | `<name>.contract.ts`               |
-| тест                            | `__tests__/<имя>.test.ts(x)`          | `__tests__/store.test.ts`          |
+| тест                            | имя по тем же правилам + `.test`      | `__tests__/<Component>.test.tsx`   |
 | документация модуля             | `README.md` в корне модуля            | `features/<feature>/README.md`     |
 
 - Имя не повторяет контекст: внутри `entities/<entity>/model` — `store.ts`, а не

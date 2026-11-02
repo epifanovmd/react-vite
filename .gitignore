@@ -16,9 +16,8 @@ coverage/
 !.env.deploy.example
 *.local
 
-# Локальные настройки Claude Code и флаг разблокировки документов
+# Локальные настройки Claude Code
 .claude/settings.local.json
-.claude/.docs-unlock
 
 # Логи
 logs/

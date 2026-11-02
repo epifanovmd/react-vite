@@ -1,5 +1,5 @@
 ---
-module: <путь от src/, например features/sign-in>
+module: <путь от src/, например <layer>/<slice>>
 summary: <Одна строка: зачем модуль существует.>
 ---
 

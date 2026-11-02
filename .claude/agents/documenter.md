@@ -19,7 +19,8 @@ tools: Read, Grep, Glob, Bash, Edit, Write
   правила проекта — только устройство модуля, public API, зависимости, gotcha.
 - Русский язык, кратко, 20–60 строк; frontmatter `module` = путь от `src/`, `summary` —
   одна строка.
-- После записи: `yarn prettier --write <файлы>`, `yarn docs:index`, `yarn docs:check`.
+- После записи: форматирование файлов, `yarn docs:index`, `yarn docs:check`
+  (команды — `docs/70-ops/commands.md`).
 - Нашёл расхождение кода с правилами — не исправляй код, перечисли в ответе.
 
 Ответ: изменённые файлы; расхождения кода с правилами; предложения в inbox.

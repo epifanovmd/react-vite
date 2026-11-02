@@ -19,7 +19,7 @@ depends_on: [process/workflow]
 | developer  | реализация по плану и конвенциям       | выполнение             | —            | `30-conventions`, `50-tech` |
 | tester     | воспроизведение багов, тесты, покрытие | выполнение, проверка   | `tester`     | `conventions/tests`         |
 | reviewer   | сверка diff с правилами                | ревью                  | `reviewer`   | `process/review`            |
-| devops     | окружение, сборка, CI/CD, хуки         | любые инфраструктурные | —            | `70-ops`                    |
+| devops     | окружение, сборка, деплой, хуки        | любые инфраструктурные | —            | `70-ops`                    |
 | documenter | README модулей, предложения в inbox    | документация           | `documenter` | `00-meta`                   |
 
 Индекс документов по ролям — [docs/README.md](../README.md#по-ролям).

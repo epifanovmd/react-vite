@@ -28,7 +28,7 @@ Socket.IO, RHF + Zod, orval, Vitest. Архитектура — Feature-Sliced D
 
 Правила области подгружаются автоматически при работе с её файлами
 (`.claude/rules/`). Процедуры — skills: `/task`, `/bugfix`, `/review`, `/new-module`,
-`/propose-rule`; только по команде пользователя — `/commit`, `/docs-edit`, `/docs-lock`.
+`/propose-rule`; только по команде пользователя — `/commit`, `/docs-edit`.
 Роли-субагенты — `.claude/agents/` ([process/roles](docs/10-process/roles.md)).
 
 ## Этапы любой задачи
@@ -57,14 +57,14 @@ Socket.IO, RHF + Zod, orval, Vitest. Архитектура — Feature-Sliced D
   ([comments](docs/30-conventions/comments.md)).
 - У каждого модуля — `README.md` рядом с кодом; изменил поведение или API —
   обнови README в той же задаче.
+- Неиспользуемый существующий код — заготовка: не удалять без команды пользователя.
 - Commit, push, merge, деплой — только по команде пользователя; коммиты —
   Conventional Commits на русском ([git](docs/10-process/git.md)).
 
 ## Защищённые правила
 
-`CLAUDE.md`, `README.md`, `docs/**` (кроме `docs/inbox/`), `.claude/{settings.json,hooks,rules,skills,agents}`,
-`scripts/{docs,git}`, `lefthook.yml`, `eslint*.mjs` меняются **только по команде
-пользователя** `/docs-edit`; запись блокирует хук
+`CLAUDE.md`, `README.md`, `docs/**` (кроме `docs/inbox/`), `.claude/`, `scripts/{docs,git}`,
+`lefthook.yml`, `eslint*.mjs` меняются **только по явному указанию пользователя**
 ([protection](docs/00-meta/protection.md)).
 
 Повторяющаяся ситуация без правила, противоречие, устаревший факт в защищённом

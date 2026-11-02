@@ -23,7 +23,6 @@ depends_on: [architecture/dependencies]
 | типы и тесты            | typecheck, зелёные тесты, пороги покрытия       | tsc, vitest                           |
 | документация            | frontmatter, граф, ссылки, README модулей       | `scripts/docs/check.mjs`              |
 | коммиты                 | формат Conventional Commits                     | `scripts/git/commit-msg.mjs`          |
-| защищённые документы    | запрет правки без команды                       | `.claude/hooks/protect-docs.mjs`      |
 
 Правило, которое нельзя проверить автоматически, — предмет ревью и описывается в
 `docs/30-conventions`.

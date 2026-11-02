@@ -5,11 +5,11 @@
  *   node scripts/docs/check.mjs          — проверка (exit 1 при ошибках)
  *   node scripts/docs/check.mjs --write  — пересборка docs/README.md и docs/modules.md, затем проверка
  *
- * Правила формата — docs/00-meta/authoring.md.
+ * Правила формата — docs/00-meta/authoring.md, параметры проекта — docs/config.mjs.
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import * as prettier from "prettier";
 
@@ -50,31 +50,24 @@ const DOC_FIELDS = [
   "stages",
   "depends_on",
 ];
-const MODULE_PARENTS = [
-  "src/pages",
-  "src/widgets",
-  "src/features",
-  "src/entities",
-  "src/shared/lib",
-];
-const MODULE_SINGLES = [
-  "src/app",
-  "src/shared/ui",
-  "src/shared/api",
-  "src/shared/config",
-];
-const MODULE_LAYERS = [
-  "app",
-  "pages",
-  "widgets",
-  "features",
-  "entities",
-  "shared",
-];
-const CLAUDE_MD_MAX_LINES = 150;
-const DOC_MAX_LINES = 200;
+const {
+  srcDir = "src",
+  moduleParents,
+  moduleSingles,
+  moduleLayers,
+  claudeMdMaxLines = 150,
+  docMaxLines = 200,
+  skipDirs = [],
+} = (await import(pathToFileURL(path.join(ROOT, "docs/config.mjs")).href))
+  .default;
+const MODULE_PARENTS = moduleParents.map(d => `${srcDir}/${d}`);
+const MODULE_SINGLES = moduleSingles.map(d => `${srcDir}/${d}`);
+const MODULE_LAYERS = moduleLayers;
+const CLAUDE_MD_MAX_LINES = claudeMdMaxLines;
+const DOC_MAX_LINES = docMaxLines;
 const GENERATED = ["docs/README.md", "docs/modules.md"];
 const SKIP_DIRS = new Set([
+  ...skipDirs,
   "node_modules",
   ".git",
   "dist",
@@ -307,11 +300,11 @@ for (const dir of requiredModules) {
 const modules = [];
 
 for (const file of walk(
-  path.join(ROOT, "src"),
+  path.join(ROOT, srcDir),
   f => path.basename(f) === "README.md",
 )) {
   const fm = parseFrontmatter(read(file));
-  const expected = rel(path.dirname(file)).replace(/^src\//, "");
+  const expected = rel(path.dirname(file)).slice(srcDir.length + 1);
 
   if (!fm) {
     error(file, "нет frontmatter (module, summary)");
@@ -499,7 +492,7 @@ const buildModulesIndex = () => {
     "",
     "# Модули",
     "",
-    "Документация модулей лежит рядом с кодом: `src/<модуль>/README.md`. Шаблон —",
+    `Документация модулей лежит рядом с кодом: \`${srcDir}/<модуль>/README.md\`. Шаблон —`,
     "[module-readme](00-meta/templates/module-readme.md).",
     "",
   ];
