@@ -2,6 +2,8 @@ import { PermissionMatrix } from "@entities/permission";
 import { ALL_PERMISSIONS } from "@entities/user";
 import { type IRoleDto, KnownRole } from "@shared/api/gen/main/model";
 import { useMutation } from "@shared/lib/holders";
+import { notifyApiError } from "@shared/lib/http";
+import { INotificationService } from "@shared/lib/notifications";
 import { pluralize } from "@shared/lib/utils";
 import { Button, Card, IconButton } from "@shared/ui";
 import { Trash2 } from "lucide-react";
@@ -33,10 +35,12 @@ const PERMISSION_WORDS = { one: "право", few: "права", many: "прав
 export const RolePermissionsCard: FC<RolePermissionsCardProps> = observer(
   ({ role, canUpdate, canDelete, canGrantAll, onSave, onDelete }) => {
     const [selected, setSelected] = useState<string[]>(() => namesOf(role));
+    const toast = INotificationService.useInstance();
     const savePermissions = useMutation<string[], boolean>({
       mutationFn: async permissions => ({
         data: await onSave(role, permissions),
       }),
+      onError: error => notifyApiError(toast, error),
     });
 
     const saved = namesOf(role);

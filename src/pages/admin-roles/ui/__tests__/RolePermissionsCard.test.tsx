@@ -1,7 +1,9 @@
 import type { IRoleDto } from "@shared/api/gen/main/model";
+import { iocContainer } from "@shared/lib/di";
+import { INotificationService } from "@shared/lib/notifications";
 import { TooltipProvider } from "@shared/ui";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { RolePermissionsCard } from "../RolePermissionsCard";
 
@@ -41,6 +43,17 @@ const card = (value: IRoleDto) => (
     />
   </TooltipProvider>
 );
+
+const toast = { error: vi.fn(), success: vi.fn() };
+
+beforeEach(() => {
+  iocContainer.bind(INotificationService.Tid).toConstantValue(toast);
+});
+
+afterEach(() => {
+  iocContainer.unbind(INotificationService.Tid);
+  vi.clearAllMocks();
+});
 
 describe("RolePermissionsCard", () => {
   it("новый объект роли с тем же набором прав не стирает несохранённые правки", () => {
@@ -100,6 +113,16 @@ describe("RolePermissionsCard", () => {
       expect(
         screen.getByRole("button", { name: "Сохранить" }),
       ).not.toHaveAttribute("aria-busy", "true"),
+    );
+  });
+
+  it("onSave отклонился — тост с ошибкой", async () => {
+    renderWithSave(() => Promise.reject(new Error("Сохранение не удалось")));
+    fireEvent.click(screen.getByRole("button", { name: "добавить b" }));
+    fireEvent.click(screen.getByRole("button", { name: "Сохранить" }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("Сохранение не удалось"),
     );
   });
 
